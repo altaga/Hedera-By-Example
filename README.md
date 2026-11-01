@@ -45,6 +45,11 @@ Hedera-By-Example/
 │   ├── OFFICIAL_HEDERA_RESOURCES.md           # Master directory of official Hedera links & dates
 │   └── OFFICIAL_HEDERA_RESOURCES.csv          # Machine-readable tabular export of official links
 │
+├── mcp/                          # Standalone Universal Model Context Protocol (MCP) Server
+│   ├── index.js                  # Pure Node.js JSON-RPC 2.0 stdio & HTTP/SSE Server (Zero external dependencies)
+│   ├── client_configs/           # 1-Click Client Integrations (Cursor, Claude Desktop, Antigravity)
+│   └── README.md                 # Complete Protocol Specification & Agent Onboarding Guide
+│
 ├── scripts/                      # Core Monorepo Tooling & Compilation
 │   └── compile-course.mjs        # Single-Source-of-Truth Compiler: course/ -> app/src/content/
 │
@@ -53,7 +58,8 @@ Hedera-By-Example/
     ├── 02_course_compiler.test.mjs    # Validates compilation pipeline of all 131 labs
     ├── 03_browser_sandbox.test.mjs    # Audits in-browser V8 execution scope & polyfills
     ├── 04_e2e_live_browser.test.mjs   # Headless Chrome automation against live platform
-    └── master_test_runner.mjs         # Master CI/CD orchestrator executing all suites
+    ├── 05_mcp_server.test.mjs         # Universal MCP server verification (stdio & HTTP)
+    └── master_test_runner.mjs         # Master CI/CD orchestrator executing all 5 suites
 ```
 
 ---
@@ -94,36 +100,67 @@ npm install
 
 ## 🧪 5. Testing & Quality Assurance
 
-Hedera by Example features a 4-tier automated test harness:
+Hedera by Example features a 5-tier automated quality assurance gateway:
 
 ```bash
-# Run all 4 test suites (Course, Compiler, Sandbox, and Headless Chrome E2E):
-npm test
+# Run all 5 test suites (Course, Compiler, Sandbox, Headless Chrome E2E, and Universal MCP):
+node tests/master_test_runner.mjs
 
-# Run fast CI test (skipping headless browser launch):
-npm run test:fast
+# Run fast CI test (skipping live headless browser launch):
+node tests/master_test_runner.mjs --skip-e2e
 
 # Run individual test suites:
-npm run test:course      # Suite 01: Standalone Course Parity & Syntax
-npm run test:compiler    # Suite 02: Course-to-App 131-Lab Compiler
-npm run test:sandbox     # Suite 03: In-Browser V8 Execution Scope
-npm run test:e2e         # Suite 04: Live Production Chrome Browser Test
+node tests/01_course_standalone.test.mjs  # Suite 01: Standalone Course Parity & Syntax
+node tests/02_course_compiler.test.mjs    # Suite 02: Course-to-App 131-Lab Compiler
+node tests/03_browser_sandbox.test.mjs    # Suite 03: In-Browser V8 Execution Scope
+node tests/04_e2e_live_browser.test.mjs   # Suite 04: Live Production Chrome Browser Test
+node tests/05_mcp_server.test.mjs         # Suite 05: Universal MCP Server (stdio & HTTP)
 ```
 
 ---
 
-## 🌐 6. Running the Web Studio Locally
+## 🤖 6. Universal Model Context Protocol (MCP) Server
+
+Hedera by Example exposes its entire 131-lab curriculum, architecture decision trees, and mirror node queries directly to AI agents (Cursor IDE, Claude Desktop, Antigravity, Windsurf, Trae):
+
+- **Zero External Dependencies:** Built with pure Node.js (`node:readline`, `node:http`).
+- **Standard Compliant:** Adheres strictly to the Model Context Protocol (MCP) specification `2024-11-05`.
+- **Dual Transports:** Supports `stdio` (JSON-RPC 2.0 local subprocess) and `HTTP / SSE` (web agent endpoints).
+- **Public Cloud Endpoints:**
+  - `https://hbe.expo.app/mcp/manifest.json`
+  - `https://hbe.expo.app/mcp/tools.json`
+
+### Registered Tools
+1. `query_curriculum`: Query 131 Hedera labs by keyword, module, or topic in EN/ES.
+2. `query_knowledge`: Access the Master Knowledge Graph with official docs, SDK methods, and security caveats.
+3. `anti_hallucination_rules`: Strict engineering guardrails (8 decimals, BigInt, 100B metadata limit, Ed25519 vs ECDSA).
+4. `architecture_decision_tree`: Guidance on when to use HCS vs HTS vs HSCS.
+5. `mirror_node_query`: Live Hedera Testnet queries via official Mirror Nodes.
+6. `official_resources`: Master directory of verified official documentation and dates.
+
+### Quick Run
+```bash
+# Start local MCP server over stdio (for Cursor / Claude Desktop):
+node mcp/index.js
+
+# Start local MCP server over HTTP / SSE on port 3001:
+node mcp/index.js --http 3001
+```
+
+---
+
+## 🌐 7. Running the Web Studio Locally
 
 ```bash
 # Launch interactive web studio in development mode:
-npm run dev:app
+cd app && npx expo start --web
 ```
 
 Navigate to `http://localhost:8081` in your browser.
 
 ---
 
-## 📜 7. Master Syllabus Overview (131 Labs)
+## 📜 8. Master Syllabus Overview (131 Labs)
 
 | Module | Title | Focus Area |
 | :---: | :--- | :--- |
