@@ -1,0 +1,136 @@
+/**
+ * ============================================================================
+ * Laboratorio 08: Precompilados HTS Avanzados
+ * [ CONCEPTO ] Contratos Inteligentes EVM Controlando Activos Nativos
+ * ============================================================================
+ * [ CONCEPTO CLAVE ]
+ * Los Contratos Inteligentes en Hedera pueden interactuar con el Hedera Token
+ * Service (HTS) nativo usando el precompilado 0x167. Esto significa que un
+ * contrato Solidity puede MINTEAR, QUEMAR o TRANSFERIR tokens nativos de Hedera
+ * a velocidades de 10,000 TPS, combinando la programabilidad EVM con el
+ * rendimiento de HTS.
+ * Para lograr esto, el ID del Contrato Inteligente debe establecerse como
+ * la Llave de Suministro (Supply Key) del token.
+ * *
+ * [ MOMENTO DE APRENDIZAJE ]
+ * Invocar precompilados avanzados permite a contratos Solidity confiscar (wipe), congelar o pausar tokens directamente desde EVM, otorgando a contratos de gobernanza control soberano sobre activos HTS.
+ *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts/hedera-token-service
+ *
+ * [ RUTA DE APRENDIZAJE ]
+ * - Anterior:  M8 Lab 07: Asociación USDC
+ * - Siguiente: M8 Lab 09: Fondo de Privacidad Zero-Knowledge
+ *
+ * [ CÓMO EJECUTAR ]
+ * node 08_hts_precompiles_advanced.js
+ * ============================================================================
+ */
+
+import {
+  ContractCreateTransaction,
+  ContractExecuteTransaction,
+  ContractFunctionParameters,
+  TokenCreateTransaction,
+  PrivateKey
+} from '@hiero-ledger/sdk'
+import solc from 'solc'
+import fs from 'fs'
+import { getClient } from '../M99_Utilities/index.js'
+
+const compile = (contractName, source) => {
+  console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol...`)
+  const input = {
+    language: 'Solidity',
+    sources: { [`${contractName}.sol`]: { content: source } },
+    settings: { outputSelection: { '*': { '*': ['*'] } } }
+  }
+  const compiled = JSON.parse(solc.compile(JSON.stringify(input)))
+  const contract = compiled.contracts[`${contractName}.sol`][contractName]
+  return contract.evm.bytecode.object
+}
+
+const main = async () => {
+  console.log('--- INICIO DE SESIÓN: Precompilados HTS Avanzados ---\n')
+
+  const { client, operatorKey, operatorId } = getClient()
+  const adminKey = PrivateKey.fromString(operatorKey)
+
+  try {
+    // 1. Compilar y Desplegar el Contrato Inteligente
+    const sourceCode = fs.readFileSync(new URL('./08_hts_precompiles_advanced.sol', import.meta.url), 'utf8')
+    const bytecode = compile('AdvancedHTS', sourceCode)
+
+    console.log('[⚙️ PROCESO] Desplegando el Contrato AdvancedHTS en la EVM...')
+    const contractTx = await new ContractCreateTransaction()
+      .setBytecode(Buffer.from(bytecode, 'hex'))
+      .setGas(100000)
+      .setAdminKey(adminKey)
+      .execute(client)
+    let receipt = await contractTx.getReceipt(client)
+    const contractId = receipt.contractId
+    console.log(`[✅ ÉXITO] Contrato desplegado con ID: ${contractId.toString()}`)
+
+    // 2. Crear un Token HTS y establecer el Contrato como Llave de Suministro
+    console.log('\n[⚙️ PROCESO] Creando Token Nativo con el Contrato como Llave de Suministro...')
+    const tokenTx = await new TokenCreateTransaction()
+      .setTokenName('Precompile Coin')
+      .setTokenSymbol('PRC')
+      .setDecimals(2)
+      .setInitialSupply(0)
+      .setTreasuryAccountId(operatorId)
+      // ESTO LE DA AL CONTRATO INTELIGENTE EL PODER DE MINTEAR:
+      .setSupplyKey(contractId)
+      .freezeWith(client)
+
+    const signTx = await tokenTx.sign(adminKey)
+    const submitTx = await signTx.execute(client)
+    receipt = await submitTx.getReceipt(client)
+    const tokenId = receipt.tokenId
+    console.log(`[✅ ÉXITO] Token creado: ${tokenId.toString()}`)
+
+    // 3. Ejecutar la función del Contrato Inteligente para MINTEAR tokens nativamente
+    console.log('\n[⚙️ PROCESO] Llamando al Contrato Inteligente para Mintear 1000 Tokens (Precompilado 0x167)...')
+    const mintAmount = 1000
+
+    const execTx = await new ContractExecuteTransaction()
+      .setContractId(contractId)
+      .setGas(2000000)
+      .setFunction('mintFungibleToken', new ContractFunctionParameters()
+        .addAddress(tokenId.toEvmAddress()) // La Dirección del Token
+        .addUint64(mintAmount) // La Cantidad a Mintear
+      )
+      .execute(client)
+
+    const execRecord = await execTx.getRecord(client)
+
+    // El código de respuesta 22 significa ÉXITO (SUCCESS) en HTS
+    const responseCode = execRecord.contractFunctionResult.getInt256(0)
+    console.log(`[📊 REGISTRO] Código de Respuesta del Precompilado: ${responseCode} (22 = ÉXITO)`)
+
+    if (responseCode === 22) {
+      console.log('[✅ ÉXITO] ¡El Contrato Inteligente minteó tokens nativos exitosamente!')
+    } else {
+      console.log('[❌ FALLO] El Contrato Inteligente falló al mintear tokens.')
+    }
+
+    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('Al establecer un ContractId como llave en una entidad nativa de Hedera, le')
+    console.log('das a ese contrato EVM autorización directa sobre las operaciones de capa base,')
+    console.log('fusionando la lógica EVM con velocidades nativas.')
+
+    client.close()
+    console.log('\n--- SESIÓN COMPLETADA ---')
+  } catch (error) {
+    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+  }
+}
+
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main().then(() => {
+    process.exit(0)
+  }).catch((error) => {
+    console.error('[❌ FALLO] Error de Ejecución:', error.message)
+    process.exit(1)
+  })
+}

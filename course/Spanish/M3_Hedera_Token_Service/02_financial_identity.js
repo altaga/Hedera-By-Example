@@ -1,0 +1,151 @@
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/**
+ * ============================================================================
+ * Lab 02: Identidad Financiera y Cumplimiento Regulatorio
+ * [ CONCEPTO ] Controles de Acceso Nativos (KYC y Freeze)
+ * ============================================================================
+ * [ CONCEPTO CLAVE ]
+ * Cumplimiento Nativo: Las finanzas reguladas requieren controles de acceso
+ * como KYC (Know Your Customer) y Congelamiento (Freeze). En otras redes,
+ * esto requiere Smart Contracts complejos y costosos de auditar. En Hedera,
+ * son parámetros NATIVOS: la `KycKey` permite al emisor autorizar cuentas
+ * verificadas, y la `FreezeKey` permite bloquear saldos en caso de actividad
+ * sospechosa. Esto hace que el cumplimiento sea predecible, seguro y
+ * auditable directamente por los reguladores.
+ * *
+ * [ MOMENTO DE APRENDIZAJE ]
+ * Los activos institucionales regulados requieren llaves de KYC y Freeze. Mientras que en EVM esto requiere costosos contratos con listas negras, HTS aplica las reglas de identidad en Capa 1 con previsibilidad de microcentavos.
+ *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ *
+ * [ RUTA DE APRENDIZAJE ]
+ * - Anterior: M3 Lab 01: Emisión de Token
+ * - Actual:   M3 Lab 02: Identidad Financiera
+ * - Siguiente: M3 Lab 03: NFTs con HIP-412
+ *
+ * [ CÓMO EJECUTAR ]
+ * node 02_financial_identity.js
+ * ============================================================================
+ */
+
+import {
+  MirrorNodeAccountBalanceQuery,
+  AccountId,
+  PrivateKey,
+  TokenAssociateTransaction,
+  TokenCreateTransaction,
+  TokenFreezeTransaction,
+  TokenGrantKycTransaction,
+  TokenUnfreezeTransaction
+} from '@hiero-ledger/sdk'
+import { getClient } from '../M99_Utilities/index.js'
+
+const main = async () => {
+  console.log('--- INICIO DEL LABORATORIO: Auditoría de Cumplimiento Financiero ---\n')
+
+  const { client, operatorId, operatorKey } = getClient()
+  const targetId = process.env.ACCOUNT_1_ID
+  const targetKey = process.env.ACCOUNT_1_PRIVATE_KEY
+
+  if (!targetId || !targetKey) {
+    console.error('[❌ FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
+    return
+  }
+
+  const adminKey = PrivateKey.fromString(operatorKey)
+  const userKey = PrivateKey.fromString(targetKey)
+  const userId = AccountId.fromString(targetId)
+
+  try {
+    // 1. Verificar la Identidad de la Billetera Hija
+    console.log(`[ℹ️ INFO] Verificando cuenta del usuario ${userId.toString()}...`)
+    const balance = await new MirrorNodeAccountBalanceQuery().setAccountId(userId).execute(client)
+    console.log(`[✅ ÉXITO] Usuario Activo (Saldo: ${balance.hbars.toString()})`)
+
+    // 2. Crear un Token regulado por KYC
+    console.log('\n[⚙️ PROCESO] Emitiendo Token Financiero con reglas KYC/Freeze (RFT)...')
+    const tokenTx = await new TokenCreateTransaction()
+      .setTokenName('Regulated Financial Token')
+      .setTokenSymbol('RFT')
+      .setDecimals(0)
+      .setInitialSupply(100)
+      .setTreasuryAccountId(AccountId.fromString(operatorId))
+      .setAdminKey(adminKey)
+      .setKycKey(adminKey) // Requisito de autorización de identidad
+      .setFreezeKey(adminKey) // Requisito de control de activos
+      .freezeWith(client)
+
+    const tokenResponse = await tokenTx.execute(client)
+    const tokenReceipt = await tokenResponse.getReceipt(client)
+    const tokenId = tokenReceipt.tokenId
+
+    console.log(`[✅ ÉXITO] Token RFT creado exitosamente: ${tokenId.toString()}`)
+
+    // 3. Asociación (Opt-in)
+    console.log(`\n[⚙️ PROCESO] Solicitando asociación (Opt-in) del usuario ${targetId}...`)
+    const associateTx = await new TokenAssociateTransaction()
+      .setAccountId(userId)
+      .setTokenIds([tokenId])
+      .freezeWith(client)
+
+    // Firma Dual: Usuario acepta, Operador paga
+    await associateTx.sign(userKey)
+    const assocResponse = await associateTx.execute(client)
+    await assocResponse.getReceipt(client)
+    console.log('[✅ ÉXITO] El usuario ya está asociado al token.')
+
+    // 4. Otorgar KYC
+    console.log('\n[⚙️ PROCESO] Evaluando identidad y otorgando autorización KYC...')
+    const kycTx = await new TokenGrantKycTransaction()
+      .setAccountId(userId)
+      .setTokenId(tokenId)
+      .freezeWith(client)
+
+    const kycResponse = await kycTx.execute(client)
+    await kycResponse.getReceipt(client)
+    console.log(`[✅ ÉXITO] Flag KYC activo para la cuenta ${targetId}.`)
+
+    // 5. Demostrar Control de Activos (Freeze)
+    console.log('\n[⚙️ PROCESO] Bloqueando activos del token (Freeze) por sospecha...')
+    const freezeTx = await new TokenFreezeTransaction()
+      .setAccountId(userId)
+      .setTokenId(tokenId)
+      .freezeWith(client)
+
+    const freezeResponse = await freezeTx.execute(client)
+    await freezeResponse.getReceipt(client)
+    console.log('[✅ ÉXITO] Cuenta congelada preventivamente.')
+
+    // 6. Restaurar Acceso (Unfreeze)
+    console.log('\n[⚙️ PROCESO] Restaurando acceso (Unfreeze) tras auditoría exitosa...')
+    const unfreezeTx = await new TokenUnfreezeTransaction()
+      .setAccountId(userId)
+      .setTokenId(tokenId)
+      .freezeWith(client)
+
+    const unfreezeResponse = await unfreezeTx.execute(client)
+    await unfreezeResponse.getReceipt(client)
+    console.log('[✅ ÉXITO] Cuenta desbloqueada. Acceso financiero restaurado.')
+
+    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('El cumplimiento normativo en Hedera es predecible y seguro.')
+    console.log('Al usar llaves nativas (KycKey / FreezeKey), eliminas el factor')
+    console.log('de "error humano" o "vulnerabilidad de código" en Smart Contracts,')
+    console.log('cumpliendo con estándares institucionales de forma nativa.')
+
+    client.close()
+    console.log('\n--- SESIÓN COMPLETADA ---')
+  } catch (error) {
+    console.error('\n[❌ FALLO] El flujo de cumplimiento falló:', error.message)
+  }
+}
+
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main().then(() => {
+    process.exit(0)
+  }).catch((error) => {
+    console.error('[❌ FALLO] Error de Ejecución:', error.message)
+    process.exit(1)
+  })
+}

@@ -1,0 +1,13 @@
+{
+  "hedera_test_data": {
+    "module": "M6_Mass_Storage",
+    "timestamp": "2026-04-18T03:00:00Z",
+    "nodes": [
+      {"id": "0.0.3", "location": "US-East", "status": "active"},
+      {"id": "0.0.10", "location": "EU-West", "status": "active"},
+      {"id": "0.0.15", "location": "AP-South", "status": "maintenance"}
+    ],
+    "storage_verified": true,
+    "random_hash": "0x5f3e2b1a9c8d7f6e5d4c3b2a1a0b9c8d7e6f5a4b"
+  }
+}

@@ -1,0 +1,122 @@
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/**
+ * ============================================================================
+ * Lab 02: Registros de Temas HCS-2
+ * [ CONCEPTO CLAVE ] Descubrimiento de Servicios Descentralizados
+ * ============================================================================
+ * [ MOMENTO DE APRENDIZAJE ]
+ * Páginas Amarillas Descentralizadas: HCS-2 define un estándar de metadatos
+ * para convertir temas de HCS en directorios legibles por máquinas. Al
+ * utilizar el encabezado `h: "hcs-2"`, cualquier billetera o explorador
+ * puede categorizar y descubrir automáticamente los puntos finales de tus
+ * agentes de IA. En un torneo de eSports, esto permite que los jugadores y
+ * auditores localicen instantáneamente el oráculo Anti-Cheat verificado sin
+ * necesidad de consultar una base de datos central o depender de una API
+ * privada.
+ *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hashgraphonline.com/standards/hcs-2/
+ *
+ * [ RUTA DE APRENDIZAJE ]
+ * - Anterior: M9 Lab 01: Persistencia IA (HCS-1)
+ * - Actual:   M9 Lab 02: Registros de Identidad IA (HCS-2)
+ * - Siguiente: M9 Lab 03: Búsqueda y Resolución HCS-2
+ *
+ * [ CÓMO EJECUTAR ]
+ * node 02_hcs2_registries.js
+ * ============================================================================
+ */
+
+import {
+  TopicCreateTransaction,
+  TopicMessageSubmitTransaction
+} from '@hiero-ledger/sdk'
+import { getClient, getHashscanUrl, updateState, getState } from '../M99_Utilities/index.js'
+
+/**
+ * Constructor de Esquema HCS-2: Estándar de Descubrimiento
+ */
+const buildHcs2RegistryMessage = (registryName, topicIdPointer, category, status) => ({
+  h: 'hcs-2', // Protocolo: HCS-2
+  t: 'registry', // Tipo: Registry Entry
+  r: registryName, // Nombre del Directorio
+  tid: topicIdPointer, // Puntero al ID del Tema (Agente)
+  cat: category, // Categoría (AI_ORACLE, DID, etc.)
+  status, // Estado Operativo
+  ts: Date.now()
+})
+
+const main = async () => {
+  console.log('--- INICIO DEL LABORATORIO: Auditoría de Registros de Descubrimiento (HCS-2) ---\n')
+
+  const { client, network } = getClient()
+  const targetAgentTopicId = getState('HCS1_TOPIC_ID')
+
+  if (!targetAgentTopicId) {
+    console.error('[❌ FALLO] No se encontró el ID del Agente HCS-1 en el estado. Ejecuta Lab 01 primero.')
+    return
+  }
+
+  try {
+    // 1. Crear el Tema para el Directorio de Esports Verificados
+    console.log(`[⚙️ PROCESO] Desplegando Registro de eSports Verificados en ${network}...`)
+    const registryTx = await new TopicCreateTransaction()
+      .setTopicMemo('HCS-2: Verified_Esports_Registry_V1')
+      .setSubmitKey(client.operatorPublicKey)
+      .freezeWith(client)
+
+    const registryResponse = await registryTx.execute(client)
+    const registryReceipt = await registryResponse.getReceipt(client)
+    const registryTopicId = registryReceipt.topicId.toString()
+
+    console.log(`[✅ ÉXITO] Directorio HCS-2 anclado: ${registryTopicId}`)
+    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(registryResponse)}`)
+    updateState('HCS2_REGISTRY_TOPIC_ID', registryTopicId)
+
+    // 2. Registrar el Agente Anti-Cheat en el Directorio
+    console.log(`\n[⚙️ PROCESO] Publicando ficha de descubrimiento para el Agente ${targetAgentTopicId}...`)
+    const discoveryPayload = buildHcs2RegistryMessage(
+      'Official Tournament Agent Registry',
+      targetAgentTopicId,
+      'ANTI_CHEAT_ORACLE',
+      'ACTIVE'
+    )
+
+    const submitTx = await new TopicMessageSubmitTransaction()
+      .setTopicId(registryTopicId)
+      .setMessage(JSON.stringify(discoveryPayload))
+      .freezeWith(client)
+
+    const submitResponse = await submitTx.execute(client)
+    const submitReceipt = await submitResponse.getReceipt(client)
+
+    console.log(`\n[✅ ÉXITO] Entrada HCS-2 publicada con éxito. Estado: ${submitReceipt.status.toString()}`)
+    console.log(`[📊 REGISTRO] Ver publicación: ${getHashscanUrl(submitResponse)}`)
+    console.log('\n--- 📊 [REGISTRO] Mensaje de Descubrimiento (Payload) ---')
+    console.log(JSON.stringify(discoveryPayload, null, 2))
+
+    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('Al registrar tu agente en un directorio HCS-2, permites que')
+    console.log('aplicaciones de terceros, auditores y tableros de resultados')
+    console.log('descubran y verifiquen tus reglas automáticamente. Ya no')
+    console.log('existen silos; tu infraestructura es ahora parte del tejido')
+    console.log('interconectado de la Web3.')
+
+    client.close()
+    console.log('\n--- SESIÓN COMPLETADA ---')
+  } catch (error) {
+    console.error('\n[❌ FALLO] El registro HCS-2 falló:', error.message)
+    client.close()
+  }
+}
+
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main().then(() => {
+    process.exit(0)
+  }).catch((error) => {
+    console.error('[❌ FALLO] Error de Ejecución:', error.message)
+    process.exit(1)
+  })
+}
+
+export { buildHcs2RegistryMessage }

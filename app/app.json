@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Hedera by Example",
+    "slug": "hbe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "hbe",
+    "userInterfaceStyle": "automatic",
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "73adf162-6dc9-44dd-91e9-68268df9906c"
+      }
+    },
+    "owner": "altaga"
+  }
+}

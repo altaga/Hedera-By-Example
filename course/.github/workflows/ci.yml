@@ -1,0 +1,48 @@
+name: Hedera Course CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integrity-gatekeeper:
+    name: Integrity & Quality Gatekeeper (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm install
+
+      - name: 🌐 Run Bilingual Parity Gatekeeper
+        run: npm run test:parity
+
+      - name: ⚡ Run Syntax Integrity Gatekeeper
+        run: npm run test:syntax
+
+      - name: 🎓 Run Pedagogical Standards Gatekeeper
+        run: npm run test:standards
+
+      - name: 🧹 Run Linter Code Style Gatekeeper
+        run: npm run lint
+
+      - name: 🚀 Run Full CI Test Runner
+        run: npm test

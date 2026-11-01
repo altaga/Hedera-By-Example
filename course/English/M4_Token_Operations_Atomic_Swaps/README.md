@@ -1,0 +1,92 @@
+# ⚛️ Module 4: Token Operations and Atomic Swaps
+## Trustless Trade and Transfer Efficiency
+
+> [!IMPORTANT]
+> **OBJECTIVE:** Master the movement of assets on the network, from simple transfers to complex multi-party exchanges where "everything happens or nothing happens" (Atomicity).
+
+---
+
+## 🗺️ Module Map
+
+| Lab | Topic | Description |
+| :--- | :--- | :--- |
+| **01** | **HBAR Transfers** | Basic sending of the native currency between accounts. |
+| **02** | **Token Transfers** | Movement of fungible tokens (HTS). |
+| **03** | **NFT Transfers** | Exchange of unique assets between collectors. |
+| **04** | **Atomic Swaps** | The "Holy Grail" of trade: asset exchange without intermediaries. |
+| **05** | **Parallel Transfers** | Network optimization by sending multiple movements in a single batch. |
+| **06** | **Native Token Airdrops** | Frictionless token distribution with pending claim queues (HIP-904). |
+| **07** | **Airdrop Cancel & Token Reject** | Clawing back unclaimed pending airdrops and rejecting spam tokens fee-free (HIP-904). |
+| **08** | **Triangular L1 Clearing** | In-memory Coincidence of Wants (CoW) matching engine settling 3-way ring trades atomically. |
+| **09** | **Atomic Flash Settlement** | Zero-capital flash loans, spread arbitrage, and fee repayment bundled in a single L1 transaction. |
+
+---
+
+## 🤝 The Atomic Swap
+
+In Hedera, you can include up to 10 transfers in a single transaction. If a single one fails (e.g., due to insufficient balance), the ENTIRE transaction is reverted.
+
+```mermaid
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#FF4500',
+    'tertiaryColor': '#ffffff',
+    'mainBkg': '#ffffff',
+    'nodeBorder': '#000000',
+    'clusterBkg': '#F9F9F6',
+    'clusterBorder': '#000000',
+    'fontSize': '14px',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'nodeRadius': '0px',
+    'actorBkg': '#ffffff',
+    'actorBorder': '#000000',
+    'actorTextColor': '#000000',
+    'actorLineColor': '#000000',
+    'noteBkgColor': '#F9F9F6',
+    'noteTextColor': '#000000',
+    'noteBorderColor': '#000000'
+  }
+}}%%
+sequenceDiagram
+    participant A as ALICE (SELLS NFT)
+    participant H as HEDERA NETWORK (CONSENSUS)
+    participant B as BOB (PAYS HBAR)
+    
+    Note over A,B: SINGLE ATOMIC TRANSACTION
+    B->>H: SENDS HBAR TO ALICE
+    A->>H: SENDS NFT TO BOB
+    H->>H: DO BOTH PARTIES HAVE BALANCE/ASSOCIATION?
+    H-->>A: SUCCESS: RECEIVES HBAR
+    H-->>B: SUCCESS: RECEIVES NFT
+    
+    Note over H: IF ANYTHING FAILS, NOBODY LOSES ANYTHING.
+```
+
+---
+
+## 🔑 Key Concepts
+
+### 1. Atomicity (All-or-Nothing)
+Atomicity eliminates counterparty risk. You don't need an "escrow" or a trusted third party; the network itself guarantees that the exchange is simultaneous.
+
+### 2. Network Efficiency
+A single transaction can move HBAR, Fungible Tokens, and NFTs at the same time. This reduces fees and network congestion compared to making multiple separate transactions.
+
+### 3. Transfer Limits
+Each transfer transaction in Hedera has a limit of "transfer points" (usually 10). This allows for great flexibility for complex payments or mass distributions (Airdrops).
+
+---
+
+## 📚 Official References
+- [Transfer Transactions (Hedera Docs)](https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transfer-tokens)
+- [Understanding Atomicity in DLT](https://hedera.com/learning/hedera-hashgraph/what-is-atomicity)
+- [Token Transfer Limits and Fees](https://docs.hedera.com/hedera/networks/mainnet/fees)
+
+---
+
+© 2026 **HEDERA FOR DUMMIES**. SECURE TRADE.

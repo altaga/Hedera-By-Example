@@ -1,0 +1,76 @@
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/**
+ * ============================================================================
+ * Lab 01: Generate Local Wallet
+ * [ CONCEPT ] Cryptographic Identity Generation
+ * ============================================================================
+ * [ KEY CONCEPT ]
+ * Security starts offline. By generating your keys locally, you ensure the
+ * network never sees your private key—only the public cryptographic proofs
+ * you sign.
+ * *
+ * [ LEARNABLE MOMENT ]
+ * Never generate production keys in an online web tool or unencrypted environment. Generating your ECDSA key pair locally allows you to compute the deterministic EVM address (0x...) before ever funding the account or submitting an L1 transaction.
+ *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/keys
+ *
+ * [ LEARNING PATH ]
+ * - Previous: N/A (Course Start)
+ * - Next:     Lab 02: Account Verification
+ *
+ * [ HOW TO RUN ]
+ * node 01_generate_wallet.js
+ * ============================================================================
+ */
+
+import { PrivateKey } from '@hiero-ledger/sdk'
+import { updateEnv } from '../M99_Utilities/index.js'
+
+const main = async () => {
+  console.log('--- SESSION START: Hedera ECDSA Wallet Generation ---\n')
+
+  // 1. Generate an ECDSA private key deterministically
+  console.log('[⚙️ PROCESS] Generating secure ECDSA private key pair...')
+  const privateKey = PrivateKey.generateECDSA()
+  const publicKey = privateKey.publicKey
+
+  // 2. Derive the standard Ethereum alias (0x...) from the public key
+  const evmAddress = publicKey.toEvmAddress()
+
+  console.log('[✅ SUCCESS] Generated New Private Key.')
+  console.log(`[📊 LOG] Private Key: ${privateKey.toStringDer()}`)
+  console.log(`[📊 LOG] Public Key:  ${publicKey.toStringDer()}`)
+  console.log(`[📊 LOG] EVM Address: 0x${evmAddress}`)
+
+  // 3. Save to .env as OPERATOR keys
+  console.log('\n[ℹ️ INFO] Synchronizing .env file...')
+  updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
+  updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+
+  console.log('\n=======================================================')
+  console.log('ACTION REQUIRED: FUND YOUR WALLET TO OBTAIN AN ACCOUNT ID')
+  console.log('=======================================================')
+  console.log('1. Go to the Hedera Testnet Faucet: https://portal.hedera.com/faucet')
+  console.log(`2. Paste your EVM Address: 0x${evmAddress}`)
+  console.log('3. Click \'Receive HBAR\'')
+  console.log(`4. View your account on HashScan: https://hashscan.io/testnet/account/0x${evmAddress}`)
+  console.log('5. Once you see your Account ID (0.0.X), run Lab 02.')
+  console.log('=======================================================\n')
+
+  console.log('💡 KEY CONCEPT:')
+  console.log('Security starts offline. By generating your keys locally, you ensure')
+  console.log('the network never sees your private key—only the public cryptographic')
+  console.log('proofs you sign.')
+
+  console.log('\n--- SESSION COMPLETE ---')
+}
+
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main().then(() => {
+    process.exit(0)
+  }).catch((error) => {
+    console.error('Execution Error:', error.message)
+    process.exit(1)
+  })
+}
