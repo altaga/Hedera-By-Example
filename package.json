@@ -1,0 +1,39 @@
+{
+  "name": "hedera-by-example",
+  "version": "2.0.0",
+  "description": "Hedera by Example (HBE) — Interactive Gold-Standard In-Browser Playground & 131-Lab Enterprise Curriculum",
+  "type": "module",
+  "main": "scripts/compile-course.mjs",
+  "scripts": {
+    "compile:course": "node scripts/compile-course.mjs",
+    "test": "node tests/master_test_runner.mjs",
+    "test:fast": "node tests/master_test_runner.mjs --skip-e2e",
+    "test:course": "node tests/01_course_standalone.test.mjs",
+    "test:compiler": "node tests/02_course_compiler.test.mjs",
+    "test:sandbox": "node tests/03_browser_sandbox.test.mjs",
+    "test:e2e": "node tests/04_e2e_live_browser.test.mjs",
+    "dev:app": "npm --prefix app start",
+    "build:app": "npm --prefix app run export:web"
+  },
+  "keywords": [
+    "hedera",
+    "hiero",
+    "hbe",
+    "hcs",
+    "hts",
+    "hscs",
+    "web3",
+    "depin",
+    "zktls",
+    "intents",
+    "passkeys",
+    "x402"
+  ],
+  "author": "altaga",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@hiero-ledger/sdk": "^2.90.1",
+    "dotenv": "^17.4.2",
+    "puppeteer-core": "^24.3.0"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "name": "hedera-for-dummies",
+  "version": "2.0.0",
+  "description": "Hedera for Dummies — The definitive bilingual (EN/ES) master curriculum and engineering reference for Hedera Hashgraph (16 Modules, 131 Interactive Labs, 262 Codebases)",
+  "license": "MIT",
+  "author": "Víctor Altamirano & Hedera Community Builders",
+  "keywords": [
+    "hedera",
+    "hashgraph",
+    "web3",
+    "curriculum",
+    "course",
+    "tutorial",
+    "bilingual",
+    "hcs",
+    "hts",
+    "hscs",
+    "x402",
+    "depin",
+    "rwa",
+    "passkeys",
+    "zktls"
+  ],
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/ci_runner.mjs",
+    "test:parity": "node test/ci_runner.mjs --only=parity",
+    "test:syntax": "node test/ci_runner.mjs --only=syntax",
+    "test:standards": "node test/ci_runner.mjs --only=standards",
+    "test:linter": "node test/ci_runner.mjs --only=linter",
+    "lint": "npx standard \"English/**/*.js\" \"Spanish/**/*.js\"",
+    "lint:fix": "npx standard \"English/**/*.js\" \"Spanish/**/*.js\" --fix"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.81.0",
+    "@hashgraphonline/standards-sdk": "0.1.180",
+    "@hiero-did-sdk/registrar": "0.1.8",
+    "@hiero-ledger/sdk": "^2.90.1",
+    "dotenv": "17.4.2",
+    "ethers": "6.16.0",
+    "solc": "0.8.34"
+  },
+  "overrides": {
+    "elliptic": "6.5.7",
+    "protobufjs": "^8.8.1"
+  }
+}
