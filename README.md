@@ -31,13 +31,14 @@ Hedera-By-Example/
 ├── app/                          # Interactive In-Browser Studio Web Platform (Expo Web / React Native)
 │   ├── src/app/index.tsx         # 3-Pane Swiss Studio Layout & Terminal Dock
 │   ├── src/lib/hederaBrowser.ts  # In-Browser V8 Execution Sandbox & Web Polyfills
+│   ├── scripts/build-content.mjs # Single-Source-of-Truth Compiler: course/ -> app/src/content/
 │   ├── src/content/en.json       # Compiled English Lab Syllabus (131 Labs)
 │   └── src/content/es.json       # Compiled Spanish Lab Syllabus (131 Labs)
 │
 ├── course/                       # Standalone Runnable Node.js Curriculum
 │   ├── English/                  # 16 Modules (M00 to M15) containing all 131 labs
 │   ├── Spanish/                  # 16 Modules (M00 to M15) with 100% parity
-│   └── M99_Utilities/            # Shared SDK client, state persistence & HashScan resolvers
+│   └── */M99_Utilities/          # Shared SDK client, state persistence & HashScan resolvers (per language)
 │
 ├── docs/                         # Architectural Decision Trees & Reference Documentation
 │   ├── HEDERA_ARCHITECTURE_AND_GUARDRAILS.md  # Consensus vs Token vs Contract decision trees
@@ -50,8 +51,7 @@ Hedera-By-Example/
 │   ├── client_configs/           # 1-Click Client Integrations (Cursor, Claude Desktop, Antigravity)
 │   └── README.md                 # Complete Protocol Specification & Agent Onboarding Guide
 │
-├── scripts/                      # Core Monorepo Tooling & Compilation
-│   └── compile-course.mjs        # Single-Source-of-Truth Compiler: course/ -> app/src/content/
+├── package.json                  # Monorepo scripts (tests, compile:course, MCP) & E2E dev dependency
 │
 └── tests/                        # Master Quality Gateway & Test Suite
     ├── 01_course_standalone.test.mjs  # Verifies course parity, structure & syntax
@@ -69,7 +69,7 @@ Hedera-By-Example/
 The curriculum code in `course/` is the single source of truth. Developers can run and modify scripts in `course/` as standalone Node.js programs, and then compile them into the web app in one command:
 
 ```bash
-# Compile standalone course files into app JSON syllabus:
+# Compile standalone course files into app JSON syllabus (from the repository root):
 npm run compile:course
 ```
 
@@ -89,11 +89,13 @@ The compiler extracts docblocks, commentary lines, and execution segments with e
 git clone https://github.com/altaga/Hedera-By-Example.git
 cd Hedera-By-Example
 
-# 2. Configure testnet credentials (optional if using in-browser playground)
+# 2. Configure testnet credentials (optional if using in-browser playground).
+#    The course reads course/.env first, then the root .env. Variables already
+#    exported in your shell take precedence over both files.
 cp .env.example .env
 
-# 3. Install dependencies
-npm install
+# 3. Install dependencies (root tooling + course + app)
+npm run install:all
 ```
 
 ---
@@ -104,10 +106,10 @@ Hedera by Example features a 5-tier automated quality assurance gateway:
 
 ```bash
 # Run all 5 test suites (Course, Compiler, Sandbox, Headless Chrome E2E, and Universal MCP):
-node tests/master_test_runner.mjs
+npm test
 
 # Run fast CI test (skipping live headless browser launch):
-node tests/master_test_runner.mjs --skip-e2e
+npm run test:ci
 
 # Run individual test suites:
 node tests/01_course_standalone.test.mjs  # Suite 01: Standalone Course Parity & Syntax
@@ -116,6 +118,10 @@ node tests/03_browser_sandbox.test.mjs    # Suite 03: In-Browser V8 Execution Sc
 node tests/04_e2e_live_browser.test.mjs   # Suite 04: Live Production Chrome Browser Test
 node tests/05_mcp_server.test.mjs         # Suite 05: Universal MCP Server (stdio & HTTP)
 ```
+
+Suite 04 needs a local Chrome or Chromium. It looks in the usual install locations for Windows, macOS and Linux; set `CHROME_PATH` to point it at another binary, and `HBE_URL` to test a deployment other than `https://hbe.expo.app`. The suite fails if the in-browser faucet returns an error.
+
+> **Network note:** the standalone course labs submit transactions over gRPC to Hedera consensus nodes (ports `50211`/`50212`). Environments that only allow HTTPS through a proxy can run the Mirror Node labs but not the transaction labs.
 
 ---
 

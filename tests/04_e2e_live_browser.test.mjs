@@ -3,6 +3,7 @@
  * TEST SUITE 04: Live Production E2E Headless Chrome Browser Automation
  * ============================================================================
  */
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
@@ -12,15 +13,44 @@ const __dirname = path.dirname(__filename)
 const ROOT = path.resolve(__dirname, '..')
 
 const require = createRequire(import.meta.url)
-let puppeteer
-try {
-  puppeteer = require('puppeteer-core')
-} catch (_) {
+
+function loadPuppeteer() {
   try {
-    puppeteer = require(path.join(ROOT, '..', 'Hedera-ETHGlobal-Mumbai', 'node_modules', 'puppeteer-core'))
-  } catch (__) {
-    puppeteer = require(path.join(ROOT, 'app', 'node_modules', 'puppeteer-core'))
+    return require('puppeteer-core')
+  } catch (_) {
+    try {
+      return require(path.join(ROOT, 'app', 'node_modules', 'puppeteer-core'))
+    } catch (__) {
+      throw new Error('puppeteer-core is not installed. Run `npm install` at the repository root.')
+    }
   }
+}
+
+// Resolve a Chrome/Chromium binary: CHROME_PATH wins, then common install locations per OS.
+function resolveChromePath() {
+  if (process.env.CHROME_PATH) return process.env.CHROME_PATH
+  const candidates = {
+    win32: [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+    ],
+    darwin: [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium'
+    ],
+    linux: [
+      '/usr/bin/google-chrome',
+      '/usr/bin/google-chrome-stable',
+      '/usr/bin/chromium',
+      '/usr/bin/chromium-browser',
+      '/opt/pw-browsers/chromium'
+    ]
+  }[process.platform] || []
+  const found = candidates.find((p) => fs.existsSync(p))
+  if (!found) {
+    throw new Error(`No Chrome/Chromium binary found for ${process.platform}. Set CHROME_PATH to your browser executable.`)
+  }
+  return found
 }
 
 const TARGET_URL = process.env.HBE_URL || 'https://hbe.expo.app'
@@ -32,7 +62,9 @@ export async function runE2ELiveBrowserTest() {
   console.log(`🌐 Target: ${TARGET_URL}`)
   console.log('================================================================')
 
-  const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+  const puppeteer = loadPuppeteer()
+  const chromePath = resolveChromePath()
+  console.log(`🧭 Browser: ${chromePath}`)
   const browser = await puppeteer.launch({
     executablePath: chromePath,
     headless: 'new',
@@ -101,9 +133,22 @@ export async function runE2ELiveBrowserTest() {
     )
 
     const modalText = await page.evaluate(() => document.querySelector('.hbe-wallet-modal')?.innerText || '')
-    const accountMatch = modalText.match(/(0\.0\.\d{5,8})/)
-    const assignedAccountId = accountMatch ? accountMatch[1] : 'Unknown'
-    console.log(`  🎉 Faucet Success! Assigned On-Chain Account: ${assignedAccountId}`)
+    const faucetError = modalText.match(/Faucet Error:?\s*([^\n]*)/)
+    let faucetFailure = null
+    let assignedAccountId = null
+    if (faucetError) {
+      faucetFailure = faucetError[1].trim() || 'unknown faucet error'
+      console.log(`  ✗ Faucet Failed: ${faucetFailure}`)
+    } else {
+      const accountMatch = modalText.match(/(0\.0\.\d{5,8})/)
+      assignedAccountId = accountMatch ? accountMatch[1] : null
+      if (!assignedAccountId) {
+        faucetFailure = 'faucet reported success but no Account ID (0.0.X) was shown'
+        console.log(`  ✗ Faucet Failed: ${faucetFailure}`)
+      } else {
+        console.log(`  🎉 Faucet Success! Assigned On-Chain Account: ${assignedAccountId}`)
+      }
+    }
 
     // 5. Close modal
     await page.click('.hbe-modal-close-btn')
@@ -129,6 +174,9 @@ export async function runE2ELiveBrowserTest() {
     })
 
     console.log(`  ✓ Terminal received ${logs.length} consensus lines. Last line: "${logs[logs.length - 1]}"`)
+    if (faucetFailure) {
+      throw new Error(`Faucet step failed: ${faucetFailure}`)
+    }
     console.log('✅ TEST 04 PASSED: Live E2E Browser execution verified end-to-end!')
     return { passed: true, assignedAccountId }
 

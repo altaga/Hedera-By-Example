@@ -10,7 +10,9 @@ import path from 'path'
  */
 export const getClient = () => {
   const __dirname = path.dirname(import.meta.filename)
-  dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+  // course/.env first, then the monorepo root .env (dotenv never overrides already-set values)
+  dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true })
+  dotenv.config({ path: path.resolve(__dirname, '../../../.env'), quiet: true })
 
   const operatorId = process.env.OPERATOR_ID
   const operatorKey = process.env.OPERATOR_PRIVATE_KEY

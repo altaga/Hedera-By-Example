@@ -1,0 +1,22 @@
+{
+  "name": "hedera-by-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hedera by Example monorepo: interactive web studio, 131-lab course, MCP server and test gateway",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "install:all": "npm install && npm --prefix course ci && npm --prefix app ci",
+    "compile:course": "npm --prefix app run compile:course",
+    "test": "node tests/master_test_runner.mjs",
+    "test:ci": "node tests/master_test_runner.mjs --skip-e2e",
+    "test:e2e": "node tests/04_e2e_live_browser.test.mjs",
+    "mcp": "node mcp/index.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.16.0"
+  }
+}

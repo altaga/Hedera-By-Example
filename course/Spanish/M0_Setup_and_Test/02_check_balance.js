@@ -34,7 +34,8 @@ import {
 import { getClient, updateEnv } from '../M99_Utilities/index.js'
 
 // --- CONFIGURACIÓN MANUAL ---
-// OBLIGATORIO: Pega aquí el Account ID (0.0.X) que encontraste en HashScan.
+// Pega aquí el Account ID (0.0.X) que encontraste en HashScan.
+// Si dejas el marcador, se usará OPERATOR_ID del archivo .env.
 const MANUAL_ACCOUNT_ID = '0.0.XXXXXX'
 
 const main = async () => {
@@ -48,16 +49,20 @@ const main = async () => {
     process.exit(1)
   }
 
-  if (!MANUAL_ACCOUNT_ID || !MANUAL_ACCOUNT_ID.startsWith('0.0.')) {
+  // Si no se reemplazó el marcador, usa OPERATOR_ID del archivo .env.
+  const isValidId = (id) => /^\d+\.\d+\.\d+$/.test(id || '')
+  const accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
+
+  if (!isValidId(accountId)) {
     console.log(`[ℹ️ INFO] Verificando Cuenta: ${evmAddress}`)
     console.log(`[📊 REGISTRO] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
-    console.error('\n[❌ FALLO] MANUAL_ACCOUNT_ID está vacío en este script.')
+    console.error('\n[❌ FALLO] MANUAL_ACCOUNT_ID no está definido y falta OPERATOR_ID en el archivo .env.')
     console.error('Pega el ID 0.0.X en la constante MANUAL_ACCOUNT_ID al inicio de este archivo.')
     process.exit(1)
   }
 
   try {
-    const inputId = MANUAL_ACCOUNT_ID
+    const inputId = accountId
     console.log(`[⚙️ PROCESO] Consultando saldo para la cuenta ${inputId} en el Testnet...`)
 
     const query = new MirrorNodeAccountBalanceQuery()

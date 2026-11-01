@@ -24,11 +24,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "node test/ci_runner.mjs",
-    "test:parity": "node test/ci_runner.mjs --only=parity",
-    "test:syntax": "node test/ci_runner.mjs --only=syntax",
-    "test:standards": "node test/ci_runner.mjs --only=standards",
-    "test:linter": "node test/ci_runner.mjs --only=linter",
+    "test": "node ../tests/01_course_standalone.test.mjs",
     "lint": "npx standard \"English/**/*.js\" \"Spanish/**/*.js\"",
     "lint:fix": "npx standard \"English/**/*.js\" \"Spanish/**/*.js\" --fix"
   },

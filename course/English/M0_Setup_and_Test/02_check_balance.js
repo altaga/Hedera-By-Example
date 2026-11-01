@@ -29,7 +29,8 @@ import {
 } from '@hiero-ledger/sdk'
 import { getClient, updateEnv } from '../M99_Utilities/index.js'
 
-// MANDATORY: Paste the Account ID (0.0.X) you found on HashScan here.
+// Paste the Account ID (0.0.X) you found on HashScan here.
+// If left as the placeholder, OPERATOR_ID from .env is used instead.
 const MANUAL_ACCOUNT_ID = '0.0.XXXXXX'
 
 const main = async () => {
@@ -44,16 +45,20 @@ const main = async () => {
     process.exit(1)
   }
 
-  if (!MANUAL_ACCOUNT_ID || !MANUAL_ACCOUNT_ID.startsWith('0.0.')) {
+  // Fall back to OPERATOR_ID from .env when the placeholder has not been replaced.
+  const isValidId = (id) => /^\d+\.\d+\.\d+$/.test(id || '')
+  const accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
+
+  if (!isValidId(accountId)) {
     console.log(`[ℹ️ INFO] Checking Alias Account: ${evmAddress}`)
     console.log(`[📊 LOG] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
-    console.error('\n[❌ FAILED] Error: MANUAL_ACCOUNT_ID is empty in this script.')
+    console.error('\n[❌ FAILED] Error: MANUAL_ACCOUNT_ID is not set and OPERATOR_ID is missing from .env.')
     console.error('Paste the 0.0.X ID into the MANUAL_ACCOUNT_ID constant at the top of this file.')
     process.exit(1)
   }
 
   try {
-    const inputId = MANUAL_ACCOUNT_ID
+    const inputId = accountId
     console.log(`[⚙️ PROCESS] Verifying Account ${inputId} on Hedera Testnet...`)
 
     const operatorId = AccountId.fromString(inputId)
