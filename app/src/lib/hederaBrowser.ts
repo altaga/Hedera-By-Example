@@ -243,14 +243,14 @@ export async function executeInBrowser(
   const activeAccountId = wallet.accountId || DEFAULT_DEMO_WALLET.accountId
   const activePrivKey = wallet.privateKey || DEFAULT_DEMO_WALLET.privateKey
 
-  pushLog('system', '⚡ Hedera In-Browser V8 Workstation (Zero-Server Architecture)')
+  pushLog('system', '[SYSTEM] Hedera Client-Side V8 Consensus Engine')
   if (activeAccountId) {
-    pushLog('info', `👛 Signing Operator: ${activeAccountId} (${wallet.balanceHbar != null ? wallet.balanceHbar.toFixed(2) : '0.0'} ℏ)`)
+    pushLog('info', `[OPERATOR] Signing Account: ${activeAccountId} (${wallet.balanceHbar != null ? wallet.balanceHbar.toFixed(2) : '0.0'} ℏ)`)
   } else {
-    pushLog('warn', '⚠️ No Operator Account configured.')
-    pushLog('info', '💡 Tip: Click [ 👛 Wallet ] in top navigation to connect or generate your Hedera Testnet wallet.')
+    pushLog('warn', '[WARN] No Operator Account configured.')
+    pushLog('info', '[INFO] Configure your Hedera Testnet wallet via the Wallet menu in top navigation.')
   }
-  pushLog('info', '🌐 Connecting to Swirlds Labs Hedera Testnet Consensus Nodes...')
+  pushLog('info', '[NETWORK] Connecting to Hedera Testnet consensus nodes...')
 
   try {
     // 1. Dynamic import of SDK in browser context
@@ -270,8 +270,8 @@ export async function executeInBrowser(
         }
         client.setOperator(accId, privKey)
       } catch (keyErr: any) {
-        pushLog('warn', `⚠️ Key error: ${keyErr.message}`)
-        pushLog('info', '💡 Tip: Click [ 👛 Wallet ] in top bar to configure your testnet credentials.')
+        pushLog('warn', `[KEY_ERROR] ${keyErr.message}`)
+        pushLog('info', '[INFO] Check your credentials in the Wallet menu.')
       }
     }
 
@@ -504,11 +504,11 @@ export async function executeInBrowser(
     )
 
     const durationMs = Date.now() - startTime
-    pushLog('success', `✨ Consensus verified and executed in ${(durationMs / 1000).toFixed(2)}s!`)
+    pushLog('success', `[SUCCESS] Consensus verified and executed in ${(durationMs / 1000).toFixed(2)}s`)
     return { success: true, durationMs }
   } catch (err: any) {
     const durationMs = Date.now() - startTime
-    pushLog('error', `❌ Execution halted: ${err.message || String(err)}`)
+    pushLog('error', `[ERROR] Execution halted: ${err.message || String(err)}`)
     return { success: false, durationMs }
   }
 }

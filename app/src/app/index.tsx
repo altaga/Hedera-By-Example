@@ -57,7 +57,7 @@ const BODIES: Record<'en' | 'es', Record<string, LabBody>> = {
 }
 
 const DEFAULT_SLUG = 'm05-01-immutable-topic'
-const REPO_URL = 'https://github.com/altaga/Hedera-for-Dummies'
+const REPO_URL = 'https://github.com/altaga/Hedera-By-Example'
 
 const JS_KEYWORDS = new Set([
   'import', 'from', 'export', 'default', 'const', 'let', 'var', 'function',
@@ -364,8 +364,8 @@ export default function HederaByExample () {
         setTempAccountId(res.accountId)
         setFaucetSuccessMsg(
           lang === 'en'
-            ? `🎉 Account ${res.accountId} created & funded with 5.0 ℏ!`
-            : `🎉 ¡Cuenta ${res.accountId} creada y fondeada con 5.0 ℏ!`
+            ? `Account ${res.accountId} created & funded with 5.0 ℏ!`
+            : `Cuenta ${res.accountId} creada y fondeada con 5.0 ℏ!`
         )
       } else {
         alert(
@@ -638,7 +638,7 @@ export default function HederaByExample () {
             </button>
           </div>
 
-          {/* Dedicated In-Browser Hacker Wallet Trigger */}
+          {/* Dedicated In-Browser Testnet Wallet Trigger */}
           <button
             type="button"
             className={`hbe-wallet-btn ${!wallet.isCustom ? 'hbe-wallet-btn-create' : ''}`}
@@ -647,13 +647,18 @@ export default function HederaByExample () {
               setTempPrivateKey(wallet.privateKey)
               setShowWalletModal(true)
             }}
-            title={lang === 'en' ? 'Open Hacker Browser Wallet' : 'Abrir Billetera de Navegador'}
+            title={lang === 'en' ? 'Configure Testnet Wallet' : 'Configurar Billetera Testnet'}
           >
-            <span className="hbe-wallet-icon">{wallet.isCustom ? '👛' : '⚡'}</span>
+            <span className="hbe-wallet-icon">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="2" y1="10" x2="22" y2="10" />
+              </svg>
+            </span>
             <span className="hbe-wallet-id">
               {wallet.isCustom
-                ? (wallet.accountId ? wallet.accountId : (lang === 'en' ? 'My Wallet' : 'Mi Wallet'))
-                : (lang === 'en' ? '⚡ Create Wallet' : '⚡ Crear Mi Wallet')}
+                ? (wallet.accountId ? wallet.accountId : (lang === 'en' ? 'My Account' : 'Mi Cuenta'))
+                : (lang === 'en' ? 'Testnet Account' : 'Cuenta Testnet')}
             </span>
             {wallet.isCustom && wallet.balanceHbar != null ? (
               <span className="hbe-wallet-bal">{wallet.balanceHbar.toFixed(1)} ℏ</span>
@@ -1133,8 +1138,8 @@ export default function HederaByExample () {
                         </div>
                         <div className="hbe-studio-idle-hint">
                           {lang === 'en'
-                            ? '💡 Runs 100% in browser via V8 + gRPC-Web HTTPS. Press [Run] or Ctrl+Enter to sign on Hedera Testnet.'
-                            : '💡 100% en el navegador con V8 y gRPC-Web HTTPS. Presiona [Ejecutar] o Ctrl+Enter para firmar en Hedera Testnet.'}
+                            ? 'Client-side V8 + gRPC-Web consensus runtime. Press [Run] or Ctrl+Enter to sign on Hedera Testnet.'
+                            : 'Runtime de consenso V8 y gRPC-Web en cliente. Presiona [Ejecutar] o Ctrl+Enter para firmar en Hedera Testnet.'}
                         </div>
                       </div>
                     )}
@@ -1268,8 +1273,11 @@ export default function HederaByExample () {
           <div className="hbe-wallet-modal" role="dialog" aria-modal="true" aria-labelledby="walletModalTitle">
             <div className="hbe-modal-header">
               <div className="hbe-modal-title" id="walletModalTitle">
-                <span>👛</span>
-                <span>{lang === 'en' ? 'Playground Browser Wallet' : 'Billetera de Navegador'}</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--fg-muted)' }}>
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+                <span>{lang === 'en' ? 'Testnet Account & Key Manager' : 'Gestor de Cuentas y Llaves Testnet'}</span>
               </div>
               <button
                 type="button"
@@ -1282,44 +1290,48 @@ export default function HederaByExample () {
             </div>
 
             <div className="hbe-modal-body">
-              {/* 1. HERO CTA: GENERATE HACKER WALLET IN 1-CLICK */}
-              <div className="hbe-wallet-card-surface" style={{ background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(13, 14, 17, 0.9) 100%)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+              {/* 1. KEY GENERATION */}
+              <div className="hbe-wallet-card-surface">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>⚡</span>
-                    <span style={{ fontSize: 13.5, fontWeight: 600, color: '#ffffff' }}>
-                      {lang === 'en' ? 'Create Hacker Wallet (1-Click)' : 'Crear Wallet de Hacker (1-Clic)'}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--fg-muted)' }}>
+                      <circle cx="7.5" cy="15.5" r="5.5" />
+                      <path d="m21 2-9.6 9.6" />
+                      <path d="m15.5 7.5 3 3M18.5 4.5l3 3" />
+                    </svg>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg)' }}>
+                      {lang === 'en' ? 'Local Cryptographic Keypair' : 'Par de Llaves Criptográficas Local'}
                     </span>
                   </div>
                   {wallet.isCustom && (
                     <span className="hbe-badge-custom-wallet">
-                      ✓ {lang === 'en' ? 'Saved in browser' : 'Guardada en navegador'}
+                      ✓ {lang === 'en' ? 'Active in browser' : 'Activa en navegador'}
                     </span>
                   )}
                 </div>
 
-                <p style={{ margin: '6px 0 12px', fontSize: 12.5, color: 'var(--fg-prose)', lineHeight: 1.55 }}>
+                <p style={{ margin: '8px 0 12px', fontSize: 12.5, color: 'var(--fg-prose)', lineHeight: 1.55 }}>
                   {lang === 'en'
-                    ? 'Generates fresh cryptographic keys stored directly in this browser (localStorage). Use your Public Key or EVM Address to receive testnet funds from the Hedera Portal or a faucet.'
-                    : 'Genera llaves criptográficas y las guarda directamente en este navegador (localStorage). Usa tu Clave Pública o Dirección EVM para recibir fondos testnet desde el Portal de Hedera.'}
+                    ? 'Generates fresh cryptographic keys stored directly in local browser memory (localStorage). Your private key never leaves your device.'
+                    : 'Genera llaves criptográficas y las guarda directamente en la memoria local de este navegador (localStorage). Tu llave privada nunca sale de tu dispositivo.'}
                 </p>
 
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     type="button"
                     className="hbe-btn-primary"
-                    style={{ flex: 1, height: 36, fontSize: 12.5, background: '#10B981' }}
+                    style={{ flex: 1, height: 35, fontSize: 12 }}
                     onClick={() => handleCreateHackerWallet('ED25519')}
                     disabled={isGeneratingWallet}
                   >
                     {isGeneratingWallet
                       ? (lang === 'en' ? 'Generating...' : 'Generando...')
-                      : (lang === 'en' ? '⚡ Generate Ed25519 Wallet' : '⚡ Crear Wallet Ed25519')}
+                      : (lang === 'en' ? 'Generate Ed25519 Wallet' : 'Crear Wallet Ed25519')}
                   </button>
                   <button
                     type="button"
                     className="hbe-btn-secondary"
-                    style={{ height: 36, fontSize: 11.5 }}
+                    style={{ height: 35, fontSize: 12 }}
                     onClick={() => handleCreateHackerWallet('ECDSA')}
                     disabled={isGeneratingWallet}
                     title="Generate with EVM address compatibility"
@@ -1328,43 +1340,42 @@ export default function HederaByExample () {
                   </button>
                 </div>
 
-                {/* 1-CLICK INSTANT FAUCET DISPENSER */}
+                {/* TESTNET FAUCET DISPENSER */}
                 <div style={{
                   marginTop: 12,
                   padding: '12px 14px',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(0, 240, 255, 0.08))',
-                  border: '1px solid rgba(16, 185, 129, 0.35)',
-                  borderRadius: 8,
+                  background: 'var(--bg)',
+                  border: '1px solid var(--rule)',
+                  borderRadius: 4,
                   display: 'flex',
                   flexDirection: 'column',
                   gap: 8
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 13, color: '#10B981' }}>
-                      <span>🚰</span>
-                      <span>{lang === 'en' ? 'Instant Testnet Faucet (1-Click)' : 'Faucet Instantáneo Testnet (1-Clic)'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 12.5, color: 'var(--fg)' }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ color: 'var(--fg-muted)' }}>
+                        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+                      </svg>
+                      <span>{lang === 'en' ? 'Testnet Faucet Funding' : 'Fondeo de Testnet Faucet'}</span>
                     </div>
-                    <span style={{ fontSize: 11, color: '#00F0FF', fontFamily: 'monospace', fontWeight: 600 }}>+5.0 ℏ Free</span>
+                    <span style={{ fontSize: 11, color: 'var(--fg-muted)', fontFamily: 'IBM Plex Mono, monospace' }}>+5.0 ℏ</span>
                   </div>
                   <p style={{ margin: 0, fontSize: 12, color: 'var(--fg-prose)', lineHeight: 1.45 }}>
                     {lang === 'en'
-                      ? 'Creates a real Account ID (0.0.X) on Hedera Testnet bound to your browser keys and funds it with 5 HBAR directly.'
-                      : 'Crea un Account ID real (0.0.X) en Hedera Testnet vinculado a tus llaves y le transfiere 5 HBAR de inmediato.'}
+                      ? 'Provisions an on-chain Account ID (0.0.X) bound to your local public key with an initial 5 HBAR balance for running test transactions.'
+                      : 'Crea un Account ID (0.0.X) en la red Hedera vinculado a tu llave pública con un saldo de 5 HBAR para pruebas.'}
                   </p>
                   <button
                     type="button"
                     className="hbe-btn-primary"
                     style={{
                       height: 35,
-                      fontSize: 12.5,
-                      background: '#10B981',
-                      color: '#ffffff',
+                      fontSize: 12,
                       fontWeight: 600,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 6,
-                      boxShadow: '0 2px 10px rgba(16, 185, 129, 0.3)'
+                      gap: 6
                     }}
                     onClick={handleFundFromFaucet}
                     disabled={isFundingFromFaucet}
@@ -1375,14 +1386,11 @@ export default function HederaByExample () {
                         <span>{lang === 'en' ? 'Submitting to Testnet...' : 'Creando Cuenta en Testnet...'}</span>
                       </>
                     ) : (
-                      <>
-                        <span>🚰</span>
-                        <span>{lang === 'en' ? 'Fund My Wallet with 5 ℏ' : 'Fondear Mi Wallet con 5 ℏ'}</span>
-                      </>
+                      <span>{lang === 'en' ? 'Instant Testnet Faucet (+5.0 ℏ)' : 'Instant Testnet Faucet (+5.0 ℏ)'}</span>
                     )}
                   </button>
                   {faucetSuccessMsg && (
-                    <div style={{ fontSize: 12, color: '#10B981', fontWeight: 600, textAlign: 'center', marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: '#10B981', fontWeight: 500, textAlign: 'center', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>
                       {faucetSuccessMsg}
                     </div>
                   )}
@@ -1394,7 +1402,7 @@ export default function HederaByExample () {
                 <div className="hbe-field-group">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <label className="hbe-field-label">
-                      {lang === 'en' ? 'Public Key (Faucet & Receive Destination)' : 'Clave Pública (Para Recibir Fondos / Faucet)'}
+                      {lang === 'en' ? 'Public Key (Account Key)' : 'Clave Pública (Llave de Cuenta)'}
                     </label>
                     <button
                       type="button"
@@ -1418,7 +1426,7 @@ export default function HederaByExample () {
                 <div className="hbe-field-group">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <label className="hbe-field-label">
-                      {lang === 'en' ? 'EVM Address (For Direct Transfer)' : 'Dirección EVM (Para Transferencia Directa)'}
+                      {lang === 'en' ? 'EVM Address' : 'Dirección EVM'}
                     </label>
                     <button
                       type="button"
@@ -1430,7 +1438,7 @@ export default function HederaByExample () {
                     </button>
                   </div>
                   <div className="hbe-copy-field-box">
-                    <span className="hbe-copy-field-val" style={{ color: '#00F0FF' }}>
+                    <span className="hbe-copy-field-val">
                       {wallet.evmAddress}
                     </span>
                   </div>
@@ -1481,7 +1489,7 @@ export default function HederaByExample () {
                   </div>
                   <span style={{ fontSize: 11, color: 'var(--fg-dim)' }}>
                     {lang === 'en'
-                      ? 'Bind the Account ID created for you on the Hedera Portal or from your faucet transfer.'
+                      ? 'Bind the Account ID provisioned on the Hedera Portal or from your faucet transfer.'
                       : 'Vincula el Account ID asignado por el Portal de Hedera o por tu transferencia desde el faucet.'}
                   </span>
                 </div>
@@ -1496,7 +1504,7 @@ export default function HederaByExample () {
                   <div style={{ display: 'flex', gap: 6 }}>
                     <button
                       type="button"
-                      style={{ fontSize: 10.5, color: '#A78BFA', cursor: 'pointer', background: 'none', border: 'none', padding: '0 4px' }}
+                      style={{ fontSize: 10.5, color: 'var(--accent-text)', cursor: 'pointer', background: 'none', border: 'none', padding: '0 4px' }}
                       onClick={() => setShowPrivateKey(!showPrivateKey)}
                     >
                       {showPrivateKey ? (lang === 'en' ? 'Hide' : 'Ocultar') : (lang === 'en' ? 'Reveal' : 'Mostrar')}
@@ -1524,10 +1532,10 @@ export default function HederaByExample () {
                   type="button"
                   className="hbe-btn-secondary"
                   onClick={handleResetDemoWallet}
-                  title="Use default shared testnet account"
+                  title="Reset wallet to default"
                   style={{ fontSize: 11.5 }}
                 >
-                  {lang === 'en' ? 'Use Demo Account' : 'Usar Cuenta Demo'}
+                  {lang === 'en' ? 'Reset Account' : 'Restablecer Cuenta'}
                 </button>
 
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -1535,10 +1543,10 @@ export default function HederaByExample () {
                     href="https://portal.hedera.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hbe-btn-primary"
-                    style={{ textDecoration: 'none', background: '#00F0FF', color: '#000000', fontWeight: 600 }}
+                    className="hbe-btn-secondary"
+                    style={{ textDecoration: 'none', fontSize: 11.5 }}
                   >
-                    {lang === 'en' ? '💧 Open Hedera Portal Faucet ↗' : '💧 Abrir Portal Faucet Hedera ↗'}
+                    {lang === 'en' ? 'Hedera Developer Portal ↗' : 'Portal de Desarrolladores Hedera ↗'}
                   </a>
                 </div>
               </div>
