@@ -206,6 +206,7 @@ export default function HederaByExample () {
   const [isGeneratingWallet, setIsGeneratingWallet] = useState<boolean>(false)
   const [isFundingFromFaucet, setIsFundingFromFaucet] = useState<boolean>(false)
   const [faucetSuccessMsg, setFaucetSuccessMsg] = useState<string | null>(null)
+  const [faucetErrorMsg, setFaucetErrorMsg] = useState<string | null>(null)
 
   // Execution & Live Terminal State
   const [isRunning, setIsRunning] = useState<boolean>(false)
@@ -336,6 +337,7 @@ export default function HederaByExample () {
   const handleCreateHackerWallet = async (type: 'ED25519' | 'ECDSA' = 'ED25519') => {
     setIsGeneratingWallet(true)
     setFaucetSuccessMsg(null)
+    setFaucetErrorMsg(null)
     try {
       const newWallet = await createAndSaveHackerWallet(type)
       setWallet(newWallet)
@@ -350,6 +352,7 @@ export default function HederaByExample () {
     if (isFundingFromFaucet) return
     setIsFundingFromFaucet(true)
     setFaucetSuccessMsg(null)
+    setFaucetErrorMsg(null)
 
     try {
       const res = await fundBrowserWalletViaFaucet(wallet)
@@ -368,7 +371,7 @@ export default function HederaByExample () {
             : `Cuenta ${res.accountId} creada y fondeada con 5.0 ℏ!`
         )
       } else {
-        alert(
+        setFaucetErrorMsg(
           lang === 'en'
             ? `Faucet Error: ${res.error}`
             : `Error del Faucet: ${res.error}`
@@ -1392,6 +1395,11 @@ export default function HederaByExample () {
                   {faucetSuccessMsg && (
                     <div style={{ fontSize: 12, color: '#10B981', fontWeight: 500, textAlign: 'center', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>
                       {faucetSuccessMsg}
+                    </div>
+                  )}
+                  {faucetErrorMsg && (
+                    <div style={{ fontSize: 11.5, color: '#F59E0B', fontWeight: 500, textAlign: 'center', marginTop: 2, fontFamily: 'IBM Plex Mono, monospace' }}>
+                      {faucetErrorMsg}
                     </div>
                   )}
                 </div>

@@ -41,6 +41,9 @@ export async function runE2ELiveBrowserTest() {
   })
 
   const page = await browser.newPage()
+  page.on('dialog', async dialog => {
+    try { await dialog.accept() } catch (_) {}
+  })
 
   try {
     // 1. Load app
