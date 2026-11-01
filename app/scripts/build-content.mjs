@@ -14,6 +14,8 @@ import path from 'node:path'
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, '..', 'course'))
 const OUT = path.join(ROOT, 'src', 'content')
+// Exact lab files, served as static assets for copy / download / full-source view.
+const SOURCE_OUT = path.join(ROOT, 'public', 'source')
 const LANGS = { en: 'English', es: 'Spanish' }
 
 const SECTION_ALIASES = {
@@ -173,6 +175,10 @@ function build () {
     throw new Error(`Curriculum not found at ${SOURCE}`)
   }
   fs.mkdirSync(OUT, { recursive: true })
+  for (const lang of Object.keys(LANGS)) {
+    fs.rmSync(path.join(SOURCE_OUT, lang), { recursive: true, force: true })
+    fs.mkdirSync(path.join(SOURCE_OUT, lang), { recursive: true })
+  }
 
   const moduleDirs = fs.readdirSync(path.join(SOURCE, LANGS.en), { withFileTypes: true })
     .filter((d) => d.isDirectory() && /^M\d+_/.test(d.name) && !d.name.startsWith('M99'))
@@ -206,6 +212,7 @@ function build () {
           abs = path.join(SOURCE, LANGS.en, dir, file)
         }
         const lab = parseLab(abs)
+        fs.copyFileSync(abs, path.join(SOURCE_OUT, lang, `${slug}.js`))
         const title = lab.title || titleFromFile(file)
         if (lang === 'en') entry.sdk = lab.sdk
         entry[lang] = { title, kicker: lab.kicker }
@@ -239,7 +246,7 @@ function build () {
   }
 
   warnings.forEach((w) => console.warn(`warn: ${w}`))
-  console.log(`Built ${index.modules.length} modules, ${index.labCount} labs → src/content`)
+  console.log(`Built ${index.modules.length} modules, ${index.labCount} labs → src/content, public/source`)
 }
 
 build()

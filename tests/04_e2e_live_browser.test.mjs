@@ -68,118 +68,71 @@ export async function runE2ELiveBrowserTest() {
   const browser = await puppeteer.launch({
     executablePath: chromePath,
     headless: 'new',
-    defaultViewport: { width: 1600, height: 1000 },
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1600,1000']
+    defaultViewport: { width: 1440, height: 900 },
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   })
 
   const page = await browser.newPage()
-  page.on('dialog', async dialog => {
+  const pageErrors = []
+  page.on('pageerror', (err) => pageErrors.push(err.message))
+  // The account dialog asks before replacing an existing key.
+  page.on('dialog', async (dialog) => {
     try { await dialog.accept() } catch (_) {}
   })
 
+  const LAB = 'm00-01-generate-wallet'
+
   try {
-    // 1. Load app
-    console.log('  [STEP 1] Navigating to Hedera by Example...')
-    await page.goto(TARGET_URL, { waitUntil: 'networkidle2', timeout: 45000 })
-    await page.waitForSelector('.hbe-app-root', { timeout: 15000 })
+    // 1. Load a lab page
+    console.log(`  [STEP 1] Opening lab ${LAB}...`)
+    await page.goto(`${TARGET_URL.replace(/\/$/, '')}/#${LAB}`, { waitUntil: 'networkidle2', timeout: 45000 })
+    await page.waitForSelector('[data-testid=run-button]', { timeout: 15000 })
 
-    // Check overflow
-    const overflow = await page.evaluate(() => {
-      return {
-        bodyScrollWidth: document.body.scrollWidth,
-        windowInnerWidth: window.innerWidth,
-        hasHorizontalOverflow: document.body.scrollWidth > window.innerWidth
-      }
-    })
-    console.log(`  ✓ Overflow Check: hasHorizontalOverflow = ${overflow.hasHorizontalOverflow}`)
-    if (overflow.hasHorizontalOverflow) {
-      throw new Error(`Horizontal overflow detected: body=${overflow.bodyScrollWidth}px, viewport=${overflow.windowInnerWidth}px`)
-    }
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+    console.log(`  ✓ Horizontal overflow: ${overflow}`)
+    if (overflow) throw new Error('Horizontal overflow detected on the lab page')
 
-    // 2. Open wallet modal
-    console.log('  [STEP 2] Opening Browser Wallet Modal...')
-    await page.waitForSelector('.hbe-wallet-btn', { timeout: 10000 })
-    await page.click('.hbe-wallet-btn')
-    await page.waitForSelector('.hbe-wallet-modal', { timeout: 10000 })
-    console.log('  ✓ In-browser wallet modal opened.')
-
-    // 3. Generate wallet
-    console.log('  [STEP 3] Generating Ed25519 Keys in Browser...')
-    const generateBtn = await page.evaluateHandle(() => {
-      const btns = Array.from(document.querySelectorAll('button'))
-      return btns.find(b => b.textContent && b.textContent.includes('Ed25519'))
-    })
-    if (generateBtn) {
-      await generateBtn.click()
-      await delay(1200)
-    }
-
-    // 4. Request from faucet
-    console.log('  [STEP 4] Submitting 1-Click Faucet Request to Hedera Testnet...')
-    const faucetBtn = await page.evaluateHandle(() => {
-      const btns = Array.from(document.querySelectorAll('button'))
-      return btns.find(b => b.textContent && (b.textContent.includes('Fund My Wallet') || b.textContent.includes('Instant Testnet Faucet')))
-    })
-    if (faucetBtn) {
-      await faucetBtn.click()
-    }
-
+    // 2. Source tab serves the exact lab file
+    console.log('  [STEP 2] Checking the Source tab...')
+    await page.click('#tab-source')
     await page.waitForFunction(
-      () => {
-        const text = document.body.innerText
-        return text.includes('funded with 5.0 ℏ') || text.includes('fondeada con 5.0 ℏ') || text.includes('Faucet Error')
-      },
-      { timeout: 35000 }
+      () => document.querySelector('#panel-source .code-line') || document.querySelector('#panel-source .source-status'),
+      { timeout: 15000 }
     )
+    const sourceLines = await page.$$eval('#panel-source .code-line', (els) => els.length)
+    if (sourceLines < 10) throw new Error('Source tab did not load the lab file')
+    console.log(`  ✓ Source tab shows ${sourceLines} lines.`)
+    await page.click('#tab-walkthrough')
 
-    const modalText = await page.evaluate(() => document.querySelector('.hbe-wallet-modal')?.innerText || '')
-    const faucetError = modalText.match(/Faucet Error:?\s*([^\n]*)/)
-    let faucetFailure = null
-    let assignedAccountId = null
-    if (faucetError) {
-      faucetFailure = faucetError[1].trim() || 'unknown faucet error'
-      console.log(`  ✗ Faucet Failed: ${faucetFailure}`)
-    } else {
-      const accountMatch = modalText.match(/(0\.0\.\d{5,8})/)
-      assignedAccountId = accountMatch ? accountMatch[1] : null
-      if (!assignedAccountId) {
-        faucetFailure = 'faucet reported success but no Account ID (0.0.X) was shown'
-        console.log(`  ✗ Faucet Failed: ${faucetFailure}`)
-      } else {
-        console.log(`  🎉 Faucet Success! Assigned On-Chain Account: ${assignedAccountId}`)
-      }
-    }
-
-    // 5. Close modal
-    await page.click('.hbe-modal-close-btn')
-    await delay(800)
-
-    // 6. Execute lab in browser
-    console.log('  [STEP 5] Executing Lab m00-01-generate-wallet in Browser V8...')
-    await page.waitForSelector('.hbe-studio-run-btn', { timeout: 10000 })
-    await page.click('.hbe-studio-run-btn')
-
+    // 3. Generate a key in the account dialog
+    console.log('  [STEP 3] Generating an ECDSA key in the browser...')
+    await page.click('[data-testid=account-button]')
+    await page.waitForSelector('[data-testid=account-dialog]', { timeout: 10000 })
+    await page.click('[data-testid=generate-ecdsa]')
     await page.waitForFunction(
-      () => {
-        const stream = document.querySelector('.hbe-studio-terminal-stream')
-        if (!stream) return false
-        const text = stream.innerText
-        return text.includes('Consensus verified') || text.includes('SESSION COMPLETE')
-      },
-      { timeout: 30000 }
+      () => /0x[0-9a-f]{40}/i.test(document.querySelector('[data-testid=account-dialog]')?.textContent || ''),
+      { timeout: 15000 }
     )
+    console.log('  ✓ ECDSA key and EVM address generated.')
+    await page.click('[data-testid=account-close]')
 
-    const logs = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('.hbe-terminal-line')).map(l => l.innerText.replace(/\n+/g, ' '))
-    })
-
-    console.log(`  ✓ Terminal received ${logs.length} consensus lines. Last line: "${logs[logs.length - 1]}"`)
-    if (faucetFailure) {
-      throw new Error(`Faucet step failed: ${faucetFailure}`)
+    // 4. Run the lab in the browser
+    console.log(`  [STEP 4] Running ${LAB} in the browser...`)
+    await page.click('[data-testid=run-button]')
+    await page.waitForSelector('[data-testid=run-output][data-status=success], [data-testid=run-output][data-status=error]', { timeout: 30000 })
+    const status = await page.$eval('[data-testid=run-output]', (el) => el.getAttribute('data-status'))
+    const logs = await page.$$eval('[data-testid=output-line]', (els) => els.map((l) => l.textContent.replace(/\s+/g, ' ').trim()))
+    if (status !== 'success') {
+      throw new Error(`Lab run failed: ${logs.slice(-3).join(' | ')}`)
     }
+    if (!logs.some((l) => l.includes('SESSION COMPLETE'))) {
+      throw new Error('Lab output did not reach SESSION COMPLETE')
+    }
+    console.log(`  ✓ Output has ${logs.length} lines. Last line: "${logs[logs.length - 1]}"`)
+
+    if (pageErrors.length) throw new Error(`Uncaught page errors: ${pageErrors.join(' | ')}`)
     console.log('✅ TEST 04 PASSED: Live E2E Browser execution verified end-to-end!')
-    return { passed: true, assignedAccountId }
-
+    return { passed: true }
   } finally {
     await browser.close()
   }

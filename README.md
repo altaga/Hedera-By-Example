@@ -28,12 +28,14 @@
 
 ```text
 Hedera-By-Example/
-├── app/                          # Interactive In-Browser Studio Web Platform (Expo Web / React Native)
-│   ├── src/app/index.tsx         # 3-Pane Swiss Studio Layout & Terminal Dock
-│   ├── src/lib/hederaBrowser.ts  # In-Browser V8 Execution Sandbox & Web Polyfills
-│   ├── scripts/build-content.mjs # Single-Source-of-Truth Compiler: course/ -> app/src/content/
-│   ├── src/content/en.json       # Compiled English Lab Syllabus (131 Labs)
-│   └── src/content/es.json       # Compiled Spanish Lab Syllabus (131 Labs)
+├── app/                          # Web app (Expo Router, static web export)
+│   ├── src/app/index.tsx         # Routing, preferences and browser-runner state
+│   ├── src/components/           # Top bar, contents sidebar, lab page, course index, account dialog
+│   ├── src/lib/hederaBrowser.ts  # Browser runner: SDK scope, Node API shims, testnet account helpers
+│   ├── scripts/build-content.mjs # Single-Source-of-Truth Compiler: course/ -> app/src/content/ + app/public/source/
+│   ├── src/content/en.json       # Compiled English lab annotations (131 labs)
+│   ├── src/content/es.json       # Compiled Spanish lab annotations (131 labs)
+│   └── public/source/            # Exact lab files served for the Source tab, copy and download
 │
 ├── course/                       # Standalone Runnable Node.js Curriculum
 │   ├── English/                  # 16 Modules (M00 to M15) containing all 131 labs
@@ -73,7 +75,7 @@ The curriculum code in `course/` is the single source of truth. Developers can r
 npm run compile:course
 ```
 
-The compiler extracts docblocks, commentary lines, and execution segments with exact line numbers into `app/src/content/en.json` and `app/src/content/es.json`.
+The compiler extracts docblocks, commentary lines, and execution segments with exact line numbers into `app/src/content/en.json` and `app/src/content/es.json`, and copies every lab file unchanged into `app/public/source/` so the site can show, copy and download the exact file.
 
 ---
 

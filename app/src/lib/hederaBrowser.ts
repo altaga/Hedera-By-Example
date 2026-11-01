@@ -1,8 +1,16 @@
 /**
- * Hedera by Example (HBE) — 100% Pure Client-Side In-Browser Runtime
- * Runs directly inside the user's browser (V8 / SpiderMonkey / JavaScriptCore)
- * Zero backend server required. Communicates directly with Hedera Testnet via gRPC-Web HTTPS.
+ * Browser runtime for Hedera by Example.
+ *
+ * Runs lab code in the visitor's browser with @hiero-ledger/sdk, which talks to
+ * Hedera Testnet over gRPC-Web. Keys live in this browser's localStorage only.
+ * Node.js-only APIs are shimmed where a faithful browser equivalent exists
+ * (hashes, HMAC, random bytes); everything else fails with a clear message
+ * telling the learner to run the lab locally.
  */
+import { sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
+import { md5, sha1 } from '@noble/hashes/legacy.js'
+import { hmac } from '@noble/hashes/hmac.js'
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
 
 export interface BrowserWallet {
   accountId: string
@@ -11,10 +19,6 @@ export interface BrowserWallet {
   evmAddress?: string
   keyType?: 'ED25519' | 'ECDSA'
   balanceHbar: number | null
-  isDemo: boolean
-  isCustom?: boolean
-  createdAt?: number
-  lastUpdated?: number
 }
 
 export interface TerminalLogLine {
@@ -25,321 +29,291 @@ export interface TerminalLogLine {
   url?: string
 }
 
-// Default empty in-browser wallet stub (users connect or generate via top-right menu)
-export const DEFAULT_DEMO_WALLET: BrowserWallet = {
+export const EMPTY_WALLET: BrowserWallet = {
   accountId: '',
   privateKey: '',
   publicKey: '',
   evmAddress: '',
-  keyType: 'ECDSA',
-  balanceHbar: null,
-  isDemo: true,
-  isCustom: false
+  balanceHbar: null
 }
 
 const WALLET_STORAGE_KEY = 'hbe_playground_wallet_v2'
+const STATE_STORAGE_KEY = 'hbe_playground_state'
+const MIRROR = 'https://testnet.mirrornode.hedera.com/api/v1'
+const ACCOUNT_ID_RE = /^\d+\.\d+\.\d+$/
 
-/**
- * Get active wallet from localStorage or default demo wallet.
- */
-export function getActiveWallet(): BrowserWallet {
-  if (typeof window === 'undefined') return DEFAULT_DEMO_WALLET
+export const isAccountId = (id: string) => ACCOUNT_ID_RE.test(id.trim())
+
+export function getActiveWallet (): BrowserWallet {
+  if (typeof window === 'undefined') return EMPTY_WALLET
   try {
     const raw = localStorage.getItem(WALLET_STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      return parsed
-    }
+    if (raw) return { ...EMPTY_WALLET, ...JSON.parse(raw) }
   } catch (_) {}
-  return DEFAULT_DEMO_WALLET
+  return EMPTY_WALLET
 }
 
-/**
- * Save wallet to localStorage
- */
-export function saveActiveWallet(wallet: BrowserWallet): void {
+export function saveActiveWallet (wallet: BrowserWallet): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(wallet))
   } catch (_) {}
 }
 
-/**
- * Query live HBAR balance from Hedera Testnet Mirror Node (100% Client-side REST with CORS)
- */
-export async function fetchLiveBalance(accountId: string): Promise<number | null> {
+export function clearActiveWallet (): void {
+  if (typeof window === 'undefined') return
   try {
-    const cleanId = accountId.trim()
-    if (!/^\d+\.\d+\.\d+$/.test(cleanId)) return null
-    const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${cleanId}`, {
-      headers: { Accept: 'application/json' }
-    })
+    localStorage.removeItem(WALLET_STORAGE_KEY)
+  } catch (_) {}
+}
+
+/** HBAR balance of a testnet account from the Mirror Node, or null if unknown. */
+export async function fetchLiveBalance (accountId: string): Promise<number | null> {
+  const id = accountId.trim()
+  if (!isAccountId(id)) return null
+  try {
+    const res = await fetch(`${MIRROR}/accounts/${id}`, { headers: { Accept: 'application/json' } })
     if (!res.ok) return null
     const data = await res.json()
-    if (data?.balance?.balance != null) {
-      return Number(data.balance.balance) / 100_000_000
-    }
+    if (data?.balance?.balance != null) return Number(data.balance.balance) / 100_000_000
   } catch (err) {
-    console.warn('Failed to fetch mirror node balance:', err)
+    console.warn('Mirror Node balance lookup failed:', err)
   }
   return null
 }
 
 /**
- * Generate a brand new Ed25519 keypair 100% in the browser
+ * Resolve the account ID that the network created for an EVM address
+ * (for example after funding it from the portal faucet).
  */
-export async function generateNewBrowserKeypair(): Promise<{ privateKey: string; publicKey: string }> {
-  const hedera = await import('@hiero-ledger/sdk')
-  const key = hedera.PrivateKey.generateED25519()
-  return {
-    privateKey: key.toStringDer(),
-    publicKey: key.publicKey.toStringDer()
-  }
-}
-
-/**
- * Create a brand new Hacker Wallet directly in the browser and persist to localStorage
- */
-export async function createAndSaveHackerWallet(keyType: 'ED25519' | 'ECDSA' = 'ED25519'): Promise<BrowserWallet> {
-  const hedera = await import('@hiero-ledger/sdk')
-  let privKey: any
-  let evmAddress: string | undefined = undefined
-
-  if (keyType === 'ECDSA') {
-    privKey = hedera.PrivateKey.generateECDSA()
-    evmAddress = '0x' + privKey.publicKey.toEvmAddress()
-  } else {
-    privKey = hedera.PrivateKey.generateED25519()
-  }
-
-  const newWallet: BrowserWallet = {
-    accountId: '',
-    privateKey: privKey.toStringDer(),
-    publicKey: privKey.publicKey.toStringDer(),
-    evmAddress,
-    keyType,
-    balanceHbar: 0,
-    isDemo: false,
-    isCustom: true,
-    createdAt: Date.now(),
-    lastUpdated: Date.now()
-  }
-
-  saveActiveWallet(newWallet)
-  return newWallet
-}
-
-/**
- * Instant 1-Click Testnet Faucet:
- * Submits an AccountCreateTransaction from the funded operator pool directly to Hedera Testnet,
- * assigning a real Account ID (0.0.X) and 5 HBAR to the hacker's newly generated browser keys.
- */
-export async function fundBrowserWalletViaFaucet(
-  wallet: BrowserWallet
-): Promise<{ success: boolean; accountId?: string; balanceHbar?: number; error?: string }> {
+export async function findAccountByEvmAddress (evmAddress: string): Promise<string | null> {
+  if (!/^0x[0-9a-fA-F]{40}$/.test(evmAddress)) return null
   try {
-    const hedera = await import('@hiero-ledger/sdk')
-
-    // Operator faucet pool check
-    if (!DEFAULT_DEMO_WALLET.accountId || !DEFAULT_DEMO_WALLET.privateKey) {
-      return {
-        success: false,
-        error: 'Public faucet pool is not configured. Please use https://portal.hedera.com/faucet to fund your address directly.'
-      }
-    }
-
-    const operatorId = hedera.AccountId.fromString(DEFAULT_DEMO_WALLET.accountId)
-    const operatorKey = hedera.PrivateKey.fromStringDer(DEFAULT_DEMO_WALLET.privateKey)
-
-    const client = hedera.Client.forTestnet()
-    client.setOperator(operatorId, operatorKey)
-
-    // Parse the hacker's public key
-    const hackerPubKey = hedera.PublicKey.fromString(wallet.publicKey)
-
-    // Submit AccountCreateTransaction with 5 HBAR
-    const tx = await new hedera.AccountCreateTransaction()
-      .setKey(hackerPubKey)
-      .setInitialBalance(new hedera.Hbar(5))
-      .setAccountMemo('HBE Hacker In-Browser Wallet')
-      .execute(client)
-
-    const receipt = await tx.getReceipt(client)
-    const newAccountId = receipt.accountId ? receipt.accountId.toString() : ''
-    if (!newAccountId) {
-      throw new Error('Receipt did not return an Account ID')
-    }
-
-    client.close()
-
-    // Update wallet
-    const updatedWallet: BrowserWallet = {
-      ...wallet,
-      accountId: newAccountId,
-      balanceHbar: 5,
-      isDemo: false,
-      isCustom: true,
-      lastUpdated: Date.now()
-    }
-    saveActiveWallet(updatedWallet)
-
-    return {
-      success: true,
-      accountId: newAccountId,
-      balanceHbar: 5
-    }
-  } catch (err: any) {
-    return {
-      success: false,
-      error: err.message || String(err)
-    }
+    const res = await fetch(`${MIRROR}/accounts/${evmAddress}`, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return null
+    const data = await res.json()
+    return typeof data?.account === 'string' ? data.account : null
+  } catch (_) {
+    return null
   }
 }
 
+/** Generate a new key in the browser. The account ID is filled in later. */
+export async function createLocalKey (keyType: 'ED25519' | 'ECDSA'): Promise<BrowserWallet> {
+  const hedera = await import('@hiero-ledger/sdk')
+  const key = keyType === 'ECDSA' ? hedera.PrivateKey.generateECDSA() : hedera.PrivateKey.generateED25519()
+  return {
+    accountId: '',
+    privateKey: key.toStringDer(),
+    publicKey: key.publicKey.toStringDer(),
+    evmAddress: keyType === 'ECDSA' ? '0x' + key.publicKey.toEvmAddress() : '',
+    keyType,
+    balanceHbar: null
+  }
+}
+
+/** Derive public key / EVM address from a pasted private key (DER or hex). */
+export async function describePrivateKey (privateKey: string): Promise<Pick<BrowserWallet, 'publicKey' | 'evmAddress' | 'keyType'>> {
+  const hedera = await import('@hiero-ledger/sdk')
+  const key = parsePrivateKey(hedera, privateKey)
+  const isEcdsa = key.type === 'secp256k1'
+  return {
+    publicKey: key.publicKey.toStringDer(),
+    evmAddress: isEcdsa ? '0x' + key.publicKey.toEvmAddress() : '',
+    keyType: isEcdsa ? 'ECDSA' : 'ED25519'
+  }
+}
+
+function parsePrivateKey (hedera: any, raw: string) {
+  const value = raw.trim()
+  if (/^30[0-9a-fA-F]+$/.test(value) && value.length > 64) return hedera.PrivateKey.fromStringDer(value)
+  return hedera.PrivateKey.fromString(value)
+}
+
 /**
- * Cleanse ES module imports, exports, and node runner blocks for safe in-browser execution
+ * Strip module syntax and the Node entry-point guard so a lab body can run
+ * inside an async function, then call main() if the lab defines it.
  */
-export function sanitizeSourceForExecution(code: string): string {
-  let sanitized = code
-    // Strip all ES module imports (named, default, namespace, side-effect)
+export function sanitizeSourceForExecution (code: string): string {
+  const sanitized = code
     .replace(/import\s+[\s\S]*?from\s*['"][^'"]*['"]\s*;?/gm, '')
     .replace(/import\s*['"][^'"]*['"]\s*;?/gm, '')
-    // Strip ES module exports
     .replace(/export\s+default\s+.*?;?/gm, '')
     .replace(/export\s*\{[^}]*\}\s*;?/gm, '')
-    // Strip Node.js process.argv[1] entry-point blocks
     .replace(/if\s*\(\s*process\.argv\[1\][\s\S]*$/gm, '')
-    // Strip any lingering import.meta references
     .replace(/import\.meta\.[a-zA-Z0-9_$]+/gm, '""')
     .trim()
-
-  // Automatically invoke main() if defined
-  sanitized += '\n\nif (typeof main === "function") {\n  await main();\n}'
-  return sanitized
+  return sanitized + '\n\nif (typeof main === "function") {\n  await main();\n}'
 }
 
-/**
- * Execute Hedera JavaScript directly in the browser's V8 engine
- */
-export async function executeInBrowser(
+class NodeOnlyError extends Error {
+  constructor (api: string) {
+    super(`${api} is a Node.js API that is not available in the browser runner. Run this lab locally with Node.js.`)
+    this.name = 'NodeOnlyError'
+  }
+}
+
+// Byte output that behaves like a Buffer for the calls the labs make.
+function asBufferLike (bytes: Uint8Array) {
+  const out = new Uint8Array(bytes) as Uint8Array & { toString: (enc?: string) => string }
+  out.toString = (enc?: string) => {
+    if (enc === 'hex') return bytesToHex(bytes)
+    if (enc === 'base64') return btoa(String.fromCharCode(...bytes))
+    return new TextDecoder().decode(bytes)
+  }
+  return out
+}
+
+const toBytes = (chunk: unknown): Uint8Array => {
+  if (chunk instanceof Uint8Array) return chunk
+  return utf8ToBytes(typeof chunk === 'string' ? chunk : String(chunk))
+}
+
+const HASHES: Record<string, any> = { sha1, sha256, sha384, sha512, md5 }
+
+function pickHash (algo: string) {
+  const fn = HASHES[String(algo).toLowerCase().replace('-', '')]
+  if (!fn) throw new NodeOnlyError(`crypto.createHash('${algo}')`)
+  return fn
+}
+
+function digestOut (bytes: Uint8Array, enc?: string) {
+  if (enc === 'hex') return bytesToHex(bytes)
+  if (enc === 'base64') return btoa(String.fromCharCode(...bytes))
+  return asBufferLike(bytes)
+}
+
+function makeCryptoShim () {
+  const supported: Record<string, unknown> = {
+    randomBytes: (size: number) => {
+      const arr = new Uint8Array(size)
+      window.crypto.getRandomValues(arr)
+      return asBufferLike(arr)
+    },
+    randomUUID: () => window.crypto.randomUUID(),
+    createHash: (algo: string) => {
+      const h = pickHash(algo).create()
+      const api = {
+        update: (chunk: unknown) => { h.update(toBytes(chunk)); return api },
+        digest: (enc?: string) => digestOut(h.digest(), enc)
+      }
+      return api
+    },
+    createHmac: (algo: string, key: unknown) => {
+      const h = hmac.create(pickHash(algo), toBytes(key))
+      const api = {
+        update: (chunk: unknown) => { h.update(toBytes(chunk)); return api },
+        digest: (enc?: string) => digestOut(h.digest(), enc)
+      }
+      return api
+    }
+  }
+  return new Proxy(supported, {
+    get (target, prop) {
+      if (typeof prop !== 'string') return undefined
+      if (prop in target) return target[prop]
+      if (prop === 'default') return target
+      throw new NodeOnlyError(`crypto.${prop}`)
+    }
+  })
+}
+
+// "0.0.123@1700000000.123456789" -> "0.0.123-1700000000-123456789" (Mirror Node / HashScan format)
+const txIdForUrl = (id: string) => {
+  const [acct, ts] = id.trim().split('@')
+  return ts ? `${acct}-${ts.replace('.', '-')}` : acct
+}
+
+function hashscanUrl (target: any): string {
+  const base = 'https://hashscan.io/testnet'
+  if (!target) return base
+  if (typeof target === 'object') {
+    if (target.transactionId) return `${base}/transaction/${txIdForUrl(String(target.transactionId))}`
+    if (target.topicId) return `${base}/topic/${target.topicId}`
+    if (target.tokenId) return `${base}/token/${target.tokenId}`
+    if (target.accountId) return `${base}/account/${target.accountId}`
+  }
+  const clean = String(target).trim()
+  if (clean.includes('@')) return `${base}/transaction/${txIdForUrl(clean)}`
+  if (clean.startsWith('0x')) return `${base}/account/${clean}`
+  return `${base}/topic/${clean}`
+}
+
+/** Run a lab's code in this browser, streaming console output to onLog. */
+export async function executeInBrowser (
   sourceCode: string,
   wallet: BrowserWallet,
   onLog: (line: TerminalLogLine) => void
 ): Promise<{ success: boolean; durationMs: number }> {
   const startTime = Date.now()
+  let seq = 0
 
   const pushLog = (type: TerminalLogLine['type'], text: string, url?: string) => {
     const d = new Date()
-    const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
-    onLog({
-      id: Math.random().toString(36).slice(2, 9),
-      timestamp: timeStr,
-      type,
-      text,
-      url
-    })
+    const ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':')
+    onLog({ id: `${startTime}-${seq++}`, timestamp: ts, type, text, url })
   }
 
-  const activeAccountId = wallet.accountId || DEFAULT_DEMO_WALLET.accountId
-  const activePrivKey = wallet.privateKey || DEFAULT_DEMO_WALLET.privateKey
-
-  pushLog('system', '[SYSTEM] Hedera Client-Side V8 Consensus Engine')
-  if (activeAccountId) {
-    pushLog('info', `[OPERATOR] Signing Account: ${activeAccountId} (${wallet.balanceHbar != null ? wallet.balanceHbar.toFixed(2) : '0.0'} ℏ)`)
+  if (isAccountId(wallet.accountId) && wallet.privateKey) {
+    pushLog('system', `Operator ${wallet.accountId} on testnet`)
   } else {
-    pushLog('warn', '[WARN] No Operator Account configured.')
-    pushLog('info', '[INFO] Configure your Hedera Testnet wallet via the Wallet menu in top navigation.')
+    pushLog('warn', 'No testnet account configured. Labs that send transactions will fail; set one up under "Testnet account".')
   }
-  pushLog('info', '[NETWORK] Connecting to Hedera Testnet consensus nodes...')
 
   try {
-    // 1. Dynamic import of SDK in browser context
     const hedera = await import('@hiero-ledger/sdk')
-
-    // 2. Initialize client for testnet
     const client = hedera.Client.forTestnet()
-    
-    if (activeAccountId && activePrivKey) {
+
+    if (isAccountId(wallet.accountId) && wallet.privateKey) {
       try {
-        const accId = hedera.AccountId.fromString(activeAccountId)
-        let privKey: any
-        if (activePrivKey.startsWith('302e') || activePrivKey.startsWith('3030')) {
-          privKey = hedera.PrivateKey.fromStringDer(activePrivKey)
-        } else {
-          privKey = hedera.PrivateKey.fromString(activePrivKey)
-        }
-        client.setOperator(accId, privKey)
+        client.setOperator(hedera.AccountId.fromString(wallet.accountId), parsePrivateKey(hedera, wallet.privateKey))
       } catch (keyErr: any) {
-        pushLog('warn', `[KEY_ERROR] ${keyErr.message}`)
-        pushLog('info', '[INFO] Check your credentials in the Wallet menu.')
+        pushLog('error', `Could not load the operator key: ${keyErr.message}`)
       }
     }
 
-    // 3. Create dual-compatible client accessor (supports `const client = getClient()` and `const { client } = getClient()`)
+    // Supports both `const client = getClient()` and `const { client } = getClient()`.
+    // Never shadow SDK properties: only add the names the labs destructure.
     const clientWrapper: any = client
-    clientWrapper.client = client
+    const extras: Record<string, unknown> = {
+      client,
+      operatorId: wallet.accountId,
+      operatorKey: wallet.privateKey,
+      network: 'testnet'
+    }
+    for (const [name, value] of Object.entries(extras)) {
+      if (!(name in clientWrapper)) Object.defineProperty(clientWrapper, name, { value, enumerable: false })
+    }
     const getClient = () => clientWrapper
 
-    // 4. Robust HashScan URL resolver
-    const getHashscanUrl = (target: any) => {
-      if (!target) return 'https://hashscan.io/testnet'
-      if (typeof target === 'object' && target !== null) {
-        if (target.transactionId) {
-          const rawId = String(target.transactionId).trim()
-          const clean = rawId.replace('@', '-').replace(/\./g, '-')
-          return `https://hashscan.io/testnet/transaction/${clean}`
-        }
-        if (target.topicId) {
-          return `https://hashscan.io/testnet/topic/${target.topicId}`
-        }
-      }
-      const clean = String(target).trim()
-      if (clean.includes('@')) {
-        const hashscanTx = clean.replace('@', '-').replace(/\./g, '-')
-        return `https://hashscan.io/testnet/transaction/${hashscanTx}`
-      }
-      if (clean.startsWith('0x')) {
-        return `https://hashscan.io/testnet/account/${clean}`
-      }
-      return `https://hashscan.io/testnet/topic/${clean}`
+    const readState = () => {
+      try { return JSON.parse(localStorage.getItem(STATE_STORAGE_KEY) || '{}') } catch (_) { return {} }
     }
-
-    // 5. Reactive State synchronization for multi-lab flows
     const updateState = (key: string, val: any) => {
       try {
-        const raw = localStorage.getItem('hbe_playground_state') || '{}'
-        const obj = JSON.parse(raw)
+        const obj = readState()
         obj[key] = val
-        localStorage.setItem('hbe_playground_state', JSON.stringify(obj))
-        pushLog('info', `[State] Synced ${key} = ${typeof val === 'object' ? JSON.stringify(val) : String(val)}`)
+        localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(obj))
       } catch (_) {}
       return val
     }
+    const getState = (key: string) => readState()[key]
+    const updateEnv = updateState
 
-    const updateEnv = (key: string, val: any) => {
-      updateState(key, val)
-      pushLog('info', `[Env] Synced ${key}`)
-      return val
-    }
-
-    // 6. Mock process object for labs invoking process.exit()
     const mockProcess = {
       argv: ['node', 'browser.js'],
+      env: {
+        OPERATOR_ID: wallet.accountId,
+        OPERATOR_PRIVATE_KEY: wallet.privateKey,
+        OPERATOR_EVM_ADDRESS: wallet.evmAddress || '',
+        NETWORK: 'testnet'
+      },
       exit: (code: number = 0) => {
-        pushLog('info', `[Process] Execution terminated with code ${code}`)
+        if (code !== 0) throw new Error(`process.exit(${code})`)
       }
     }
 
-    // 7. Utilities required by various labs (sleep, getState, dotenv, path, EventEmitter, getMirrorNodeBaseUrl, crypto)
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-    const getState = (key: string) => {
-      try {
-        const raw = localStorage.getItem('hbe_playground_state') || '{}'
-        return JSON.parse(raw)[key]
-      } catch (_) {
-        return undefined
-      }
-    }
     const dotenv = { config: () => ({ parsed: {} }) }
     const getMirrorNodeBaseUrl = () => 'https://testnet.mirrornode.hedera.com'
 
@@ -353,162 +327,67 @@ export async function executeInBrowser(
 
     class EventEmitterShim {
       _e: Record<string, Function[]> = {}
-      on(e: string, fn: Function) {
-        ;(this._e[e] = this._e[e] || []).push(fn)
-        return this
-      }
-      once(e: string, fn: Function) {
-        const g = (...a: any[]) => {
-          this.off(e, g)
-          fn(...a)
-        }
+      on (e: string, fn: Function) { (this._e[e] = this._e[e] || []).push(fn); return this }
+      once (e: string, fn: Function) {
+        const g = (...a: any[]) => { this.off(e, g); fn(...a) }
         return this.on(e, g)
       }
-      off(e: string, fn: Function) {
-        this._e[e] = (this._e[e] || []).filter((f) => f !== fn)
-        return this
-      }
-      emit(e: string, ...args: any[]) {
-        ;(this._e[e] || []).forEach((fn) => {
-          try {
-            fn(...args)
-          } catch (_) {}
-        })
-        return true
-      }
+      off (e: string, fn: Function) { this._e[e] = (this._e[e] || []).filter((f) => f !== fn); return this }
+      emit (e: string, ...args: any[]) { (this._e[e] || []).forEach((fn) => fn(...args)); return true }
     }
 
-    const browserCryptoShim = {
-      randomBytes: (size: number) => {
-        const arr = new Uint8Array(size)
-        if (typeof window !== 'undefined' && window.crypto) {
-          window.crypto.getRandomValues(arr)
-        }
-        return {
-          toString: (enc: string) => {
-            if (enc === 'hex') {
-              return Array.from(arr)
-                .map((b) => b.toString(16).padStart(2, '0'))
-                .join('')
-            }
-            return new TextDecoder().decode(arr)
-          }
-        }
-      },
-      createHash: (algo: string) => {
-        let buffer = ''
-        const hashObj = {
-          update: (chunk: any) => {
-            buffer += typeof chunk === 'string' ? chunk : String(chunk)
-            return hashObj
-          },
-          digest: (enc: string) => {
-            let h1 = 0xdeadbeef,
-              h2 = 0x41c6ce57
-            for (let i = 0; i < buffer.length; i++) {
-              const ch = buffer.charCodeAt(i)
-              h1 = Math.imul(h1 ^ ch, 2654435761)
-              h2 = Math.imul(h2 ^ ch, 1597334677)
-            }
-            const hex = (
-              (h1 >>> 0).toString(16).padStart(8, '0') +
-              (h2 >>> 0).toString(16).padStart(8, '0')
-            )
-              .repeat(4)
-              .slice(0, 64)
-            return hex
-          }
-        }
-        return hashObj
-      }
+    const fmt = (a: any) => {
+      if (typeof a === 'string') return a
+      if (a instanceof Error) return a.message
+      try { return JSON.stringify(a, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)) } catch (_) { return String(a) }
     }
-
-    // 8. Custom console intercepting logs into terminal stream
     const customConsole = {
       log: (...args: any[]) => {
-        const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ')
-        const urlMatch = msg.match(/(https:\/\/hashscan\.io\/[^\s]+)/)
-        if (urlMatch) {
-          pushLog('link', msg, urlMatch[1])
-        } else if (msg.includes('SUCCESS') || msg.includes('✅')) {
-          pushLog('success', msg)
-        } else if (msg.includes('WARN') || msg.includes('⚠️')) {
-          pushLog('warn', msg)
-        } else {
-          pushLog('info', msg)
-        }
+        const msg = args.map(fmt).join(' ')
+        const url = msg.match(/(https:\/\/hashscan\.io\/[^\s)]+)/)
+        if (url) pushLog('link', msg, url[1])
+        else if (/SUCCESS|ÉXITO|✅/.test(msg)) pushLog('success', msg)
+        else if (/WARN|⚠️/.test(msg)) pushLog('warn', msg)
+        else if (/FAILED|FALLO|❌/.test(msg)) pushLog('error', msg)
+        else pushLog('info', msg)
       },
-      warn: (...args: any[]) => {
-        pushLog('warn', args.join(' '))
-      },
-      error: (...args: any[]) => {
-        pushLog('error', args.join(' '))
-      },
-      info: (...args: any[]) => {
-        pushLog('info', args.join(' '))
-      }
+      info: (...args: any[]) => pushLog('info', args.map(fmt).join(' ')),
+      warn: (...args: any[]) => pushLog('warn', args.map(fmt).join(' ')),
+      error: (...args: any[]) => pushLog('error', args.map(fmt).join(' ')),
+      table: (data: any) => pushLog('info', fmt(data))
     }
 
-    // 9. Sanitize code
     const sanitized = sanitizeSourceForExecution(sourceCode)
-
-    // 10. Build execution scope with all Hedera SDK classes
     const scopeKeys = Object.keys(hedera)
     const scopeValues = Object.values(hedera)
 
-    const runnerFn = new Function(
+    // eslint-disable-next-line no-new-func
+    const runner = new Function(
       ...scopeKeys,
-      'client',
-      'getClient',
-      'getHashscanUrl',
-      'getMirrorNodeBaseUrl',
-      'updateState',
-      'updateEnv',
-      'getState',
-      'sleep',
-      'dotenv',
-      'crypto',
-      'path',
-      'EventEmitter',
-      'wallet',
-      'console',
-      'process',
-      'return (async () => {\n' +
-      '  try {\n' +
-      sanitized + '\n' +
-      '  } catch (innerErr) {\n' +
-      '    console.error("[Runtime Error] " + (innerErr.stack || innerErr.message));\n' +
-      '    throw innerErr;\n' +
-      '  }\n' +
-      '})()'
+      'client', 'getClient', 'getHashscanUrl', 'getMirrorNodeBaseUrl',
+      'updateState', 'updateEnv', 'getState', 'sleep', 'dotenv',
+      'crypto', 'path', 'EventEmitter', 'wallet', 'console', 'process',
+      'return (async () => {\n' + sanitized + '\n})()'
     )
 
-    // 11. Execute in user's browser
-    await runnerFn(
+    await runner(
       ...scopeValues,
-      client,
-      getClient,
-      getHashscanUrl,
-      getMirrorNodeBaseUrl,
-      updateState,
-      updateEnv,
-      getState,
-      sleep,
-      dotenv,
-      browserCryptoShim,
-      pathShim,
-      EventEmitterShim,
-      wallet,
-      customConsole,
-      mockProcess
+      client, getClient, hashscanUrl, getMirrorNodeBaseUrl,
+      updateState, updateEnv, getState, sleep, dotenv,
+      makeCryptoShim(), pathShim, EventEmitterShim, wallet, customConsole, mockProcess
     )
 
+    try { client.close() } catch (_) {}
     const durationMs = Date.now() - startTime
-    pushLog('success', `[SUCCESS] Consensus verified and executed in ${(durationMs / 1000).toFixed(2)}s`)
+    pushLog('system', `Finished in ${(durationMs / 1000).toFixed(2)} s`)
     return { success: true, durationMs }
   } catch (err: any) {
     const durationMs = Date.now() - startTime
-    pushLog('error', `[ERROR] Execution halted: ${err.message || String(err)}`)
+    const message = err?.message || String(err)
+    pushLog('error', `Stopped: ${message}`)
+    if (err instanceof ReferenceError && /Buffer|require|__dirname|fs\b/.test(message)) {
+      pushLog('warn', 'This lab uses Node.js-only APIs. Run it locally with Node.js to see its full behaviour.')
+    }
     return { success: false, durationMs }
   }
 }
