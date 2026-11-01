@@ -36,7 +36,8 @@
   color-scheme: light;
 }
 
-[data-theme='dark'] {
+/* Dark is the default; light applies only when data-theme='light'. */
+:root:not([data-theme='light']) {
   --bg: #121314;
   --bg-subtle: #18191b;
   --bg-code: #17181a;
@@ -62,37 +63,6 @@
   --t-sdk: #ffa657;
   --t-com: #8b949e;
   color-scheme: dark;
-}
-
-/* Before the app sets data-theme, follow the system setting. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #121314;
-    --bg-subtle: #18191b;
-    --bg-code: #17181a;
-    --bg-hover: #222326;
-    --border: #2b2c2f;
-    --border-strong: #3c3d41;
-    --text: #e9e9e6;
-    --text-2: #babab5;
-    --text-3: #8a8a85;
-    --accent: #82a4ff;
-    --accent-hover: #a5bdff;
-    --accent-soft: #1c2438;
-    --on-accent: #0d1424;
-    --ok: #5cc98a;
-    --warn: #e3b453;
-    --err: #ff8a80;
-    --focus: #82a4ff;
-
-    --t-kw: #ff7b72;
-    --t-str: #a5d6ff;
-    --t-num: #79c0ff;
-    --t-fn: #d2a8ff;
-    --t-sdk: #ffa657;
-    --t-com: #8b949e;
-    color-scheme: dark;
-  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }

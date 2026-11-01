@@ -35,7 +35,7 @@ function routeFromHash (): Route {
 
 export default function HederaByExample () {
   const [lang, setLang] = useState<Lang>('en')
-  const [theme, setTheme] = useState<Theme>('light')
+  const [theme, setTheme] = useState<Theme>('dark')
   const [route, setRoute] = useState<Route>({ view: 'index' })
   const [query, setQuery] = useState('')
   const [openMods, setOpenMods] = useState<Record<string, boolean>>({})
@@ -51,9 +51,8 @@ export default function HederaByExample () {
   // Restore preferences, route and wallet after the static HTML hydrates.
   useEffect(() => {
     const prefs = readPrefs()
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches
     setLang(prefs.lang || (navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en'))
-    setTheme(prefs.theme || (prefersDark ? 'dark' : 'light'))
+    setTheme(prefs.theme || 'dark')
     setRoute(routeFromHash())
 
     const stored = getActiveWallet()
