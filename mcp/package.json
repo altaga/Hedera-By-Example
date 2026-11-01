@@ -1,0 +1,27 @@
+{
+  "name": "hedera-by-example-mcp",
+  "version": "1.0.0",
+  "description": "Universal Model Context Protocol (MCP) server for Hedera: stdio, HTTP & SSE transports for AI coding agents and web studios",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "hedera-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "http": "node index.js --http 3001",
+    "test": "node ../tests/05_mcp_server.test.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "hedera",
+    "hiero",
+    "ai-agents",
+    "cursor",
+    "claude-desktop",
+    "antigravity"
+  ],
+  "author": "Hedera by Example",
+  "license": "Apache-2.0"
+}

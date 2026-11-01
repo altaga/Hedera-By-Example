@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "2024-11-05",
+  "name": "hedera-by-example-mcp",
+  "version": "1.0.0",
+  "description": "Universal Model Context Protocol (MCP) server for Hedera hashgraph development",
+  "author": "Hedera by Example",
+  "repository": "https://github.com/altaga/Hedera-By-Example",
+  "productionUrl": "https://hbe.expo.app",
+  "transports": {
+    "stdio": {
+      "command": "node",
+      "args": ["mcp/index.js"]
+    },
+    "http": {
+      "endpoint": "http://localhost:3001/mcp",
+      "sse": "http://localhost:3001/sse",
+      "tools": "https://hbe.expo.app/mcp/tools.json"
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "prompts": false,
+    "resources": true
+  }
+}

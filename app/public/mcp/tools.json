@@ -1,0 +1,106 @@
+{
+  "tools": [
+    {
+      "name": "query_curriculum",
+      "description": "Search and inspect any of the 131 runnable Hedera by Example labs. Returns full runnable code, concept, learnable moments, and SDK references.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search term, concept, or SDK class (e.g., 'x402', 'TransferTransaction', 'Merkle', 'EVM', 'TokenCreate')"
+          },
+          "module": {
+            "type": "string",
+            "description": "Optional module prefix (e.g., 'M0', 'M3', 'M10', 'M15')"
+          },
+          "lang": {
+            "type": "string",
+            "enum": ["en", "es"],
+            "description": "Language of explanation and code comments (default: 'en')"
+          }
+        }
+      }
+    },
+    {
+      "name": "query_knowledge",
+      "description": "Query the Hedera Master Knowledge Graph across AI agents, RWA, DePIN, Passkeys, zk-TLS, and L1 consensus services.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Technology, protocol, or standard (e.g., 'AI Studio', 'ATS', 'x402', 'Guardian', 'Passkeys', 'HIP-904')"
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter category (e.g., 'AI & Autonomous Agents', 'DePIN & Hardware IoT', 'Asset Tokenization & RWA')"
+          },
+          "audience": {
+            "type": "string",
+            "enum": ["developer", "architect", "business", "founder"],
+            "description": "Target audience perspective"
+          }
+        }
+      }
+    },
+    {
+      "name": "anti_hallucination_rules",
+      "description": "Retrieve strict anti-hallucination rules and technical guardrails for building on Hedera with @hiero-ledger/sdk.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "architecture_decision_tree",
+      "description": "Retrieve the architectural decision matrix guiding when to use Hedera Consensus Service (HCS), Token Service (HTS), or Smart Contracts (HSCS).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "focus": {
+            "type": "string",
+            "description": "Optional focus area (e.g., 'cost', 'throughput', 'compliance', 'ai-agents')"
+          }
+        }
+      }
+    },
+    {
+      "name": "mirror_node_query",
+      "description": "Interrogate the public Hedera Mirror Node REST API in real-time. Free read-only state lookup for accounts, tokens, and topics.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["endpoint", "id"],
+        "properties": {
+          "endpoint": {
+            "type": "string",
+            "enum": ["accounts", "tokens", "topics", "transactions"],
+            "description": "Mirror node resource type"
+          },
+          "id": {
+            "type": "string",
+            "description": "Hedera entity ID (e.g. '0.0.12345' or EVM address '0x...')"
+          },
+          "network": {
+            "type": "string",
+            "enum": ["testnet", "mainnet"],
+            "description": "Hedera network (default: 'testnet')"
+          }
+        }
+      }
+    },
+    {
+      "name": "official_resources",
+      "description": "Search official Hedera documentation, repositories, and specifications with verified update timestamps.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search term for official URLs and documentation"
+          }
+        }
+      }
+    }
+  ]
+}
