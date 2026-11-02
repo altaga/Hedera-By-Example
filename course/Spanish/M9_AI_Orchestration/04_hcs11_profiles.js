@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Perfiles de IA HCS-11 (Provisión de Agente de Suplantación)
- * [ CONCEPTO CLAVE ] Escalado de Identidades Estructuradas y Auditoría
+ * [ CONCEPTO ] Escalado de Identidades Estructuradas y Auditoría
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Agentes Especializados: La provisión de agentes con perfiles HCS-11 permite

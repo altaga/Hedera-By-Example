@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Renta de Estado y Ciclo de Vida de la Cuenta
- * [ CONCEPTO CLAVE ] Sostenibilidad y Almacenamiento Serverless
+ * [ CONCEPTO ] Sostenibilidad y Almacenamiento Serverless
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * State Rent: A diferencia de otras blockchains donde el crecimiento del

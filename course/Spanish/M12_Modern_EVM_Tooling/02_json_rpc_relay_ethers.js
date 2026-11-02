@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: JSON-RPC Relay con Ethers.js v6 Puro
- * [ CONCEPTO CLAVE ] Interfaces Estándar de Ethereum Web3 en Hedera
+ * [ CONCEPTO ] Interfaces Estándar de Ethereum Web3 en Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Ilusión para el Desarrollador de Ethereum: No requieres el SDK de Hedera

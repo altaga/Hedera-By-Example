@@ -9,13 +9,19 @@
 ## 🗺️ Atomic Curriculum Map
 This module focuses on the communication and sovereignty of AI agents.
 
-| Lab | Topic | Focus |
+| Lab | Topic | Description |
 | :--- | :--- | :--- |
-| **01-03** | **Identity and Profiling** | HCS-11 and HCS-14 (UAID) for verifiable identities. |
-| **04-05** | **Secure Handshake** | HCS-10 protocol for establishing secure sessions. |
-| **06-07** | **Public Messaging** | Auditable open communication on the ledger. |
-| **08-10** | **Defense and Attack** | Simulation of impersonation attacks and active defense. |
-| **11** | **Hybrid Encryption** | Private A2A communication using RSA + AES. |
+| **01** | **HCS-1 File Storage** | Anchoring heavy payloads (agent configs, assets) in topics with the HCS-1 file standard. |
+| **02** | **HCS-2 Topic Registries** | Turning a topic into a machine-readable directory ("yellow pages") of agent endpoints. |
+| **03** | **HCS-2 Registry Discovery** | Rebuilding a local, searchable index from the registry's message stream. |
+| **04** | **HCS-11 AI Profiles** | Provisioning three agents with accounts, inbound/outbound topics and HCS-11 profiles. |
+| **05** | **HCS-14 Universal Agent ID** | Deterministic, offline identifiers (UAID) for the agents created in Lab 04. |
+| **06** | **User-to-Agent (HCS-10)** | A person and an agent talking in real time over public HCS-10 topics. |
+| **07** | **Agent-to-Agent (HCS-10)** | Two autonomous agents running a stateful ping-pong over their topics. |
+| **08** | **Impersonation Attack** | Why public streams alone are unsafe: a spoofer agent injects forged messages. |
+| **09** | **Secure A2A** | Zero-trust validation: signed payloads plus sequence numbers against replay. |
+| **10** | **Secure A2A under Attack** | The same protocol holding up while an attacker floods forged and replayed packets. |
+| **11** | **Encrypted A2A** | Private agent messages over a public ledger with hybrid RSA-OAEP + AES-GCM encryption. |
 
 ---
 

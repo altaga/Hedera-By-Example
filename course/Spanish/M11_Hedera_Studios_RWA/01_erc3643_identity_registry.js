@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Registro de Identidad ERC-3643 y Reglas de Transferencia
- * [ CONCEPTO CLAVE ] Restricciones de Transferencia en RWAs Permisionados
+ * [ CONCEPTO ] Restricciones de Transferencia en RWAs Permisionados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Filtro Regulatorio: Los activos institucionales no pueden transferirse libremente.

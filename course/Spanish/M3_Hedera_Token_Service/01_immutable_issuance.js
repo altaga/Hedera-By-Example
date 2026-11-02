@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Emisión de Token Fungible con HTS
- * [ CONCEPTO CLAVE ]
+ * [ CONCEPTO ] Tokens Fungibles a Nivel de Protocolo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Inmutabilidad y Confianza: En Hedera, los tokens son entidades NATIVAS del

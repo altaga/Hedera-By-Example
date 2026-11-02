@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Arquitectura aBFT y Simulación de Consenso
- * [ CONCEPTO CLAVE ] Gossip about Gossip y Votación Virtual
+ * [ CONCEPTO ] Gossip about Gossip y Votación Virtual
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Gráfico Acíclico Dirigido (DAG): En el Hashgraph NO existen bloques;

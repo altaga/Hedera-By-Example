@@ -14,6 +14,9 @@
 | **02** | **REST API Segura** | Cómo realizar consultas asíncronas a Mirror Nodes de forma segura. |
 | **03** | **Paginación Recursiva** | Manejo de grandes volúmenes de datos mediante el uso de "next links". |
 | **04** | **Reactor de Event Sourcing** | Ingesta de streams del Mirror Node en un modelo de lectura CQRS SQLite en memoria con consultas sub-ms. |
+| **05** | **Circuit Breaker** | Tolerancia a fallos, backoff con jitter y caché de respaldo ante los límites de tasa del Mirror Node. |
+| **06** | **Bus de Eventos WebSocket** | Gateway reactivo WebSocket/SSE que empuja transacciones del ledger en vivo. |
+| **07** | **Subgrafo GraphQL** | Motor de consultas en grafo que elimina cascadas REST con resolvers de una sola ida y vuelta. |
 
 ---
 

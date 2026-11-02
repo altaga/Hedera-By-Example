@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Arquitectura Full-Stack con Scaffold-HBAR
- * [ CONCEPTO CLAVE ] Integración de Next.js, RainbowKit, Wagmi v2 y Hedera
+ * [ CONCEPTO ] Integración de Next.js, RainbowKit, Wagmi v2 y Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Arma Definitiva para Hackathons: Construir una dApp full-stack desde cero

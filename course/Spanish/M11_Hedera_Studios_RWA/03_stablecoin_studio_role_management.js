@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Gobernanza Basada en Roles con Stablecoin Studio
- * [ CONCEPTO CLAVE ] Segregación de Funciones en Stablecoins Respaldadas por Fiat
+ * [ CONCEPTO ] Segregación de Funciones en Stablecoins Respaldadas por Fiat
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Separación Criptográfica de Poderes: Las stablecoins centralizadas dependen de

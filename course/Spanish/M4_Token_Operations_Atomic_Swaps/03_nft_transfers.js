@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Transferencias de NFT (Propiedad por Número de Serie)
- * [ CONCEPTO CLAVE ] Granularidad de Activos Únicos e Identidad Compuesta
+ * [ CONCEPTO ] Granularidad de Activos Únicos e Identidad Compuesta
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Identidad Inequívoca: A diferencia de los tokens fungibles, cada unidad de

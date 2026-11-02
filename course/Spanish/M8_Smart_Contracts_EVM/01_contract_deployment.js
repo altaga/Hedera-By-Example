@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Despliegue de Smart Contracts (HSCS)
- * [ CONCEPTO CLAVE ] Compatibilidad EVM y Compilación en Tiempo Real
+ * [ CONCEPTO ] Compatibilidad EVM y Compilación en Tiempo Real
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Finalidad Inmediata: Hedera es 100% compatible con la Ethereum Virtual

@@ -9,13 +9,19 @@
 ## 🗺️ Mapa del Currículo Atómico
 Este módulo se enfoca en la comunicación y soberanía de los agentes de IA.
 
-| Lab | Tema | Enfoque |
+| Lab | Tema | Descripción |
 | :--- | :--- | :--- |
-| **01-03** | **Identidad y Perfil** | HCS-11 y HCS-14 (UAID) para identidades verificables. |
-| **04-05** | **Handshake Seguro** | Protocolo HCS-10 para establecer sesiones seguras. |
-| **06-07** | **Mensajería Pública** | Comunicación abierta auditable en el ledger. |
-| **08-10** | **Defensa y Ataque** | Simulación de ataques de suplantación y defensa activa. |
-| **11** | **Cifrado Híbrido** | Comunicación privada A2A usando RSA + AES. |
+| **01** | **Almacenamiento de Archivos HCS-1** | Anclar cargas pesadas (configuraciones de agentes, assets) en tópicos con el estándar de archivos HCS-1. |
+| **02** | **Registros de Tópicos HCS-2** | Convertir un tópico en un directorio legible por máquinas ("páginas amarillas") de endpoints de agentes. |
+| **03** | **Descubrimiento en Registros HCS-2** | Reconstruir un índice local consultable a partir del flujo de mensajes del registro. |
+| **04** | **Perfiles de IA HCS-11** | Aprovisionar tres agentes con cuentas, tópicos de entrada/salida y perfiles HCS-11. |
+| **05** | **ID Universal de Agente HCS-14** | Identificadores deterministas y offline (UAID) para los agentes creados en el Lab 04. |
+| **06** | **Humano-a-Agente (HCS-10)** | Una persona y un agente conversando en tiempo real sobre tópicos públicos HCS-10. |
+| **07** | **Agente-a-Agente (HCS-10)** | Dos agentes autónomos haciendo un ping-pong con estado sobre sus tópicos. |
+| **08** | **Ataque de Suplantación** | Por qué un flujo público no basta: un agente impostor inyecta mensajes falsos. |
+| **09** | **A2A Seguro** | Validación zero-trust: cargas firmadas y números de secuencia contra repeticiones. |
+| **10** | **A2A Seguro bajo Ataque** | El mismo protocolo resistiendo mientras un atacante inunda con paquetes falsos y repetidos. |
+| **11** | **A2A Cifrado** | Mensajes privados entre agentes sobre un ledger público con cifrado híbrido RSA-OAEP + AES-GCM. |
 
 ---
 

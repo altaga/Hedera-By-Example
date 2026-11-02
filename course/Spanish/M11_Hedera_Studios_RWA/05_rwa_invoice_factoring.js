@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
- * [ CONCEPTO CLAVE ] Deuda Comercial Fraccionada y Liquidez Secundaria
+ * [ CONCEPTO ] Deuda Comercial Fraccionada y Liquidez Secundaria
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Desbloqueando Capital de Trabajo Ilíquido: Las pequeñas y medianas empresas (PyMEs)

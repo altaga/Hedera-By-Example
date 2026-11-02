@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Firma de Pago del Agente Autónomo
- * [ CONCEPTO CLAVE ] Firmas Criptográficas de Intención de Pago
+ * [ CONCEPTO ] Firmas Criptográficas de Intención de Pago
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Autorización Protegida contra Ataques de Replay: Cuando un agente de IA acepta

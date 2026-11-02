@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
- * [ CONCEPTO CLAVE ] Motores de Políticas, Techos de Gasto y Disyuntores
+ * [ CONCEPTO ] Motores de Políticas, Techos de Gasto y Disyuntores
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Radio de Impacto Financiero: Darle llaves privadas a un agente de IA sin límites

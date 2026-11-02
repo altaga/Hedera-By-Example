@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Tokens de Seguridad ERC-1400 y Cronogramas de Cupones de Bonos
- * [ CONCEPTO CLAVE ] Partición por Tramos y Servicio Automatizado de Deuda
+ * [ CONCEPTO ] Partición por Tramos y Servicio Automatizado de Deuda
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Instrumentos de Deuda Programables: Los bonos corporativos y municipales han sufrido

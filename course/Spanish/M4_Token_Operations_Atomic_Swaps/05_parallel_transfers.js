@@ -2,8 +2,15 @@
 /**
  * ============================================================================
  * Lab 05: Transferencias Paralelas y Escalabilidad Horizontal
- * [ CONCEPTO CLAVE ] Concurrencia en el Consenso y Throughput Real
- * ============================================================================ *
+ * [ CONCEPTO ] Concurrencia en el Consenso y Throughput Real
+ * ============================================================================
+ * [ CONCEPTO CLAVE ]
+ * Escalabilidad Horizontal: En una blockchain tradicional, más transacciones
+ * suelen significar más congestión. En Hedera, el protocolo "Gossip about
+ * Gossip" permite a los nodos procesar miles de transacciones en paralelo sin
+ * frenarse de forma lineal. Ejecutar 20 transacciones en paralelo NO es 20
+ * veces más lento que ejecutar 1.
+ * *
  * [ MOMENTO DE APRENDIZAJE ]
  * Enviar transacciones paralelas de alta frecuencia desde una misma cuenta operadora requiere marcas de tiempo validStart distintas. Escalonar los nanosegundos evita que la red descarte envíos rápidos por duplicidad.
  *
