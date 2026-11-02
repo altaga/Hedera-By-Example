@@ -36,7 +36,7 @@ import {
   TokenNftInfoQuery,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Dynamic NFTs ---\n')
@@ -49,22 +49,22 @@ const main = async () => {
   try {
     // 1. Create an NFT Collection WITH a Metadata Key
     console.log('[⚙️ PROCESS] Creating Dynamic NFT Collection...')
-    let tx = await new TokenCreateTransaction()
-      .setTokenName('Dynamic Swords')
-      .setTokenSymbol('SWORD')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(supplyKey)
-      // THIS IS THE SECRET SAUCE FOR DYNAMIC NFTs:
-      .setMetadataKey(metadataKey)
-      .freezeWith(client)
-
-    let signTx = await tx.sign(supplyKey)
-    let submitTx = await signTx.execute(client)
-    let receipt = await submitTx.getReceipt(client)
-    const tokenId = receipt.tokenId
+    const tokenId = await reuseToken('REUSE_M3_07_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('Dynamic Swords')
+        .setTokenSymbol('SWORD')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(supplyKey)
+        // THIS IS THE SECRET SAUCE FOR DYNAMIC NFTs:
+        .setMetadataKey(metadataKey)
+        .freezeWith(client)
+      const signed = await createTx.sign(supplyKey)
+      return (await (await signed.execute(client)).getReceipt(client)).tokenId
+    }, { check: (t) => !!t.metadata_key })
+    let tx, signTx, submitTx, receipt // reused by the steps below
 
     console.log(`[✅ SUCCESS] Collection created! Token ID: ${tokenId.toString()}`)
 

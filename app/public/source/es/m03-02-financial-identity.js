@@ -39,7 +39,7 @@ import {
   TokenGrantKycTransaction,
   TokenUnfreezeTransaction
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Cumplimiento Financiero ---\n')
@@ -66,20 +66,19 @@ const main = async () => {
 
     // 2. Crear un Token regulado por KYC
     console.log('\n[⚙️ PROCESO] Emitiendo Token Financiero con reglas KYC/Freeze (RFT)...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Regulated Financial Token')
-      .setTokenSymbol('RFT')
-      .setDecimals(0)
-      .setInitialSupply(100)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(adminKey)
-      .setKycKey(adminKey) // Requisito de autorización de identidad
-      .setFreezeKey(adminKey) // Requisito de control de activos
-      .freezeWith(client)
-
-    const tokenResponse = await tokenTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const tokenId = tokenReceipt.tokenId
+    const tokenId = await reuseToken('REUSE_M3_02_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Regulated Financial Token')
+        .setTokenSymbol('RFT')
+        .setDecimals(0)
+        .setInitialSupply(100)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(adminKey)
+        .setKycKey(adminKey) // Requisito de autorización de identidad
+        .setFreezeKey(adminKey) // Requisito de control de activos
+        .freezeWith(client)
+      return (await (await tokenTx.execute(client)).getReceipt(client)).tokenId
+    })
 
     console.log(`[✅ ÉXITO] Token RFT creado exitosamente: ${tokenId.toString()}`)
 
@@ -92,9 +91,15 @@ const main = async () => {
 
     // Firma Dual: Usuario acepta, Operador paga
     await associateTx.sign(userKey)
-    const assocResponse = await associateTx.execute(client)
-    await assocResponse.getReceipt(client)
-    console.log('[✅ ÉXITO] El usuario ya está asociado al token.')
+    // Al repetir el lab se reutiliza el token, y una cuenta solo se asocia una vez.
+    try {
+      const assocResponse = await associateTx.execute(client)
+      await assocResponse.getReceipt(client)
+      console.log('[✅ ÉXITO] El usuario ya está asociado al token.')
+    } catch (error) {
+      if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
+      console.log('[ℹ️ INFO] Ya estaba asociada desde una ejecución anterior: no hay nada que hacer.')
+    }
 
     // 4. Otorgar KYC
     console.log('\n[⚙️ PROCESO] Evaluando identidad y otorgando autorización KYC...')

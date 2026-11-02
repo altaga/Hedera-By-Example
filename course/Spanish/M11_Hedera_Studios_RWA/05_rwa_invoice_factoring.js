@@ -37,7 +37,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const INVOICE_METADATA = {
   invoiceId: 'INV-2026-OCT-8842',
@@ -69,26 +69,25 @@ const main = async () => {
 
     // 2. Tokenizar la Cuenta por Cobrar en HTS
     console.log('\n[⚙️ PROCESO] Acuñando 50,000 Tokens Fraccionados de Factura en Hedera Token Service...')
-    const tokenCreateTx = await new TokenCreateTransaction()
-      .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
-      .setTokenSymbol('INV-8842')
-      .setDecimals(0)
-      .setInitialSupply(INVOICE_METADATA.units)
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(INVOICE_METADATA.units)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .setFreezeKey(client.operatorPublicKey)
-      .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
-      .freezeWith(client)
-
-    const tokenResponse = await tokenCreateTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const invoiceTokenId = tokenReceipt.tokenId.toString()
+    const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
+      const tokenCreateTx = await new TokenCreateTransaction()
+        .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
+        .setTokenSymbol('INV-8842')
+        .setDecimals(0)
+        .setInitialSupply(INVOICE_METADATA.units)
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(INVOICE_METADATA.units)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .setFreezeKey(client.operatorPublicKey)
+        .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
+        .freezeWith(client)
+      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
+    })).toString()
 
     console.log(`[✅ ÉXITO] Token de Factura RWA Desplegado: ${invoiceTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${getHashscanUrl(tokenResponse)}`)
+    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
 
     // 3. Simular la Suscripción del Fondo de Liquidez (Mercado Secundario)
     console.log('\n[⚙️ PROCESO] El Fondo de Liquidez adquiere los 50,000 tokens adelantando el capital...')

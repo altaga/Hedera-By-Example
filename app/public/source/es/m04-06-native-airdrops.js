@@ -35,7 +35,7 @@ import {
   AccountCreateTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Airdrops Nativos ---\n')
@@ -58,26 +58,25 @@ const main = async () => {
 
     // 2. Crear un nuevo token fungible
     console.log('\n[⚙️ PROCESO] Creando un Token para Airdrop...')
-    tx = await new TokenCreateTransaction()
-      .setTokenName('AirdropCoin')
-      .setTokenSymbol('DROP')
-      .setDecimals(2)
-      .setInitialSupply(100000) // 1,000.00
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(supplyKey)
-      .freezeWith(client)
-
-    let signTx = await tx.sign(supplyKey)
-    let submitTx = await signTx.execute(client)
-    receipt = await submitTx.getReceipt(client)
-    const tokenId = receipt.tokenId
+    const tokenId = await reuseToken('REUSE_M4_06_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('AirdropCoin')
+        .setTokenSymbol('DROP')
+        .setDecimals(2)
+        .setInitialSupply(100000) // 1,000.00
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(supplyKey)
+        .freezeWith(client)
+      return (await (await (await createTx.sign(supplyKey)).execute(client)).getReceipt(client)).tokenId
+    }, { minBalance: 500 })
+    let signTx, submitTx
     console.log(`[✅ ÉXITO] Token creado: ${tokenId.toString()}`)
 
     // 3. Realizar el Airdrop (¡enviando a una cuenta no asociada!)
-    console.log(`\n[⚙️ PROCESO] Haciendo Airdrop de 500 DROP a ${receiverId.toString()}...`)
+    console.log(`\n[⚙️ PROCESO] Haciendo Airdrop de 5.00 DROP a ${receiverId.toString()}...`)
     tx = await new TokenAirdropTransaction()
-      .addTokenTransfer(tokenId, operatorId, -50000)
-      .addTokenTransfer(tokenId, receiverId, 50000)
+      .addTokenTransfer(tokenId, operatorId, -500) // 5.00 DROP (2 decimales)
+      .addTokenTransfer(tokenId, receiverId, 500)
       .execute(client)
 
     const airdropRecord = await tx.getRecord(client)

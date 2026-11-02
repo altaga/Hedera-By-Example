@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import { createHash } from 'crypto'
-import { AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
+import { AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TopicId, TransferTransaction } from '@hiero-ledger/sdk'
 import { getMirrorNodeBaseUrl } from './config.js'
 import { getState, updateState } from './storage.js'
 
@@ -245,18 +245,18 @@ export const exitIfStuck = (ms, reason = 'los eventos de red esperados') => {
  *
  * @param {string} stateKey - Dónde se guarda el ID del token (state.json).
  * @param {() => Promise<import('@hiero-ledger/sdk').TokenId|string>} create - Crea el token y devuelve su ID.
- * @param {{ check?: (token: any) => boolean, minBalance?: number }} [options] - Condición extra sobre el registro del token en el Mirror Node y el saldo que la tesorería todavía debe tener para que el lab funcione.
+ * @param {{ check?: (token: any) => boolean, minBalance?: number, treasury?: string }} [options] - Condición extra sobre el registro del token en el Mirror Node, el saldo que la tesorería todavía debe tener para que el lab funcione y la cuenta tesorería cuando no es el operador.
  * @returns {Promise<TokenId>}
  */
-export const reuseToken = async (stateKey, create, { check = () => true, minBalance = 0 } = {}) => {
+export const reuseToken = async (stateKey, create, { check = () => true, minBalance = 0, treasury } = {}) => {
   const operator = process.env.OPERATOR_ID
   const [savedId, owner] = String(getState(stateKey) || '').split('@')
   if (process.env.FRESH_TOKENS !== '1' && savedId && owner === operator) {
     const token = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`)
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null)
-    if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' && !(token.type === 'NON_FUNGIBLE_UNIQUE' && token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
-      const enough = minBalance <= 0 || await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${operator}`)
+    if (token && !token.deleted && token.treasury_account_id === String(treasury ?? operator) && token.pause_status !== 'PAUSED' && !(token.type === 'NON_FUNGIBLE_UNIQUE' && token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
+      const enough = minBalance <= 0 || await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${treasury ?? operator}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => Number(data?.balances?.[0]?.balance ?? 0) >= minBalance)
         .catch(() => false)
@@ -301,7 +301,9 @@ export const findOwnedSerial = async (tokenId, accountId) => {
  */
 export const reuseContract = async (stateKey, identity, deploy) => {
   const operator = process.env.OPERATOR_ID
-  const codeHash = createHash('sha256').update(String(identity)).digest('hex').slice(0, 16)
+  // Solidity agrega un hash de metadatos que cambia con comentarios/espacios del código fuente: se ignora.
+  const code = String(identity).replace(/a264697066735822[0-9a-f]{68}64736f6c6343[0-9a-f]{6}0033/gi, '')
+  const codeHash = createHash('sha256').update(code).digest('hex').slice(0, 16)
   const [savedId, owner, savedHash] = String(getState(stateKey) || '').split('@')
   if (process.env.FRESH_CONTRACTS !== '1' && savedId && owner === operator && savedHash === codeHash) {
     const contract = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${savedId}`)
@@ -315,4 +317,32 @@ export const reuseContract = async (stateKey, identity, deploy) => {
   const contractId = ContractId.fromString(String(await deploy()))
   updateState(stateKey, `${contractId}@${operator}@${codeHash}`)
   return contractId
+}
+
+/**
+ * Crear un tópico con comisiones personalizadas (HIP-991) cuesta cerca de 2 USD
+ * en HBAR. Si el lab ya creó su tópico en una ejecución anterior, se reutiliza
+ * mientras exista, lo haya creado el operador actual y pase `check`. Usa
+ * FRESH_TOPICS=1 para crear siempre uno nuevo.
+ *
+ * @param {string} stateKey - Dónde se guarda el ID del tópico (state.json).
+ * @param {() => Promise<import('@hiero-ledger/sdk').TopicId|string>} create - Crea el tópico y devuelve su ID.
+ * @param {{ check?: (topic: any) => boolean }} [options] - Condición extra sobre el registro del tópico en el Mirror Node.
+ * @returns {Promise<TopicId>}
+ */
+export const reuseTopic = async (stateKey, create, { check = () => true } = {}) => {
+  const operator = process.env.OPERATOR_ID
+  const [savedId, owner] = String(getState(stateKey) || '').split('@')
+  if (process.env.FRESH_TOPICS !== '1' && savedId && owner === operator) {
+    const topic = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${savedId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null)
+    if (topic && !topic.deleted && check(topic)) {
+      console.log(`[ℹ️ INFO] Reutilizando el tópico ${savedId} de una ejecución anterior (un tópico con comisiones cuesta cerca de 2 USD). Usa FRESH_TOPICS=1 para crear uno nuevo.`)
+      return TopicId.fromString(savedId)
+    }
+  }
+  const topicId = TopicId.fromString(String(await create()))
+  updateState(stateKey, `${topicId}@${operator}`)
+  return topicId
 }

@@ -46,7 +46,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: NFT Base Layer Royalties ---\n')
@@ -86,19 +86,20 @@ const main = async () => {
 
     // 3. Create NFT Collection
     console.log('[⚙️ PROCESS] Issuing Royalty-Protected NFT Collection (RPN)...')
-    const createTx = await new TokenCreateTransaction()
-      .setTokenName('Royalty NFT')
-      .setTokenSymbol('RPN')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setInitialSupply(0)
-      .setTreasuryAccountId(AccountId.fromString(account1Id))
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(10)
-      .setSupplyKey(account1PrivateKey.publicKey)
-      .setCustomFees([royaltyFee])
-      .freezeWith(operatorClient)
-
-    const tokenId = (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
+    const tokenId = await reuseToken('REUSE_M3_06_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('Royalty NFT')
+        .setTokenSymbol('RPN')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setInitialSupply(0)
+        .setTreasuryAccountId(AccountId.fromString(account1Id))
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(10)
+        .setSupplyKey(account1PrivateKey.publicKey)
+        .setCustomFees([royaltyFee])
+        .freezeWith(operatorClient)
+      return (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
+    }, { treasury: account1Id, check: (t) => (t.custom_fees?.royalty_fees || []).length > 0 })
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
 
     // 4. Mint NFT #1
@@ -116,7 +117,11 @@ const main = async () => {
       .setTokenIds([tokenId])
       .freezeWith(client)
       .sign(account2PrivateKey)
-    await (await associate2Tx.execute(client)).getReceipt(client)
+    // The collection is reused across runs, and an account can only be associated once.
+    await (async () => (await associate2Tx.execute(client)).getReceipt(client))().catch((error) => {
+      if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
+      console.log('[ℹ️ INFO] Already associated on an earlier run.')
+    })
     console.log('[ℹ️ INFO] Investor Associated.')
 
     // --- SCENARIO A: SECONDARY SALE (ROYALTY) ---

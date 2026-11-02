@@ -50,7 +50,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Regalías Nativas de NFT ---\n')
@@ -91,19 +91,20 @@ const main = async () => {
 
     // 2. Crear Colección de NFT Protegida
     console.log('[⚙️ PROCESO] Emitiendo colección NFT con reglas de regalía (RPN)...')
-    const createTx = await new TokenCreateTransaction()
-      .setTokenName('Regalia NFT')
-      .setTokenSymbol('RPN')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setInitialSupply(0)
-      .setTreasuryAccountId(AccountId.fromString(account1Id))
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(10)
-      .setSupplyKey(account1PrivateKey.publicKey)
-      .setCustomFees([royaltyFee])
-      .freezeWith(operatorClient)
-
-    const tokenId = (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
+    const tokenId = await reuseToken('REUSE_M3_06_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('Regalia NFT')
+        .setTokenSymbol('RPN')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setInitialSupply(0)
+        .setTreasuryAccountId(AccountId.fromString(account1Id))
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(10)
+        .setSupplyKey(account1PrivateKey.publicKey)
+        .setCustomFees([royaltyFee])
+        .freezeWith(operatorClient)
+      return (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
+    }, { treasury: account1Id, check: (t) => (t.custom_fees?.royalty_fees || []).length > 0 })
     console.log(`[✅ ÉXITO] Colección protegida creada: ${tokenId.toString()}`)
 
     // 3. Mintear y asociar
@@ -118,7 +119,11 @@ const main = async () => {
       .setTokenIds([tokenId])
       .freezeWith(client)
       .sign(account2PrivateKey)
-    await (await associate2Tx.execute(client)).getReceipt(client)
+    // La colección se reutiliza entre ejecuciones, y una cuenta solo se asocia una vez.
+    await (async () => (await associate2Tx.execute(client)).getReceipt(client))().catch((error) => {
+      if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
+      console.log('[ℹ️ INFO] Ya estaba asociada desde una ejecución anterior.')
+    })
 
     // --- ESCENARIO A: VENTA SECUNDARIA CON REGALÍA ---
     console.log('\n--- 📊 [REGISTRO] Escenario A: Venta Secundaria (Intercambio Atómico) ---')

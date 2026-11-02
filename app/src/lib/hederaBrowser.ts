@@ -630,19 +630,19 @@ export async function executeInBrowser (
       await tx.getReceipt(c)
     }
     /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
-    const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true, minBalance = 0 } = {}) => {
+    const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true, minBalance = 0, treasury = undefined as string | undefined } = {}) => {
       const operator = wallet.accountId
       const [savedId, owner] = String(getState(stateKey) || '').split('@')
       if (savedId && owner === operator) {
         const token = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`, { ttlMs: 0 }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
-        if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' &&
+        if (token && !token.deleted && token.treasury_account_id === String(treasury ?? operator) && token.pause_status !== 'PAUSED' &&
           !(token.type === 'NON_FUNGIBLE_UNIQUE' && token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
-          const enough = minBalance <= 0 || await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${operator}`, { ttlMs: 0 })
+          const enough = minBalance <= 0 || await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${treasury ?? operator}`, { ttlMs: 0 })
             .then((r) => (r.ok ? r.json() : null))
             .then((data) => Number(data?.balances?.[0]?.balance ?? 0) >= minBalance)
             .catch(() => false)
           if (enough) {
-            pushLog('info', `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
+            pushLog('info', options.lang === 'es' ? `Reutilizando el token ${savedId} de una ejecución anterior (crear uno cuesta cerca de 1 USD).` : `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
             return hedera.TokenId.fromString(savedId)
           }
         }
@@ -684,19 +684,39 @@ export async function executeInBrowser (
     /** Reuse the contract this lab deployed before, if the code is the same (see M99 reuseContract). */
     const reuseContract = async (stateKey: string, identity: string, deploy: () => Promise<any>) => {
       const operator = wallet.accountId
-      const codeHash = Buffer.from(sha256(utf8ToBytes(String(identity)))).toString('hex').slice(0, 16)
+      // Solidity's trailing metadata hash changes with source comments: ignore it.
+      const code = String(identity).replace(/a264697066735822[0-9a-f]{68}64736f6c6343[0-9a-f]{6}0033/gi, '')
+      const codeHash = Buffer.from(sha256(utf8ToBytes(code))).toString('hex').slice(0, 16)
       const [savedId, owner, savedHash] = String(getState(stateKey) || '').split('@')
       if (savedId && owner === operator && savedHash === codeHash) {
         const contract = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${savedId}`, { ttlMs: 0 })
           .then((r) => (r.ok ? r.json() : null)).catch(() => null)
         if (contract && !contract.deleted) {
-          pushLog('info', `Reusing contract ${savedId} from an earlier run (same bytecode; deploying costs about 1 USD plus gas).`)
+          pushLog('info', options.lang === 'es' ? `Reutilizando el contrato ${savedId} de una ejecución anterior (mismo bytecode; desplegar cuesta cerca de 1 USD más gas).` : `Reusing contract ${savedId} from an earlier run (same bytecode; deploying costs about 1 USD plus gas).`)
           return hedera.ContractId.fromString(savedId)
         }
       }
       const contractId = hedera.ContractId.fromString(String(await deploy()))
       updateState(stateKey, `${contractId}@${operator}@${codeHash}`)
       return contractId
+    }
+    /** Reuse the topic this lab created before (see M99 reuseTopic). */
+    const reuseTopic = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true } = {}) => {
+      const operator = wallet.accountId
+      const [savedId, owner] = String(getState(stateKey) || '').split('@')
+      if (savedId && owner === operator) {
+        const topic = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${savedId}`, { ttlMs: 0 })
+          .then((r) => (r.ok ? r.json() : null)).catch(() => null)
+        if (topic && !topic.deleted && check(topic)) {
+          pushLog('info', options.lang === 'es'
+            ? `Reutilizando el tópico ${savedId} de una ejecución anterior (un tópico con comisiones cuesta cerca de 2 USD).`
+            : `Reusing topic ${savedId} from an earlier run (a topic with custom fees costs about 2 USD).`)
+          return hedera.TopicId.fromString(savedId)
+        }
+      }
+      const topicId = hedera.TopicId.fromString(String(await create()))
+      updateState(stateKey, `${topicId}@${operator}`)
+      return topicId
     }
     /** Lowest serial of tokenId that accountId still holds (see M99 findOwnedSerial). */
     const findOwnedSerial = async (tokenId: string, accountId: string) => {
@@ -822,6 +842,7 @@ export async function executeInBrowser (
       reuseToken,
       findOwnedSerial,
       reuseContract,
+      reuseTopic,
       exitIfStuck: (ms: number, reason = 'the expected network events') => { stuck = { ms, reason } },
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,

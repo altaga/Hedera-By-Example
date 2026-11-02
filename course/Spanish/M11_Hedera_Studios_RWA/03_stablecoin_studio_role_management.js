@@ -34,7 +34,7 @@ import {
   TokenSupplyType,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Gobernanza Institucional con Stablecoin Studio ---\n')
@@ -55,28 +55,27 @@ const main = async () => {
 
     // 2. Desplegar la Stablecoin Institucional en HTS con Llaves de Roles Dedicadas
     console.log('\n[⚙️ PROCESO] Desplegando stablecoin institucional con arquitectura Stablecoin Studio...')
-    const tokenCreateTx = await new TokenCreateTransaction()
-      .setTokenName('Hedera Digital Dollar')
-      .setTokenSymbol('USDD')
-      .setDecimals(6)
-      .setInitialSupply(1000000 * 1000000) // 1,000,000 USDD
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Infinite)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .setSupplyKey(client.operatorPublicKey) // Autoridad de Cash-In/Burn
-      .setFreezeKey(client.operatorPublicKey) // Autoridad de Congelamiento
-      .setWipeKey(client.operatorPublicKey) // Autoridad de Incautación/Wipe
-      .setKycKey(client.operatorPublicKey) // Autoridad de KYC
-      .setTokenMemo('stablecoin-studio:compliant_v1')
-      .freezeWith(client)
-
-    const tokenResponse = await tokenCreateTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const stablecoinTokenId = tokenReceipt.tokenId.toString()
+    const stablecoinTokenId = (await reuseToken('REUSE_M11_03_TOKEN', async () => {
+      const tokenCreateTx = await new TokenCreateTransaction()
+        .setTokenName('Hedera Digital Dollar')
+        .setTokenSymbol('USDD')
+        .setDecimals(6)
+        .setInitialSupply(1000000 * 1000000) // 1,000,000 USDD
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Infinite)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .setSupplyKey(client.operatorPublicKey) // Autoridad de Cash-In/Burn
+        .setFreezeKey(client.operatorPublicKey) // Autoridad de Congelamiento
+        .setWipeKey(client.operatorPublicKey) // Autoridad de Incautación/Wipe
+        .setKycKey(client.operatorPublicKey) // Autoridad de KYC
+        .setTokenMemo('stablecoin-studio:compliant_v1')
+        .freezeWith(client)
+      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
+    })).toString()
 
     console.log(`[✅ ÉXITO] Stablecoin Institucional Creada: ${stablecoinTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${getHashscanUrl(tokenResponse)}`)
+    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
 
     // 3. Ejercer Rol 1: Cash-In (Acuñar tras confirmación bancaria de $250,000 USD)
     console.log('\n[⚙️ PROCESO] Rol Cash-In: Transferencia bancaria confirmada. Acuñando $250,000 USDD...')

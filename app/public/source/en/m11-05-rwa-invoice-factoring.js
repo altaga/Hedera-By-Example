@@ -36,7 +36,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const INVOICE_METADATA = {
   invoiceId: 'INV-2026-OCT-8842',
@@ -68,26 +68,25 @@ const main = async () => {
 
     // 2. Tokenize the Receivable on HTS
     console.log('\n[⚙️ PROCESS] Minting 50,000 Fractional Invoice Tokens on Hedera Token Service...')
-    const tokenCreateTx = await new TokenCreateTransaction()
-      .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
-      .setTokenSymbol('INV-8842')
-      .setDecimals(0)
-      .setInitialSupply(INVOICE_METADATA.units)
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(INVOICE_METADATA.units)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .setFreezeKey(client.operatorPublicKey)
-      .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
-      .freezeWith(client)
-
-    const tokenResponse = await tokenCreateTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const invoiceTokenId = tokenReceipt.tokenId.toString()
+    const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
+      const tokenCreateTx = await new TokenCreateTransaction()
+        .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
+        .setTokenSymbol('INV-8842')
+        .setDecimals(0)
+        .setInitialSupply(INVOICE_METADATA.units)
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(INVOICE_METADATA.units)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .setFreezeKey(client.operatorPublicKey)
+        .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
+        .freezeWith(client)
+      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
+    })).toString()
 
     console.log(`[✅ SUCCESS] RWA Invoice Token Deployed: ${invoiceTokenId}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${getHashscanUrl(tokenResponse)}`)
+    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
 
     // 3. Simulate Investor Pool Subscription (Secondary Liquidity)
     console.log('\n[⚙️ PROCESS] Liquidity Pool purchases 50,000 tokens for upfront working capital...')

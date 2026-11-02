@@ -40,7 +40,7 @@ import {
   TopicMessageSubmitTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, createClient, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, reuseToken, reuseTopic } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Tópicos Monetizados HIP-991 ---\n')
@@ -89,16 +89,17 @@ const main = async () => {
       .setDenominatingTokenId(paymentTokenId)
       .setFeeCollectorAccountId(operatorId)
 
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('HIP-991:PAID:AI:ORACLE:FEED')
-      .setAdminKey(adminKey.publicKey)
-      .setFeeScheduleKey(adminKey.publicKey)
-      .addFeeExemptKey(adminKey.publicKey) // ¡El operador está exento de pagar peaje!
-      .addCustomFee(topicCustomFee)
-      .freezeWith(client)
-
-    const topicRes = await (await topicTx.sign(adminKey)).execute(client)
-    const topicId = (await topicRes.getReceipt(client)).topicId
+    // Se reutiliza el tópico de pago mientras siga cobrando en el token de pago de este lab.
+    const topicId = await reuseTopic('REUSE_M5_06_TOPIC', async () => {
+      const topicTx = await new TopicCreateTransaction()
+        .setTopicMemo('HIP-991:PAID:AI:ORACLE:FEED')
+        .setAdminKey(adminKey.publicKey)
+        .setFeeScheduleKey(adminKey.publicKey)
+        .addFeeExemptKey(adminKey.publicKey) // ¡El operador está exento de pagar peaje!
+        .addCustomFee(topicCustomFee)
+        .freezeWith(client)
+      return (await (await (await topicTx.sign(adminKey)).execute(client)).getReceipt(client)).topicId
+    }, { check: (t) => (t.custom_fees?.fixed_fees || []).some((f) => f.denominating_token_id === paymentTokenId.toString()) })
     console.log(`[✅ ÉXITO] Tópico Monetizado HIP-991 Desplegado: ${topicId.toString()}`)
     console.log(`[📊 REGISTRO] Peaje Configurado: 25 AICR por mensaje ➔ Recaudador (${operatorId.toString()})`)
 

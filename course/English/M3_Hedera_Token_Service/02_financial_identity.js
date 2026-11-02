@@ -35,7 +35,7 @@ import {
   TokenGrantKycTransaction,
   TokenUnfreezeTransaction
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Financial Compliance Simulation ---\n')
@@ -62,20 +62,19 @@ const main = async () => {
 
     // 2. Create a KYC-Regulated Token
     console.log('\n[⚙️ PROCESS] Issuing a Regulated Financial Token (RFT)...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Regulated Financial Token')
-      .setTokenSymbol('RFT')
-      .setDecimals(0)
-      .setInitialSupply(100)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(adminKey)
-      .setKycKey(adminKey)
-      .setFreezeKey(adminKey)
-      .freezeWith(client)
-
-    const tokenResponse = await tokenTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const tokenId = tokenReceipt.tokenId
+    const tokenId = await reuseToken('REUSE_M3_02_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Regulated Financial Token')
+        .setTokenSymbol('RFT')
+        .setDecimals(0)
+        .setInitialSupply(100)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(adminKey)
+        .setKycKey(adminKey)
+        .setFreezeKey(adminKey)
+        .freezeWith(client)
+      return (await (await tokenTx.execute(client)).getReceipt(client)).tokenId
+    })
 
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
 
@@ -88,9 +87,15 @@ const main = async () => {
 
     // Explicitly sign with both User (Target) and Admin (Payer)
     await associateTx.sign(userKey)
-    const assocResponse = await associateTx.execute(client)
-    await assocResponse.getReceipt(client)
-    console.log('[✅ SUCCESS] Association Success.')
+    // Re-running the lab reuses the token, and an account can only be associated once.
+    try {
+      const assocResponse = await associateTx.execute(client)
+      await assocResponse.getReceipt(client)
+      console.log('[✅ SUCCESS] Association Success.')
+    } catch (error) {
+      if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
+      console.log('[ℹ️ INFO] Already associated on an earlier run: nothing to do.')
+    }
 
     // 4. Grant KYC
     console.log(`\n[⚙️ PROCESS] Granting KYC clearance to ${targetId} via adminKey...`)

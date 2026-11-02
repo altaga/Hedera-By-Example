@@ -34,7 +34,7 @@ import {
   TokenNftInfoQuery,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * Helper function to generate a strict HIP-412 compliant JSON.
@@ -90,20 +90,20 @@ const main = async () => {
 
     // 2. Create the NFT Collection
     console.log('\n[⚙️ PROCESS] Creating NFT Collection...')
-    let tx = await new TokenCreateTransaction()
-      .setTokenName('HIP-412 Items')
-      .setTokenSymbol('ITM')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(supplyKey)
-      .freezeWith(client)
-
-    let signTx = await tx.sign(supplyKey)
-    let submitTx = await signTx.execute(client)
-    let receipt = await submitTx.getReceipt(client)
-    const tokenId = receipt.tokenId
+    const tokenId = await reuseToken('REUSE_M3_08_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('HIP-412 Items')
+        .setTokenSymbol('ITM')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(supplyKey)
+        .freezeWith(client)
+      const signed = await createTx.sign(supplyKey)
+      return (await (await signed.execute(client)).getReceipt(client)).tokenId
+    })
+    let tx, signTx, submitTx, receipt // reused by the steps below
     console.log(`[✅ SUCCESS] Collection created: ${tokenId.toString()}`)
 
     // 3. Mint the NFT with the HIP-412 URI

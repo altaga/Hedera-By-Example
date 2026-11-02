@@ -50,7 +50,7 @@ import {
   AccountCreateTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * In-Memory Ring-Trade Matching Engine
@@ -94,27 +94,30 @@ const main = async () => {
   try {
     // 1. Provision 2 Fungible HTS Assets: USD Token & GOLD Token
     console.log('[⚙️ PROCESS] Step 1: Deploying Synthetic Trading Pair on HTS (USD & GOLD)...')
-    const usdTx = await new TokenCreateTransaction()
-      .setTokenName('Synthetic USD Credit')
-      .setTokenSymbol('USD')
-      .setDecimals(0)
-      .setInitialSupply(100000)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(treasuryKey)
-      .freezeWith(client)
-    const usdTokenId = (await (await usdTx.sign(treasuryKey)).execute(client)).getReceipt(client).then(r => r.tokenId)
+    const usdId = await reuseToken('REUSE_M4_08_USD', async () => {
+      const usdTx = await new TokenCreateTransaction()
+        .setTokenName('Synthetic USD Credit')
+        .setTokenSymbol('USD')
+        .setDecimals(0)
+        .setInitialSupply(100000)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(treasuryKey)
+        .freezeWith(client)
+      return (await (await (await usdTx.sign(treasuryKey)).execute(client)).getReceipt(client)).tokenId
+    }, { minBalance: 100 })
 
-    const goldTx = await new TokenCreateTransaction()
-      .setTokenName('Tokenized Gold Ounce')
-      .setTokenSymbol('GOLD')
-      .setDecimals(0)
-      .setInitialSupply(10000)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(treasuryKey)
-      .freezeWith(client)
-    const goldTokenId = (await (await goldTx.sign(treasuryKey)).execute(client)).getReceipt(client).then(r => r.tokenId)
+    const goldId = await reuseToken('REUSE_M4_08_GOLD', async () => {
+      const goldTx = await new TokenCreateTransaction()
+        .setTokenName('Tokenized Gold Ounce')
+        .setTokenSymbol('GOLD')
+        .setDecimals(0)
+        .setInitialSupply(10000)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(treasuryKey)
+        .freezeWith(client)
+      return (await (await (await goldTx.sign(treasuryKey)).execute(client)).getReceipt(client)).tokenId
+    }, { minBalance: 5 })
 
-    const [usdId, goldId] = await Promise.all([usdTokenId, goldTokenId])
     console.log(`[✅ SUCCESS] HTS Token USD Created:  ${usdId.toString()}`)
     console.log(`[✅ SUCCESS] HTS Token GOLD Created: ${goldId.toString()}`)
 

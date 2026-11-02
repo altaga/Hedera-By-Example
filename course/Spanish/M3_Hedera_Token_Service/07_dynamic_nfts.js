@@ -37,7 +37,7 @@ import {
   TokenNftInfoQuery,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: NFTs Dinámicos ---\n')
@@ -50,22 +50,22 @@ const main = async () => {
   try {
     // 1. Crear una Colección NFT CON una Metadata Key
     console.log('[⚙️ PROCESO] Creando Colección de NFT Dinámicos...')
-    let tx = await new TokenCreateTransaction()
-      .setTokenName('Espadas Dinamicas')
-      .setTokenSymbol('ESPADA')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(supplyKey)
-      // ESTE ES EL SECRETO PARA LOS NFTs DINÁMICOS:
-      .setMetadataKey(metadataKey)
-      .freezeWith(client)
-
-    let signTx = await tx.sign(supplyKey)
-    let submitTx = await signTx.execute(client)
-    let receipt = await submitTx.getReceipt(client)
-    const tokenId = receipt.tokenId
+    const tokenId = await reuseToken('REUSE_M3_07_TOKEN', async () => {
+      const createTx = await new TokenCreateTransaction()
+        .setTokenName('Espadas Dinamicas')
+        .setTokenSymbol('ESPADA')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(supplyKey)
+        // ESTE ES EL SECRETO PARA LOS NFTs DINÁMICOS:
+        .setMetadataKey(metadataKey)
+        .freezeWith(client)
+      const signed = await createTx.sign(supplyKey)
+      return (await (await signed.execute(client)).getReceipt(client)).tokenId
+    }, { check: (t) => !!t.metadata_key })
+    let tx, signTx, submitTx, receipt // los reutilizan los pasos siguientes
 
     console.log(`[✅ ÉXITO] ¡Colección creada! ID del Token: ${tokenId.toString()}`)
 

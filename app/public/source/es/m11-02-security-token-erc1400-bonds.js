@@ -37,7 +37,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const BOND_SPECIFICATION = {
   issuer: 'Hedera Renewable Energy Holdings Inc.',
@@ -70,27 +70,26 @@ const main = async () => {
 
     // 1. Emitir el Token de Seguridad en HTS representando la Serie de Bonos
     console.log('\n[⚙️ PROCESO] Desplegando token de bonos compatible con ERC-1400 en HTS...')
-    const bondCreateTx = await new TokenCreateTransaction()
-      .setTokenName('Green Energy 2031 Bond')
-      .setTokenSymbol('BOND-GRE-31')
-      .setDecimals(0)
-      .setInitialSupply(750) // Unidades totales (500 Senior + 250 Mezzanine)
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(750)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .setFreezeKey(client.operatorPublicKey)
-      .setWipeKey(client.operatorPublicKey)
-      .setTokenMemo('erc1400:isin:US42312A1099')
-      .freezeWith(client)
-
-    const bondResponse = await bondCreateTx.execute(client)
-    const bondReceipt = await bondResponse.getReceipt(client)
-    const bondTokenId = bondReceipt.tokenId.toString()
+    const bondTokenId = (await reuseToken('REUSE_M11_02_TOKEN', async () => {
+      const bondCreateTx = await new TokenCreateTransaction()
+        .setTokenName('Green Energy 2031 Bond')
+        .setTokenSymbol('BOND-GRE-31')
+        .setDecimals(0)
+        .setInitialSupply(750) // Unidades totales (500 Senior + 250 Mezzanine)
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(750)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .setFreezeKey(client.operatorPublicKey)
+        .setWipeKey(client.operatorPublicKey)
+        .setTokenMemo('erc1400:isin:US42312A1099')
+        .freezeWith(client)
+      return (await (await bondCreateTx.execute(client)).getReceipt(client)).tokenId
+    })).toString()
 
     console.log(`[✅ ÉXITO] Token de Bonos Corporativos Desplegado: ${bondTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${getHashscanUrl(bondResponse)}`)
+    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
 
     // 2. Simular Cronograma de Pago Trimestral de Cupones
     console.log('\n===============================================================')

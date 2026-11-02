@@ -36,7 +36,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const BOND_SPECIFICATION = {
   issuer: 'Hedera Renewable Energy Holdings Inc.',
@@ -69,27 +69,26 @@ const main = async () => {
 
     // 1. Issue the Security Token on HTS representing the Bond Series
     console.log('\n[⚙️ PROCESS] Deploying ERC-1400 compliant bond token on HTS...')
-    const bondCreateTx = await new TokenCreateTransaction()
-      .setTokenName('Green Energy 2031 Bond')
-      .setTokenSymbol('BOND-GRE-31')
-      .setDecimals(0)
-      .setInitialSupply(750) // Total units (500 Senior + 250 Mezzanine)
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(750)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .setFreezeKey(client.operatorPublicKey)
-      .setWipeKey(client.operatorPublicKey)
-      .setTokenMemo('erc1400:isin:US42312A1099')
-      .freezeWith(client)
-
-    const bondResponse = await bondCreateTx.execute(client)
-    const bondReceipt = await bondResponse.getReceipt(client)
-    const bondTokenId = bondReceipt.tokenId.toString()
+    const bondTokenId = (await reuseToken('REUSE_M11_02_TOKEN', async () => {
+      const bondCreateTx = await new TokenCreateTransaction()
+        .setTokenName('Green Energy 2031 Bond')
+        .setTokenSymbol('BOND-GRE-31')
+        .setDecimals(0)
+        .setInitialSupply(750) // Total units (500 Senior + 250 Mezzanine)
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(750)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .setFreezeKey(client.operatorPublicKey)
+        .setWipeKey(client.operatorPublicKey)
+        .setTokenMemo('erc1400:isin:US42312A1099')
+        .freezeWith(client)
+      return (await (await bondCreateTx.execute(client)).getReceipt(client)).tokenId
+    })).toString()
 
     console.log(`[✅ SUCCESS] Corporate Bond Token Deployed: ${bondTokenId}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${getHashscanUrl(bondResponse)}`)
+    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
 
     // 2. Simulate Quarterly Coupon Servicing Schedule
     console.log('\n===============================================================')
