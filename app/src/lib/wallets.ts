@@ -7,6 +7,7 @@ import {
   EMPTY_WALLET, fetchLiveBalance, findAccountByEvmAddress, isAccountId,
   type BrowserWallet, type PracticeAccounts
 } from './hederaBrowser'
+import { mirrorFetch } from './mirror'
 
 export interface Wallet {
   id: string
@@ -137,7 +138,7 @@ export async function findAccountForKey (evmAddress: string, publicKeyRaw: strin
     if (id) return id
   }
   try {
-    const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${publicKeyRaw}&order=asc&limit=1`)
+    const res = await mirrorFetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${publicKeyRaw}&order=asc&limit=1`)
     if (!res.ok) return null
     return (await res.json()).accounts?.[0]?.account || null
   } catch (_) {
@@ -225,7 +226,7 @@ export async function waitForFunding (w: Wallet, { timeoutMs = 10 * 60_000, sign
   while (Date.now() < deadline && !signal?.aborted) {
     const id = await findAccountByEvmAddress(w.evmAddress).catch(() => null)
     if (id) return id
-    await new Promise((resolve) => setTimeout(resolve, 4000))
+    await new Promise((resolve) => setTimeout(resolve, 6000))
   }
   return null
 }

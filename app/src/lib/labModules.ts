@@ -10,6 +10,7 @@
  * so importing it is harmless until the lab actually needs it.
  */
 import { Buffer } from 'buffer'
+import { mirrorFetch } from './mirror'
 
 export class NodeOnlyError extends Error {
   constructor (api: string) {
@@ -269,9 +270,9 @@ const forward = (pick: (ctx: ModuleContext) => any) => new Proxy({}, {
 export async function prefetchKeyTypes (accountIds: string[]): Promise<void> {
   const map: Map<string, string> | undefined = (globalThis as any).__HBE_NODE?.keyTypes
   if (!map) return
-  await Promise.all([...new Set(accountIds)].filter((id) => !map.has(id)).slice(0, 60).map(async (id) => {
+  await Promise.all([...new Set(accountIds)].filter((id) => !map.has(id)).slice(0, 30).map(async (id) => {
     try {
-      const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${id}?transactions=false`)
+      const res = await mirrorFetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${id}?transactions=false`, { ttlMs: 60_000 })
       if (!res.ok) return
       const t = String((await res.json())?.key?._type || '')
       if (t) map.set(id, t.includes('ED25519') ? 'ed25519' : 'ecdsa')

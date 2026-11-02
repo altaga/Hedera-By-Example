@@ -13,6 +13,7 @@ import { hmac } from '@noble/hashes/hmac.js'
 import { utf8ToBytes } from '@noble/hashes/utils.js'
 import { Buffer, NodeOnlyError, adaptSolcCalls, loadVendor, prefetchKeyTypes, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
 import { RSA_CONSTANTS, createCipher, createECDH, generateKeyPairSync, privateDecrypt, publicEncrypt, sign, verify } from './nodeCrypto'
+import { isMirrorUrl, mirrorFetch } from './mirror'
 
 export interface BrowserWallet {
   accountId: string
@@ -65,7 +66,7 @@ export async function fetchLiveBalance (accountId: string): Promise<number | nul
   const id = accountId.trim()
   if (!isAccountId(id)) return null
   try {
-    const res = await fetch(`${MIRROR}/accounts/${id}`, { headers: { Accept: 'application/json' } })
+    const res = await mirrorFetch(`${MIRROR}/accounts/${id}`)
     if (!res.ok) return null
     const data = await res.json()
     if (data?.balance?.balance != null) return Number(data.balance.balance) / 100_000_000
@@ -82,7 +83,7 @@ export async function fetchLiveBalance (accountId: string): Promise<number | nul
 export async function findAccountByEvmAddress (evmAddress: string): Promise<string | null> {
   if (!/^0x[0-9a-fA-F]{40}$/.test(evmAddress)) return null
   try {
-    const res = await fetch(`${MIRROR}/accounts/${evmAddress}`, { headers: { Accept: 'application/json' } })
+    const res = await mirrorFetch(`${MIRROR}/accounts/${evmAddress}`)
     if (!res.ok) return null
     const data = await res.json()
     return typeof data?.account === 'string' ? data.account : null
@@ -295,6 +296,7 @@ function useRestTopicSubscriptions (hedera: any): void {
     let cursor: string | null = null
     const start = this._startTime ? tsString(this._startTime) : null
     const end = this._endTime ? tsString(this._endTime) : null
+    let quiet = 0
     let remaining = this._limit && Number(this._limit.toString()) > 0 ? Number(this._limit.toString()) : Infinity
     const done = () => { stopped = true; release(); try { this._completionHandler?.() } catch (_) {} }
     const poll = async () => {
@@ -305,7 +307,7 @@ function useRestTopicSubscriptions (hedera: any): void {
         if (end) url += `&timestamp=lte:${end}`
         let data: any = null
         try {
-          const res = await fetch(url)
+          const res = await mirrorFetch(url, { ttlMs: 0 })
           if (res.ok) data = await res.json()
         } catch (_) {}
         const messages: any[] = data?.messages || []
@@ -347,7 +349,9 @@ function useRestTopicSubscriptions (hedera: any): void {
           if (--remaining <= 0) return done()
         }
         if (end && messages.length === 0 && Date.now() / 1000 > Number(end.split('.')[0])) return done()
-        if (messages.length < 100) await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Poll every 2 s, slowing down to 6 s while the topic stays quiet (Mirror Node rate limits).
+        quiet = messages.length ? 0 : quiet + 1
+        if (messages.length < 100) await new Promise((resolve) => setTimeout(resolve, Math.min(6000, 2000 + quiet * 500)))
       }
     }
     poll().finally(release)
@@ -508,14 +512,14 @@ export async function executeInBrowser (
     }
     const getAccountEvmAddress = async (accountId: string) => {
       const data = await waitForMirror(async () => {
-        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
         return res.ok ? res.json() : null
       })
       return data?.evm_address || '0x' + hedera.AccountId.fromString(accountId).toEvmAddress()
     }
     const ensureFunded = async (c: any, accountId: string, minHbar: number) => {
       const account = await waitForMirror(async () => {
-        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`, { ttlMs: 0 })
         return res.ok ? res.json() : null
       })
       const current = (account?.balance?.balance ?? 0) / 1e8
@@ -533,7 +537,7 @@ export async function executeInBrowser (
       const operator = wallet.accountId
       const [savedId, owner] = String(getState(stateKey) || '').split('@')
       if (savedId && owner === operator) {
-        const token = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+        const token = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`, { ttlMs: 0 }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
         if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' &&
           !(token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
           pushLog('info', `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
@@ -567,7 +571,7 @@ export async function executeInBrowser (
         updateState('JSON_RPC_SIGNER_KEY', key.toStringDer())
       }
       const account = await waitForMirror(async () => {
-        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`)
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`, { ttlMs: 0 })
         return res.ok ? (await res.json()).account : null
       }, { timeoutMs: 60_000 })
       if (!account) throw new Error(`The Mirror Node does not list ${evmAddress} yet; try again in a minute.`)
@@ -577,7 +581,7 @@ export async function executeInBrowser (
     /** Lowest serial of tokenId that accountId still holds (see M99 findOwnedSerial). */
     const findOwnedSerial = async (tokenId: string, accountId: string) => {
       const data = await waitForMirror(async () => {
-        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}/nfts?token.id=${tokenId}&order=asc&limit=1`)
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}/nfts?token.id=${tokenId}&order=asc&limit=1`, { ttlMs: 0 })
         return res.ok ? res.json() : null
       }, { timeoutMs: 10_000 })
       return data?.nfts?.[0]?.serial_number ?? null
@@ -703,7 +707,12 @@ export async function executeInBrowser (
       getJsonRpcSigner,
     }
 
-    const virtual = createVirtualHttp(EventEmitterShim, window.fetch.bind(window))
+    // Labs' own Mirror Node reads share the site's rate limit (fresh data, no cache).
+    const labFetch = (input: any, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input?.url ?? String(input)
+      return isMirrorUrl(url) ? mirrorFetch(url, { ttlMs: 0, init }) : window.fetch(input, init)
+    }
+    const virtual = createVirtualHttp(EventEmitterShim, labFetch as typeof window.fetch)
     const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http, log: (type: 'info' | 'error', text: string) => pushLog(type, text), lang: options.lang }
     // M99's AgentCommunicationHandler is a Node module; the browser gets the bundled build.
     if (/AgentCommunicationHandler|HybridEncryption/.test(sourceCode)) {

@@ -171,10 +171,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
     const ids = walletFilter === 'all' ? accounts : [walletFilter]
     if (!ids.length) { setItems([]); return }
     try {
-      const list = await fetchResources(ids)
-      setItems(list)
-      fetchTokenLabels(list.filter((r) => r.kind === 'token').map((r) => r.id), (id, label) =>
-        setItems((cur) => cur && cur.map((r) => (r.id === id ? { ...r, label } : r))))
+      setItems(await fetchResources(ids))
     } catch (_) { setError(true); setItems([]) }
   }, [accounts, walletFilter])
 
@@ -192,6 +189,15 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
       r.id.includes(q) || (r.label || '').toLowerCase().includes(q) || r.memo.toLowerCase().includes(q) ||
       (r.labSlug || '').includes(q) || (r.labSlug && LAB_BY_SLUG.get(r.labSlug)?.lab[lang].title.toLowerCase().includes(q))))
   }, [items, kind, query, lang])
+
+  // Token names only for what is on screen (first 40), each asked once: the Mirror Node is rate-limited.
+  const labelled = React.useRef(new Set<string>())
+  useEffect(() => {
+    const want = shown.slice(0, 40).filter((r) => r.kind === 'token' && !r.label && !labelled.current.has(r.id)).map((r) => r.id)
+    if (!want.length) return
+    want.forEach((id) => labelled.current.add(id))
+    fetchTokenLabels(want, (id, label) => setItems((cur) => cur && cur.map((r) => (r.id === id ? { ...r, label } : r))))
+  }, [shown])
 
   return (
     <div className='resources' data-testid='resources-panel'>

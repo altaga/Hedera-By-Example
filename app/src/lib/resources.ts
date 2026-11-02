@@ -3,6 +3,8 @@
  * accounts, contracts, files, schedules), read from the Mirror Node, plus a
  * local log of lab runs so each resource can name the lab that made it.
  */
+import { mirrorFetch } from './mirror'
+
 const MIRROR = 'https://testnet.mirrornode.hedera.com/api/v1'
 const RUNS_KEY = 'hbe_runs_v1'
 const MAX_RUNS = 500
@@ -62,13 +64,14 @@ export function decodeBytes (value?: string | null): string {
   return printable ? text : '0x' + Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
+// Reads go through the site's Mirror Node limiter and are cached for 30 s.
 async function getJson (url: string): Promise<any> {
-  const res = await fetch(url)
+  const res = await mirrorFetch(url, { ttlMs: 30_000 })
   if (!res.ok) throw new Error(`Mirror Node ${res.status}`)
   return res.json()
 }
 
-async function fetchCreations (accountId: string, kind: ResourceKind, tx: string, pages = 3): Promise<Resource[]> {
+async function fetchCreations (accountId: string, kind: ResourceKind, tx: string, pages = 1): Promise<Resource[]> {
   const out: Resource[] = []
   let url: string | null = `${MIRROR}/transactions?account.id=${accountId}&transactiontype=${tx}&result=success&order=desc&limit=100`
   for (let i = 0; url && i < pages; i++) {
@@ -108,7 +111,7 @@ export async function fetchTokenLabels (ids: string[], onLabel: (id: string, lab
       } catch (_) {}
     }
   }
-  await Promise.all(Array.from({ length: 6 }, worker))
+  await Promise.all(Array.from({ length: 2 }, worker))
 }
 
 export interface ResourceDetail {
