@@ -935,3 +935,20 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .before-run dd { margin: 0; color: var(--text); min-width: 0; }
 .before-run .link-btn { font-size: inherit; }
 @media (max-width: 640px) { .before-run dl > div { grid-template-columns: 1fr; } }
+
+/* ---------- MCP card ---------- */
+.mcp-card { margin: 32px 0 8px; padding: 24px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-subtle); }
+.mcp-tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-family: var(--font-mono); color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); }
+.mcp-card h2 { margin: 10px 0 6px; font-size: 22px; font-weight: 600; }
+.mcp-card .lead { margin: 0 0 14px; max-width: 72ch; }
+.mcp-features { margin: 0 0 18px; padding-left: 1.2em; display: grid; gap: 6px; color: var(--text-2); font-size: 14.5px; max-width: 80ch; }
+.mcp-features strong { color: var(--text); }
+.mcp-steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; max-width: 760px; }
+.mcp-card { min-width: 0; }
+.mcp-steps h3, .mcp-try { margin: 10px 0 0; font-size: 14px; font-weight: 600; }
+.mcp-steps .cmd pre { white-space: pre; }
+.mcp-clients { flex-wrap: wrap; }
+.mcp-file { margin: 0; font-size: 13px; }
+.mcp-prompts { margin: 8px 0 14px; padding-left: 1.2em; display: grid; gap: 4px; color: var(--text-2); font-size: 14px; }
+.mcp-more { font-size: 14px; }
+@media (max-width: 640px) { .mcp-card { padding: 16px; } .mcp-clients button { flex: 1 1 auto; } }

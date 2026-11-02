@@ -1,6 +1,7 @@
 import React from 'react'
 import { INDEX, FIRST_SLUG, moduleLabel, type Lang, type ModuleMeta } from '../lib/content'
 import type { Strings } from '../lib/i18n'
+import { McpCard } from './McpCard'
 
 interface Props {
   t: Strings
@@ -32,6 +33,8 @@ export function CourseIndex ({ t, lang, modules, onSelect }: Props) {
           <li><strong>{t.how3t}.</strong> {t.how3}</li>
         </ol>
       </section>
+
+      <McpCard lang={lang} />
 
       <div className='index-modules'>
         {modules.map((mod) => (
