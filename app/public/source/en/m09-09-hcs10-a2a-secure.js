@@ -18,7 +18,7 @@
  * By signing every A2A message with the agent private key and embedding an ephemeral timestamp, autonomous agents verify the cryptographic signature of their peers and reject spoofed messages.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 08: Impersonation Attack
@@ -32,6 +32,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

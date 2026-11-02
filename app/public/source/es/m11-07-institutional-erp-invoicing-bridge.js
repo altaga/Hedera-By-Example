@@ -27,6 +27,10 @@
  * las reglas regulatorias son verificadas directamente por los nodos de consenso,
  * impidiendo que cuentas no autorizadas reciban tokens de valor en Capa 1.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo
  * - Siguiente: M12 Lab 01: Fachada Directa HTS ERC-20

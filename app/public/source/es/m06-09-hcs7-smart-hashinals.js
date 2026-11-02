@@ -18,6 +18,10 @@
  * enrutador WASM una sola vez en HCS. ¡Las billeteras e indexadores evalúan el
  * estado EVM en tiempo real al renderizar sin pagar gas recurrente!
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-7/
+ * - https://hol.org/docs/standards/hcs-1/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 08: Reconstrucción de NFT HCS-1
  * - Siguiente: M6 Lab 10: Bóveda Cifrada Zero-Trust

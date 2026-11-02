@@ -24,6 +24,10 @@
  * asíncrona desde cualquier parte del mundo. Cuando la condición de umbral se cumple
  * matemáticamente, los nodos de consenso liquidan el pago de manera atómica.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/sign-a-scheduled-transaction
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M7 Lab 06: Verificación de Login Criptográfico
  * - Siguiente: M7 Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad

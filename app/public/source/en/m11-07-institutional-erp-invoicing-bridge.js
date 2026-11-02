@@ -27,6 +27,10 @@
  * constraints are enforced directly by Hedera's gossip-about-gossip consensus nodes,
  * preventing non-compliant addresses from holding security tokens at Layer 1.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 06: Multi-Asset Pool Tokens
  * - Next:     M12 Lab 01: Direct HTS ERC-20 Facade

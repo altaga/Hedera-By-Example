@@ -23,6 +23,10 @@
  * HCS-21 SHA-256 package fingerprint verification (the core philosophy behind
  * HOL Guard), both the frontend widget and backend adapter are 100% auditable.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-12/
+ * - https://hol.org/docs/standards/hcs-21/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 07: HCS-15..18 Botanical Agent Swarms
  * - Next:     M14 Lab 09: HIP-1334 Decentralized Encrypted Mailbox

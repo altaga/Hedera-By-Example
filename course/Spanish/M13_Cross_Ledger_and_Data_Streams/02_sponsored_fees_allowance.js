@@ -22,6 +22,10 @@
  * `TransactionId.generate(sponsorId)` con doble firma; para gasto delegado de
  * tesorería, el spender autorizado firma el `TransactionId`.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1068
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
  * - Actual:    M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)

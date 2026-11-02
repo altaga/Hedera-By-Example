@@ -17,6 +17,10 @@
  * can deplatform, censor, or alter tool behavior without warning. HCS-26 ensures that
  * tool definitions and versions are permanently anchored to consensus time.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-26/
+ * - https://hol.org/docs/standards/hcs-2/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 02: HCS-25 Portable AI Trust Score
  * - Next:     M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints

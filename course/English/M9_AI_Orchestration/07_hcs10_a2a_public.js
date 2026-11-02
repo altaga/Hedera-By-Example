@@ -16,7 +16,7 @@
  * Agent-to-Agent (A2A) orchestration over open consensus topics enables decentralized machine collaboration, where autonomous models negotiate and divide tasks openly without centralized message queues.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 06: HCS-10 U2A Public
@@ -31,6 +31,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

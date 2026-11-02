@@ -14,7 +14,7 @@
  * Binding an HCS-1 inscription topic directly to an HTS non-fungible token creates a fully on-chain 100% decentralized digital asset with zero reliance on external IPFS pinning services.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 06: Hashinals Ecosystem

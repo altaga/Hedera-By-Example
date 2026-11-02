@@ -24,6 +24,11 @@
  * recurring subscription renewals, recurring payroll distributions, and liquidation
  * auctions that execute with mathematical certainty on Layer 1.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts/schedule-service
+ * - https://hips.hedera.com/hip/hip-755
+ * - https://hips.hedera.com/hip/hip-1215
+ *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 10: System Contracts Deep-Dive (0x168 & 0x16a)
  * - Next:     M9 Lab 01: AI Orchestration (HCS-1 Policy Storage)

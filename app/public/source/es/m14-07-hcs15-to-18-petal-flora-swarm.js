@@ -24,6 +24,12 @@
  * una KeyList multi-firma HCS-16 (`2-de-2`), el enjambre logra custodia colectiva
  * tolerante a fallos verificada con hashes de estado HCS-17.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-15/
+ * - https://hol.org/docs/standards/hcs-16/
+ * - https://hol.org/docs/standards/hcs-17/
+ * - https://hol.org/docs/standards/hcs-18/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 06: Chat Encriptado de Enjambre de Agentes de IA
  * - Siguiente: M14 Lab 08: HashLinks HCS-12 y Registro de Adaptadores HCS-21

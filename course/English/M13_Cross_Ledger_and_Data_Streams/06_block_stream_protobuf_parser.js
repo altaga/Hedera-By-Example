@@ -26,6 +26,10 @@
  * APIs and delivers sub-millisecond serialization speeds. Mastering Protobuf stream
  * parsing is essential for building real-time trading engines and high-speed oracles.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://hips.hedera.com/hip/hip-1081
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  * - Next:     M14 Lab 01: HCS-20 Auditable Points & Inscriptions

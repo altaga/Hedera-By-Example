@@ -17,7 +17,7 @@
  * HCS-11 establishes verifiable agent identity profiles. Without verifiable on-chain metadata, rogue actors can easily impersonate autonomous trading agents and deceive decentralized counterparties.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-11/
+ * - https://hol.org/docs/standards/hcs-11/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 03: HCS-2 Search and Resolution

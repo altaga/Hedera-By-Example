@@ -26,6 +26,10 @@
  * que los Paymasters sean extraordinariamente rentables. Patrocinar 100,000 transacciones
  * en Hedera cuesta aproximadamente $10, frente a miles de dólares en Ethereum o rollups L2.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://eips.ethereum.org/EIPS/eip-4337
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
  * - Siguiente: M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)

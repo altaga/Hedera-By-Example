@@ -23,6 +23,11 @@
  * stablecoins algorítmicas, distribuidores de tarifas) eliminan la dependencia de oráculos
  * externos y el riesgo de ataques de préstamos flash sobre oráculos desfasados.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://hips.hedera.com/hip/hip-475
+ * - https://hips.hedera.com/hip/hip-351
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 09: Piscina de Privacidad con Pruebas de Conocimiento Cero
  * - Siguiente: M8 Lab 11: Precompilación HSS Cron Autónomo en Solidity (0x16b)

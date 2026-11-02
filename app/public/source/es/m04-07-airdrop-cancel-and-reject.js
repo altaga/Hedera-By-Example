@@ -20,6 +20,9 @@
  * En Hedera, `TokenRejectTransaction` purga los tokens no deseados de vuelta al emisor
  * en la capa de consenso ignorando cualquier tarifa personalizada maliciosa.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-904
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 06: Airdrops Nativos (HIP-904)
  * - Siguiente: M4 Lab 08: Orderbook y Liquidación Triangular Atómica en L1

@@ -21,6 +21,10 @@
  * criptografía autenticada en el cliente (ECDH + AES-GCM), se crea una red
  * de inteligencia privada, resistente a la censura y matemáticamente segura.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-15/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
  * - Siguiente: M14 Lab 07: Enjambres Botánicos HCS-15..18

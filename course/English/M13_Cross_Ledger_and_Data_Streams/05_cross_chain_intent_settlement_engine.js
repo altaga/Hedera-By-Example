@@ -17,6 +17,10 @@
  * move liquidity. Intents shift execution risk to professional solvers while
  * Hedera guarantees atomic final settlement in 2.5 seconds for fractions of a cent.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1068
+ * - https://eips.ethereum.org/EIPS/eip-7683
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
  * - Next:     M13 Lab 06: Protobuf Block Stream Parser & State Change Indexer

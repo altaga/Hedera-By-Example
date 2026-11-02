@@ -30,6 +30,9 @@
  * On Hedera, batch transfers inside an atomic `TransferTransaction` guarantee that
  * either ALL investors are paid simultaneously, or none are.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 07: Institutional ERP Invoicing Bridge
  * - Next:     M12 Lab 01: Modern EVM Tooling with Viem & Foundry

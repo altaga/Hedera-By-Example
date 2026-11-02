@@ -18,6 +18,9 @@
  * puede verse limitado por asociaciones de tokens o costos de gas. HCS-20 permite un
  * rendimiento de transacciones ilimitado a un costo fijo de $0.0001 por actualización.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-20/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
  * - Siguiente: M14 Lab 02: Puntuación de Confianza de IA HCS-25

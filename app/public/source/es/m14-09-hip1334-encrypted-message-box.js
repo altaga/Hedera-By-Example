@@ -28,6 +28,9 @@
  * confidencialidad absoluta. Aunque la transacción se transmite en una red pública
  * Byzantine Fault Tolerant, ningún espía ni nodo de consenso puede leer el contenido.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1334
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 08: HashLinks HCS-12 y Adaptadores Verificados HCS-21
  * - Siguiente: M14 Lab 10: Servidor MCP Hashnet y Firewall de Políticas HOL Guard

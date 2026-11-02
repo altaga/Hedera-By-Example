@@ -19,7 +19,7 @@
  * Los topics públicos de consenso permiten que cualquiera publique mensajes. Simular un ataque de suplantación demuestra por qué la comunicación no autenticada entre agentes es vulnerable a comandos no autorizados.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 07: Comunicación Agente-a-Agente (A2A)
@@ -34,6 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
@@ -43,7 +44,7 @@
 
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, getClient, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
 
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
@@ -61,11 +62,12 @@ const main = async () => {
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  const sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
+  // Llave de sesión compartida por los agentes: se crea la primera vez y los Labs 08-10 la reutilizan.
+  let sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivKeyDer) {
-    console.error('[❌ FALLO] Falta HCS10_SESSION_PRIVATE_KEY. Asegúrate de que M9 Lab 00 haya inicializado el entorno.')
-    process.exitCode = 1
-    return
+    sessionPrivKeyDer = PrivateKey.generateECDSA().toStringRaw()
+    updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivKeyDer)
+    console.log('[ℹ️ INFO] Se generó una llave de sesión ECDSA nueva para Agente A ↔ Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
 

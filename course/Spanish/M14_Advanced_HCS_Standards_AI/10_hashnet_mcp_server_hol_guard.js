@@ -32,6 +32,10 @@
  * Al interponer un servidor MCP detrás de un cortafuegos de políticas como HOL Guard,
  * los agentes autónomos operan productivamente dentro de límites matemáticos estrictos.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://modelcontextprotocol.io/specification
+ * - https://hol.org/docs/standards/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
  * - Siguiente: Curso Completado (Maestría Alcanzada)

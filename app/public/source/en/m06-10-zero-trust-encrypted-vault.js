@@ -24,6 +24,10 @@
  * consensus messages are indistinguishable from pseudorandom noise, and any
  * tamper attempt fails the 128-bit Galois Message Authentication Code (GMAC).
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-1/
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 09: HCS-7 Smart Hashinals
  * - Next:     M7 Lab 01: Native Threshold Authority

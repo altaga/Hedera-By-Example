@@ -18,7 +18,7 @@
  * El estándar HCS-1 permite inscripciones on-chain altamente económicas: fragmentar archivos en mensajes ordenados de consenso en vez de almacenamiento en smart contracts reduce los costos en un 99%.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M6 Lab 03: Carga Masiva (Bucket)

@@ -18,7 +18,7 @@
  * La mensajería de Usuario a Agente (U2A) en consenso crea un registro de auditoría inmutable de instrucciones humanas, asegurando responsabilidad legal cuando los agentes ejecutan acciones financieras.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 05: Identidad Única Agéntica (HCS-14)
@@ -34,6 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]

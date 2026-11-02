@@ -17,6 +17,10 @@
  * (Ronin, Wormhole, Nomad). With CLPR there is no shared custodial escrow:
  * Hedera's consensus truth is verified mathematically on the destination EVM.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
  * - Next:     M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)

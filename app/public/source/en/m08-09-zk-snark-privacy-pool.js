@@ -27,6 +27,9 @@
  * Enterprise privacy does not require private or permissioned blockchains—it can
  * be deployed directly on Hedera's public consensus layer.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
+ *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 08: Advanced HTS Precompiles
  * - Next:     M8 Lab 10: System Contracts Deep-Dive (0x168 & 0x16a)

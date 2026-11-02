@@ -17,6 +17,10 @@
  * multi-sig (Ronin, Wormhole, Nomad). Con CLPR no hay custodia compartida:
  * la verdad criptográfica de Hedera es probada matemáticamente en la máquina EVM de destino.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 04: Arquitectura Scaffold-HBAR
  * - Actual:    M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)

@@ -31,6 +31,10 @@
  * Node for remaining association slots, an NFT creator can guarantee whether an asset
  * drops directly into the collector's wallet or enters the HIP-904 pending queue.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-412
+ * - https://hips.hedera.com/hip/hip-904
+ *
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 09: HIP-850 Treasury NFT Lock
  * - Next:     M4 Lab 01: HBAR & Token Atomic Transfers

@@ -21,6 +21,10 @@
  * client-side authenticated cryptography (ECDH + AES-GCM), you create a
  * censorship-resistant, perfectly private intelligence network.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-15/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 05: HCS-28 Agent Audit Stream
  * - Next:     M14 Lab 07: HCS-15..18 Botanical Agent Swarms

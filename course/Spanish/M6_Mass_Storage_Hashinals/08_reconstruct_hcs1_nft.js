@@ -14,7 +14,7 @@
  * La verificación en el cliente de inscripciones NFT HCS-1 garantiza su autenticidad: las billeteras pueden consultar el Mirror Node, reensamblar los fragmentos en memoria y renderizar el arte sin servidores externos.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M6 Lab 07: NFT Nativo HCS-1

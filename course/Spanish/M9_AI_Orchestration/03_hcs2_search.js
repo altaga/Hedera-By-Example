@@ -18,7 +18,7 @@
  * El descubrimiento autónomo de agentes requiere consultar registros HCS-2 con etiquetas semánticas. Los agentes filtran capacidades de pares en consenso sin exponer credenciales ni llaves de API.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-2/
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 02: Registros de Identidad IA (HCS-2)

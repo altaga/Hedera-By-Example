@@ -16,7 +16,7 @@
  * AI agents require immutable memory. By inscribing large prompt templates and knowledge baselines onto HCS-1 topics, agents verify cognitive provenance and resist prompt tampering attacks.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool

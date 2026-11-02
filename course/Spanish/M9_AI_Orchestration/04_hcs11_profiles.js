@@ -18,7 +18,7 @@
  * HCS-11 establece perfiles de identidad verificables para agentes. Sin metadatos on-chain verificados, actores maliciosos pueden suplantar agentes de trading y engañar a contrapartes descentralizadas.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-11/
+ * - https://hol.org/docs/standards/hcs-11/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 03: Búsqueda y Resolución HCS-2

@@ -20,6 +20,9 @@
  * On Hedera, `TokenRejectTransaction` purges unwanted tokens back to the issuer at the
  * consensus layer while bypassing any malicious custom fee schedules.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-904
+ *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 06: Native Airdrops (HIP-904)
  * - Next:     M4 Lab 08: Orderbook & Triangular L1 Settlement

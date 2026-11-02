@@ -32,6 +32,10 @@
  * By placing an MCP server behind an active policy firewall like HOL Guard,
  * autonomous agents operate productively within strict mathematical boundaries.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://modelcontextprotocol.io/specification
+ * - https://hol.org/docs/standards/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 09: HIP-1334 Decentralized Encrypted Mailbox
  * - Next:     Course Complete (Mastery Achieved)

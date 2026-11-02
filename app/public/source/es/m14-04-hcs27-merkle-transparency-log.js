@@ -18,6 +18,10 @@
  * de la web y los rollups de conocimiento cero. Se logra el costo económico de las bases
  * de datos off-chain con la finalidad matemática inquebrantable de Hedera Hashgraph.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-27/
+ * - https://hol.org/docs/libraries/standards-sdk/hcs-27/overview
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes HCS-26
  * - Siguiente: M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28

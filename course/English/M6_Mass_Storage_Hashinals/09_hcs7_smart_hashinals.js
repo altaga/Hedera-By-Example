@@ -18,6 +18,10 @@
  * WASM transformation router once on HCS. Indexers and wallets evaluate the
  * live EVM state deterministically at render time with zero recurring gas!
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-7/
+ * - https://hol.org/docs/standards/hcs-1/
+ *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 08: HCS-1 NFT Reconstruction
  * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault

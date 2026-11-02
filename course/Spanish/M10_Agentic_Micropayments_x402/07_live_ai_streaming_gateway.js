@@ -25,6 +25,10 @@
  * Hedera y costos de fracción de centavo (\$0.0001), las pasarelas de streaming de IA
  * habilitan una verdadera economía de máquina con pago por consumo sin tarjetas ni registros.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/solutions/ai/x402
+ * - https://html.spec.whatwg.org/multipage/server-sent-events.html
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M10 Lab 06: Agente de Mercado Autónomo
  * - Siguiente: M11 Lab 01: Registro de Identidad ERC-3643

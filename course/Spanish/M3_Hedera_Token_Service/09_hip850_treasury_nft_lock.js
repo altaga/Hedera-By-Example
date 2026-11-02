@@ -19,6 +19,10 @@
  * 10,000 cajas misteriosas en tesorería, revelar sus metadatos con la Supply Key, y una vez
  * entregadas al usuario, la red garantiza matemáticamente que nadie jamás podrá alterar su activo.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-850
+ * - https://hips.hedera.com/hip/hip-657
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M3 Lab 08: Esquema de Metadatos HIP-412
  * - Siguiente: M4 Lab 01: Transferencias HBAR

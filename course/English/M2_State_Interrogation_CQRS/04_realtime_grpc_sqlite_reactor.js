@@ -22,6 +22,10 @@
  * treat the public ledger as the immutable log of truth and use fast embedded SQL
  * engines as decentralized CQRS read views.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+ * - https://nodejs.org/api/sqlite.html
+ *
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 03: Recursive Pagination
  * - Next:     M2 Lab 05: Circuit Breaker & Rate Limiter

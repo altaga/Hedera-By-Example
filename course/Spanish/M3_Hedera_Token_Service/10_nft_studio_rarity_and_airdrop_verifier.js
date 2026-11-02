@@ -34,6 +34,10 @@
  * caerá directamente en la billetera del coleccionista o si entrará en la cola
  * de airdrops pendientes de HIP-904.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-412
+ * - https://hips.hedera.com/hip/hip-904
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M3 Lab 09: Bloqueo de Tesorería NFT HIP-850
  * - Siguiente: M4 Lab 01: Transferencias Atómicas de HBAR y Tokens

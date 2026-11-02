@@ -19,6 +19,10 @@
  * of clearinghouse reconciliation. On Hedera, multi-asset Pool Token creation and
  * collateral transfers settle atomically in 2.5 seconds for $0.001.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 05: RWA Invoice Factoring
  * - Next:     M11 Lab 07: Institutional ERP Integration Bridge

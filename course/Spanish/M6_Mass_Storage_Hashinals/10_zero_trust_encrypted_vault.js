@@ -24,6 +24,10 @@
  * de sobre autorizada, las cargas en consenso son indistinguibles de ruido seudoaleatorio,
  * y cualquier intento de alteración invalida el código de autenticación GMAC de 128 bits.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-1/
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 09: Smart Hashinals HCS-7
  * - Siguiente: M7 Lab 01: Umbrales Multifirma Nativos

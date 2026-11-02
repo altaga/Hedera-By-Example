@@ -28,6 +28,9 @@
  * Al combinar particiones de streaming empresarial con commits periódicos de marcas
  * de agua en HCS, obtienes el rendimiento de Kafka con la certeza criptográfica de Hedera.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M5 Lab 07: Motor de Ingesta por Lotes Merkle
  * - Siguiente: M6 Lab 01: HFS Nativo

@@ -26,6 +26,10 @@
  * cost-effective. Sponsoring 100,000 user transactions on Hedera costs roughly $10,
  * compared to thousands of dollars on Ethereum or Layer-2 rollups.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://eips.ethereum.org/EIPS/eip-4337
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 05: EIP-7702 Pectra Account Delegation
  * - Next:     M13 Lab 01: CLPR State Proof Verification (HIP-1535)

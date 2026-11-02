@@ -23,6 +23,9 @@
  * masivo. Mover la verificación de secuencias fuera de cadena mientras se asientan raíces
  * Merkle en HCS permite a empresas procesar más de 100,000 ops/seg a costos sub-centavo.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M5 Lab 06: Tópicos Monetizados HIP-991
  * - Siguiente: M5 Lab 08: Puente Empresarial de Eventos Kafka a HCS

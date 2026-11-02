@@ -17,6 +17,10 @@
  * If a rogue agent hallucinates or defaults on a settlement, its HCS-25 score drops
  * permanently on the public ledger, protecting the entire ecosystem.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/
+ * - https://hol.org/docs/standards/hcs-26/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 01: HCS-20 Auditable Points
  * - Next:     M14 Lab 03: HCS-26 Agent Skills Registry

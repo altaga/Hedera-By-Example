@@ -31,6 +31,9 @@
  * consigues una liquidación instantánea, sin colateral y libre de riesgo por una
  * fracción de centavo.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 08: Libro de Órdenes en Memoria y Liquidación L1 Triangular
  * - Siguiente: M5 Lab 01: Temas Inmutables

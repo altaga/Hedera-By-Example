@@ -26,6 +26,10 @@
  * Hedera provides cryptographic timelocks and veto deletion directly in the core
  * consensus protocol. Scheduled transactions cannot be hijacked, re-ordered, or front-run.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-423
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
+ *
  * [ LEARNING PATH ]
  * - Previous: M7 Lab 07: Webhook-Driven Autonomous Treasury DAO
  * - Next:     M8 Lab 01: Smart Contract Deployment

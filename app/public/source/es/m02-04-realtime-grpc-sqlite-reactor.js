@@ -22,6 +22,10 @@
  * tradicionales; tratan al ledger público como la bitácora inmutable de verdad y
  * utilizan motores SQL embebidos de alta velocidad como vistas de lectura CQRS descentralizadas.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api
+ * - https://nodejs.org/api/sqlite.html
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M2 Lab 03: Paginación Recursiva
  * - Actual:   M2 Lab 04: Reactor de Event Sourcing en Tiempo Real (SQLite CQRS)

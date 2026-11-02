@@ -24,6 +24,12 @@
  * HCS-16 Threshold KeyList (`2-of-2`), the swarm achieves fault-tolerant collective
  * custody verified by HCS-17 state hashes.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-15/
+ * - https://hol.org/docs/standards/hcs-16/
+ * - https://hol.org/docs/standards/hcs-17/
+ * - https://hol.org/docs/standards/hcs-18/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 06: Encrypted AI Agent Swarm Chat
  * - Next:     M14 Lab 08: HCS-12 HashLinks & HCS-21 Adapter Registry

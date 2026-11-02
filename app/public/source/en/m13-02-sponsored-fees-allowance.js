@@ -22,6 +22,10 @@
  * `TransactionId.generate(sponsorId)` and co-sign; for autonomous treasury
  * spending, the authorized spender signs the `TransactionId`.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1068
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 01: CLPR State Proof Verification (HIP-1535)
  * - Next:     M13 Lab 03: Block Stream & TSS Signature Verification (HIP-1056)

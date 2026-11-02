@@ -19,7 +19,7 @@
  * El consenso ofrece ordenamiento justo, pero el cifrado híbrido en el cliente (ECDH + AES-256-GCM) garantiza confidencialidad militar: los terceros en el ledger público solo ven texto cifrado indescifrable.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 10: Defensa Activa contra Adversarios
@@ -34,6 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]

@@ -20,6 +20,10 @@
  * and once delivered to collectors, the network mathematically guarantees that
  * nobody can ever mutate their asset again.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-850
+ * - https://hips.hedera.com/hip/hip-657
+ *
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 08: HIP-412 Metadata Schema
  * - Next:     M4 Lab 01: HBAR Transfers

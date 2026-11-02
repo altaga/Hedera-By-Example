@@ -18,6 +18,10 @@
  * Si un agente alucina o incumple un acuerdo de liquidación, su puntuación HCS-25 se degrada
  * permanentemente en el ledger público, alertando y protegiendo a todo el ecosistema.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/
+ * - https://hol.org/docs/standards/hcs-26/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 01: Puntos Auditables HCS-20
  * - Siguiente: M14 Lab 03: Registro de Habilidades de Agentes HCS-26

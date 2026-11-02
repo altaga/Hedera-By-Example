@@ -17,6 +17,10 @@
  * node record files. A unified Block Stream with compact TSS proofs allows any
  * mobile wallet or smart contract to verify Hedera finality in O(1) time.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://hips.hedera.com/hip/hip-1081
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
  * - Next:     M13 Lab 04: Block Node Discovery & Data Lake (HIP-1081 / HIP-1137)

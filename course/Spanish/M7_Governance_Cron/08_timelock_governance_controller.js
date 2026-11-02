@@ -26,6 +26,10 @@
  * y operar, Hedera ofrece timelocks criptográficos y eliminación por veto directamente
  * en el protocolo de consenso. Las transacciones programadas no pueden ser secuestradas ni adelantadas (front-run).
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-423
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M7 Lab 07: DAO de Tesorería Autónoma Guiada por Webhooks
  * - Siguiente: M8 Lab 01: Despliegue de Contratos Inteligentes

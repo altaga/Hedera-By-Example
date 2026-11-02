@@ -16,7 +16,7 @@
  * Public consensus topics allow anyone to broadcast messages. Simulating an impersonation attack demonstrates why unauthenticated agent communication is vulnerable to spoofing and unauthorized commands.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 07: HCS-10 A2A Public
@@ -30,6 +30,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

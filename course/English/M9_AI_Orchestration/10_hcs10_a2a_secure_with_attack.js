@@ -16,7 +16,7 @@
  * Active cryptographic defense in HCS-10 intercepts replay and forged messages in real time, proving that cryptographic provenance neutralizes man-in-the-middle attacks on public ledgers.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 09: HCS-10 A2A Secure
@@ -30,7 +30,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Run first: M9 Lab 09 (this lab reads what it saved).
+ * - Run first: M9 Lab 04, M9 Lab 09 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

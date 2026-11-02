@@ -18,7 +18,7 @@
  * La orquestación de Agente a Agente (A2A) sobre topics abiertos de consenso permite colaboración descentralizada entre máquinas, donde modelos autónomos negocian tareas sin colas de mensajes centrales.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 06: Interacción Humano-a-Agente (U2A)
@@ -34,6 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]

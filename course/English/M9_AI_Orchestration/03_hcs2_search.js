@@ -16,7 +16,7 @@
  * Autonomous agent discovery requires querying HCS-2 registries with semantic tags. Agents dynamically filter peer capabilities over consensus without exposing API keys or credentials.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-2/
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 02: HCS-2 Registries

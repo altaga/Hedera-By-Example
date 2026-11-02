@@ -17,6 +17,10 @@
  * los auditores necesitan una "caja negra" inalterable.
  * HCS-28 convierte a Hedera en la grabadora de vuelo definitiva para la IA autónoma.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/
+ * - https://hol.org/docs/standards/hcs-27/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
  * - Siguiente: M14 Lab 06: Chat Encriptado de Enjambre de Agentes (P2P sobre HCS)

@@ -17,7 +17,7 @@
  * Reconstruir activos inscritos exige ordenar los fragmentos de HCS por número de secuencia y verificar el hash SHA-256 acumulado antes de ensamblar las imágenes o documentos en base64.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M6 Lab 04: Almacenamiento Económico HCS-1

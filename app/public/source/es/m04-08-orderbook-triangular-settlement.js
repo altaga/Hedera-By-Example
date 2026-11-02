@@ -23,6 +23,9 @@
  * multi-participante. La `TransferTransaction` nativa de Capa 1 en Hedera soporta de fábrica
  * transferencias atómicas multi-token y multi-cuenta con costos predecibles de fracciones de centavo.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 07: Cancelación de Airdrop y Rechazo de Tokens (HIP-904)
  * - Siguiente: M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica L1

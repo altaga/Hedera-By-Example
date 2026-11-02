@@ -16,7 +16,7 @@
  * User-to-Agent (U2A) consensus messaging creates an immutable audit trail of human prompts and instructions, ensuring legal accountability when autonomous agents execute financial actions.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 05: HCS-14 UAID
@@ -32,6 +32,7 @@
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

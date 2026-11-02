@@ -16,7 +16,7 @@
  * HCS-2 registries allow AI agents to publish and discover topic schemas on-chain, eliminating the need for centralized service registries or vulnerable third-party web directories.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-2/
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 01: HCS-1 Storage

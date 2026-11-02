@@ -18,6 +18,9 @@
  * constrained by account token associations or gas costs. HCS-20 allows limitless
  * transaction throughput at $0.0001 per update.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-20/
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 05: Intent Settlement Engine
  * - Next:     M14 Lab 02: HCS-25 Portable AI Trust Score

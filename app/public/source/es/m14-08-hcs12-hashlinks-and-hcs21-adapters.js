@@ -24,6 +24,10 @@
  * HCS-12 con verificación de huella SHA-256 en HCS-21 (la base de HOL Guard),
  * tanto el widget visual como el adaptador quedan 100% auditados en consenso.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-12/
+ * - https://hol.org/docs/standards/hcs-21/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 07: Enjambres Botánicos HCS-15..18
  * - Siguiente: M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334

@@ -19,6 +19,10 @@
  * HCS-26 garantiza que las definiciones y versiones de las herramientas estén ancladas
  * permanentemente en el tiempo de consenso.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hol.org/docs/standards/hcs-26/
+ * - https://hol.org/docs/standards/hcs-2/
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 02: Puntuación de Confianza de IA HCS-25
  * - Siguiente: M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27

@@ -17,6 +17,10 @@
  * de archivos desarticulados. Un Block Stream unificado con firmas TSS compactas permite
  * que cualquier smartphone o contrato inteligente verifique la integridad de Hedera en O(1).
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://hips.hedera.com/hip/hip-1081
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
  * - Actual:    M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)

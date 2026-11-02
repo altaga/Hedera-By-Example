@@ -14,7 +14,7 @@
  * Client-side verification of HCS-1 NFT inscriptions guarantees provenance: wallets can query the Mirror Node, reassemble the chunks in browser memory, and render verified on-chain artwork autonomously.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 07: HCS-1 Native NFT

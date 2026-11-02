@@ -23,6 +23,9 @@
  * Hedera's native Layer 1 `TransferTransaction` supports multi-token, multi-account
  * atomic transfers out of the box with fixed, sub-cent transaction fees.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 07: Airdrop Cancel & Reject (HIP-904)
  * - Next:     M4 Lab 09: Zero-Capital Flash Loans & Atomic L1 Settlement

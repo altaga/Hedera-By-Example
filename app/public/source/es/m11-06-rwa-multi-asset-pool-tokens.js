@@ -20,6 +20,10 @@
  * de conciliación en cámaras de compensación. En Hedera, la creación de Pool Tokens
  * multi-activo se liquida atómicamente en 2.5 segundos por $0.001 USD.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 05: Factoraje de Facturas RWA
  * - Siguiente: M11 Lab 07: Puente de Integración ERP Institucional

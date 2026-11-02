@@ -16,7 +16,7 @@
  * HCS-6 define un estándar para registros descentralizados sobre consenso. Anclar configuraciones clave-valor a HCS permite que aplicaciones distribuidas consulten registros a prueba de censura sin bases de datos centrales.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-6/
+ * - https://hol.org/docs/standards/hcs-6/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M5 Lab 04: HCS Ping-Pong

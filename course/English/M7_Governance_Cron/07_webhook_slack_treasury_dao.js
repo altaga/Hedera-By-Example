@@ -23,6 +23,10 @@
  * asynchronously from anywhere in the world. When the threshold condition is
  * mathematically satisfied, consensus nodes finalize the payout atomically.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/sign-a-scheduled-transaction
+ *
  * [ LEARNING PATH ]
  * - Previous: M7 Lab 06: Cryptographic Login with DID
  * - Next:     M7 Lab 08: Timelock Governance Controller & Security Council Veto

@@ -18,7 +18,7 @@
  * Los registros HCS-2 permiten a los agentes de IA publicar y descubrir esquemas de temas on-chain, sin depender de registros de servicios centralizados ni de directorios web de terceros vulnerables.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-2/
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 01: Persistencia IA (HCS-1)

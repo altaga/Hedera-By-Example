@@ -19,7 +19,7 @@
  * Los agentes de IA requieren memoria inmutable. Inscribir plantillas de prompts y bases de conocimiento en topics HCS-1 permite verificar la procedencia cognitiva y resistir ataques de alteración de prompts.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M8 Lab 09: Fondo de Privacidad Zero-Knowledge

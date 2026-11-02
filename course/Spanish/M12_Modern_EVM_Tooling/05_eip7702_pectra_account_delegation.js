@@ -25,6 +25,10 @@
  * seguridad Web3. Combinado con las tarifas fijas de fracciones de centavo de Hedera,
  * los usuarios obtienen operaciones por lotes sin gas y sin desplegar proxies costosos.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://eips.ethereum.org/EIPS/eip-7702
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 04: Arquitectura Full-Stack Scaffold-HBAR
  * - Siguiente: M12 Lab 06: Paymaster ERC-4337 y Operaciones de Usuario Sin Gas

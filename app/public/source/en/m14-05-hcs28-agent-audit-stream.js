@@ -17,6 +17,10 @@
  * investigators need a tamper-proof flight data recorder ("black box").
  * HCS-28 turns Hedera into that immutable flight recorder for autonomous AI.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/
+ * - https://hol.org/docs/standards/hcs-27/
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  * - Next:     M14 Lab 06: Encrypted AI Agent Swarm Chat (P2P Over HCS)

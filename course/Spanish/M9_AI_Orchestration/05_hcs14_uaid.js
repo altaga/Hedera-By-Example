@@ -18,7 +18,7 @@
  * El Universal Agent ID (HCS-14) ofrece un URI criptográfico para entidades de inteligencia artificial, resolviendo la llave pública del agente, sus topics de consenso y sus habilidades verificadas en enjambre.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-14/
+ * - https://hol.org/docs/standards/hcs-14/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 04: Perfiles de Usuario (HCS-11)
@@ -27,6 +27,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  *
  * [ CÓMO EJECUTAR ]
  * node 05_hcs14_uaid.js

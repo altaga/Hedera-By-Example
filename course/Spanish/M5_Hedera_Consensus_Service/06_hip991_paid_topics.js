@@ -18,6 +18,9 @@
  * sin necesidad de contratos. Para proteger al emisor de aumentos bruscos de tarifa,
  * el remitente especifica un `CustomFeeLimit` como techo máximo autorizado.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-991
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M5 Lab 05: Registro HCS-6
  * - Siguiente: M5 Lab 07: Ingesta Masiva de Lotes con Árboles Merkle en HCS

@@ -19,7 +19,7 @@
  * Al firmar cada mensaje A2A con la llave privada del agente e incluir marcas de tiempo efímeras, los agentes autónomos verifican la firma criptográfica de sus pares y descartan mensajes falsificados.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 08: Simulación de Ataque de Suplantación
@@ -34,6 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 04 de M9, Lab 08 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]

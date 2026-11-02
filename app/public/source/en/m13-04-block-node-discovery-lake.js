@@ -16,6 +16,10 @@
  * federated network of Block Nodes prevents ledger state growth from bloating
  * core validators, ensuring fixed fees and long-term decentralization.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1081
+ * - https://hips.hedera.com/hip/hip-1137
+ *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 03: Block Stream & TSS Verification (HIP-1056)
  * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine

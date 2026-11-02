@@ -18,6 +18,10 @@
  * and modern zero-knowledge rollups. You achieve the economic cost of off-chain databases
  * with the mathematical finality of Hedera Hashgraph.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hol.org/docs/standards/hcs-27/
+ * - https://hol.org/docs/libraries/standards-sdk/hcs-27/overview
+ *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 03: HCS-26 Agent Skills Registry
  * - Next:     M14 Lab 05: HCS-28 Agent Audit Stream

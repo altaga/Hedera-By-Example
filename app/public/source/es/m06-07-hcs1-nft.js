@@ -14,7 +14,7 @@
  * Vincular un topic de inscripción HCS-1 directamente a un NFT en HTS crea un activo digital 100% descentralizado e inmutable sin depender de servicios externos de fijación en IPFS.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M6 Lab 06: Ecosistema Hashinals

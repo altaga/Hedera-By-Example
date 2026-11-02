@@ -17,7 +17,7 @@
  * Consensus provides fair ordering, but client-side hybrid encryption (ECDH + AES-256-GCM) ensures military-grade confidentiality: third parties on the public ledger see only undecipherable ciphertext.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 10: Secure with Attack
@@ -31,6 +31,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]

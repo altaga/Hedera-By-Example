@@ -18,7 +18,7 @@
  * La defensa activa en HCS-10 intercepta ataques de repetición y mensajes falsificados en tiempo real, demostrando que la procedencia criptográfica neutraliza ataques de intermediario en ledgers públicos.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hashgraphonline.com/standards/hcs-10/
+ * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M9 Lab 09: Comunicación Segura y Verificada
@@ -33,7 +33,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Ejecuta antes: Lab 09 de M9 (este lab lee lo que guardó).
+ * - Ejecuta antes: Lab 04 de M9, Lab 08 de M9 (este lab lee lo que guardó).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]

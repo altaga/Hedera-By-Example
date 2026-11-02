@@ -15,7 +15,7 @@
  * Reconstructing inscribed assets requires sorting HCS chunks by sequence number and verifying the cumulative SHA-256 integrity hash before assembling base64 image or document payloads.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 04: Economic HCS-1

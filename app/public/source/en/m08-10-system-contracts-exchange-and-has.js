@@ -23,6 +23,11 @@
  * (lending markets, algorithmic stablecoins, fee distributors) eliminate external
  * oracle dependencies and eliminate the risk of flash-loan oracle manipulation.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://hips.hedera.com/hip/hip-475
+ * - https://hips.hedera.com/hip/hip-351
+ *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool
  * - Next:     M8 Lab 11: Solidity Autonomous HSS Cron Precompile (0x16b)

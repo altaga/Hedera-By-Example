@@ -18,6 +18,9 @@
  * engine. To protect senders against sudden fee spikes by a rogue topic admin,
  * senders specify a `CustomFeeLimit` (`setMaxCustomFee`) on their message submission.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-991
+ *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 05: HCS-6 Registry
  * - Next:     M5 Lab 07: High-Throughput Merkle Batch Ingestion

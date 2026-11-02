@@ -27,6 +27,9 @@
  * La privacidad empresarial no requiere cadenas privadas o permisionadas: puede
  * desplegarse directamente sobre la capa de consenso pública de Hedera.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 08: Precompilados HTS Avanzados
  * - Siguiente: M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)

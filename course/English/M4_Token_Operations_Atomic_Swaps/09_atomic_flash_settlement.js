@@ -29,6 +29,9 @@
  * on Hedera. By composing multiple transfers in a single TransferTransaction,
  * you achieve instant, zero-collateral, risk-free settlement for a fraction of a cent.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Clearing
  * - Next:     M5 Lab 01: Immutable Topics

@@ -28,6 +28,9 @@
  * By combining enterprise streaming partitions with periodic HCS watermark commits,
  * you achieve Kafka-grade throughput with Hedera-grade cryptographic finality.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 07: Merkle Batch Ingestion Engine
  * - Next:     M6 Lab 01: Native HFS

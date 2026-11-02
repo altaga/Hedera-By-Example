@@ -17,6 +17,10 @@
  * histórico a una red federada de Block Nodes evita que el tamaño del ledger sature
  * a los validadores principales, garantizando tarifas fijas y descentralización duradera.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1081
+ * - https://hips.hedera.com/hip/hip-1137
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 03: Flujo de Bloques y Verificación TSS (HIP-1056)
  * - Siguiente: M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain

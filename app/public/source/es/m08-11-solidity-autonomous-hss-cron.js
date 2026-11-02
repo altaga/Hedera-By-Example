@@ -24,6 +24,11 @@
  * automática de rendimientos, renovaciones periódicas de suscripciones, nóminas recurrentes
  * y subastas de liquidación que se ejecutan con certeza matemática en Capa 1.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts/schedule-service
+ * - https://hips.hedera.com/hip/hip-755
+ * - https://hips.hedera.com/hip/hip-1215
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)
  * - Siguiente: M9 Lab 01: Persistencia IA (HCS-1)

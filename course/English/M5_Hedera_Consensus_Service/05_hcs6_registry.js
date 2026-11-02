@@ -15,7 +15,7 @@
  * HCS-6 defines a standardized schema for decentralized registries over consensus. By anchoring key-value configurations to HCS, distributed applications achieve tamper-proof registry lookups without centralized databases.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-6/
+ * - https://hol.org/docs/standards/hcs-6/
  *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 04: HCS Ping-Pong

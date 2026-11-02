@@ -25,6 +25,10 @@
  * Combined with Hedera's sub-cent fixed transaction fees, users get seamless
  * gas-sponsored atomic batching without deploying multi-dollar smart contract proxies.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://eips.ethereum.org/EIPS/eip-7702
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
  * - Next:     M12 Lab 06: ERC-4337 Paymaster & Gasless UserOperations

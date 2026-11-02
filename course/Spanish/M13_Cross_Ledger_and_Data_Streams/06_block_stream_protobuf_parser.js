@@ -25,6 +25,10 @@
  * comparación con las APIs REST JSON y ofrece velocidades de deserialización en sub-milisegundos.
  * Dominar la ingesta de Protobuf es fundamental para motores de trading y oráculos de alta velocidad.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1056
+ * - https://hips.hedera.com/hip/hip-1081
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain
  * - Siguiente: M14 Lab 01: Puntos Inscriptos y Auditables HCS-20

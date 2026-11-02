@@ -16,7 +16,7 @@
  * The HCS-1 standard enables cost-effective on-chain inscriptions: by sharding large files across ordered consensus messages instead of expensive smart contract storage, developers achieve 99% cost reduction.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hashgraphonline.com/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 03: Batch Uploading

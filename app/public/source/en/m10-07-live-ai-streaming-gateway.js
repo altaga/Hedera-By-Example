@@ -24,6 +24,10 @@
  * and sub-cent fees (\$0.0001), streaming AI gateways enable true pay-as-you-stream
  * machine economics without credit cards or account registrations.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/solutions/ai/x402
+ * - https://html.spec.whatwg.org/multipage/server-sent-events.html
+ *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 06: Autonomous Market Agent
  * - Next:     M11 Lab 01: Regulated Token ERC-3643

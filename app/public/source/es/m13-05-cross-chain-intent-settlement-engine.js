@@ -17,6 +17,10 @@
  * Las intenciones trasladan el riesgo al solver profesional, mientras Hedera garantiza la
  * liquidación atómica final en 2.5 segundos con costo de centavos.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1068
+ * - https://eips.ethereum.org/EIPS/eip-7683
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos
  * - Siguiente: M13 Lab 06: Parser de Flujo de Bloques Protobuf e Indexador de Estado

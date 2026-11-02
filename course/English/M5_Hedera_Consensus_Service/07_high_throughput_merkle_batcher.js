@@ -23,6 +23,9 @@
  * verification off-chain while anchoring Merkle roots on HCS allows enterprise
  * pipelines to handle 100,000+ operations/sec at fractional-cent cost.
  *
+ * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 06: HIP-991 Paid Topics
  * - Next:     M5 Lab 08: Enterprise Kafka Streaming Bridge

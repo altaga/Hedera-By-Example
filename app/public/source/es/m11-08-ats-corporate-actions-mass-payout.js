@@ -30,6 +30,9 @@
  * En Hedera, las transferencias por lotes dentro de una `TransferTransaction` atómica
  * garantizan que TODOS los inversores cobren simultáneamente o ninguno lo haga.
  *
+ * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/solutions/tokenization/ats
+ *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 07: Puente de Facturación ERP Institucional
  * - Siguiente: M12 Lab 01: Herramientas EVM Modernas con Viem y Foundry
