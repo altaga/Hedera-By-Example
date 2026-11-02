@@ -10,6 +10,7 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import { buildVendor } from './build-vendor.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, '..', 'course'))
@@ -91,7 +92,8 @@ function parseSequence (lines) {
 
 // Modules the web runner provides (app/src/lib/labModules.ts); anything else is Node-only.
 const BROWSER_MODULES = new Set(['@hiero-ledger/sdk', '@hashgraph/sdk', 'ethers', 'protobufjs', 'buffer', 'crypto', 'path', 'fs',
-  'fs/promises', 'events', 'perf_hooks', 'url', 'util', 'zlib', 'dotenv', 'dotenv/config', 'solc', 'http'])
+  'fs/promises', 'events', 'perf_hooks', 'url', 'util', 'zlib', 'dotenv', 'dotenv/config', 'solc', 'http', 'sqlite',
+  '@hashgraphonline/standards-sdk', '@hiero-did-sdk/core'])
 
 function nodeOnlyImports (source) {
   // Only the leading import block counts (same rule as extractImports in labModules.ts):
@@ -333,3 +335,6 @@ function build () {
 }
 
 build()
+buildVendor()
+  .then((r) => console.log(`Bundled Node-only lab libraries for the browser → public/vendor/hbe-vendor.mjs (${(r.size / 1024).toFixed(0)} KB)`))
+  .catch((e) => { console.error(`vendor bundle failed: ${e.message}`); process.exit(1) })

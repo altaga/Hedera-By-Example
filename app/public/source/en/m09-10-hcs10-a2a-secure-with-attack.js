@@ -36,7 +36,7 @@
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import dotenv from 'dotenv'
-import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
@@ -56,11 +56,12 @@ const main = async () => {
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  const sessionPrivStr = getState('HCS10_SESSION_PRIVATE_KEY')
+  // Session key shared by the agents: created the first time, then reused by Labs 09 and 10.
+  let sessionPrivStr = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivStr) {
-    console.error('[❌ FAILED] Missing HCS10_SESSION_PRIVATE_KEY in state.')
-    process.exitCode = 1
-    return
+    sessionPrivStr = PrivateKey.generateECDSA().toStringRaw()
+    updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivStr)
+    console.log('[ℹ️ INFO] Generated a new ECDSA session key for Agent A ↔ Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
   const sessionPub = sessionPriv.publicKey
@@ -114,7 +115,7 @@ const main = async () => {
             await sleep(5000)
             await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentA_Id })
           }
-        } catch (e) { }
+        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
       })
   }
 

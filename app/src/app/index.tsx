@@ -144,13 +144,13 @@ export default function HederaByExample () {
       })
     }
     const started = Date.now() / 1000
-    const result = await executeInBrowser(code, wallet, onLine, { practice, files })
+    const result = await executeInBrowser(code, wallet, onLine, { practice, files, lang })
     recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId })
     if (!live()) return
     setRunStatus(result.success ? 'success' : 'error')
     // Labs move HBAR between the learner's wallets: refresh every balance.
     setBalances(await fetchBalances(walletStore))
-  }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore])
+  }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore, lang])
 
   // Keyboard: "/" search, ←/→ previous/next lab, Ctrl/Cmd+Enter run.
   useEffect(() => {

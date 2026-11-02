@@ -237,9 +237,112 @@ export interface ModuleContext {
   path: any
   EventEmitter: any
   dotenv: any
+  /** Prints a line in the lab output (used by browser patches in the vendor bundle). */
+  log?: (type: 'info' | 'error', text: string) => void
+  lang?: 'en' | 'es'
 }
 
-const NODE_ONLY_MODULES = new Set(['http', 'https', 'net', 'tls', 'dgram', 'child_process', 'worker_threads', 'cluster', 'sqlite', 'readline'])
+const NODE_ONLY_MODULES = new Set(['http', 'https', 'net', 'tls', 'dgram', 'child_process', 'worker_threads', 'cluster', 'readline'])
+
+// Loads a module from /vendor without the app bundler rewriting the import.
+const importUrl = new Function('u', 'return import(u)') as (u: string) => Promise<any>
+
+let vendorCtx: ModuleContext | null = null
+let vendorPromise: Promise<any> | null = null
+
+/** An object whose properties are read from the current run's context, not the first one's. */
+const forward = (pick: (ctx: ModuleContext) => any) => new Proxy({}, {
+  get (_t, prop) {
+    const target = vendorCtx ? pick(vendorCtx) : undefined
+    const value = target?.[prop as any]
+    return typeof value === 'function' && !/^[A-Z]/.test(String(prop)) ? value.bind(target) : value
+  },
+  has (_t, prop) { return vendorCtx ? prop in (pick(vendorCtx) || {}) : false }
+})
+
+/**
+ * Libraries that are Node-only on npm (standards-sdk, did-sdk, the course's
+ * AgentCommunicationHandler), bundled by scripts/build-vendor.mjs. Their Node
+ * built-ins and Hedera SDK resolve to this run's instances.
+ */
+/** Remember each account's key curve (from the Mirror Node) for the vendor libraries. */
+export async function prefetchKeyTypes (accountIds: string[]): Promise<void> {
+  const map: Map<string, string> | undefined = (globalThis as any).__HBE_NODE?.keyTypes
+  if (!map) return
+  await Promise.all([...new Set(accountIds)].filter((id) => !map.has(id)).slice(0, 60).map(async (id) => {
+    try {
+      const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${id}?transactions=false`)
+      if (!res.ok) return
+      const t = String((await res.json())?.key?._type || '')
+      if (t) map.set(id, t.includes('ED25519') ? 'ed25519' : 'ecdsa')
+    } catch (_) {}
+  }))
+}
+
+export async function loadVendor (ctx: ModuleContext): Promise<any> {
+  vendorCtx = ctx
+  if (!vendorPromise) {
+    const util = await resolveModule('util', ctx)
+    const url = await resolveModule('url', ctx)
+    const zlib = await resolveModule('zlib', ctx)
+    ;(globalThis as any).__HBE_NODE = {
+      hedera: ctx.hedera,
+      crypto: forward((c) => c.crypto),
+      fs: forward((c) => c.fs),
+      path: forward((c) => c.path),
+      events: { EventEmitter: ctx.EventEmitter, default: ctx.EventEmitter },
+      util,
+      url,
+      zlib,
+      log: (type: 'info' | 'error', text: string) => vendorCtx?.log?.(type, text),
+      get lang () { return vendorCtx?.lang },
+      empty: () => ({}),
+      keyTypes: new Map<string, 'ed25519' | 'ecdsa'>()
+    }
+    vendorPromise = importUrl('/vendor/hbe-vendor.mjs').catch((e) => { vendorPromise = null; throw e })
+  }
+  return vendorPromise
+}
+
+let sqlPromise: Promise<any> | null = null
+
+/** node:sqlite's DatabaseSync on top of SQLite compiled to WebAssembly (sql.js). */
+async function loadSqlite () {
+  if (!sqlPromise) {
+    sqlPromise = import('sql.js').then((m: any) => (m.default || m)({ locateFile: (f: string) => `/vendor/${f}` }))
+  }
+  const SQL = await sqlPromise
+  const toParams = (args: any[]) => (args.length === 1 && args[0] && typeof args[0] === 'object' && !Array.isArray(args[0])
+    ? Object.fromEntries(Object.entries(args[0]).map(([k, v]) => [/^[:@$]/.test(k) ? k : `:${k}`, v as any]))
+    : args.map((v) => (typeof v === 'bigint' ? Number(v) : v)))
+  class StatementSync {
+    constructor (private db: any, private sql: string) {}
+    private rows (args: any[]) {
+      const stmt = this.db.prepare(this.sql)
+      try {
+        stmt.bind(toParams(args))
+        const out: any[] = []
+        while (stmt.step()) out.push(stmt.getAsObject())
+        return out
+      } finally { stmt.free() }
+    }
+    run (...args: any[]) {
+      this.db.run(this.sql, toParams(args))
+      const last = this.db.exec('SELECT last_insert_rowid() AS id')[0]?.values?.[0]?.[0] ?? 0
+      return { changes: this.db.getRowsModified(), lastInsertRowid: last }
+    }
+    get (...args: any[]) { return this.rows(args)[0] }
+    all (...args: any[]) { return this.rows(args) }
+  }
+  class DatabaseSync {
+    private db: any
+    constructor (_path?: string) { this.db = new SQL.Database() }
+    exec (sql: string) { this.db.exec(sql) }
+    prepare (sql: string) { return new StatementSync(this.db, sql) }
+    close () { this.db.close() }
+  }
+  return { DatabaseSync, StatementSync, default: { DatabaseSync, StatementSync } }
+}
 
 /** Resolve a module specifier to the object the lab's imports are read from. */
 export async function resolveModule (specifier: string, ctx: ModuleContext): Promise<any> {
@@ -282,7 +385,23 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
         TextEncoder,
         TextDecoder,
         inspect: (v: unknown) => { try { return JSON.stringify(v, null, 2) } catch (_) { return String(v) } },
-        promisify: (fn: any) => (...args: any[]) => new Promise((resolve, reject) => fn(...args, (e: any, r: any) => (e ? reject(e) : resolve(r))))
+        promisify: (fn: any) => (...args: any[]) => new Promise((resolve, reject) => fn(...args, (e: any, r: any) => (e ? reject(e) : resolve(r)))),
+        inherits: (ctor: any, superCtor: any) => {
+          Object.defineProperty(ctor, 'super_', { value: superCtor, writable: true, configurable: true })
+          Object.setPrototypeOf(ctor.prototype, superCtor.prototype)
+        },
+        deprecate: (fn: any) => fn,
+        debuglog: () => () => {},
+        format: (f: any, ...args: any[]) => String(f).replace(/%[sdifjoO%]/g, (m) => (m === '%%' ? '%' : (() => { const v = args.shift(); return typeof v === 'object' ? JSON.stringify(v) : String(v) })())) + (args.length ? ' ' + args.map(String).join(' ') : ''),
+        isDeepStrictEqual: (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b),
+        types: {
+          isUint8Array: (v: any) => v instanceof Uint8Array,
+          isDate: (v: any) => v instanceof Date,
+          isRegExp: (v: any) => v instanceof RegExp,
+          isPromise: (v: any) => v instanceof Promise,
+          isArrayBuffer: (v: any) => v instanceof ArrayBuffer,
+          isTypedArray: (v: any) => ArrayBuffer.isView(v) && !(v instanceof DataView)
+        }
       }
       return { ...util, default: util }
     }
@@ -305,6 +424,13 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case 'http':
     case 'https':
       return ctx.http ? { ...ctx.http, default: ctx.http } : nodeOnlyModule(specifier)
+    case 'sqlite':
+      return loadSqlite()
+    case '@hashgraphonline/standards-sdk':
+    case '@hiero-did-sdk/core': {
+      const v = await loadVendor(ctx)
+      return { ...v, default: v }
+    }
     case 'solc': {
       const solc = await loadSolc()
       return { ...solc, default: solc }

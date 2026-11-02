@@ -9,6 +9,7 @@ import { p256 } from '@noble/curves/nist.js'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { ed25519 } from '@noble/curves/ed25519.js'
 import { Buffer } from 'buffer'
+import forge from 'node-forge'
 
 type Enc = BufferEncoding | undefined
 const bytes = (data: any, enc?: Enc): Uint8Array =>
@@ -119,7 +120,47 @@ export function generateKeyPairSync (type: string, options: any = {}) {
     const sk = p256.utils.randomSecretKey()
     return { privateKey: keyObject('p256', 'private', sk), publicKey: keyObject('p256', 'public', p256.getPublicKey(sk, false)) }
   }
+  if (t === 'rsa') return generateRsaKeyPair(options)
   throw new Error(`generateKeyPairSync('${type}') is not available in the browser runner.`)
+}
+
+// ---------- RSA (node-forge: synchronous like Node) ----------
+
+const toBinary = (data: any) => Buffer.from(typeof data === 'string' ? Buffer.from(data) : data).toString('binary')
+const pemOf = (key: any) => (typeof key === 'string' ? key : key?.key ?? key?.export?.({ format: 'pem' }) ?? String(key))
+
+function oaep (opts: any) {
+  const hash = String(opts?.oaepHash || 'sha1').toLowerCase().replace('-', '')
+  const md = () => (forge.md as any)[hash].create()
+  return { md: md(), mgf1: { md: md() } }
+}
+
+/** generateKeyPairSync('rsa', { modulusLength, publicKeyEncoding, privateKeyEncoding }) with PEM output. */
+function generateRsaKeyPair (options: any) {
+  const keys = forge.pki.rsa.generateKeyPair({ bits: options.modulusLength || 2048, e: options.publicExponent || 0x10001 })
+  const publicKey = forge.pki.publicKeyToPem(keys.publicKey).replace(/\r\n/g, '\n')
+  const privateKey = (options.privateKeyEncoding?.type === 'pkcs1'
+    ? forge.pki.privateKeyToPem(keys.privateKey)
+    : forge.pki.privateKeyInfoToPem(forge.pki.wrapRsaPrivateKey(forge.pki.privateKeyToAsn1(keys.privateKey)))).replace(/\r\n/g, '\n')
+  return { publicKey, privateKey }
+}
+
+export const RSA_CONSTANTS = { RSA_PKCS1_PADDING: 1, RSA_NO_PADDING: 3, RSA_PKCS1_OAEP_PADDING: 4, RSA_PKCS1_PSS_PADDING: 6 }
+
+/** crypto.publicEncrypt with OAEP (Node's default padding) or PKCS#1 v1.5. */
+export function publicEncrypt (opts: any, data: any) {
+  const key = forge.pki.publicKeyFromPem(pemOf(opts))
+  const padding = opts?.padding ?? RSA_CONSTANTS.RSA_PKCS1_OAEP_PADDING
+  const out = padding === RSA_CONSTANTS.RSA_PKCS1_PADDING ? key.encrypt(toBinary(data), 'RSAES-PKCS1-V1_5') : key.encrypt(toBinary(data), 'RSA-OAEP', oaep(opts))
+  return Buffer.from(out, 'binary')
+}
+
+/** crypto.privateDecrypt, the counterpart of publicEncrypt. */
+export function privateDecrypt (opts: any, data: any) {
+  const key = forge.pki.privateKeyFromPem(pemOf(opts))
+  const padding = opts?.padding ?? RSA_CONSTANTS.RSA_PKCS1_OAEP_PADDING
+  const out = padding === RSA_CONSTANTS.RSA_PKCS1_PADDING ? key.decrypt(toBinary(data), 'RSAES-PKCS1-V1_5') : key.decrypt(toBinary(data), 'RSA-OAEP', oaep(opts))
+  return Buffer.from(out, 'binary')
 }
 
 /** Accepts a KeyObject, a PEM/DER SPKI public key, or { key, format, type }. */

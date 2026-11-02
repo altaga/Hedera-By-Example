@@ -93,7 +93,7 @@ const main = async () => {
             await sleep(3000)
             await hcs10.sendMessage(outbox, { text: `World ${payload.round} confirmado!`, target: agentA_Id })
           }
-        } catch (e) { }
+        } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
       })
   }
 

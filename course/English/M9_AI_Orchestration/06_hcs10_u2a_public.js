@@ -104,7 +104,7 @@ const main = async () => {
               })
               console.log('[✅ SUCCESS] Response dispatched to ledger.')
             }
-          } catch (e) { }
+          } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
         })
   }
 

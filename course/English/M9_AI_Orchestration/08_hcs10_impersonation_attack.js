@@ -91,7 +91,7 @@ const main = async () => {
             await hcs10.sendMessage(outbox, { text: `World ${round}!`, target: agentA_Id })
             console.log('[✅ SUCCESS] Response dispatched.')
           }
-        } catch (e) { }
+        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
       })
   }
 

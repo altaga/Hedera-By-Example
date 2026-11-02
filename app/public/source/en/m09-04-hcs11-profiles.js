@@ -35,9 +35,9 @@ import {
   HCS10Client,
   InboundTopicType
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState, exitIfStuck } from '../M99_Utilities/index.js'
+import { getClient, updateState, exitIfStuck, ensureFunded } from '../M99_Utilities/index.js'
 
-getClient()
+const { client: operatorClient } = getClient()
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
@@ -54,6 +54,9 @@ const main = async () => {
   }
 
   const PRIVATE_KEY_DER = PrivateKey.fromString(privateKeyDer)
+
+  // Account 1 pays for the three agents (2 HBAR each + topics and profiles): top it up if needed.
+  await ensureFunded(operatorClient, accountId, 10)
 
   // Agent configuration (Synchronized with the overall curriculum)
   const agentsToCreate = [
@@ -100,7 +103,7 @@ const main = async () => {
         .setInboundTopicType(InboundTopicType.PUBLIC)
 
       const agent = await client.createAndRegisterAgent(agentBuilder, {
-        initialBalance: 15, // Funds for operational autonomy
+        initialBalance: 2, // 2 HBAR is plenty for the HCS-10 messages in Labs 06-11
         progressCallback: (event) => console.log(`   ⏳ [ℹ️ INFO] ${config.alias}: ${event.message}`)
       })
 
@@ -114,6 +117,10 @@ const main = async () => {
         updateState(`HCS11_${config.prefix}_KEY`, agent.metadata.privateKey)
         updateState(`HCS11_${config.prefix}_INBOUND`, agent.metadata.inboundTopicId)
         updateState(`HCS11_${config.prefix}_OUTBOUND`, agent.metadata.outboundTopicId)
+      } else {
+        console.error(`[❌ FAILED] Could not provision ${config.name}: ${agent.error || 'unknown error'}`)
+        process.exitCode = 1
+        break
       }
 
       // Network cooldown

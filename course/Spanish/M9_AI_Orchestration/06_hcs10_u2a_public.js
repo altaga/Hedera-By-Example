@@ -104,7 +104,7 @@ const main = async () => {
               })
               console.log('[✅ ÉXITO] Respuesta enviada al canal de salida.')
             }
-          } catch (e) { }
+          } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
         }
       )
   }
@@ -174,7 +174,7 @@ const main = async () => {
                 }
               }
             }
-          } catch (e) { }
+          } catch (e) { console.error('\n[❌ FALLO] Paquete de respuesta malformado:', e.message) }
         }
       )
 

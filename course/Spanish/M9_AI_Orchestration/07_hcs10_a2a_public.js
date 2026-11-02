@@ -105,7 +105,7 @@ const main = async () => {
                 target: agentA_Id
               })
             }
-          } catch (e) { }
+          } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
         }
       )
   }

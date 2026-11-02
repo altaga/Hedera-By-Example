@@ -11,8 +11,8 @@ import { sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
 import { md5, sha1 } from '@noble/hashes/legacy.js'
 import { hmac } from '@noble/hashes/hmac.js'
 import { utf8ToBytes } from '@noble/hashes/utils.js'
-import { Buffer, NodeOnlyError, adaptSolcCalls, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
-import { createCipher, createECDH, generateKeyPairSync, sign, verify } from './nodeCrypto'
+import { Buffer, NodeOnlyError, adaptSolcCalls, loadVendor, prefetchKeyTypes, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
+import { RSA_CONSTANTS, createCipher, createECDH, generateKeyPairSync, privateDecrypt, publicEncrypt, sign, verify } from './nodeCrypto'
 
 export interface BrowserWallet {
   accountId: string
@@ -38,6 +38,8 @@ export interface PracticeAccount { accountId: string; privateKey: string; evmAdd
 export interface PracticeAccounts { account1?: PracticeAccount; account2?: PracticeAccount }
 
 export interface RunOptions {
+  /** Course language of the code, for helpers that print in it (AgentCommunicationHandler). */
+  lang?: 'en' | 'es'
   /** ACCOUNT_1 / ACCOUNT_2 for labs with more than one party. */
   practice?: PracticeAccounts
   /** Files the lab reads (course assets or the learner's own), by file name. */
@@ -181,6 +183,9 @@ function makeCryptoShim () {
     createDecipheriv: (alg: string, key: any, iv: any) => createCipher(true, alg, key, iv),
     createECDH,
     generateKeyPairSync,
+    publicEncrypt,
+    privateDecrypt,
+    constants: RSA_CONSTANTS,
     sign,
     verify,
     webcrypto: window.crypto,
@@ -236,6 +241,21 @@ const jsonSafe = (v: any) => {
 }
 
 /** Run a lab's code in this browser, streaming its output to onLog. */
+/** Thrown by process.exit(): stops the lab like Node does. */
+class ExitSignal extends Error {
+  readonly __hbeExit = true
+  constructor (public code: number) { super(`process.exit(${code})`) }
+}
+const isExit = (e: unknown) => e instanceof ExitSignal
+
+/**
+ * What keeps a lab "alive" after its main function returns, as in Node:
+ * open topic subscriptions and pending timers. The run ends when the lab
+ * calls process.exit(), when nothing is pending, or at the time limit.
+ */
+interface RunHandles { subs: Set<object>; timers: Set<number>; exited: boolean; wake: () => void }
+let activeRun: RunHandles | null = null
+
 /**
  * gRPC-web cannot hold the Mirror Node's server stream open in the browser,
  * so TopicMessageQuery.subscribe() polls the Mirror Node REST API instead
@@ -248,17 +268,37 @@ function useRestTopicSubscriptions (hedera: any): void {
   const b64 = (v: string | null) => (v ? Uint8Array.from(atob(v), (c) => c.charCodeAt(0)) : new Uint8Array())
   const ts = (v: string) => { const [sec, ns = '0'] = v.split('.'); return { seconds: Number(sec), nanos: Number(ns.padEnd(9, '0')) } }
   const tsString = (t: any) => `${t.seconds.toString()}.${t.nanos.toString().padStart(9, '0')}`
-  proto._makeServerStreamRequest = function (this: any) {
+  // As in Node, closing the client ends its subscriptions.
+  const clientProto = hedera.Client.prototype
+  if (!clientProto.__hbeClose) {
+    const close = clientProto.close
+    clientProto.close = function (this: any, ...args: any[]) { this.__hbeClosed = true; return close.apply(this, args) }
+    clientProto.__hbeClose = true
+  }
+  proto._makeServerStreamRequest = function (this: any, client: any) {
     let stopped = false
-    this._handle?._setCall(() => { stopped = true })
+    const run = activeRun
+    const token = {}
+    run?.subs.add(token)
+    const release = () => { run?.subs.delete(token); run?.wake() }
+    this._handle?._setCall(() => { stopped = true; release() })
+    // The lab's listener; process.exit() inside it ends the run instead of counting as an error.
+    const deliver = (msg: any) => {
+      try {
+        const r = this._listener?.(msg)
+        if (r && typeof r.catch === 'function') r.catch((e: any) => { if (!isExit(e)) this._errorHandler?.(msg, e) })
+      } catch (e) {
+        if (!isExit(e)) this._errorHandler?.(msg, e)
+      }
+    }
     const groups = new Map<string, any[]>()
     let cursor: string | null = null
     const start = this._startTime ? tsString(this._startTime) : null
     const end = this._endTime ? tsString(this._endTime) : null
     let remaining = this._limit && Number(this._limit.toString()) > 0 ? Number(this._limit.toString()) : Infinity
-    const done = () => { stopped = true; try { this._completionHandler?.() } catch (_) {} }
+    const done = () => { stopped = true; release(); try { this._completionHandler?.() } catch (_) {} }
     const poll = async () => {
-      while (!stopped && !this._handle?._unsubscribed) {
+      while (!stopped && !this._handle?._unsubscribed && !run?.exited && !client?.__hbeClosed) {
         let url = `${MIRROR}/topics/${this._topicId.toString()}/messages?order=asc&limit=100`
         if (cursor) url += `&timestamp=gt:${cursor}`
         else if (start) url += `&timestamp=gte:${start}`
@@ -294,7 +334,7 @@ function useRestTopicSubscriptions (hedera: any): void {
               : null
           }
           if (!ci || ci.total === 1) {
-            this._passTopicMessage(hedera.TopicMessage._ofSingle(raw))
+            deliver(hedera.TopicMessage._ofSingle(raw))
           } else {
             const key = JSON.stringify(ci.initial_transaction_id)
             const list = groups.get(key) || []
@@ -302,7 +342,7 @@ function useRestTopicSubscriptions (hedera: any): void {
             groups.set(key, list)
             if (list.length < ci.total) continue
             groups.delete(key)
-            this._passTopicMessage(hedera.TopicMessage._ofMany(list))
+            deliver(hedera.TopicMessage._ofMany(list))
           }
           if (--remaining <= 0) return done()
         }
@@ -310,7 +350,7 @@ function useRestTopicSubscriptions (hedera: any): void {
         if (messages.length < 100) await new Promise((resolve) => setTimeout(resolve, 1500))
       }
     }
-    poll()
+    poll().finally(release)
   }
 }
 
@@ -346,6 +386,10 @@ export async function executeInBrowser (
   }
 
   let failedWithExitCode = false
+  if (activeRun) { activeRun.exited = true; activeRun.wake() }
+  const run: RunHandles = { subs: new Set(), timers: new Set(), exited: false, wake: () => {} }
+  activeRun = run
+  let stuck: { ms: number, reason: string } | null = null
   try {
     const hedera = await import('@hiero-ledger/sdk')
     useRestTopicSubscriptions(hedera)
@@ -407,10 +451,12 @@ export async function executeInBrowser (
       version: 'browser',
       exitCode: undefined,
       exit: (code: number = 0) => {
-        if (code !== 0 || mockProcess.exitCode) {
-          failedWithExitCode = true
-          throw new Error(`process.exit(${code || mockProcess.exitCode})`)
-        }
+        if (code !== 0 || mockProcess.exitCode) failedWithExitCode = true
+        run.exited = true
+        run.timers.forEach((id) => window.clearTimeout(id))
+        run.timers.clear()
+        run.wake()
+        throw new ExitSignal(code || mockProcess.exitCode || 0)
       },
       hrtime: Object.assign((prev?: [number, number]) => {
         const ns = Math.round(perf.now() * 1e6)
@@ -641,16 +687,22 @@ export async function executeInBrowser (
       getAccountEvmAddress,
       ensureFunded,
       reuseToken,
-      exitIfStuck: () => {},
+      exitIfStuck: (ms: number, reason = 'the expected network events') => { stuck = { ms, reason } },
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,
       show,
       getJsonRpcSigner,
-      AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } }
     }
 
     const virtual = createVirtualHttp(EventEmitterShim, window.fetch.bind(window))
-    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http }
+    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http, log: (type: 'info' | 'error', text: string) => pushLog(type, text), lang: options.lang }
+    // M99's AgentCommunicationHandler is a Node module; the browser gets the bundled build.
+    if (/AgentCommunicationHandler|HybridEncryption/.test(sourceCode)) {
+      const vendor = await loadVendor(ctx)
+      const suffix = options.lang === 'es' ? 'Es' : 'En'
+      helpers.AgentCommunicationHandler = vendor[`AgentCommunicationHandler${suffix}`]
+      helpers.HybridEncryption = vendor[`HybridEncryption${suffix}`]
+    }
     const { imports, body } = extractImports(sourceCode)
     const bound: Record<string, unknown> = {}
     for (const imp of imports) {
@@ -658,6 +710,38 @@ export async function executeInBrowser (
       for (const b of imp.bindings) bound[b.local] = bindingValue(mod, b.imported)
     }
     const __import = (spec: string) => resolveModule(spec, ctx)
+    // standards-sdk needs each account's key curve up front (raw keys fit both).
+    if (imports.some((i) => i.specifier === '@hashgraphonline/standards-sdk')) {
+      const ids = [...Object.entries(readState()), ...Object.entries(env)]
+        .filter(([k, v]) => /ACCOUNT|AGENT|OPERATOR|PAYER|SIGNER/i.test(k) && typeof v === 'string' && /^0\.0\.\d+$/.test(v))
+        .map(([, v]) => v as string)
+      await prefetchKeyTypes(ids)
+    }
+
+    // Lab timers keep the run alive like Node's event loop does (unref() releases them).
+    const timerHandle = (id: number) => ({
+      id,
+      unref () { run.timers.delete(id); run.wake(); return this },
+      ref () { run.timers.add(id); return this },
+      hasRef: () => run.timers.has(id),
+      [Symbol.toPrimitive]: () => id
+    })
+    const idOf = (h: any) => (typeof h === 'object' && h ? h.id : h)
+    const labSetTimeout = (fn: (...a: any[]) => void, ms?: number, ...args: any[]) => {
+      const id = window.setTimeout(() => {
+        run.timers.delete(id)
+        if (!run.exited) { try { fn(...args) } catch (e) { if (!isExit(e)) throw e } }
+        run.wake()
+      }, ms)
+      run.timers.add(id)
+      return timerHandle(id)
+    }
+    const labSetInterval = (fn: (...a: any[]) => void, ms?: number, ...args: any[]) => {
+      const id = window.setInterval(() => { if (!run.exited) { try { fn(...args) } catch (e) { if (!isExit(e)) throw e } } }, ms)
+      run.timers.add(id)
+      return timerHandle(id)
+    }
+    const labClear = (h: any) => { const id = idOf(h); window.clearTimeout(id); window.clearInterval(id); run.timers.delete(id); run.wake() }
 
     // Globals a Node module sees without importing them, then the lab's own imports.
     const scope: Record<string, unknown> = {
@@ -669,17 +753,52 @@ export async function executeInBrowser (
       process: mockProcess,
       Buffer,
       fetch: virtual.fetch,
+      setTimeout: labSetTimeout,
+      setInterval: labSetInterval,
+      clearTimeout: labClear,
+      clearInterval: labClear,
       __import,
       ...bound
     }
     const RESERVED = new Set(['default', 'class', 'function', 'delete', 'new', 'return', 'var', 'let', 'const', 'import', 'export', 'this', 'typeof', 'void', 'with', 'yield', 'await', 'enum', 'super', 'in', 'of', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 'null', 'true', 'false', 'instanceof', 'debugger', 'extends', 'static'])
     const names = Object.keys(scope).filter((n) => /^[A-Za-z_$][\w$]*$/.test(n) && !RESERVED.has(n))
     const usesSolc = imports.some((i) => i.specifier === 'solc')
-    const sanitized = sanitizeSourceForExecution(usesSolc ? adaptSolcCalls(body) : body, entryFunctionName(sourceCode))
+    // process.exit() never returns in Node; here it throws, so the lab's own catch blocks pass it on.
+    const exitSafe = (code: string) => code
+      .replace(/\bcatch\s*\(\s*([A-Za-z_$][\w$]*)\s*\)\s*\{/g, (_m, v) => `catch (${v}) { if (${v} && ${v}.__hbeExit) throw ${v};`)
+      .replace(/\bcatch\s*\{/g, 'catch (__hbeE) { if (__hbeE && __hbeE.__hbeExit) throw __hbeE;')
+    const sanitized = sanitizeSourceForExecution(exitSafe(usesSolc ? adaptSolcCalls(body) : body), entryFunctionName(sourceCode))
 
     // eslint-disable-next-line no-new-func
     const runner = new Function(...names, 'return (async () => {\n' + sanitized + '\n})()')
-    await runner(...names.map((n) => scope[n]))
+    const swallowExit = (e: PromiseRejectionEvent) => { if (isExit(e.reason)) e.preventDefault() }
+    window.addEventListener('unhandledrejection', swallowExit)
+    try {
+      try {
+        await runner(...names.map((n) => scope[n]))
+      } catch (e) {
+        if (!isExit(e)) throw e
+      }
+      // Like Node: stay alive while subscriptions or timers are pending.
+      const limitStuck = stuck as { ms: number, reason: string } | null
+      const limitMs = limitStuck ? limitStuck.ms : 180_000
+      const timedOut = await new Promise<boolean>((resolve) => {
+        const limit = window.setTimeout(() => resolve(true), limitMs)
+        run.wake = () => {
+          if (run.exited || (run.subs.size === 0 && run.timers.size === 0)) { window.clearTimeout(limit); resolve(false) }
+        }
+        run.wake()
+      })
+      if (timedOut && !run.exited) {
+        pushLog('error', `Stopped after ${Math.round(limitMs / 1000)} s waiting for ${limitStuck ? limitStuck.reason : 'pending subscriptions or timers'}.`)
+        mockProcess.exitCode = 1
+      }
+    } finally {
+      run.exited = true
+      run.timers.forEach((id) => { window.clearTimeout(id); window.clearInterval(id) })
+      window.removeEventListener('unhandledrejection', swallowExit)
+    }
+    if (failedWithExitCode) throw new ExitSignal(1)
 
     try { client.close() } catch (_) {}
     const durationMs = Date.now() - startTime

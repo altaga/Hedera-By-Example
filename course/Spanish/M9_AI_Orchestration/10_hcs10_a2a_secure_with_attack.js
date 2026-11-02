@@ -38,7 +38,7 @@
 
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, getClient, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
 
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
@@ -56,11 +56,12 @@ const main = async () => {
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  const sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
+  // Llave de sesión compartida por los agentes: se crea la primera vez y los Labs 09 y 10 la reutilizan.
+  let sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivKeyDer) {
-    console.error('[❌ FALLO] Falta HCS10_SESSION_PRIVATE_KEY. Ejecuta Lab 00 primero.')
-    process.exitCode = 1
-    return
+    sessionPrivKeyDer = PrivateKey.generateECDSA().toStringRaw()
+    updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivKeyDer)
+    console.log('[ℹ️ INFO] Se generó una llave de sesión ECDSA nueva para Agente A ↔ Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
   const sessionPub = sessionPriv.publicKey
@@ -112,7 +113,7 @@ const main = async () => {
             await sleep(3000)
             await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentA_Id })
           }
-        } catch (e) { }
+        } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
       })
   }
 
