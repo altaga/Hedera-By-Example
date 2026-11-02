@@ -22,6 +22,9 @@
  * - Actual:    M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
  * - Siguiente: M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
  *
+ * [ SIMULADO ]
+ * Las firmas del consejo TSS y la prueba de estado HIP-1535 son simuladas (el protocolo aún no está activo). El anclaje en HCS es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js
  * ============================================================================

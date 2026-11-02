@@ -20,6 +20,9 @@
  * - Previous: M13 Lab 03: Block Stream & TSS Verification (HIP-1056)
  * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  *
+ * [ SIMULATED ]
+ * Block Node discovery (HIP-1137) is simulated with a local registry.
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/04_block_node_discovery_lake.js
  * ============================================================================

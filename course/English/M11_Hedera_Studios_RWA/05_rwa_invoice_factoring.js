@@ -21,6 +21,9 @@
  * - Previous: M11 Lab 04: Proof-of-Reserve Oracle
  * - Next:     M11 Lab 06: RWA Multi-Asset Pool Tokens
  *
+ * [ SIMULATED ]
+ * Investor subscriptions and the debtor repayment are modeled with simple transfers. The tokens are real.
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
  * ============================================================================

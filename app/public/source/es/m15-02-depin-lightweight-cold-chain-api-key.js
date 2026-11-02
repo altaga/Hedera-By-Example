@@ -30,6 +30,9 @@
  * - RFC 2104: HMAC: Hashing con Clave para Autenticación de Mensajes
  * - Reporte Técnico OMS 961: Monitoreo de Temperatura y Humedad en Cadenas de Frío
  *
+ * [ SIMULADO ]
+ * El rastreador IoT y sus solicitudes HTTP son emulados. Las verificaciones HMAC y los registros en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js
  * ============================================================================
@@ -40,7 +43,7 @@ import {
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 
 /**
  * Dispositivo Rastreador IoT Emulado de Bajo Consumo (Contenedor de Vacunas)
@@ -179,11 +182,14 @@ async function main () {
     ]
 
     let slaBreachEvent = null
+    const tempSeries = []
 
     for (let i = 0; i < readings.length; i++) {
       const r = readings[i]
       const request = device.createTelemetryRequest(r.temp, r.hum, r.geo)
       const evaluation = gateway.processPacket(request)
+      tempSeries.push({ x: i + 1, y: r.temp, ...(evaluation.isSlaBreached ? { status: 'critical', label: `${r.temp} °C` } : {}) })
+      show.chart({ id: 'temp', type: 'line', title: 'Temperatura del contenedor de vacunas', unit: '°C', xLabel: 'Reporte', yLabel: '°C', points: tempSeries, threshold: { value: 8, label: 'máximo SLA +8 °C' } })
 
       if (evaluation.status !== 200) {
         throw new Error(`La pasarela rechazó el paquete #${i + 1}: ${evaluation.error}`)

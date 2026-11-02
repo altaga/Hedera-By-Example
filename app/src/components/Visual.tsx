@@ -139,8 +139,36 @@ function LineChart ({ spec }: { spec: VisualSpec }) {
 // ---------- Merkle tree ----------
 
 /** leafCount, leafIndex (proved leaf), root, proof (sibling hashes, leaf → root). */
+function MerkleSpine ({ spec }: { spec: VisualSpec }) {
+  // Large trees: show only the proved path and one sibling per level.
+  const n: number = spec.leafCount
+  const depth = Math.ceil(Math.log2(n))
+  const leaf = spec.leafIndex as number
+  const proof: string[] = Array.isArray(spec.proof) ? spec.proof : []
+  return (
+    <Frame title={spec.title} legend={[{ name: 'Proved path', slot: 1 }, { name: 'Proof sibling', slot: 2 }]}>
+      <ol className='spine'>
+        {Array.from({ length: depth + 1 }, (_, lvl) => {
+          const idx = Math.floor(leaf / 2 ** lvl)
+          return (
+            <li key={lvl} className='spine-row'>
+              <span className='spine-level'>{lvl === 0 ? 'leaf' : lvl === depth ? 'root' : `level ${lvl}`}</span>
+              <span className='spine-node on-path' title={`Level ${lvl}, node ${idx}`}>#{idx}</span>
+              {lvl < depth && <span className='spine-node proof' title={proof[lvl] || ''}>#{idx ^ 1}{proof[lvl] ? ` · ${proof[lvl].slice(0, 10)}…` : ''}</span>}
+              {lvl === depth && spec.root && <span className='spine-hash'>{String(spec.root).slice(0, 18)}…</span>}
+            </li>
+          )
+        }).reverse()}
+      </ol>
+      <p className='viz-note'>{n.toLocaleString('en-US')} leaves · proof for leaf #{leaf} needs {depth} sibling hashes, not all {n.toLocaleString('en-US')} leaves</p>
+      {proof.length > 0 && <TableView columns={['Step', 'Sibling hash']} rows={proof.map((h, i) => [i + 1, h])} />}
+    </Frame>
+  )
+}
+
 function MerkleTree ({ spec }: { spec: VisualSpec }) {
-  const n: number = Math.max(1, Math.min(spec.leafCount || 1, 256))
+  if (spec.leafCount > 64 && typeof spec.leafIndex === 'number') return <MerkleSpine spec={spec} />
+  const n: number = Math.max(1, Math.min(spec.leafCount || 1, 64))
   const levels: number[] = []
   for (let c = n; ; c = Math.ceil(c / 2)) { levels.push(c); if (c === 1) break }
   const depth = levels.length

@@ -30,6 +30,9 @@
  * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
  * - Siguiente: M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
  *
+ * [ SIMULADO ]
+ * El bundler de ERC-4337 y el flujo de UserOperation son simulados. La liquidación final en Hedera es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/06_erc4337_paymaster_gasless.js
  * ============================================================================

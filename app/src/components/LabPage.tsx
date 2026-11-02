@@ -205,11 +205,24 @@ export function LabPage (props: Props) {
         )}
       </dl>
 
+      {body.simulated && (
+        <aside className='simulated' aria-label={t.simulatedTitle} data-testid='simulated-note'>
+          <span className='simulated-tag'>{t.simulatedTitle}</span>
+          <p>{body.simulated}</p>
+        </aside>
+      )}
+
       {body.sequence && (
         <section className='lab-sequence' aria-labelledby='seq-title'>
           <h2 id='seq-title' className='section-title'>{t.sequenceTitle}</h2>
           <SequenceDiagram spec={body.sequence} title={t.sequenceTitle} />
         </section>
+      )}
+
+      {body.nodeOnly?.length > 0 && (
+        <div className='notice' role='note' data-testid='node-only-notice'>
+          <p>{t.nodeOnlyNote(body.nodeOnly.map((m) => `\`${m}\``).join(', '))}</p>
+        </div>
       )}
 
       {needsPractice && (

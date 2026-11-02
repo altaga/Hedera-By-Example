@@ -22,6 +22,9 @@
  * - Previous: M14 Lab 03: HCS-26 Agent Skills Registry
  * - Next:     M14 Lab 05: HCS-28 Agent Audit Stream
  *
+ * [ SIMULATED ]
+ * The 64 inference logs are synthetic. The Merkle tree, the proof and the HCS checkpoint are real.
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/04_hcs27_merkle_transparency_log.js
  * ============================================================================
@@ -38,7 +41,7 @@ import {
   buildHCS27TopicMemo,
   buildHCS27TransactionMemo
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * Builds a Merkle Tree from an array of raw leaf strings.
@@ -183,6 +186,7 @@ const main = async () => {
 
     console.log(`\n[⚙️ PROCESS] Generating cryptographic Merkle inclusion proof for Inference #${targetIndex}...`)
     const proof = getMerkleProof(merkleTree, targetIndex)
+    show.merkle({ title: 'Merkle inclusion proof for inference #42', leafCount: merkleTree.leaves.length, leafIndex: targetIndex, root: merkleTree.root, proof: proof.map((p) => p.hash.toString('hex')) })
 
     console.log(`[📊 LOG] Proof Steps Count:   ${proof.length} hashes (log2(${batchSize}) = 6 steps)`)
     console.log(`[📊 LOG] Target Leaf Hash:    ${targetLeafHash}`)

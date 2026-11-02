@@ -25,7 +25,7 @@
  */
 
 import { AccountId, Hbar, TransferTransaction } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, show } from '../M99_Utilities/index.js'
 
 /**
  * Ejecuta un lote de transferencias de HBAR en paralelo y mide la duración.
@@ -80,6 +80,7 @@ const main = async () => {
     for (const size of batchSizes) {
       const result = await runParallelBatch(client, operatorId, targetId, size)
       benchmarkResults.push(result)
+      show.chart({ id: 'parallel', type: 'bar', title: 'Tiempo promedio por transacción según el tamaño del lote', unit: 'ms', xLabel: 'Batch', yLabel: 'ms / tx', items: benchmarkResults.map((r) => ({ label: `${r.batchSize} tx`, value: Number(r.avgTimePerTx) })) })
       // Pausa estratégica para permitir la propagación estable en el testnet
       await new Promise(resolve => setTimeout(resolve, 2000))
     }

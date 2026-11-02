@@ -41,6 +41,10 @@ export interface LabBody {
   files: { name: string; url: string }[]
   /** Parties and messages, from the lab's [ SEQUENCE ] header section. */
   sequence: { actors: string[]; steps: any[] } | null
+  /** What this lab simulates and what is real on testnet. */
+  simulated: string
+  /** Imported modules the web runner cannot provide; the lab runs in Node.js only. */
+  nodeOnly: string[]
 }
 
 export interface LabEntry {

@@ -28,6 +28,9 @@
  * Nota Relayer: Prueba de estado de la parte externa (CLPR simulado)
  * Relayer -> Hedera: Liquidar la parte de Hedera usando la asignación
  *
+ * [ SIMULADO ]
+ * La ejecución en Arbitrum y la prueba CLPR son simuladas. La asignación, la intención en HCS y la liquidación en Hedera son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/05_cross_chain_intent_settlement_engine.js
  * ============================================================================

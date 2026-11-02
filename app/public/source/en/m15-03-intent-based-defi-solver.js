@@ -35,6 +35,9 @@
  * Solver -> Hedera: One atomic transfer settles both
  * Solver -> Hedera: Settlement record on HCS
  *
+ * [ SIMULATED ]
+ * Alice, Bob and the solver run in one process, and their intents are matched locally. The settlement transfer and HCS record are real.
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

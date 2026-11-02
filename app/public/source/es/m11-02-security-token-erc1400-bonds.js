@@ -22,6 +22,9 @@
  * - Actual:   M11 Lab 02: Bonos de Deuda ERC-1400
  * - Siguiente: M11 Lab 03: Roles en Stablecoin Studio
  *
+ * [ SIMULADO ]
+ * Los periodos de cupón se simulan en lugar de esperar fechas reales. Los tokens y pagos son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/02_security_token_erc1400_bonds.js
  * ============================================================================

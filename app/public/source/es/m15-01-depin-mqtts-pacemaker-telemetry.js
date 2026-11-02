@@ -29,6 +29,9 @@
  * - Estándares de Temas HCS HIP-10: https://hips.hedera.com/hip/hip-10
  * - Validación de Módulos Criptográficos NIST SP 800-140C (Almacenes Hardware Ed25519)
  *
+ * [ SIMULADO ]
+ * El marcapasos y su flujo MQTTS son emulados. Las firmas del dispositivo, el lote de Merkle y los mensajes en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/01_depin_mqtts_pacemaker_telemetry.js
  * ============================================================================
@@ -39,7 +42,7 @@ import {
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 
 /**
  * Dispositivo de Hardware Médico Emulado: Marcapasos Cardíaco Implantable (PM-8821)
@@ -137,6 +140,7 @@ async function main () {
     console.log('\n[3/5] Transmitiendo Marcos de Telemetría MQTTS de Alta Velocidad...')
     const routineBatch = []
     let emergencyAlertFrame = null
+    const bpmSeries = []
 
     for (let frameIndex = 1; frameIndex <= 8; frameIndex++) {
       // Simular el marco 6 como una arritmia cardíaca crítica
@@ -157,6 +161,8 @@ async function main () {
       }
 
       const frameHash = crypto.createHash('sha256').update(payloadBuf).digest('hex')
+      bpmSeries.push({ x: frameIndex, y: frame.payload.metrics.bpm, ...(isCritical ? { status: 'critical', label: `${frame.payload.metrics.bpm} BPM` } : {}) })
+      show.chart({ id: 'bpm', type: 'line', title: 'Ritmo cardiaco por trama de telemetría', unit: 'BPM', xLabel: 'Trama', yLabel: 'BPM', points: bpmSeries, threshold: { value: 120, label: 'taquicardia > 120' } })
 
       if (isCritical) {
         console.log(`   🚨 [CUADRO #${frameIndex}] PARO/TAQUICARDIA CRÍTICA: ${frame.payload.metrics.bpm} BPM | Firma Hardware: Verificada ✅`)
@@ -170,6 +176,7 @@ async function main () {
     // 4. Anclar Telemetría Normal como Lote Merkle en HCS
     console.log('\n[4/5] Anclando Lote Merkle Agrupado al Consenso de Hedera...')
     const merkleRoot = computeMerkleRoot(routineBatch)
+    show.merkle({ title: 'Lote de Merkle de las tramas normales', leafCount: routineBatch.length, root: merkleRoot })
     const batchMessage = {
       p: 'depin-telemetry-v1',
       op: 'merkle_batch',

@@ -21,6 +21,9 @@
  * - Anterior:  M13 Lab 03: Flujo de Bloques y Verificación TSS (HIP-1056)
  * - Siguiente: M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
  *
+ * [ SIMULADO ]
+ * El descubrimiento de Block Nodes (HIP-1137) se simula con un registro local.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/04_block_node_discovery_lake.js
  * ============================================================================

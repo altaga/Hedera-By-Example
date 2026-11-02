@@ -22,6 +22,9 @@
  * - Actual:    M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
  * - Siguiente: M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  *
+ * [ SIMULADO ]
+ * La verificación del quórum TSS es simulada (HIP-1056 aún no está activo).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/03_block_stream_tss_verification.js
  * ============================================================================
@@ -29,7 +32,7 @@
 
 import crypto from 'crypto'
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * Consulta el último bloque confirmado y sus transacciones reales desde el Hedera Mirror Node.
@@ -147,6 +150,7 @@ const main = async () => {
     // 2. Calcular Raíz Merkle sobre transacciones reales y construir encabezado HIP-1056
     console.log('\n[⚙️ PROCESO] Calculando Raíz Merkle sobre transacciones reales y reconstruyendo encabezado...')
     const txMerkleRoot = computeTransactionsMerkleRoot(liveTxs, liveBlock.hash)
+    show.merkle({ title: 'Árbol de Merkle de las transacciones del bloque', leafCount: Math.max(liveTxs.length, 1), root: txMerkleRoot })
     const blockHeader = {
       number: liveBlock.number,
       previousBlockHash: liveBlock.previous_hash,

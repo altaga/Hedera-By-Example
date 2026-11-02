@@ -22,6 +22,9 @@
  * - Actual:   M11 Lab 04: Oráculo Proof-of-Reserve
  * - Siguiente: M11 Lab 05: Factoraje de Facturas RWA
  *
+ * [ SIMULADO ]
+ * Las cifras de reservas del custodio son simuladas. Las reacciones en la red a esas cifras son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/04_proof_of_reserve_oracle.js
  * ============================================================================

@@ -27,6 +27,9 @@
  * Hedera -> Agent: Receipt SUCCESS
  * Agent -> Server: Retry with the payment transaction ID
  *
+ * [ SIMULATED ]
+ * "USDC" is a test token the lab mints, and the payment is a transfer to yourself. Both are real on testnet.
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================

@@ -30,6 +30,9 @@
  * Hedera -> Facilitador: Recibo SUCCESS
  * Servidor -> Agente: 200 OK + PAYMENT-RESPONSE (txId) + datos
  *
+ * [ SIMULADO ]
+ * Pagador y beneficiario son la misma cuenta, así que la liquidación es una transferencia real a ti mismo.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================

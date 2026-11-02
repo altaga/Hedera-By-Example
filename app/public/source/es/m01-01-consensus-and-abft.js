@@ -24,12 +24,16 @@
  * - Actual:   M1 Lab 01: Simulación de Consenso
  * - Siguiente: M1 Lab 02: Renta de Cuentas
  *
+ * [ SIMULADO ]
+ * El gossip entre nodos corre localmente como modelo del hashgraph; no se hacen llamadas a la red.
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_consensus_and_abft.js
  * ============================================================================
  */
 
 import crypto from 'crypto'
+import { show } from '../M99_Utilities/index.js'
 
 /**
  * Genera un hash SHA-384 de los datos del evento y sus padres.
@@ -72,6 +76,8 @@ const main = async () => {
   console.log('\n--- 📊 [REGISTRO] DAG del Hashgraph Visualizado ---')
 
   const timeline = [eventA1, eventB1, eventB2, eventA2]
+  const eventIds = new Map(timeline.map((ev, i) => [ev.hash, `E${i}`]))
+  show.dag({ title: 'Hashgraph: eventos y sus padres', events: timeline.map((ev, i) => ({ id: `E${i}`, creator: ev.creator, label: ev.transaction, selfParent: eventIds.get(ev.selfParent), otherParent: eventIds.get(ev.otherParent) })) })
 
   timeline.forEach((ev, index) => {
     console.log(`\n[EVENTO ${index}] Creado por: ${ev.creator}`)

@@ -230,6 +230,7 @@ export function adaptSolcCalls (code: string): string {
 
 export interface ModuleContext {
   hedera: any
+  http?: any
   helpers: Record<string, unknown>
   fs: any
   crypto: any
@@ -301,6 +302,9 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case 'dotenv':
     case 'dotenv/config':
       return { ...ctx.dotenv, default: ctx.dotenv }
+    case 'http':
+    case 'https':
+      return ctx.http ? { ...ctx.http, default: ctx.http } : nodeOnlyModule(specifier)
     case 'solc': {
       const solc = await loadSolc()
       return { ...solc, default: solc }
@@ -327,3 +331,130 @@ export function bindingValue (mod: any, imported: string) {
 }
 
 export { Buffer }
+
+// ---------- virtual http server ----------
+
+/**
+ * In-page stand-in for Node's `http`: createServer() registers a handler on a
+ * port, and fetch() / http.request() to 127.0.0.1 or localhost on that port are
+ * delivered to it. Responses stream, so SSE (text/event-stream) works.
+ */
+export function createVirtualHttp (EventEmitter: any, realFetch: typeof fetch) {
+  const servers = new Map<number, (req: any, res: any) => void>()
+
+  const targetPort = (u: URL) => (['127.0.0.1', 'localhost', '0.0.0.0'].includes(u.hostname) ? Number(u.port || 80) : NaN)
+
+  /** Run the handler for one request; resolves when headers are sent. */
+  function dispatch (url: URL, method: string, headers: Record<string, string>, body: Uint8Array | null,
+    onHead: (status: number, headers: Record<string, string>) => void, onData: (c: Uint8Array) => void, onEnd: () => void) {
+    const handler = servers.get(targetPort(url))!
+    const req = new EventEmitter()
+    Object.assign(req, { method, url: url.pathname + url.search, headers, socket: { remoteAddress: '127.0.0.1' } })
+    const res = new EventEmitter()
+    const resHeaders: Record<string, string> = {}
+    let headSent = false
+    const sendHead = () => { if (!headSent) { headSent = true; onHead(res.statusCode, resHeaders) } }
+    Object.assign(res, {
+      statusCode: 200,
+      headersSent: false,
+      writableEnded: false,
+      setHeader: (k: string, v: any) => { resHeaders[k.toLowerCase()] = String(v); return res },
+      getHeader: (k: string) => resHeaders[k.toLowerCase()],
+      writeHead: (status: number, a?: any, b?: any) => {
+        res.statusCode = status
+        const h = typeof a === 'object' ? a : b
+        if (h) for (const [k, v] of Object.entries(h)) resHeaders[k.toLowerCase()] = String(v)
+        res.headersSent = true
+        sendHead()
+        return res
+      },
+      flushHeaders: () => sendHead(),
+      write: (chunk: any) => { sendHead(); onData(typeof chunk === 'string' ? Buffer.from(chunk) : Buffer.from(chunk)); return true },
+      end: (chunk?: any) => {
+        if (chunk) res.write(chunk)
+        sendHead()
+        res.writableEnded = true
+        onEnd()
+        res.emit('finish')
+        return res
+      }
+    })
+    handler(req, res)
+    queueMicrotask(() => {
+      if (body && body.length) req.emit('data', Buffer.from(body))
+      req.emit('end')
+    })
+    return { abort: () => { req.emit('close'); res.emit('close') } }
+  }
+
+  const http: any = {
+    createServer: (handler: (req: any, res: any) => void) => {
+      const server = new EventEmitter()
+      let port = 0
+      Object.assign(server, {
+        listen: (p: number, ...rest: any[]) => {
+          port = Number(p) || 3000
+          servers.set(port, handler)
+          const cb = rest.find((a) => typeof a === 'function')
+          queueMicrotask(() => { cb?.(); server.emit('listening') })
+          return server
+        },
+        close: (cb?: () => void) => { servers.delete(port); queueMicrotask(() => { cb?.(); server.emit('close') }); return server },
+        address: () => ({ port, address: '127.0.0.1', family: 'IPv4' })
+      })
+      return server
+    },
+    request: (target: any, opts?: any, cb?: (res: any) => void) => {
+      if (typeof opts === 'function') { cb = opts; opts = {} }
+      const o = typeof target === 'string' || target instanceof URL ? { ...opts } : { ...target }
+      const url = typeof target === 'string' || target instanceof URL
+        ? new URL(String(target))
+        : new URL(`http://${o.hostname || o.host || '127.0.0.1'}:${o.port || 80}${o.path || '/'}`)
+      const chunks: Uint8Array[] = []
+      const clientReq = new EventEmitter()
+      let handle: { abort: () => void } | null = null
+      Object.assign(clientReq, {
+        write: (c: any) => { chunks.push(Buffer.from(c)); return true },
+        setTimeout: () => clientReq,
+        setHeader: () => clientReq,
+        destroy: () => { handle?.abort(); clientReq.emit('close') },
+        end: (c?: any) => {
+          if (c) chunks.push(Buffer.from(c))
+          if (!servers.has(targetPort(url))) {
+            queueMicrotask(() => clientReq.emit('error', Object.assign(new Error(`connect ECONNREFUSED ${url.host}`), { code: 'ECONNREFUSED' })))
+            return clientReq
+          }
+          const incoming = new EventEmitter()
+          incoming.setEncoding = () => incoming
+          handle = dispatch(url, (o.method || 'GET').toUpperCase(), Object.fromEntries(Object.entries(o.headers || {}).map(([k, v]) => [k.toLowerCase(), String(v)])),
+            Buffer.concat(chunks),
+            (status, headers) => { Object.assign(incoming, { statusCode: status, headers }); cb?.(incoming); clientReq.emit('response', incoming) },
+            (c) => incoming.emit('data', Buffer.from(c)),
+            () => incoming.emit('end'))
+          return clientReq
+        }
+      })
+      return clientReq
+    },
+    get: (target: any, opts?: any, cb?: (res: any) => void) => { const r = http.request(target, opts, cb); r.end(); return r },
+    STATUS_CODES: { 200: 'OK', 402: 'Payment Required', 404: 'Not Found', 500: 'Internal Server Error' }
+  }
+
+  /** fetch() that serves 127.0.0.1/localhost from the virtual servers. */
+  const virtualFetch = async (input: any, init: any = {}): Promise<Response> => {
+    const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url, 'http://127.0.0.1')
+    if (!servers.has(targetPort(url))) return realFetch(input, init)
+    const body = init.body ? Buffer.from(typeof init.body === 'string' ? init.body : new Uint8Array(init.body)) : null
+    const headers = Object.fromEntries(Object.entries(new Headers(init.headers || {}) as any).map(([k, v]: any) => [k.toLowerCase(), String(v)]))
+    return new Promise((resolve) => {
+      let controller!: ReadableStreamDefaultController<Uint8Array>
+      const stream = new ReadableStream<Uint8Array>({ start: (c) => { controller = c }, cancel: () => handle.abort() })
+      const handle = dispatch(url, (init.method || 'GET').toUpperCase(), headers, body,
+        (status, h) => resolve(new Response(stream, { status, headers: h })),
+        (c) => controller.enqueue(c),
+        () => controller.close())
+    })
+  }
+
+  return { http, fetch: virtualFetch }
+}

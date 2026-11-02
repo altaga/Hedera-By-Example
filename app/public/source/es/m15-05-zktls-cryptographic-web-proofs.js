@@ -36,6 +36,9 @@
  * Probador -> Hedera: Prueba en HCS
  * Verificador -> Hedera: Revisar la firma del notario y el compromiso
  *
+ * [ SIMULADO ]
+ * La sesión TLS con el banco y el notario son emulados. Las firmas y la prueba en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/05_zktls_cryptographic_web_proofs.js
  * ============================================================================

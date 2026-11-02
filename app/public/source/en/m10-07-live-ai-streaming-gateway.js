@@ -36,6 +36,9 @@
  * Gateway -> Hedera: Verify the payment on the Mirror Node
  * Gateway -> Client: text/event-stream tokens
  *
+ * [ SIMULATED ]
+ * The AI tokens come from a synthetic generator, not a real model. The payment and its verification are real.
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
  * ============================================================================

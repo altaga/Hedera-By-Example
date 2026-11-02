@@ -11,7 +11,7 @@ import { sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
 import { md5, sha1 } from '@noble/hashes/legacy.js'
 import { hmac } from '@noble/hashes/hmac.js'
 import { utf8ToBytes } from '@noble/hashes/utils.js'
-import { Buffer, NodeOnlyError, adaptSolcCalls, bindingValue, createFs, extractImports, resolveModule, type LabFileEvent } from './labModules'
+import { Buffer, NodeOnlyError, adaptSolcCalls, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
 import { createCipher, createECDH, generateKeyPairSync, sign, verify } from './nodeCrypto'
 
 export interface BrowserWallet {
@@ -623,7 +623,8 @@ export async function executeInBrowser (
       AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } }
     }
 
-    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv }
+    const virtual = createVirtualHttp(EventEmitterShim, window.fetch.bind(window))
+    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http }
     const { imports, body } = extractImports(sourceCode)
     const bound: Record<string, unknown> = {}
     for (const imp of imports) {
@@ -641,6 +642,7 @@ export async function executeInBrowser (
       console: customConsole,
       process: mockProcess,
       Buffer,
+      fetch: virtual.fetch,
       __import,
       ...bound
     }

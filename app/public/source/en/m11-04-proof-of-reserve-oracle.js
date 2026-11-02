@@ -21,6 +21,9 @@
  * - Previous: M11 Lab 03: Stablecoin Studio Roles
  * - Next:     M11 Lab 05: RWA Invoice Factoring
  *
+ * [ SIMULATED ]
+ * The custodian reserve figures are simulated. The on-chain reactions to them are real.
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/04_proof_of_reserve_oracle.js
  * ============================================================================

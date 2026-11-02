@@ -26,6 +26,9 @@
  * Note Server: No API key, token or cookie
  * Server -> Agent: 402 Payment Required (price, payee, nonce, expiry)
  *
+ * [ SIMULATED ]
+ * The HTTP request and server run in the same process; no web server is started.
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

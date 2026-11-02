@@ -21,6 +21,9 @@
  * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
  * - Siguiente: M14 Lab 06: Chat Encriptado de Enjambre de Agentes (P2P sobre HCS)
  *
+ * [ SIMULADO ]
+ * El prompt, el razonamiento y las reglas del agente son texto predefinido, no un modelo en vivo. El flujo de auditoría en HCS es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/05_hcs28_agent_audit_stream.js
  * ============================================================================

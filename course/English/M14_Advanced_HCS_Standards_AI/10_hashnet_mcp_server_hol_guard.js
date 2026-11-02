@@ -36,6 +36,9 @@
  * - Previous: M14 Lab 09: HIP-1334 Decentralized Encrypted Mailbox
  * - Next:     Course Complete (Mastery Achieved)
  *
+ * [ SIMULATED ]
+ * The prompt-injection attack is simulated to show how the guard blocks it.
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
  * ============================================================================

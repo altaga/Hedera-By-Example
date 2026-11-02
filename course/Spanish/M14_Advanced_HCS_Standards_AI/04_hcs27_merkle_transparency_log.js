@@ -22,6 +22,9 @@
  * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes HCS-26
  * - Siguiente: M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
  *
+ * [ SIMULADO ]
+ * Los 64 registros de inferencia son sintéticos. El árbol de Merkle, la prueba y el checkpoint en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/04_hcs27_merkle_transparency_log.js
  * ============================================================================
@@ -38,7 +41,7 @@ import {
   buildHCS27TopicMemo,
   buildHCS27TransactionMemo
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * Construye un árbol Merkle a partir de un arreglo de cadenas de datos.
@@ -183,6 +186,7 @@ const main = async () => {
 
     console.log(`\n[⚙️ PROCESO] Generando prueba de inclusión Merkle para la Inferencia #${targetIndex}...`)
     const proof = getMerkleProof(merkleTree, targetIndex)
+    show.merkle({ title: 'Prueba de inclusión de Merkle para la inferencia #42', leafCount: merkleTree.leaves.length, leafIndex: targetIndex, root: merkleTree.root, proof: proof.map((p) => p.hash.toString('hex')) })
 
     console.log(`[📊 REGISTRO] Pasos de Prueba:     ${proof.length} hashes (log2(${batchSize}) = 6 pasos)`)
     console.log(`[📊 REGISTRO] Hash Hoja Objetivo:  ${targetLeafHash}`)

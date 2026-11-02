@@ -29,6 +29,9 @@
  * - Anterior:  M2 Lab 04: Reactor de Event Sourcing en Tiempo Real
  * - Siguiente: M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real
  *
+ * [ SIMULADO ]
+ * Las respuestas HTTP 429 se inyectan a propósito para activar el circuit breaker. La consulta de respaldo al Mirror Node es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/05_circuit_breaker_rate_limiter.js
  * ============================================================================

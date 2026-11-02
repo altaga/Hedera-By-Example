@@ -21,6 +21,9 @@
  * - Previous: M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
  * - Next:     M13 Lab 04: Block Node Discovery & Data Lake (HIP-1081 / HIP-1137)
  *
+ * [ SIMULATED ]
+ * The TSS quorum verification is simulated (HIP-1056 is not live yet).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/03_block_stream_tss_verification.js
  * ============================================================================
@@ -28,7 +31,7 @@
 
 import crypto from 'crypto'
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * Fetches the latest confirmed block and its transactions from the Hedera Mirror Node.
@@ -147,6 +150,7 @@ const main = async () => {
     // 2. Compute Merkle Root over live transactions & construct HIP-1056 Block Header
     console.log('\n[⚙️ PROCESS] Computing Merkle Root over live block transactions & reconstructing header...')
     const txMerkleRoot = computeTransactionsMerkleRoot(liveTxs, liveBlock.hash)
+    show.merkle({ title: 'Merkle tree over the block transactions', leafCount: Math.max(liveTxs.length, 1), root: txMerkleRoot })
     const blockHeader = {
       number: liveBlock.number,
       previousBlockHash: liveBlock.previous_hash,

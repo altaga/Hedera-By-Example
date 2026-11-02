@@ -37,6 +37,9 @@
  * Solver -> Hedera: Una transferencia atómica liquida a ambos
  * Solver -> Hedera: Registro de liquidación en HCS
  *
+ * [ SIMULADO ]
+ * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. La transferencia de liquidación y el registro en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

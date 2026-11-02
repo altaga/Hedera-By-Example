@@ -23,6 +23,9 @@
  * - Anterior:  M14 Lab 02: Puntuación de Confianza de IA HCS-25
  * - Siguiente: M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
  *
+ * [ SIMULADO ]
+ * El agente que descubre las habilidades es simulado. El registro en HCS es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/03_hcs26_agent_skills_registry.js
  * ============================================================================

@@ -28,6 +28,9 @@
  * - RFC 2104: HMAC: Keyed-Hashing for Message Authentication
  * - WHO Technical Report 961: Temperature & Humidity Monitoring in Cold Chains
  *
+ * [ SIMULATED ]
+ * The IoT tracker and its HTTP requests are emulated. The HMAC checks and the HCS records are real.
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js
  * ============================================================================
@@ -38,7 +41,7 @@ import {
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 
 /**
  * Emulated Battery-Constrained IoT Tracker (Cold Chain Vaccine Container)
@@ -177,11 +180,14 @@ async function main () {
     ]
 
     let slaBreachEvent = null
+    const tempSeries = []
 
     for (let i = 0; i < readings.length; i++) {
       const r = readings[i]
       const request = device.createTelemetryRequest(r.temp, r.hum, r.geo)
       const evaluation = gateway.processPacket(request)
+      tempSeries.push({ x: i + 1, y: r.temp, ...(evaluation.isSlaBreached ? { status: 'critical', label: `${r.temp} °C` } : {}) })
+      show.chart({ id: 'temp', type: 'line', title: 'Vaccine container temperature', unit: '°C', xLabel: 'Report', yLabel: '°C', points: tempSeries, threshold: { value: 8, label: 'SLA max +8 °C' } })
 
       if (evaluation.status !== 200) {
         throw new Error(`Gateway rejected packet #${i + 1}: ${evaluation.error}`)

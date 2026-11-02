@@ -37,7 +37,7 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * High-Throughput In-Memory Merkle Tree Generator & Verifier
@@ -166,6 +166,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESS] Light-Client Independent Verification:')
     const isValid = MerkleTreeEngine.verifyProof(rawEvents[sampleTargetIndex], inclusionProof, merkleRoot)
+    show.merkle({ title: 'Inclusion proof for one event in the batch', leafCount: rawEvents.length, leafIndex: sampleTargetIndex, root: merkleRoot, proof: inclusionProof.map((p) => p.hash.toString('hex')) })
     console.log(`[🛡️ CRYPTO PROOF] Verification Result: ${isValid ? 'VERIFIED VALID (Cryptographic Match)' : 'REJECTED'}`)
 
     updateState('MERKLE_BATCH_TOPIC_ID', topicId.toString())

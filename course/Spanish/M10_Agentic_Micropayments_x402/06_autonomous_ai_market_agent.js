@@ -31,6 +31,9 @@
  * Agente -> Oráculo: Reintentar con la prueba de pago
  * Oráculo -> Agente: 200 OK + señal
  *
+ * [ SIMULADO ]
+ * Los tres proveedores y sus cotizaciones son simulados. El pago es real.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

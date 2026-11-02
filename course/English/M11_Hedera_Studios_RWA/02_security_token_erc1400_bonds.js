@@ -21,6 +21,9 @@
  * - Previous: M11 Lab 01: ERC-3643 Identity Registry
  * - Next:     M11 Lab 03: Stablecoin Studio Roles
  *
+ * [ SIMULATED ]
+ * Coupon periods are simulated instead of waiting for real dates. Tokens and payments are real.
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/02_security_token_erc1400_bonds.js
  * ============================================================================

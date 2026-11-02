@@ -406,7 +406,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .output-status.is-success { color: var(--ok); }
 .output-status.is-error { color: var(--err); }
 .output-log {
-  max-height: 360px; overflow-y: auto; padding: 10px 16px 14px;
+  max-height: 560px; overflow-y: auto; padding: 10px 16px 14px;
   font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6;
 }
 .log-line { display: flex; gap: 14px; }
@@ -755,3 +755,21 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .lab-extra > .muted { margin: 0 0 14px; max-width: 72ch; }
 .lab-extra .states { margin-top: 14px; }
 .lab-extra .state-detail a { margin-left: 8px; }
+
+.simulated {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+  margin: 0 0 24px; padding: 10px 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius);
+  background: var(--bg-subtle); font-size: 14px;
+}
+.simulated-tag {
+  flex-shrink: 0; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border-strong);
+  font-size: 12px; font-weight: 600; color: var(--text-2);
+}
+.simulated p { margin: 0; flex: 1 1 320px; color: var(--text-2); }
+.spine { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.spine-row { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; }
+.spine-level { width: 64px; color: var(--text-3); text-align: right; }
+.spine-node { padding: 2px 8px; border-radius: 4px; color: #fff; }
+.spine-node.on-path { background: var(--series-1); }
+.spine-node.proof { background: var(--series-2); }
+.spine-hash { color: var(--text-2); }

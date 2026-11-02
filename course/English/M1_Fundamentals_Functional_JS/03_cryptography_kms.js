@@ -20,6 +20,9 @@
  * - Previous: M1 Lab 02: Account Rent
  * - Next:     M1 Lab 04: Key Rotation
  *
+ * [ SIMULATED ]
+ * The HSM / vault is an in-memory mock. The signatures are real.
+ *
  * [ HOW TO RUN ]
  * node 03_cryptography_kms.js
  * ============================================================================

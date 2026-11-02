@@ -36,6 +36,9 @@
  * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
  * - Siguiente: Curso Completado (Maestría Alcanzada)
  *
+ * [ SIMULADO ]
+ * El ataque de inyección de prompt se simula para mostrar cómo lo bloquea la protección.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
  * ============================================================================

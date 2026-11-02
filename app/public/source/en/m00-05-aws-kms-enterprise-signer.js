@@ -25,6 +25,9 @@
  * - Previous: Lab 04: Native Account Creation
  * - Next:     Lab 06: OpenTelemetry Consensus Telemetry
  *
+ * [ SIMULATED ]
+ * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real.
+ *
  * [ HOW TO RUN ]
  * node English/M0_Setup_and_Test/05_aws_kms_enterprise_signer.js
  * ============================================================================

@@ -21,6 +21,9 @@
  * - Previous: M14 Lab 02: HCS-25 Portable AI Trust Score
  * - Next:     M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  *
+ * [ SIMULATED ]
+ * The peer agent that discovers the skills is simulated. The registry on HCS is real.
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/03_hcs26_agent_skills_registry.js
  * ============================================================================

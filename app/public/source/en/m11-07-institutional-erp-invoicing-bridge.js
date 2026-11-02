@@ -39,6 +39,9 @@
  * Issuer -> Investor: Grant KYC and deliver 250 units (DvP)
  * Investor -> Issuer: Payment in the same atomic transaction
  *
+ * [ SIMULATED ]
+ * The SAP/Oracle invoice and the ERC-3643 compliance check are simulated. The HCS anchor, the tranche token and the transfers are real.
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/07_institutional_erp_invoicing_bridge.js
  * ============================================================================

@@ -21,6 +21,9 @@
  * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
  * - Next:     M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
  *
+ * [ SIMULATED ]
+ * The TSS council signatures and the HIP-1535 state proof are simulated (the protocol is not live yet). The HCS anchoring is real.
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js
  * ============================================================================

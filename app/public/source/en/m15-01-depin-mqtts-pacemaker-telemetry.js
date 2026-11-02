@@ -29,6 +29,9 @@
  * - HIP-10 Zero-Fee HCS Topic Standards: https://hips.hedera.com/hip/hip-10
  * - NIST SP 800-140C Cryptographic Module Validation (Ed25519 Hardware Keystores)
  *
+ * [ SIMULATED ]
+ * The pacemaker and its MQTTS stream are emulated. The device signatures, the Merkle batch and the HCS messages are real.
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/01_depin_mqtts_pacemaker_telemetry.js
  * ============================================================================
@@ -39,7 +42,7 @@ import {
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 
 /**
  * Emulated MedTech Hardware Device: Implantable Cardiac Pacemaker (PM-8821)
@@ -137,6 +140,7 @@ async function main () {
     console.log('\n[3/5] Streaming High-Speed MQTTS Telemetry Frames...')
     const routineBatch = []
     let emergencyAlertFrame = null
+    const bpmSeries = []
 
     for (let frameIndex = 1; frameIndex <= 8; frameIndex++) {
       // Simulate frame 6 as an acute cardiac arrhythmia spike
@@ -157,6 +161,8 @@ async function main () {
       }
 
       const frameHash = crypto.createHash('sha256').update(payloadBuf).digest('hex')
+      bpmSeries.push({ x: frameIndex, y: frame.payload.metrics.bpm, ...(isCritical ? { status: 'critical', label: `${frame.payload.metrics.bpm} BPM` } : {}) })
+      show.chart({ id: 'bpm', type: 'line', title: 'Heart rate per telemetry frame', unit: 'BPM', xLabel: 'Frame', yLabel: 'BPM', points: bpmSeries, threshold: { value: 120, label: 'tachycardia > 120' } })
 
       if (isCritical) {
         console.log(`   🚨 [FRAME #${frameIndex}] CRITICAL ARREST/TACHYCARDIA: ${frame.payload.metrics.bpm} BPM | Hardware Sig: Verified ✅`)
@@ -170,6 +176,7 @@ async function main () {
     // 4. Anchor Normal Telemetry as Merkle Batch on HCS
     console.log('\n[4/5] Anchoring Aggregated Merkle Batch to Hedera Consensus...')
     const merkleRoot = computeMerkleRoot(routineBatch)
+    show.merkle({ title: 'Merkle batch of the routine frames', leafCount: routineBatch.length, root: merkleRoot })
     const batchMessage = {
       p: 'depin-telemetry-v1',
       op: 'merkle_batch',

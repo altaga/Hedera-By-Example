@@ -21,6 +21,9 @@
  * - Previous: M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  * - Next:     M14 Lab 06: Encrypted AI Agent Swarm Chat (P2P Over HCS)
  *
+ * [ SIMULATED ]
+ * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit stream on HCS is real.
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/05_hcs28_agent_audit_stream.js
  * ============================================================================

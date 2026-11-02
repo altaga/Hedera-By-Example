@@ -19,12 +19,16 @@
  * - Previous: M0 Lab 04: Environment Provisioning
  * - Next:     M1 Lab 02: Account Rent
  *
+ * [ SIMULATED ]
+ * The gossip between nodes runs locally as a model of the hashgraph; no network calls are made.
+ *
  * [ HOW TO RUN ]
  * node 01_consensus_and_abft.js
  * ============================================================================
  */
 
 import crypto from 'crypto'
+import { show } from '../M99_Utilities/index.js'
 
 /**
  * Generates a SHA-384 hash of the event data and its parents.
@@ -69,6 +73,8 @@ const gossipSimulation = async () => {
   console.log('\n--- 📊 Final Hashgraph DAG Visualized ---')
 
   const timeline = [eventA1, eventB1, eventB2, eventA2]
+  const eventIds = new Map(timeline.map((ev, i) => [ev.hash, `E${i}`]))
+  show.dag({ title: 'Hashgraph: events and their parents', events: timeline.map((ev, i) => ({ id: `E${i}`, creator: ev.creator, label: ev.transaction, selfParent: eventIds.get(ev.selfParent), otherParent: eventIds.get(ev.otherParent) })) })
 
   timeline.forEach((ev, index) => {
     console.log(`\n[📊 LOG] EVENT ${index} Created by: ${ev.creator}`)

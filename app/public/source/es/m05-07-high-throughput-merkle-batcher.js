@@ -37,7 +37,7 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 
 /**
  * Generador y Verificador de Árboles Merkle en Memoria de Alto Rendimiento
@@ -166,6 +166,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESO] Verificación Independiente del Cliente Ligero:')
     const isValid = MerkleTreeEngine.verifyProof(rawEvents[sampleTargetIndex], inclusionProof, merkleRoot)
+    show.merkle({ title: 'Prueba de inclusión de un evento del lote', leafCount: rawEvents.length, leafIndex: sampleTargetIndex, root: merkleRoot, proof: inclusionProof.map((p) => p.hash.toString('hex')) })
     console.log(`[🛡️ PRUEBA CRIPTO] Resultado de Verificación: ${isValid ? 'VÁLIDA (Coincidencia Criptográfica)' : 'RECHAZADA'}`)
 
     updateState('MERKLE_BATCH_TOPIC_ID', topicId.toString())

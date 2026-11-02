@@ -39,6 +39,9 @@
  * Emisor -> Inversionista: Otorgar KYC y entregar 250 unidades (DvP)
  * Inversionista -> Emisor: Pago en la misma transacción atómica
  *
+ * [ SIMULADO ]
+ * La factura de SAP/Oracle y la verificación de cumplimiento ERC-3643 son simuladas. El anclaje en HCS, el token del tramo y las transferencias son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/07_institutional_erp_invoicing_bridge.js
  * ============================================================================

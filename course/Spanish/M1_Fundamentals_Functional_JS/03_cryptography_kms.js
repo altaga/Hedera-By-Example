@@ -23,6 +23,9 @@
  * - Actual:   M1 Lab 03: Criptografía y KMS
  * - Siguiente: M1 Lab 04: Rotación de Llaves
  *
+ * [ SIMULADO ]
+ * El HSM / bóveda es un mock en memoria. Las firmas son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_cryptography_kms.js
  * ============================================================================

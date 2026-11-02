@@ -30,6 +30,9 @@
  * Agent -> Oracle: Retry with payment proof
  * Oracle -> Agent: 200 OK + signal
  *
+ * [ SIMULATED ]
+ * The three providers and their quotes are simulated. The payment is real.
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

@@ -28,6 +28,9 @@
  * Note Relayer: State proof of the foreign fill (simulated CLPR)
  * Relayer -> Hedera: Settle the Hedera leg via the allowance
  *
+ * [ SIMULATED ]
+ * The Arbitrum fill and the CLPR proof are simulated. The allowance, the HCS intent and the Hedera settlement are real.
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/05_cross_chain_intent_settlement_engine.js
  * ============================================================================

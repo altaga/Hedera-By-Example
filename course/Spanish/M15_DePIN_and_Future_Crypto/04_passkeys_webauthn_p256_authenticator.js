@@ -29,6 +29,9 @@
  * - Especificaciones de la Alianza FIDO: https://fidoalliance.org/specs/
  * - EIP-7212: Contrato Precompilado para la Curva secp256r1: https://eips.ethereum.org/EIPS/eip-7212
  *
+ * [ SIMULADO ]
+ * El autenticador biométrico se emula por software (en el sitio puedes probar una passkey real). Las firmas P-256 y la auditoría en HCS son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/04_passkeys_webauthn_p256_authenticator.js
  * ============================================================================

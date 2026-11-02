@@ -28,6 +28,9 @@
  * Hedera -> Facilitator: Receipt SUCCESS
  * Server -> Agent: 200 OK + PAYMENT-RESPONSE (txId) + data
  *
+ * [ SIMULATED ]
+ * Payer and payee are the same account, so the settlement is a real transfer to yourself.
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================

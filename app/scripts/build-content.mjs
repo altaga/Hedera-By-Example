@@ -49,6 +49,8 @@ const SECTION_ALIASES = {
   'REFERENCIAS OFICIALES': 'refs',
   'HOW TO RUN': 'run',
   SEQUENCE: 'sequence',
+  SIMULATED: 'simulated',
+  SIMULADO: 'simulated',
   SECUENCIA: 'sequence',
   'COMO EJECUTAR': 'run'
 }
@@ -87,6 +89,32 @@ function parseSequence (lines) {
   return steps.length ? { actors, steps } : null
 }
 
+// Modules the web runner provides (app/src/lib/labModules.ts); anything else is Node-only.
+const BROWSER_MODULES = new Set(['@hiero-ledger/sdk', '@hashgraph/sdk', 'ethers', 'protobufjs', 'buffer', 'crypto', 'path', 'fs',
+  'fs/promises', 'events', 'perf_hooks', 'url', 'util', 'zlib', 'dotenv', 'dotenv/config', 'solc', 'http'])
+
+function nodeOnlyImports (source) {
+  // Only the leading import block counts (same rule as extractImports in labModules.ts):
+  // text that looks like an import inside a template string is not an import.
+  const IMPORT = /import\s+(?:[\w$*{},\s]+?\s+from\s*)?['"]([^'"]+)['"][ \t]*;?/y
+  const SKIP = /(?:\s+|\/\/[^\n]*|\/\*[\s\S]*?\*\/)+/y
+  const specs = []
+  let pos = 0
+  for (;;) {
+    SKIP.lastIndex = pos
+    if (SKIP.exec(source)) pos = SKIP.lastIndex
+    IMPORT.lastIndex = pos
+    const m = IMPORT.exec(source)
+    if (!m) break
+    specs.push(m[1])
+    pos = IMPORT.lastIndex
+  }
+  return [...new Set(specs
+    .filter((s) => !s.startsWith('.'))
+    .map((s) => s.replace(/^node:/, ''))
+    .filter((s) => !BROWSER_MODULES.has(s)))]
+}
+
 function parseHeader (lines) {
   const out = { title: '', kicker: '', concept: [], moment: '', refs: [], run: '' }
   const sections = {}
@@ -115,6 +143,7 @@ function parseHeader (lines) {
   out.refs = (sections.refs || []).map((l) => l.trim().replace(/^-\s*/, '')).filter((l) => /^https?:\/\//.test(l))
   out.run = (sections.run || []).map((l) => l.trim()).filter(Boolean)[0] || ''
   out.sequence = parseSequence(sections.sequence || [])
+  out.simulated = toParagraphs(sections.simulated || []).join(' ')
   return out
 }
 
@@ -276,6 +305,8 @@ function build () {
           segments: lab.segments,
           lines: lab.lines,
           sequence: lab.sequence,
+          simulated: lab.simulated || '',
+          nodeOnly: nodeOnlyImports(fs.readFileSync(abs, 'utf8')),
           files: files.map((rel) => ({ name: path.basename(rel), url: `/source/files/${lang}/${dir}/${rel}` }))
         }
       }

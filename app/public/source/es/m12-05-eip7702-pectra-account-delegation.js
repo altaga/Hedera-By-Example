@@ -29,6 +29,9 @@
  * - Anterior:  M12 Lab 04: Arquitectura Full-Stack Scaffold-HBAR
  * - Siguiente: M12 Lab 06: Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
  *
+ * [ SIMULADO ]
+ * La ejecución por lotes de EIP-7702 es simulada (estado SIMULATED_CONFIRMED); aquí el relay no ejecuta transacciones Type 4.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/05_eip7702_pectra_account_delegation.js
  * ============================================================================

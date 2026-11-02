@@ -30,6 +30,9 @@
  * - Previous: M12 Lab 05: EIP-7702 Pectra Account Delegation
  * - Next:     M13 Lab 01: CLPR State Proof Verification (HIP-1535)
  *
+ * [ SIMULATED ]
+ * The ERC-4337 bundler and UserOperation flow are simulated. The final settlement on Hedera is real.
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/06_erc4337_paymaster_gasless.js
  * ============================================================================

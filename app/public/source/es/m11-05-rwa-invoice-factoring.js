@@ -22,6 +22,9 @@
  * - Actual:   M11 Lab 05: Factoraje de Facturas RWA
  * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo RWA
  *
+ * [ SIMULADO ]
+ * Las suscripciones de inversionistas y el pago del deudor se modelan con transferencias simples. Los tokens son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
  * ============================================================================

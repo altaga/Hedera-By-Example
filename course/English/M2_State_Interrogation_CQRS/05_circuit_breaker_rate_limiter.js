@@ -28,6 +28,9 @@
  * - Previous: M2 Lab 04: Real-Time Event Sourcing Reactor
  * - Next:     M2 Lab 06: Real-Time WebSocket Event Bus
  *
+ * [ SIMULATED ]
+ * The HTTP 429 responses are injected on purpose to trip the circuit breaker. The fallback Mirror Node query is real.
+ *
  * [ HOW TO RUN ]
  * node English/M2_State_Interrogation_CQRS/05_circuit_breaker_rate_limiter.js
  * ============================================================================

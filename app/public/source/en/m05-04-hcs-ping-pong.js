@@ -30,7 +30,7 @@ import {
   TopicMessageQuery,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck, show } from '../M99_Utilities/index.js'
 
 class HcsNode {
   constructor (name, client, topicId) {
@@ -145,6 +145,7 @@ const main = async () => {
 
   const renderFinalReport = (results) => {
     results.sort((a, b) => a.cycle - b.cycle)
+    show.chart({ type: 'stacked', title: 'Round-trip time by stage', unit: 'ms', xLabel: 'Cycle', categories: results.map((r) => `#${r.cycle}`), series: [{ name: 'A → ledger', values: results.map((r) => r.outbound) }, { name: 'ledger → B → ledger', values: results.map((r) => r.turnaround) }, { name: 'ledger → A', values: results.map((r) => r.inbound) }] })
 
     console.log('\n' + '='.repeat(75))
     console.log('HCS PRECISION LATENCY TEARDOWN REPORT')

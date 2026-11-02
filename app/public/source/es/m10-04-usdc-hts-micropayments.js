@@ -28,6 +28,9 @@
  * Hedera -> Agente: Recibo SUCCESS
  * Agente -> Servidor: Reintenta con el ID de la transacción de pago
  *
+ * [ SIMULADO ]
+ * El "USDC" es un token de prueba que acuña el lab, y el pago es una transferencia a ti mismo. Ambos son reales en testnet.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================

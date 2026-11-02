@@ -27,6 +27,9 @@
  * Nota Servidor: Sin API key, token ni cookie
  * Servidor -> Agente: 402 Payment Required (precio, beneficiario, nonce, vencimiento)
  *
+ * [ SIMULADO ]
+ * La solicitud HTTP y el servidor corren en el mismo proceso; no se levanta un servidor web.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

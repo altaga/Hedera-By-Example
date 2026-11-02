@@ -28,6 +28,9 @@
  * - Anterior:  M2 Lab 05: Circuit Breaker y Limitador de Tasa
  * - Siguiente: M2 Lab 07: Indexador de Subgrafos GraphQL
  *
+ * [ SIMULADO ]
+ * El cliente suscriptor corre en el mismo proceso que el servidor. Los eventos del ledger que retransmite son reales.
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/06_realtime_websocket_event_bus.js
  * ============================================================================
