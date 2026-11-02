@@ -71,7 +71,7 @@ export function OutputLine ({ line, t }: { line: TerminalLogLine; t: Strings }) 
         return (
           <span className='log-text'>
             {line.text}
-            {line.url && <> <a href={line.url} target='_blank' rel='noopener noreferrer'>HashScan</a></>}
+            {line.url && <> <a href={line.url} target='_blank' rel='noopener noreferrer'>{/faucet/.test(line.url) ? 'Faucet' : 'HashScan'}</a></>}
           </span>
         )
     }
