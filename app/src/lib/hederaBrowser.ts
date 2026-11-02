@@ -522,6 +522,36 @@ export async function executeInBrowser (
       updateState(stateKey, `${tokenId}@${operator}`)
       return tokenId
     }
+    /** An ECDSA key the JSON-RPC relay maps to an account (see M99 getJsonRpcSigner). */
+    const getJsonRpcSigner = async (c: any, operatorKey: string, { minHbar = 5 } = {}) => {
+      const operatorId = c.operatorAccountId.toString()
+      const opKey = parsePrivateKey(hedera, operatorKey)
+      if (opKey.type === 'secp256k1') {
+        const derived = '0x' + opKey.publicKey.toEvmAddress()
+        if ((await getAccountEvmAddress(operatorId)).toLowerCase() === derived.toLowerCase()) {
+          return { privateKey: opKey, accountId: operatorId, evmAddress: derived }
+        }
+      }
+      const stored = getState('JSON_RPC_SIGNER_KEY')
+      const key = stored ? hedera.PrivateKey.fromStringDer(stored) : hedera.PrivateKey.generateECDSA()
+      const evmAddress = '0x' + key.publicKey.toEvmAddress()
+      if (!stored) {
+        pushLog('info', `${operatorId} has no EVM alias; creating an ECDSA alias account for JSON-RPC calls (${evmAddress})...`)
+        const tx = await new hedera.TransferTransaction()
+          .addHbarTransfer(c.operatorAccountId, new hedera.Hbar(-minHbar))
+          .addHbarTransfer(hedera.AccountId.fromEvmAddress(0, 0, evmAddress), new hedera.Hbar(minHbar))
+          .execute(c)
+        await tx.getReceipt(c)
+        updateState('JSON_RPC_SIGNER_KEY', key.toStringDer())
+      }
+      const account = await waitForMirror(async () => {
+        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`)
+        return res.ok ? (await res.json()).account : null
+      }, { timeoutMs: 60_000 })
+      if (!account) throw new Error(`The Mirror Node does not list ${evmAddress} yet; try again in a minute.`)
+      await ensureFunded(c, account, minHbar / 2)
+      return { privateKey: key, accountId: account, evmAddress }
+    }
     const parseKey = (value: string) => parsePrivateKey(hedera, value)
 
     const pathShim: any = {
@@ -639,7 +669,7 @@ export async function executeInBrowser (
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,
       show,
-      getJsonRpcSigner: nodeOnly('getJsonRpcSigner (JSON-RPC relay signing)'),
+      getJsonRpcSigner,
       AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } }
     }
 
