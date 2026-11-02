@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import { createHash } from 'crypto'
-import { AccountId, ContractId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
+import { AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
 import { getMirrorNodeBaseUrl } from './config.js'
 import { getState, updateState } from './storage.js'
 
@@ -35,21 +35,84 @@ export const withGasRetry = async (run, { gas = 300_000, maxGas = MAX_GAS } = {}
 }
 
 /**
+ * Pide al Mirror Node simular un despliegue o una llamada a contrato
+ * (POST /api/v1/contracts/call con estimate: true). Es gratis y no toca el
+ * ledger. Devuelve { gas } si funciona, { revert } si la simulación revierte,
+ * o null cuando la transacción no se puede simular (por ejemplo, bytecode
+ * guardado en un archivo).
+ *
+ * @param {any} tx - ContractCreateTransaction, ContractCreateFlow o ContractExecuteTransaction.
+ * @param {import('@hiero-ledger/sdk').Client} client - Su operador es el remitente simulado.
+ * @returns {Promise<{ gas?: number, revert?: string } | null>}
+ */
+const hexOf = (value) => {
+  if (!value) return ''
+  if (typeof value === 'string') return value.replace(/^0x/i, '')
+  if (typeof value._build === 'function') return Buffer.from(value._build()).toString('hex')
+  return Buffer.from(value).toString('hex')
+}
+
+export const estimateGas = async (tx, client) => {
+  let body
+  if (tx instanceof ContractCreateTransaction || tx instanceof ContractCreateFlow) {
+    if (!tx.bytecode || !tx.bytecode.length) return null
+    body = { data: '0x' + hexOf(tx.bytecode) + hexOf(tx.constructorParameters) }
+  } else if (tx instanceof ContractExecuteTransaction && tx.contractId) {
+    body = { to: '0x' + tx.contractId.toEvmAddress(), data: '0x' + hexOf(tx.functionParameters) }
+    const value = tx.payableAmount ? Number(tx.payableAmount.toTinybars()) : 0
+    if (value) body.value = value
+  } else {
+    return null
+  }
+  try {
+    body.from = await getAccountEvmAddress(client.operatorAccountId.toString())
+    body.estimate = true
+    const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/call`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    const data = await res.json().catch(() => null)
+    if (res.ok && data?.result) return { gas: parseInt(data.result, 16) }
+    const message = data?._status?.messages?.[0]?.message
+    return message && /REVERT/i.test(message) ? { revert: message } : null
+  } catch (_) {
+    return null
+  }
+}
+
+/**
  * Ejecuta una transacción de contrato construida por `build(gas)` y espera su
- * recibo, reintentando con más gas ante INSUFFICIENT_GAS (ver withGasRetry).
+ * recibo. El límite de gas sale de una simulación gratuita en el Mirror Node
+ * más 25% (Hedera cobra al menos el 80% del límite, así que ese margen no
+ * cuesta nada); si aun así la red responde INSUFFICIENT_GAS, reintenta con más.
  *
  * @param {(gas: number) => Promise<any>|any} build - Devuelve la transacción (congelada/firmada o no) para un límite de gas.
  * @param {import('@hiero-ledger/sdk').Client} client
- * @param {{ gas?: number, maxGas?: number }} [options]
- * @returns {Promise<import('@hiero-ledger/sdk').TransactionResponse>}
+ * @param {{ gas?: number, maxGas?: number }} [options] - gas: el límite inicial cuando la simulación no está disponible.
  */
-export const executeWithGas = (build, client, options) =>
-  withGasRetry(async (gas) => {
+export const executeWithGas = async (build, client, options = {}) => {
+  let start = options.gas
+  const probe = await build(options.gas ?? 300_000)
+  const est = await estimateGas(probe, client).catch(() => null)
+  // Calls to system contracts (HTS, HSS, ...) can simulate far above what they use: a
+  // failed call attempt costs little, so above 3M gas the lab's limit and the retry decide.
+  const isCall = probe instanceof ContractExecuteTransaction
+  if (est?.gas && isCall && est.gas > 3_000_000) {
+    console.log(`[ℹ️ INFO] La simulación pidió ${est.gas.toLocaleString('es-MX')} de gas, poco realista para una llamada (los contratos del sistema son difíciles de simular): se parte del límite del lab.`)
+  } else if (est?.gas) {
+    start = Math.min(options.maxGas ?? MAX_GAS, Math.ceil(est.gas * 1.25) + 5_000)
+    console.log(`[ℹ️ INFO] Gas estimado por simulación: ${est.gas.toLocaleString('es-MX')} → límite ${start.toLocaleString('es-MX')} (+25%).`)
+  } else if (est?.revert) {
+    console.log(`[ℹ️ INFO] La simulación revirtió (${est.revert}). Corre sobre el estado del Mirror Node, que puede ir unos segundos atrás, así que la transacción se envía de todos modos con el límite de gas del lab.`)
+  }
+  return withGasRetry(async (gas) => {
     const tx = await build(gas)
     const response = await tx.execute(client)
     await response.getReceipt(client)
     return response
-  }, options)
+  }, { ...options, gas: start })
+}
 
 /**
  * Consulta hasta que `check` devuelva un valor verdadero. El Mirror Node muestra

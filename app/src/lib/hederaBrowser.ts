@@ -494,13 +494,67 @@ export async function executeInBrowser (
         }
       }
     }
-    const executeWithGas = (build: (gas: number) => any, c: any, opts?: { gas?: number, maxGas?: number }) =>
-      withGasRetry(async (gas: number) => {
+    // Free Mirror Node simulation of a deployment or call (see M99 estimateGas).
+    const hexOf = (value: any): string => {
+      if (!value) return ''
+      if (typeof value === 'string') return value.replace(/^0x/i, '')
+      if (typeof value._build === 'function') return Buffer.from(value._build()).toString('hex')
+      return Buffer.from(value).toString('hex')
+    }
+    const estimateGas = async (tx: any, c: any): Promise<{ gas?: number, revert?: string } | null> => {
+      let body: any
+      if (tx instanceof hedera.ContractCreateTransaction || tx instanceof hedera.ContractCreateFlow) {
+        if (!tx.bytecode || !tx.bytecode.length) return null
+        body = { data: '0x' + hexOf(tx.bytecode) + hexOf(tx.constructorParameters) }
+      } else if (tx instanceof hedera.ContractExecuteTransaction && tx.contractId) {
+        body = { to: '0x' + tx.contractId.toEvmAddress(), data: '0x' + hexOf(tx.functionParameters) }
+        const value = tx.payableAmount ? Number(tx.payableAmount.toTinybars()) : 0
+        if (value) body.value = value
+      } else {
+        return null
+      }
+      try {
+        body.from = await getAccountEvmAddress(c.operatorAccountId.toString())
+        body.estimate = true
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/call`, {
+          init: { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }
+        })
+        const data = await res.json().catch(() => null)
+        if (res.ok && data?.result) return { gas: parseInt(data.result, 16) }
+        const message = data?._status?.messages?.[0]?.message
+        return message && /REVERT/i.test(message) ? { revert: message } : null
+      } catch (_) {
+        return null
+      }
+    }
+    const executeWithGas = async (build: (gas: number) => any, c: any, opts: { gas?: number, maxGas?: number } = {}) => {
+      let start = opts.gas
+      const probe = await build(opts.gas ?? 300_000)
+      const est = await estimateGas(probe, c).catch(() => null)
+      // Calls to system contracts (HTS, HSS, ...) can simulate far above what they use: a
+      // failed call attempt costs little, so above 3M gas the lab's limit and the retry decide.
+      const isCall = probe instanceof hedera.ContractExecuteTransaction
+      if (est?.gas && isCall && est.gas > 3_000_000) {
+        pushLog('info', options.lang === 'es'
+          ? `La simulación pidió ${est.gas.toLocaleString('es-MX')} de gas, poco realista para una llamada (los contratos del sistema son difíciles de simular): se parte del límite del lab.`
+          : `The simulation asked for ${est.gas.toLocaleString('en-US')} gas, unrealistic for a call (system contracts are hard to simulate): starting from the lab's limit instead.`)
+      } else if (est?.gas) {
+        start = Math.min(opts.maxGas ?? MAX_GAS, Math.ceil(est.gas * 1.25) + 5_000)
+        pushLog('info', options.lang === 'es'
+          ? `Gas estimado por simulación: ${est.gas.toLocaleString('es-MX')} → límite ${start.toLocaleString('es-MX')} (+25%).`
+          : `Gas estimated by simulation: ${est.gas.toLocaleString('en-US')} → limit ${start.toLocaleString('en-US')} (+25%).`)
+      } else if (est?.revert) {
+        pushLog('info', options.lang === 'es'
+          ? `La simulación revirtió (${est.revert}). Corre sobre el estado del Mirror Node, que puede ir unos segundos atrás, así que la transacción se envía de todos modos con el límite de gas del lab.`
+          : `The simulation reverted (${est.revert}). It runs on Mirror Node state, which can be a few seconds behind, so the transaction is sent anyway with the lab's gas limit.`)
+      }
+      return withGasRetry(async (gas: number) => {
         const tx = await build(gas)
         const response = await tx.execute(c)
         await response.getReceipt(c)
         return response
-      }, opts)
+      }, { ...opts, gas: start })
+    }
     const waitForMirror = async (check: () => Promise<any>, { timeoutMs = 30_000, intervalMs = 2_000 } = {}) => {
       const deadline = Date.now() + timeoutMs
       for (;;) {
@@ -718,6 +772,7 @@ export async function executeInBrowser (
       parsePrivateKey: parseKey,
       withGasRetry,
       executeWithGas,
+      estimateGas,
       waitForMirror,
       getAccountEvmAddress,
       ensureFunded,
