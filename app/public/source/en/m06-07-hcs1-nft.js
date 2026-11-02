@@ -35,7 +35,7 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
@@ -101,6 +101,7 @@ const main = async () => {
     console.log(`[ℹ️ INFO] Submitting ${imagePayloads.length} image shards to HCS...`)
 
     for (const payload of imagePayloads) {
+      show.shards({ id: 'hcs1-image', title: 'Image shards submitted', total: payload.t, done: payload.i + 1 })
       process.stdout.write(` └─ [⚙️] Shard ${payload.i + 1}/${payload.t}\r`)
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)

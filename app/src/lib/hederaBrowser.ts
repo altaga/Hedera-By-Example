@@ -585,6 +585,18 @@ export async function executeInBrowser (
       timeEnd: () => {}
     }
 
+    // course/*/M99_Utilities/show.js: visuals are drawn by the web page.
+    const visual = (type: string) => (spec: Record<string, unknown>) =>
+      emit({ type: 'info', text: String(spec?.title ?? type), kind: 'visual', data: { ...jsonSafe(spec), type: spec?.type && type === 'chart' ? spec.type : type } })
+    const show = {
+      table: customConsole.table,
+      json: (value: unknown) => emit({ type: 'info', text: fmt(value), kind: 'json', data: jsonSafe(value) }),
+      chart: visual('chart'),
+      merkle: visual('merkle'),
+      dag: visual('dag'),
+      shards: visual('shards'),
+      states: visual('states')
+    }
     const nodeOnly = (name: string) => () => { throw new NodeOnlyError(name) }
     const helpers: Record<string, unknown> = {
       getClient,
@@ -606,6 +618,7 @@ export async function executeInBrowser (
       exitIfStuck: () => {},
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,
+      show,
       getJsonRpcSigner: nodeOnly('getJsonRpcSigner (JSON-RPC relay signing)'),
       AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } }
     }

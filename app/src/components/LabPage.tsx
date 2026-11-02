@@ -6,9 +6,10 @@ import {
   type Lang, type LabBody, type LabEntry
 } from '../lib/content'
 import type { Strings } from '../lib/i18n'
-import type { TerminalLogLine } from '../lib/hederaBrowser'
+import type { BrowserWallet, TerminalLogLine } from '../lib/hederaBrowser'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
+import { PasskeyDemo } from './PasskeyDemo'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source' | 'playground'
@@ -33,6 +34,7 @@ interface Props {
   onOpenAccount: () => void
   fileOverrides: Record<string, File>
   onReplaceFile: (name: string, file: File | null) => void
+  wallet: BrowserWallet
 }
 
 const isImage = (name: string) => /\.(png|jpe?g|gif|webp|svg)$/i.test(name)
@@ -152,7 +154,7 @@ export function LabPage (props: Props) {
   const {
     t, lang, entry, body, prev, next, onSelect,
     code, isEdited, onEditCode, onResetCode, runStatus, logs, onRun, onClearLogs,
-    needsPractice, onOpenAccount, fileOverrides, onReplaceFile
+    needsPractice, onOpenAccount, fileOverrides, onReplaceFile, wallet
   } = props
   const { mod, lab } = entry
   const [tab, setTab] = useState<Tab>('walkthrough')
@@ -330,6 +332,8 @@ export function LabPage (props: Props) {
           </div>
         )}
       </section>
+
+      {lab.slug === 'm15-04-passkeys-webauthn-p256-authenticator' && <PasskeyDemo lang={lang} wallet={wallet} />}
 
       {body.files?.length > 0 && <LabFiles t={t} files={body.files} overrides={fileOverrides} onReplace={onReplaceFile} />}
 

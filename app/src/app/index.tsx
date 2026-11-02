@@ -129,7 +129,19 @@ export default function HederaByExample () {
         files[f.name] = new Uint8Array(bytes)
       }))
     } catch (_) {}
-    const result = await executeInBrowser(code, wallet, (line) => { if (live()) setLogs((prev) => [...prev, line]) }, { practice, files })
+    // A visual with an id (e.g. upload progress) updates in place instead of repeating.
+    const onLine = (line: TerminalLogLine) => {
+      if (!live()) return
+      setLogs((prev) => {
+        const id = line.kind === 'visual' ? line.data?.id : undefined
+        const at = id !== undefined ? prev.findIndex((l) => l.kind === 'visual' && l.data?.id === id) : -1
+        if (at === -1) return [...prev, line]
+        const next = prev.slice()
+        next[at] = { ...line, id: prev[at].id }
+        return next
+      })
+    }
+    const result = await executeInBrowser(code, wallet, onLine, { practice, files })
     if (!live()) return
     setRunStatus(result.success ? 'success' : 'error')
     if (wallet.accountId) {
@@ -230,6 +242,7 @@ export default function HederaByExample () {
                 logs={logs}
                 onRun={run}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
+                wallet={wallet}
                 needsPractice={labUsesPracticeAccounts(code) && !(practice.account1 && practice.account2)}
                 onOpenAccount={() => setAccountOpen(true)}
                 fileOverrides={fileOverrides[entry.lab.slug] || {}}

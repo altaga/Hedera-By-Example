@@ -682,3 +682,76 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   background: var(--bg-subtle); color: var(--text-2); font-size: 12.5px; line-height: 1.4; text-align: center;
 }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- visuals (palette validated against #ffffff / #121314) ---------- */
+
+:root {
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+  --st-good: #0ca30c; --st-warning: #fab219; --st-serious: #ec835a; --st-critical: #d03b3b;
+}
+:root:not([data-theme='light']) { --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; }
+
+.viz { margin: 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); font-family: var(--font-sans); }
+.viz-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-bottom: 10px; font-size: 13px; }
+.viz-title { font-weight: 600; color: var(--text); }
+.viz-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 14px; color: var(--text-2); }
+.viz-key { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+.viz-note { margin: 8px 0 0; font-size: 12.5px; color: var(--text-3); }
+.viz-table { margin-top: 8px; font-size: 12.5px; }
+.viz-table summary { cursor: pointer; color: var(--text-3); }
+.viz-table .out-table-wrap { margin-top: 6px; }
+
+.s1, .sw.s1 { background: var(--series-1); }
+.s2, .sw.s2 { background: var(--series-2); }
+.s3, .sw.s3 { background: var(--series-3); }
+.st-good { background: var(--st-good); } .st-warning { background: var(--st-warning); }
+.st-serious { background: var(--st-serious); } .st-critical { background: var(--st-critical); }
+
+.bars { display: grid; gap: 6px; }
+.bar-row { display: grid; grid-template-columns: minmax(64px, max-content) 1fr minmax(64px, max-content); align-items: center; gap: 10px; font-size: 12.5px; }
+.bar-label { color: var(--text-2); white-space: nowrap; }
+.bar-value { color: var(--text); font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+.bar-track { display: flex; height: 14px; min-width: 4px; }
+.bar-fill { display: block; height: 100%; min-width: 3px; border-radius: 0 4px 4px 0; }
+.bar-stack { gap: 2px; }
+.bar-seg { display: block; height: 100%; min-width: 2px; }
+.bar-seg:last-child { border-radius: 0 4px 4px 0; }
+
+.line-svg, .tree-svg, .dag-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.grid { stroke: var(--border); stroke-width: 1; }
+.axis { fill: var(--text-3); font-size: 11px; font-family: var(--font-mono); }
+.threshold { stroke: var(--st-critical); stroke-width: 1; stroke-dasharray: 4 4; }
+.line { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.s1-stroke { stroke: var(--series-1); }
+.mark { stroke: var(--bg); stroke-width: 2; }
+.s1-fill { fill: var(--series-1); }
+.st-critical-fill { fill: var(--st-critical); } .st-warning-fill { fill: var(--st-warning); } .st-good-fill { fill: var(--st-good); }
+.mark-label { fill: var(--text); font-size: 11px; font-family: var(--font-sans); }
+.hit { fill: transparent; cursor: default; }
+
+.tree-edge { stroke: var(--border-strong); stroke-width: 1; }
+.tree-edge.on-path { stroke: var(--series-1); stroke-width: 2; }
+.tree-node { fill: var(--bg-subtle); stroke: var(--border-strong); stroke-width: 1; }
+.tree-node.on-path { fill: var(--series-1); stroke: var(--bg); stroke-width: 2; }
+.tree-node.proof { fill: var(--series-2); stroke: var(--bg); stroke-width: 2; }
+
+.dag-edge { stroke-width: 2; }
+.dag-edge.self { stroke: var(--series-1); }
+.dag-edge.other { stroke: var(--series-2); stroke-dasharray: 5 4; }
+.dag-node { fill: var(--bg); stroke: var(--text-2); stroke-width: 2; }
+
+.shards { display: grid; grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 2px; }
+.shard { aspect-ratio: 1; border-radius: 2px; background: var(--bg-hover); }
+.shard.done { background: var(--series-1); }
+
+.states { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.state { display: grid; grid-template-columns: 22px minmax(90px, max-content) 1fr; align-items: baseline; gap: 10px; font-size: 13px; }
+.state-icon { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; }
+.state-label { font-weight: 600; }
+.state-detail { color: var(--text-2); }
+
+.lab-extra { margin-top: 40px; }
+.lab-extra > .muted { margin: 0 0 14px; max-width: 72ch; }
+.lab-extra .states { margin-top: 14px; }
+.lab-extra .state-detail a { margin-left: 8px; }

@@ -28,7 +28,7 @@
  */
 
 import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, show } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
@@ -93,6 +93,7 @@ const main = async () => {
 
     // 2. Submit Chunked Messages
     for (const payload of payloads) {
+      show.shards({ id: 'hcs1-upload', title: 'HCS-1 shards submitted', total: payload.t, done: payload.i + 1 })
       console.log(`[⚙️ PROCESS] Submitting Shard ${payload.i + 1}/${payload.t}...`)
 
       const submitTx = await new TopicMessageSubmitTransaction()

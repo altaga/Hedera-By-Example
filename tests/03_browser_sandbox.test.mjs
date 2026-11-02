@@ -77,6 +77,7 @@ export async function runBrowserSandboxTest() {
     'MAX_GAS',
     'maxTransactionFeeHbar',
     'exitIfStuck',
+    'show',
     'loadEnv',
     'getJsonRpcUrl',
     'getJsonRpcSigner',

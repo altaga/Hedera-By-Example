@@ -29,7 +29,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -126,6 +126,7 @@ const main = async () => {
     // 5. Unir la cadena Base64
     let fullBase64 = ''
     filteredShards.forEach(sh => {
+      show.shards({ id: 'hcs1-stitch', title: 'Fragmentos reensamblados', total: totalExpected, done: sh.i + 1 })
       fullBase64 += sh.d
       console.log(`   └─ [LECTURA] Fragmento ${sh.i + 1}/${totalExpected} procesado.`)
     })

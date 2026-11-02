@@ -32,7 +32,7 @@
 
 import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import crypto from 'crypto'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -99,6 +99,7 @@ const main = async () => {
     // 2. Enviar fragmentos (Shards)
     console.log('[⚙️ PROCESO] Anclando fragmentos al ledger de consenso...')
     for (const payload of payloads) {
+      show.shards({ id: 'hcs1-upload', title: 'Fragmentos HCS-1 enviados', total: payload.t, done: payload.i + 1 })
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
         .setMessage(JSON.stringify(payload))

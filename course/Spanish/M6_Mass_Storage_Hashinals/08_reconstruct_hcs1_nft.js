@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -100,6 +100,7 @@ const main = async () => {
 
       let fullBase64 = ''
       shards.forEach(sh => fullBase64 += sh.d)
+      show.shards({ id: 'hcs1-stitch', title: 'Fragmentos reensamblados', total: totalExpected, done: shards.length })
       return Buffer.from(fullBase64, 'base64')
     }
 

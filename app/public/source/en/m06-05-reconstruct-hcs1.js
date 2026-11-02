@@ -26,7 +26,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -131,6 +131,7 @@ const main = async () => {
     // 5. Stitch the Base64 string back together
     let fullBase64 = ''
     filteredShards.forEach(sh => {
+      show.shards({ id: 'hcs1-stitch', title: 'Shards stitched back together', total: totalExpected, done: sh.i + 1 })
       fullBase64 += sh.d
       console.log(` └─ [⚙️ PROCESS] Shard ${sh.i + 1}/${totalExpected} stitched.`)
     })
