@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "hedera-by-example": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp/index.js"]
+    }
+  }
+}

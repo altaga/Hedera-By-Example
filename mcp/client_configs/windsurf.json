@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hedera-by-example": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/Hedera-By-Example/mcp/index.js"]
+    }
+  }
+}

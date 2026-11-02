@@ -1,19 +1,21 @@
 #!/usr/bin/env node
 /**
  * ============================================================================
- * Hedera by Example (HBE) — Universal Model Context Protocol (MCP) Server
+ * Hedera by Example (HBE) — Model Context Protocol (MCP) server
  * ============================================================================
- * Protocol Specification: Model Context Protocol (MCP) 2024-11-05
- * Supported Transports:
- *   1. Stdio (Standard Input/Output JSON-RPC 2.0) — Cursor, Claude Desktop, Antigravity, VS Code
- *   2. HTTP / SSE (Server-Sent Events) — Remote AI Agents, Web Workstations, Cloud IDEs
- * 
- * Features:
- *   - Query 131 runnable Hedera by Example labs (EN & ES)
- *   - Query Hedera Master Knowledge Graph & Architecture Decision Trees
- *   - Anti-hallucination rules (8 decimals, BigInt tinybars, HIP-904, fixed USD fees)
- *   - Live Hedera Mirror Node interrogation (accounts, tokens, topics)
- *   - Zero external npm dependencies (pure Node.js ESM)
+ * Gives AI coding assistants (Claude Code, Claude Desktop, Cursor, VS Code,
+ * Windsurf, ...) the 131 runnable labs of the course (English and Spanish),
+ * verified Hedera guardrails, live Mirror Node reads and fee estimates.
+ *
+ * Protocol: MCP over JSON-RPC 2.0, versions 2025-06-18, 2025-03-26 and
+ * 2024-11-05 (negotiated). Capabilities: tools, resources, prompts.
+ * Transports:
+ *   - stdio (default): newline-delimited JSON-RPC.
+ *   - HTTP (--http [port]): Streamable HTTP at POST /mcp (JSON responses),
+ *     plus the legacy HTTP+SSE transport at GET /sse + POST /messages.
+ *     Binds 127.0.0.1 unless --host is given; browser Origins other than
+ *     localhost are refused unless listed with --allow-origin.
+ * No npm dependencies: Node.js 20+ only.
  * ============================================================================
  */
 
@@ -21,568 +23,742 @@ import fs from 'node:fs'
 import path from 'node:path'
 import http from 'node:http'
 import readline from 'node:readline'
+import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
-
-// Resolve data paths
-const catalogPath = path.join(__dirname, 'data', 'hedera_master_catalog.json')
-const architecturePath = path.join(ROOT, 'docs', 'HEDERA_ARCHITECTURE_AND_GUARDRAILS.md')
-const guidelinesPath = path.join(ROOT, 'docs', 'HACKATHON_RULES_AND_GUIDELINES.md')
-const resourcesPath = path.join(ROOT, 'docs', 'OFFICIAL_HEDERA_RESOURCES.md')
-const contentEnPath = path.join(ROOT, 'app', 'src', 'content', 'en.json')
-const contentEsPath = path.join(ROOT, 'app', 'src', 'content', 'es.json')
-const contentIndexPath = path.join(ROOT, 'app', 'src', 'content', 'index.json')
-
-// Lazy load content caches
-let masterCatalog = null
-let architectureDoc = null
-let guidelinesDoc = null
-let resourcesDoc = null
-let labsEn = null
-let labsEs = null
-let labsIndex = null
-
-function loadData() {
-  if (!masterCatalog && fs.existsSync(catalogPath)) {
-    try { masterCatalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8')) } catch (_) {}
-  }
-  if (!architectureDoc && fs.existsSync(architecturePath)) {
-    try { architectureDoc = fs.readFileSync(architecturePath, 'utf8') } catch (_) {}
-  }
-  if (!guidelinesDoc && fs.existsSync(guidelinesPath)) {
-    try { guidelinesDoc = fs.readFileSync(guidelinesPath, 'utf8') } catch (_) {}
-  }
-  if (!resourcesDoc && fs.existsSync(resourcesPath)) {
-    try { resourcesDoc = fs.readFileSync(resourcesPath, 'utf8') } catch (_) {}
-  }
-  if (!labsEn && fs.existsSync(contentEnPath)) {
-    try { labsEn = JSON.parse(fs.readFileSync(contentEnPath, 'utf8')) } catch (_) {}
-  }
-  if (!labsEs && fs.existsSync(contentEsPath)) {
-    try { labsEs = JSON.parse(fs.readFileSync(contentEsPath, 'utf8')) } catch (_) {}
-  }
-  if (!labsIndex && fs.existsSync(contentIndexPath)) {
-    try { labsIndex = JSON.parse(fs.readFileSync(contentIndexPath, 'utf8')) } catch (_) {}
-  }
+const VERSION = '2.0.0'
+const SUPPORTED_PROTOCOLS = ['2025-06-18', '2025-03-26', '2024-11-05']
+const WEB = 'https://hbe.expo.app'
+const REPO = 'https://github.com/altaga/Hedera-By-Example'
+const MIRROR = {
+  testnet: 'https://testnet.mirrornode.hedera.com',
+  mainnet: 'https://mainnet-public.mirrornode.hedera.com',
+  previewnet: 'https://previewnet.mirrornode.hedera.com'
 }
 
-loadData()
-
 // ============================================================================
-// TOOL DEFINITIONS (MCP SCHEMA)
+// DATA
 // ============================================================================
 
+const PATHS = {
+  catalog: path.join(__dirname, 'data', 'hedera_master_catalog.json'),
+  architecture: path.join(ROOT, 'docs', 'HEDERA_ARCHITECTURE_AND_GUARDRAILS.md'),
+  hackathon: path.join(ROOT, 'docs', 'HACKATHON_RULES_AND_GUIDELINES.md'),
+  resources: path.join(ROOT, 'docs', 'OFFICIAL_HEDERA_RESOURCES.md'),
+  index: path.join(ROOT, 'app', 'src', 'content', 'index.json'),
+  en: path.join(ROOT, 'app', 'src', 'content', 'en.json'),
+  es: path.join(ROOT, 'app', 'src', 'content', 'es.json')
+}
+
+const cache = {}
+const readText = (key) => {
+  if (!(key in cache)) cache[key] = fs.existsSync(PATHS[key]) ? fs.readFileSync(PATHS[key], 'utf8') : null
+  return cache[key]
+}
+const readJson = (key) => {
+  const k = `json:${key}`
+  if (!(k in cache)) {
+    try { cache[k] = JSON.parse(readText(key) || 'null') } catch (_) { cache[k] = null }
+  }
+  return cache[k]
+}
+
+const LANG_DIR = { en: 'English', es: 'Spanish' }
+const langOf = (v) => (v === 'es' ? 'es' : 'en')
+
+/** Every lab with its module, in course order. */
+function labCatalog () {
+  const index = readJson('index')
+  if (!index) return []
+  return index.modules.flatMap((m) => m.labs.map((l) => ({ module: m, lab: l })))
+}
+
+function labBody (slug, lang) {
+  const store = readJson(lang)
+  return store ? store[slug] || readJson('en')?.[slug] || null : null
+}
+
+const labCode = (body) => body.segments.map((s) => s.code).filter(Boolean).join('\n\n')
+const moduleId = (m) => `M${m.n}`
+
+/** Markdown for one lab: what it teaches, what it needs, and its code. */
+function labMarkdown (slug, lang, { includeCode = true } = {}) {
+  const entry = labCatalog().find((e) => e.lab.slug === slug)
+  const body = labBody(slug, lang)
+  if (!entry || !body) return null
+  const { module: m, lab } = entry
+  const meta = lab[lang] || lab.en
+  const out = [
+    `# ${moduleId(m)} Lab ${lab.n}: ${body.title || meta.title}`,
+    `*${m[lang]?.title || m.en.title}* · \`${slug}\``,
+    '',
+    body.kicker ? `**Concept:** ${body.kicker}` : '',
+    ...(body.concept || []).map((p) => p),
+    body.moment ? `**Learnable moment:** ${body.moment}` : ''
+  ]
+  if (body.before?.length) {
+    out.push('', lang === 'es' ? '## Antes de ejecutar' : '## Before you run')
+    for (const b of body.before) out.push(`- ${b.label ? `**${b.label}:** ` : ''}${b.text}`)
+  }
+  if (body.sdk?.length) out.push('', `**SDK classes:** ${body.sdk.map((s) => `\`${s}\``).join(', ')}`)
+  if (body.simulated) out.push('', `**Simulated in this lab:** ${body.simulated}`)
+  out.push('', `**Run it in the browser:** ${WEB}/#${slug}`,
+    `**Source:** ${REPO}/blob/master/course/${LANG_DIR[lang]}/${m.dir}/${lab.file}`,
+    `**Run locally:** \`cd course && npm ci && node ${LANG_DIR[lang]}/${m.dir}/${lab.file}\` (needs a \`.env\` with OPERATOR_ID and OPERATOR_PRIVATE_KEY)`)
+  if (body.refs?.length) out.push('', '**Official references:**', ...body.refs.map((r) => `- ${r}`))
+  if (includeCode) out.push('', '## Code', '```javascript', labCode(body), '```')
+  return out.filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n')
+}
+
+// ---------- search ----------
+
+const STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'to', 'in', 'on', 'for', 'with', 'how', 'do', 'i', 'is', 'el', 'la', 'los', 'las', 'de', 'del', 'en', 'un', 'una', 'y', 'o', 'con', 'como', 'para', 'por', 'que'])
+const tokens = (q) => String(q || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/[^a-z0-9.]+/).filter((t) => t.length > 1 && !STOP.has(t))
+const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+
+/** Ranks labs for a free-text query: every word counts, SDK class names and titles count most. */
+function searchLabs ({ query = '', lang = 'en', module, limit = 5 } = {}) {
+  const words = tokens(query)
+  const modFilter = module ? String(module).toUpperCase().replace(/^M?/, 'M') : null
+  const scored = []
+  for (const { module: m, lab } of labCatalog()) {
+    if (modFilter && moduleId(m) !== modFilter) continue
+    const body = labBody(lab.slug, lang)
+    if (!body) continue
+    const fields = {
+      title: norm(`${body.title} ${lab.en.title} ${lab.slug}`),
+      kicker: norm(body.kicker),
+      sdk: (body.sdk || []).map(norm),
+      text: norm([...(body.concept || []), body.moment].join(' ')),
+      docs: norm(body.segments.flatMap((s) => s.doc || []).join(' ')),
+      code: norm(labCode(body))
+    }
+    let score = words.length ? 0 : 1
+    let hits = 0
+    for (const w of words) {
+      let s = 0
+      if (fields.sdk.some((c) => c === w)) s += 8
+      else if (fields.sdk.some((c) => c.includes(w))) s += 4
+      if (fields.title.includes(w)) s += 5
+      if (fields.kicker.includes(w)) s += 3
+      if (fields.text.includes(w)) s += 2
+      if (fields.docs.includes(w)) s += 1.5
+      if (fields.code.includes(w)) s += 1
+      if (s) hits++
+      score += s
+    }
+    if (words.length && hits === 0) continue
+    if (words.length > 1) score *= 0.5 + hits / words.length // reward labs that match every word
+    scored.push({ score, module: m, lab, body })
+  }
+  scored.sort((a, b) => b.score - a.score)
+  return scored.slice(0, Math.max(1, Math.min(Number(limit) || 5, 20)))
+}
+
+const summaryLine = ({ module: m, lab, body }, lang) => {
+  const cost = (body.before || []).find((b) => /cost|costo/i.test(b.label))
+  const first = (body.before || []).find((b) => /run first|ejecuta antes/i.test(b.label))
+  return [`- **${moduleId(m)} Lab ${lab.n} — ${body.title}** (\`${lab.slug}\`)`,
+    body.kicker ? `  ${body.kicker}` : '',
+    body.sdk?.length ? `  SDK: ${body.sdk.slice(0, 8).join(', ')}` : '',
+    first ? `  ${first.label}: ${first.text}` : '',
+    cost ? `  ${cost.label}: ${cost.text}` : '',
+    `  ${WEB}/#${lab.slug}`].filter(Boolean).join('\n')
+}
+
+// ============================================================================
+// VERIFIED GUARDRAILS
+// ============================================================================
+
+const GUARDRAILS = `# Hedera guardrails for coding agents (@hiero-ledger/sdk)
+Each rule was checked against the SDK and testnet while building this course.
+
+## Units and money
+1. **8 decimals.** 1 HBAR = 100,000,000 tinybars (10^8), not 10^18. \`new Hbar(1)\` = 100_000_000 tinybars; \`Hbar.fromTinybars(n)\` goes the other way.
+2. **Hbar arithmetic.** \`Hbar\` has \`toTinybars()\`, \`to(unit)\`, \`negated()\`, \`isNegative()\` and \`toBigNumber()\`, but **no** \`plus()\` / \`minus()\`: add and subtract in tinybars (Long/BigInt), then build a new \`Hbar\`.
+3. **JSON-RPC uses weibars.** Through the relay (Hashio, chain IDs 295 mainnet / 296 testnet) values are 18-decimal "weibars": 1 tinybar = 10^10 weibar. Ask the relay for \`eth_gasPrice\`; EIP-1559 estimates from fee history can come out below its minimum.
+
+## Fees and gas
+4. **Fees are fixed in USD and paid in HBAR** at the network exchange rate: about $0.0001 per HBAR transfer or HCS message, $0.001 per token transfer, $0.05 per account creation or token association, $1 per token creation ($2 with custom fees), $2 per HIP-991 topic with custom fees, $1 + gas per contract deployment. Use the \`estimate_cost\` tool for today's HBAR amounts.
+5. **Gas is charged on at least 80% of the limit.** A limit far above the real use wastes HBAR; one too low fails with INSUFFICIENT_GAS and still pays. Estimate first with the Mirror Node (\`POST /api/v1/contracts/call\` with \`estimate: true\`, free) and add ~25%. Max gas per transaction: 15,000,000. Simulations of system contracts (HTS 0x167, HSS 0x16b) can be far above the real use.
+
+## Accounts and keys
+6. **Raw 32-byte private keys are ambiguous**: the same hex fits ECDSA (secp256k1) and Ed25519. Prefer DER (\`302e…\` Ed25519, \`3030…\` ECDSA), or \`PrivateKey.fromStringECDSA()\` / \`fromStringED25519()\` explicitly. Guessing the curve gives INVALID_SIGNATURE.
+7. **Two EVM addresses.** Every account has a long-zero address (0x000…<account number>); ECDSA accounts created from an EVM address also have an alias (keccak of the public key). Send to and verify against the one the account actually uses (Mirror Node \`/accounts/{id}\` → \`evm_address\`).
+8. **Lazy creation.** Sending HBAR to an unused ECDSA EVM address creates the account (HIP-583); the receiver's key signs nothing until it spends.
+9. **Associations.** An account can hold a token only after associating it, or through free auto-association slots. HIP-904 airdrops arrive at once when a slot is free and stay pending (claim/cancel/reject) otherwise. Associating twice fails with TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT.
+
+## Data limits
+10. **NFT metadata: 100 bytes.** Store a URI/CID (ipfs://…), not the JSON (METADATA_TOO_LONG otherwise).
+11. **Memos: 100 bytes** for transaction, account, token and topic memos.
+12. **HCS messages: 1,024 bytes per chunk.** \`TopicMessageSubmitTransaction\` chunks larger messages (20 chunks by default). Transactions as a whole: 6 KB.
+13. **HFS files: ~4 KB per transaction.** Create with the first chunk, then \`FileAppendTransaction\`; storage is billed by size and lifetime.
+
+## Reading state
+14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` / \`AccountInfoQuery\` are being retired from consensus nodes; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
+15. **Receipts vs records.** \`getReceipt()\` gives status and new IDs (free); \`getRecord()\` adds transfers, fees and contract results (paid query).
+16. **Public Mirror Nodes are rate-limited** per IP: back off on HTTP 429 and avoid bursts.
+
+## Scheduling and keys
+17. **Scheduled transactions** wait until every required key signs or they expire (HIP-423 allows a custom expiry and \`waitForExpiry\`). A KeyList with a threshold needs M of N signatures.
+
+Sources: https://docs.hedera.com · https://hedera.com/fees · https://hips.hedera.com · ${WEB}`
+
+// ============================================================================
+// MIRROR NODE
+// ============================================================================
+
+const ID_RE = /^(\d+\.\d+\.\d+(-[a-z]{5})?|0x[0-9a-fA-F]{40}|\d+\.\d+\.\d+-\d+-\d+|\d+\.\d+\.\d+@\d+\.\d+)$/
+// resource -> allowed sub-paths
+const MIRROR_ROUTES = {
+  accounts: ['', 'tokens', 'nfts', 'allowances/crypto', 'allowances/tokens', 'rewards'],
+  tokens: ['', 'nfts', 'balances'],
+  topics: ['', 'messages'],
+  transactions: [''],
+  contracts: ['', 'results', 'state'],
+  schedules: [''],
+  balances: null,
+  'network/exchangerate': null,
+  'network/fees': null,
+  'network/supply': null,
+  'network/nodes': null,
+  blocks: null
+}
+
+const decode64 = (s) => { try { return Buffer.from(s, 'base64').toString('utf8') } catch (_) { return s } }
+
+async function mirrorGet (network, apiPath) {
+  const base = MIRROR[network] || MIRROR.testnet
+  const url = `${base}/api/v1/${apiPath}`
+  const res = await fetch(url, { headers: { Accept: 'application/json' } })
+  const text = await res.text()
+  let data = null
+  try { data = JSON.parse(text) } catch (_) {}
+  return { url, ok: res.ok, status: res.status, data, text }
+}
+
+async function handleMirrorNodeQuery ({ endpoint, id, sub = '', network = 'testnet', limit, order } = {}) {
+  if (!(endpoint in MIRROR_ROUTES)) throw new InvalidParams(`endpoint must be one of: ${Object.keys(MIRROR_ROUTES).join(', ')}`)
+  const subs = MIRROR_ROUTES[endpoint]
+  let apiPath = endpoint
+  if (subs) {
+    if (!id || !ID_RE.test(String(id).trim())) throw new InvalidParams('id must be a Hedera ID (0.0.123), an EVM address (0x…) or a transaction ID')
+    if (!subs.includes(sub)) throw new InvalidParams(`sub for ${endpoint} must be one of: ${subs.map((s) => s || '(none)').join(', ')}`)
+    apiPath += `/${encodeURIComponent(String(id).trim())}${sub ? `/${sub}` : ''}`
+  }
+  const qs = new URLSearchParams()
+  if (limit) qs.set('limit', String(Math.min(Math.max(Number(limit) || 10, 1), 100)))
+  if (order === 'asc' || order === 'desc') qs.set('order', order)
+  if (endpoint === 'accounts' && !sub) qs.set('transactions', 'false')
+  if ([...qs].length) apiPath += `?${qs}`
+  const r = await mirrorGet(network, apiPath)
+  if (!r.ok) return `Mirror Node answered HTTP ${r.status} for ${r.url}\n${r.text.slice(0, 500)}`
+  const data = r.data
+  if (endpoint === 'topics' && sub === 'messages' && Array.isArray(data?.messages)) {
+    for (const m of data.messages) m.message_decoded = decode64(m.message)
+  }
+  let json = JSON.stringify(data, null, 2)
+  if (json.length > 20000) json = json.slice(0, 20000) + '\n… (truncated; use limit to read less)'
+  return `### Mirror Node (${network}) — ${r.url}\n\`\`\`json\n${json}\n\`\`\``
+}
+
+// ============================================================================
+// FEES
+// ============================================================================
+
+// USD fees from the Hedera fee schedule (hedera.com/fees), checked against testnet charges.
+const FEES_USD = {
+  hbar_transfer: [0.0001, 'HBAR transfer (CryptoTransfer)'],
+  token_transfer: [0.001, 'HTS token transfer'],
+  account_create: [0.05, 'Account creation'],
+  account_update: [0.00022, 'Account update'],
+  allowance_approve: [0.05, 'Allowance approval'],
+  token_create: [1.0, 'Token creation'],
+  token_create_custom_fees: [2.0, 'Token creation with custom fees'],
+  token_associate: [0.05, 'Token association'],
+  token_mint_ft: [0.001, 'Fungible token mint'],
+  nft_mint: [0.02, 'NFT mint (per serial)'],
+  token_airdrop: [0.1, 'HIP-904 airdrop'],
+  topic_create: [0.01, 'Topic creation'],
+  topic_create_custom_fees: [2.0, 'HIP-991 topic with custom fees'],
+  topic_message: [0.0001, 'HCS message (small)'],
+  schedule_create: [0.01, 'Scheduled transaction'],
+  schedule_sign: [0.001, 'Schedule signature'],
+  file_create: [0.05, 'File creation (plus size/lifetime)'],
+  file_append: [0.05, 'File append (plus size/lifetime)'],
+  contract_create: [1.0, 'Contract deployment (plus gas)'],
+  contract_call: [0.0, 'Contract call (gas only)']
+}
+
+async function handleEstimateCost ({ operations = [], network = 'testnet' } = {}) {
+  if (!Array.isArray(operations) || operations.length === 0) throw new InvalidParams(`operations must list items like { "type": "token_create", "count": 1 }. Types: ${Object.keys(FEES_USD).join(', ')}`)
+  const [rate, fees] = await Promise.all([mirrorGet(network, 'network/exchangerate'), mirrorGet(network, 'network/fees')])
+  const cr = rate.data?.current_rate
+  const usdPerHbar = cr ? cr.cent_equivalent / cr.hbar_equivalent / 100 : null
+  const gasTinybars = {}
+  for (const f of fees.data?.fees || []) gasTinybars[f.transaction_type] = f.gas
+  const rows = []
+  let totalUsd = 0
+  let totalGasHbar = 0
+  for (const op of operations) {
+    const fee = FEES_USD[op.type]
+    if (!fee) throw new InvalidParams(`unknown operation type "${op.type}". Types: ${Object.keys(FEES_USD).join(', ')}`)
+    const count = Math.max(1, Number(op.count) || 1)
+    const usd = fee[0] * count
+    let gasHbar = 0
+    if (op.gas && /contract/.test(op.type)) {
+      const price = gasTinybars[op.type === 'contract_create' ? 'ContractCreate' : 'ContractCall'] || gasTinybars.ContractCall || 0
+      gasHbar = (Number(op.gas) * price * count) / 1e8
+    }
+    totalUsd += usd
+    totalGasHbar += gasHbar
+    rows.push(`| ${fee[1]} | ${count} | $${usd.toFixed(4)} | ${usdPerHbar ? (usd / usdPerHbar).toFixed(4) : '?'} ℏ${gasHbar ? ` + ${gasHbar.toFixed(4)} ℏ gas` : ''} |`)
+  }
+  const totalHbar = usdPerHbar ? totalUsd / usdPerHbar + totalGasHbar : null
+  return [`### Estimated cost on ${network}`,
+    usdPerHbar ? `Exchange rate now: 1 ℏ = $${usdPerHbar.toFixed(5)} (Mirror Node /network/exchangerate)` : 'Exchange rate unavailable: showing USD only.',
+    '', '| Operation | Count | USD | HBAR |', '| :--- | ---: | ---: | ---: |', ...rows,
+    `| **Total** | | **$${totalUsd.toFixed(4)}** | **${totalHbar != null ? totalHbar.toFixed(4) : '?'} ℏ** |`,
+    '', 'Fees are fixed in USD by the network fee schedule (https://hedera.com/fees); HCS messages and files also grow with size. Gas is charged on at least 80% of the gas limit you set.'].join('\n')
+}
+
+// ============================================================================
+// TOOLS
+// ============================================================================
+
+class InvalidParams extends Error {}
+
+const LANG_PROP = { type: 'string', enum: ['en', 'es'], description: 'Course language (default "en")' }
 const TOOLS = [
   {
-    name: 'query_curriculum',
-    description: 'Search and inspect any of the 131 runnable Hedera by Example labs. Returns full runnable code, concept, learnable moments, and SDK references.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Search term, concept, or SDK class (e.g., "x402", "TransferTransaction", "Merkle", "EVM", "TokenCreate")'
-        },
-        module: {
-          type: 'string',
-          description: 'Optional module prefix (e.g., "M0", "M3", "M10", "M15")'
-        },
-        lang: {
-          type: 'string',
-          enum: ['en', 'es'],
-          description: 'Language of explanation and code comments (default: "en")'
-        }
-      }
-    }
+    name: 'search_labs',
+    title: 'Search the labs',
+    description: 'Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code.',
+    inputSchema: { type: 'object', properties: { query: { type: 'string', description: 'e.g. "nft royalties", "TopicMessageSubmitTransaction", "HIP-904 airdrop", "x402"' }, module: { type: 'string', description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: 'integer', minimum: 1, maximum: 20, description: 'Results (default 5)' } }, required: ['query'] },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'query_knowledge',
-    description: 'Query the Hedera Master Knowledge Graph across AI agents, RWA, DePIN, Passkeys, zk-TLS, and L1 consensus services.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Technology, protocol, or standard (e.g., "AI Studio", "ATS", "x402", "Guardian", "Passkeys", "HIP-904")'
-        },
-        category: {
-          type: 'string',
-          description: 'Filter category (e.g., "AI & Autonomous Agents", "DePIN & Hardware IoT", "Asset Tokenization & RWA")'
-        },
-        audience: {
-          type: 'string',
-          enum: ['developer', 'architect', 'business', 'founder'],
-          description: 'Target audience perspective'
-        }
-      }
-    }
+    name: 'get_lab',
+    title: 'Get a lab',
+    description: 'Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code.',
+    inputSchema: { type: 'object', properties: { slug: { type: 'string', description: 'Lab slug from search_labs or list_labs, e.g. "m03-01-immutable-issuance"' }, lang: LANG_PROP, include_code: { type: 'boolean', description: 'Include the code (default true)' } }, required: ['slug'] },
+    annotations: { readOnlyHint: true, openWorldHint: false }
+  },
+  {
+    name: 'list_labs',
+    title: 'List the course',
+    description: 'The course map: 16 modules and 131 labs with their slugs, optionally for one module.',
+    inputSchema: { type: 'object', properties: { module: { type: 'string', description: 'Optional module, e.g. "M8"' }, lang: LANG_PROP } },
+    annotations: { readOnlyHint: true, openWorldHint: false }
+  },
+  {
+    name: 'query_curriculum',
+    title: 'Search labs with code',
+    description: 'Search the labs and return the best matches with their full code (heavier than search_labs + get_lab).',
+    inputSchema: { type: 'object', properties: { query: { type: 'string', description: 'Search term, concept or SDK class' }, module: { type: 'string', description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: 'integer', minimum: 1, maximum: 5, description: 'Labs with code (default 3)' } } },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
     name: 'anti_hallucination_rules',
-    description: 'Retrieve strict anti-hallucination rules and technical guardrails for building on Hedera with @hiero-ledger/sdk.',
-    inputSchema: {
-      type: 'object',
-      properties: {}
-    }
+    title: 'Hedera guardrails',
+    description: 'Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag.',
+    inputSchema: { type: 'object', properties: {} },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
     name: 'architecture_decision_tree',
-    description: 'Retrieve the architectural decision matrix guiding when to use Hedera Consensus Service (HCS), Token Service (HTS), or Smart Contracts (HSCS).',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        focus: {
-          type: 'string',
-          description: 'Optional focus area (e.g., "cost", "throughput", "compliance", "ai-agents")'
-        }
-      }
-    }
+    title: 'HCS vs HTS vs smart contracts',
+    description: 'When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide.',
+    inputSchema: { type: 'object', properties: { focus: { type: 'string', description: 'Optional section to keep, e.g. "fees", "keys", "NFT"' } } },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
     name: 'mirror_node_query',
-    description: 'Interrogate the public Hedera Mirror Node REST API in real-time. Free read-only state lookup for accounts, tokens, and topics.',
+    title: 'Read Hedera state',
+    description: 'Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks.',
     inputSchema: {
       type: 'object',
-      required: ['endpoint', 'id'],
+      required: ['endpoint'],
       properties: {
-        endpoint: {
-          type: 'string',
-          enum: ['accounts', 'tokens', 'topics', 'transactions'],
-          description: 'Mirror node resource type'
-        },
-        id: {
-          type: 'string',
-          description: 'Hedera entity ID (e.g. "0.0.12345" or EVM address "0x...")'
-        },
-        network: {
-          type: 'string',
-          enum: ['testnet', 'mainnet'],
-          description: 'Hedera network (default: "testnet")'
-        }
+        endpoint: { type: 'string', enum: Object.keys(MIRROR_ROUTES) },
+        id: { type: 'string', description: 'Entity ID (0.0.123), EVM address (0x…) or transaction ID; not needed for network/*, balances, blocks' },
+        sub: { type: 'string', description: 'Sub-resource: accounts → tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens → nfts | balances; topics → messages; contracts → results | state' },
+        network: { type: 'string', enum: ['testnet', 'mainnet', 'previewnet'], description: 'Default "testnet"' },
+        limit: { type: 'integer', minimum: 1, maximum: 100 },
+        order: { type: 'string', enum: ['asc', 'desc'] }
       }
-    }
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true }
+  },
+  {
+    name: 'estimate_cost',
+    title: 'Estimate HBAR cost',
+    description: 'Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price).',
+    inputSchema: {
+      type: 'object',
+      required: ['operations'],
+      properties: {
+        operations: { type: 'array', items: { type: 'object', required: ['type'], properties: { type: { type: 'string', enum: Object.keys(FEES_USD) }, count: { type: 'integer', minimum: 1 }, gas: { type: 'integer', description: 'Gas limit, for contract_create / contract_call' } } } },
+        network: { type: 'string', enum: ['testnet', 'mainnet'] }
+      }
+    },
+    annotations: { readOnlyHint: true, openWorldHint: true }
+  },
+  {
+    name: 'query_knowledge',
+    title: 'Hedera ecosystem map',
+    description: 'Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links.',
+    inputSchema: { type: 'object', properties: { query: { type: 'string' }, category: { type: 'string' }, audience: { type: 'string', enum: ['developer', 'architect', 'business', 'founder'] } } },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
     name: 'official_resources',
-    description: 'Search official Hedera documentation, repositories, and specifications with verified update timestamps.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description: 'Search term for official URLs and documentation'
-        }
-      }
-    }
+    title: 'Official links',
+    description: 'Official Hedera documentation, repositories and specifications.',
+    inputSchema: { type: 'object', properties: { query: { type: 'string' } } },
+    annotations: { readOnlyHint: true, openWorldHint: false }
   }
 ]
 
-// ============================================================================
-// TOOL HANDLERS
-// ============================================================================
-
-function handleQueryCurriculum(params = {}) {
-  loadData()
-  const lang = params.lang === 'es' ? 'es' : 'en'
-  const store = lang === 'es' ? labsEs : labsEn
-  if (!store || !labsIndex) {
-    return 'Curriculum content not loaded. Run build-content compiler first.'
-  }
-
-  const query = (params.query || '').toLowerCase().trim()
-  const queryNorm = query.replace(/[_-]/g, ' ')
-  const modFilter = (params.module || '').toLowerCase().trim()
-
-  const matches = []
-
-  for (const [slug, lab] of Object.entries(store)) {
-    if (modFilter && !slug.toLowerCase().startsWith(modFilter)) continue
-
-    const slugNorm = slug.replace(/[_-]/g, ' ')
-    let score = 0
-    if (query) {
-      if (slug.includes(query) || slugNorm.includes(queryNorm)) score += 5
-      if (lab.title && lab.title.toLowerCase().includes(query)) score += 4
-      if (lab.kicker && lab.kicker.toLowerCase().includes(query)) score += 3
-      if (lab.sdk && lab.sdk.some(s => s.toLowerCase().includes(query))) score += 5
-      if (lab.concept && lab.concept.some(c => c.toLowerCase().includes(query))) score += 2
-      if (lab.moment && lab.moment.toLowerCase().includes(query)) score += 2
-      if (score === 0) continue
-    } else {
-      score = 1
-    }
-
-    matches.push({ slug, lab, score })
-  }
-
-  matches.sort((a, b) => b.score - a.score)
-  const topMatches = matches.slice(0, 3)
-
-  if (topMatches.length === 0) {
-    return `No labs found matching query: "${query}" in language "${lang}". Try querying SDK classes like "PrivateKey", "TopicMessageSubmitTransaction", or "TransferTransaction".`
-  }
-
-  return topMatches.map(({ slug, lab }) => {
-    const fullCode = lab.segments.map(s => s.code).join('\n')
-    return `## Lab: ${lab.title} (${slug})
-**Concept:** ${lab.kicker || 'Hedera Architecture'}
-**SDK Classes:** ${(lab.sdk || []).join(', ') || 'Core SDK'}
-**Architectural Guardrail:** ${lab.moment || 'None'}
-
-### Runnable Code (${lang.toUpperCase()}):
-\`\`\`javascript
-${fullCode}
-\`\`\`
-
-**Official References:**
-${(lab.refs || []).map(r => `- ${r}`).join('\n') || '- https://docs.hedera.com'}`
-  }).join('\n\n---\n\n')
+function handleSearchLabs (p = {}) {
+  const lang = langOf(p.lang)
+  if (!String(p.query || '').trim()) throw new InvalidParams('query is required')
+  const hits = searchLabs({ ...p, lang })
+  if (!hits.length) return `No lab matches "${p.query}". Try SDK class names (TokenCreateTransaction), standards (HCS-10, HIP-991) or list_labs.`
+  return `Labs for "${p.query}" (${lang}):\n\n${hits.map((h) => summaryLine(h, lang)).join('\n\n')}`
 }
 
-function handleQueryKnowledge(params = {}) {
-  loadData()
-  if (!masterCatalog || !masterCatalog.resources) {
-    return 'Master knowledge catalog not found.'
-  }
+function handleGetLab (p = {}) {
+  const lang = langOf(p.lang)
+  const slug = String(p.slug || '').trim()
+  const md = slug && labMarkdown(slug, lang, { includeCode: p.include_code !== false })
+  if (!md) throw new InvalidParams(`unknown lab "${slug}". Use search_labs or list_labs to find slugs.`)
+  return md
+}
 
-  const { query, category, audience } = params
-  let results = masterCatalog.resources
+function handleListLabs (p = {}) {
+  const lang = langOf(p.lang)
+  const index = readJson('index')
+  if (!index) return 'Course content not built: run `npm run compile:course` first.'
+  const mod = p.module ? String(p.module).toUpperCase().replace(/^M?/, 'M') : null
+  return index.modules.filter((m) => !mod || moduleId(m) === mod).map((m) => [
+    `## ${moduleId(m)} — ${m[lang]?.title || m.en.title}`,
+    ...m.labs.map((l) => `- ${l.n} ${(l[lang] || l.en).title} — \`${l.slug}\``)
+  ].join('\n')).join('\n\n') || `No module ${p.module}.`
+}
 
-  if (category) {
-    results = results.filter(r => r.category.toLowerCase().includes(category.toLowerCase()))
-  }
-  if (audience) {
-    results = results.filter(r => r.audience.includes(audience.toLowerCase()))
-  }
-  if (query) {
-    const q = query.toLowerCase()
-    results = results.filter(r => {
-      const inName = r.name.toLowerCase().includes(q)
-      const inSummary = r.summary.toLowerCase().includes(q)
-      const inTriggers = r.searchTriggers.some(t => t.toLowerCase().includes(q))
-      return inName || inSummary || inTriggers
-    })
-  }
+function handleQueryCurriculum (p = {}) {
+  const lang = langOf(p.lang)
+  const hits = searchLabs({ query: p.query || '', module: p.module, lang, limit: Math.min(Number(p.limit) || 3, 5) })
+  if (!hits.length) return `No labs found matching query: "${p.query || ''}" in language "${lang}". Try SDK classes like "PrivateKey", "TopicMessageSubmitTransaction" or "TransferTransaction".`
+  return hits.map((h) => labMarkdown(h.lab.slug, lang)).join('\n\n---\n\n')
+}
 
-  if (results.length === 0) {
-    return `No matching Hedera resources found for "${query || category}". Available categories include: "AI & Autonomous Agents", "Asset Tokenization & RWA", "DePIN & Hardware IoT", "Smart Contracts & EVM".`
+function handleQueryKnowledge (p = {}) {
+  const catalog = readJson('catalog')
+  if (!catalog?.resources) return 'Knowledge catalog not found.'
+  let results = catalog.resources
+  if (p.category) results = results.filter((r) => norm(r.category).includes(norm(p.category)))
+  if (p.audience) results = results.filter((r) => (r.audience || []).includes(String(p.audience).toLowerCase()))
+  const words = tokens(p.query)
+  if (words.length) {
+    results = results.map((r) => {
+      const hay = norm([r.name, r.summary, r.technicalStack, ...(r.searchTriggers || [])].join(' '))
+      return { r, s: words.filter((w) => hay.includes(w)).length }
+    }).filter((x) => x.s).sort((a, b) => b.s - a.s).map((x) => x.r)
   }
-
-  return results.slice(0, 5).map(r => `### ${r.name} [Weight: ${r.weight}]
+  if (!results.length) return `Nothing matches "${p.query || p.category}". Categories: ${(catalog.categories || []).join(', ')}.`
+  return results.slice(0, 5).map((r) => `### ${r.name}
 - **Category:** ${r.category} (${r.layer})
 - **Summary:** ${r.summary}
-- **Business Value:** ${r.businessValue}
-- **Tech Stack:** ${r.technicalStack}
-- **URLs:** ${Object.entries(r.urls).map(([k, v]) => `[${k}](${v})`).join(' | ')}
-- **Anti-Hallucination Warning:** ${r.antiHallucinationNotes}`).join('\n\n')
+- **Business value:** ${r.businessValue}
+- **Tech stack:** ${r.technicalStack}
+- **Links:** ${Object.entries(r.urls || {}).map(([k, v]) => `[${k}](${v})`).join(' | ')}
+- **Watch out:** ${r.antiHallucinationNotes}`).join('\n\n')
 }
 
-function handleAntiHallucinationRules() {
-  return `### HEDERA CRITICAL ANTI-HALLUCINATION RULES FOR AI CODING AGENTS:
-1. **8 Decimal Precision (Tinybars):**
-   1 HBAR = 100,000,000 tinybars (10^8), NEVER 18 decimals like Ethereum wei.
-   1 Hbar = new Hbar(1) -> 100_000_000 tinybars.
-
-2. **Hbar Arithmetic:**
-   Hbar objects in @hiero-ledger/sdk do NOT possess arithmetic methods (.plus, .minus, .negated).
-   Convert to BigInt tinybars for math: \`BigInt(hbar.toTinybars().toString())\`.
-
-3. **HTS NFT Metadata Limit:**
-   HTS NFT on-chain metadata string is strictly capped at 100 bytes.
-   Never store full JSON or large strings on-chain; store deterministic IPFS/Arweave URIs (\`ipfs://...\`).
-
-4. **Token Association Requirement:**
-   Hedera accounts cannot receive arbitrary HTS tokens unless explicitly associated or transferred via HIP-904 native airdrop transactions with auto-association slots.
-
-5. **x402 Micropayment Architectures:**
-   There are TWO distinct x402 implementations on Hedera:
-   - Direct P2P (Buyer + Seller): Single-use challenge nonces in transaction memo (\`x402:direct:<nonce>\`).
-   - Sponsored Facilitator (Buyer + Seller + Facilitator): Gasless client where facilitator settles on-chain.
-
-6. **Deterministic USD-Pegged Fees:**
-   Fees on Hedera are fixed in USD ($0.0001 for HCS, $0.001 for HTS transfers, $1.00 for token creation) and paid in HBAR using real-time automated network exchange rates. No gas spikes, no front-running, no miner tips.`
+function handleArchitecture (p = {}) {
+  const doc = readText('architecture')
+  if (!doc) return GUARDRAILS
+  if (!p.focus) return doc
+  const parts = doc.split(/\n(?=#{2,3} )/)
+  const keep = parts.filter((s) => norm(s).includes(norm(p.focus)))
+  return keep.length ? keep.join('\n') : doc
 }
 
-function handleArchitectureDecisionTree(params = {}) {
-  loadData()
-  if (architectureDoc) {
-    return architectureDoc
+function handleOfficialResources (p = {}) {
+  const doc = readText('resources')
+  if (!doc) return 'Official resources file not found.'
+  const words = tokens(p.query)
+  if (!words.length) return doc
+  const lines = doc.split('\n').filter((l) => l.startsWith('| Resource') || l.startsWith('| :---') || words.some((w) => norm(l).includes(w)))
+  return lines.join('\n')
+}
+
+async function callTool (name, args = {}) {
+  switch (name) {
+    case 'search_labs': return handleSearchLabs(args)
+    case 'get_lab': return handleGetLab(args)
+    case 'list_labs': return handleListLabs(args)
+    case 'query_curriculum': return handleQueryCurriculum(args)
+    case 'anti_hallucination_rules': return GUARDRAILS
+    case 'architecture_decision_tree': return handleArchitecture(args)
+    case 'mirror_node_query': return handleMirrorNodeQuery(args)
+    case 'estimate_cost': return handleEstimateCost(args)
+    case 'query_knowledge': return handleQueryKnowledge(args)
+    case 'official_resources': return handleOfficialResources(args)
+    default: return undefined
   }
-  return `### HEDERA TRI-SERVICE ARCHITECTURE MATRIX:
-- **HCS (Hedera Consensus Service):** Sub-second verifiable ordering, audit logging, telemetry, AI reasoning audit streams, zk-TLS anchoring. Cost: $0.0001 / msg.
-- **HTS (Hedera Token Service):** Native fungible & non-fungible tokens settled directly on hashgraph L1 without EVM bytecode. Cost: $0.001 / transfer.
-- **HSCS (Hedera Smart Contract Service):** Full EVM compatibility (Solidity / Besu) with native precompiles (0x167) bridging directly to HTS.`
 }
 
-async function handleMirrorNodeQuery(params = {}) {
-  const { endpoint, id, network = 'testnet' } = params
-  const baseUrl = network === 'mainnet'
-    ? 'https://mainnet-public.mirrornode.hedera.com'
-    : 'https://testnet.mirrornode.hedera.com'
+// ============================================================================
+// RESOURCES
+// ============================================================================
 
-  const targetUrl = `${baseUrl}/api/v1/${endpoint}/${encodeURIComponent(id)}`
+const DOC_RESOURCES = [
+  { uri: 'hbe://guide/guardrails', name: 'guardrails', title: 'Hedera guardrails for coding agents', mimeType: 'text/markdown', read: () => GUARDRAILS },
+  { uri: 'hbe://guide/architecture', name: 'architecture', title: 'Architecture decision tree & guardrails', mimeType: 'text/markdown', read: () => readText('architecture') },
+  { uri: 'hbe://guide/official-resources', name: 'official-resources', title: 'Official Hedera resources', mimeType: 'text/markdown', read: () => readText('resources') },
+  { uri: 'hbe://guide/hackathon', name: 'hackathon', title: 'Hackathon rules and guidelines', mimeType: 'text/markdown', read: () => readText('hackathon') },
+  { uri: 'hbe://labs/en', name: 'labs-en', title: 'Course map (English)', mimeType: 'text/markdown', read: () => handleListLabs({ lang: 'en' }) },
+  { uri: 'hbe://labs/es', name: 'labs-es', title: 'Mapa del curso (español)', mimeType: 'text/markdown', read: () => handleListLabs({ lang: 'es' }) }
+]
+
+function listResources () {
+  const labs = labCatalog().flatMap(({ module: m, lab }) => ['en', 'es'].map((lang) => ({
+    uri: `hbe://lab/${lang}/${lab.slug}`,
+    name: `${lab.slug}-${lang}`,
+    title: `${moduleId(m)} Lab ${lab.n} — ${(lab[lang] || lab.en).title} (${lang})`,
+    mimeType: 'text/markdown'
+  })))
+  return [...DOC_RESOURCES.map(({ read, ...r }) => r), ...labs]
+}
+
+function readResource (uri) {
+  const doc = DOC_RESOURCES.find((r) => r.uri === uri)
+  if (doc) return doc.read()
+  const m = String(uri).match(/^hbe:\/\/lab\/(en|es)\/([a-z0-9-]+)$/)
+  return m ? labMarkdown(m[2], m[1]) : null
+}
+
+// ============================================================================
+// PROMPTS
+// ============================================================================
+
+const PROMPTS = [
+  { name: 'build_on_hedera', title: 'Build a feature on Hedera', description: 'Plan and write Hedera code for a goal, grounded in the course labs and the guardrails.', arguments: [{ name: 'goal', description: 'What you want to build', required: true }, { name: 'lang', description: 'en or es', required: false }] },
+  { name: 'explain_lab', title: 'Explain a lab', description: 'Walk through one lab step by step, with what it needs and what it costs.', arguments: [{ name: 'slug', description: 'Lab slug, e.g. m04-04-atomic-swaps', required: true }, { name: 'lang', description: 'en or es', required: false }] },
+  { name: 'review_hedera_code', title: 'Review Hedera code', description: 'Review code against the Hedera guardrails (units, fees, gas, keys, limits, Mirror Node use).', arguments: [{ name: 'code', description: 'The code to review', required: true }] }
+]
+
+function getPrompt (name, args = {}) {
+  const lang = langOf(args.lang)
+  const user = (text) => ({ role: 'user', content: { type: 'text', text } })
+  if (name === 'build_on_hedera') {
+    if (!args.goal) throw new InvalidParams('goal is required')
+    const labs = searchLabs({ query: args.goal, lang, limit: 4 })
+    return {
+      description: `Build on Hedera: ${args.goal}`,
+      messages: [user(`${GUARDRAILS}\n\n# Labs from Hedera by Example that cover this\n${labs.map((h) => summaryLine(h, lang)).join('\n\n') || '(none matched; use search_labs)'}\n\n# Task\nGoal: ${args.goal}\n\nPick the right services (HCS, HTS, smart contracts), say which lab patterns you reuse (get_lab gives their code), estimate the HBAR cost with estimate_cost, then write the code with @hiero-ledger/sdk. Follow every guardrail above.`)]
+    }
+  }
+  if (name === 'explain_lab') {
+    const md = labMarkdown(String(args.slug || ''), lang)
+    if (!md) throw new InvalidParams(`unknown lab "${args.slug}"`)
+    return { description: `Explain ${args.slug}`, messages: [user(`${md}\n\nExplain this lab step by step for a learner${lang === 'es' ? ', in Spanish' : ''}: the concept, what each step of the code does and why, what it needs before running, what it costs, and what to try next.`)] }
+  }
+  if (name === 'review_hedera_code') {
+    if (!args.code) throw new InvalidParams('code is required')
+    return { description: 'Review Hedera code', messages: [user(`${GUARDRAILS}\n\n# Code to review\n\`\`\`javascript\n${args.code}\n\`\`\`\n\nReview this code against every guardrail above. List concrete problems (with line references and the fix), then anything that wastes HBAR.`)] }
+  }
+  return null
+}
+
+// ============================================================================
+// JSON-RPC
+// ============================================================================
+
+const INSTRUCTIONS = `Hedera by Example: 131 runnable Hedera labs (English/Spanish) built on @hiero-ledger/sdk, plus verified guardrails.
+Start with search_labs (or list_labs), read a lab with get_lab, check anti_hallucination_rules before writing Hedera code, price operations with estimate_cost, and read live state with mirror_node_query. Every lab also runs in the browser at ${WEB}.`
+
+const rpcError = (id, code, message) => ({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })
+const rpcResult = (id, result) => ({ jsonrpc: '2.0', id, result })
+
+async function dispatchOne (msg) {
+  if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0') return rpcError(msg?.id, -32600, 'Invalid Request')
+  const { id, method, params = {} } = msg
+  const isNotification = id === undefined || id === null
+  if (method === undefined) return null // a response from the client: nothing to do
+  if (isNotification) return null // notifications (initialized, cancelled, ...) never get a reply
   try {
-    const res = await fetch(targetUrl, { headers: { 'Accept': 'application/json' } })
-    if (!res.ok) {
-      return `Mirror node query failed [HTTP ${res.status}]: ${res.statusText} at ${targetUrl}`
-    }
-    const data = await res.json()
-    return `### Live Mirror Node State (${network.toUpperCase()})
-**Endpoint:** \`${targetUrl}\`
-\`\`\`json
-${JSON.stringify(data, null, 2)}
-\`\`\``
-  } catch (err) {
-    return `Error connecting to Hedera Mirror Node: ${err.message}`
-  }
-}
-
-function handleOfficialResources(params = {}) {
-  loadData()
-  if (resourcesDoc) {
-    const q = (params.query || '').toLowerCase()
-    if (!q) return resourcesDoc
-    const lines = resourcesDoc.split('\n')
-    const matches = lines.filter(l => l.toLowerCase().includes(q) || l.startsWith('| Resource') || l.startsWith('| :---'))
-    return matches.join('\n')
-  }
-  return 'Official resources documentation file not found.'
-}
-
-// ============================================================================
-// PROTOCOL DISPATCHER (JSON-RPC 2.0)
-// ============================================================================
-
-async function dispatchJsonRpc(request) {
-  const { id, method, params } = request
-
-  // 1. MCP Lifecycle: initialize
-  if (method === 'initialize') {
-    return {
-      jsonrpc: '2.0',
-      id,
-      result: {
-        protocolVersion: '2024-11-05',
-        capabilities: {
-          tools: { listChanged: false }
-        },
-        serverInfo: {
-          name: 'hedera-by-example-mcp',
-          version: '1.0.0'
-        }
+    switch (method) {
+      case 'initialize': {
+        const requested = params.protocolVersion
+        const protocolVersion = SUPPORTED_PROTOCOLS.includes(requested) ? requested : SUPPORTED_PROTOCOLS[0]
+        return rpcResult(id, {
+          protocolVersion,
+          capabilities: { tools: { listChanged: false }, resources: { listChanged: false, subscribe: false }, prompts: { listChanged: false } },
+          serverInfo: { name: 'hedera-by-example-mcp', title: 'Hedera by Example', version: VERSION },
+          instructions: INSTRUCTIONS
+        })
       }
-    }
-  }
-
-  // 2. MCP Lifecycle: notifications/initialized
-  if (method === 'notifications/initialized') {
-    return null
-  }
-
-  // 3. MCP Tools: list
-  if (method === 'tools/list') {
-    return {
-      jsonrpc: '2.0',
-      id,
-      result: {
-        tools: TOOLS
-      }
-    }
-  }
-
-  // 4. MCP Tools: call
-  if (method === 'tools/call') {
-    const { name, arguments: args } = params || {}
-    let text = ''
-
-    try {
-      switch (name) {
-        case 'query_curriculum':
-          text = handleQueryCurriculum(args)
-          break
-        case 'query_knowledge':
-          text = handleQueryKnowledge(args)
-          break
-        case 'anti_hallucination_rules':
-          text = handleAntiHallucinationRules()
-          break
-        case 'architecture_decision_tree':
-          text = handleArchitectureDecisionTree(args)
-          break
-        case 'mirror_node_query':
-          text = await handleMirrorNodeQuery(args)
-          break
-        case 'official_resources':
-          text = handleOfficialResources(args)
-          break
-        default:
-          return {
-            jsonrpc: '2.0',
-            id,
-            error: { code: -32601, message: `Unknown tool: ${name}` }
-          }
-      }
-
-      return {
-        jsonrpc: '2.0',
-        id,
-        result: {
-          content: [
-            { type: 'text', text }
-          ]
-        }
-      }
-    } catch (toolErr) {
-      return {
-        jsonrpc: '2.0',
-        id,
-        result: {
-          isError: true,
-          content: [{ type: 'text', text: `Tool error: ${toolErr.message}` }]
-        }
-      }
-    }
-  }
-
-  // 5. Ping
-  if (method === 'ping') {
-    return { jsonrpc: '2.0', id, result: {} }
-  }
-
-  return {
-    jsonrpc: '2.0',
-    id,
-    error: { code: -32601, message: `Method not found: ${method}` }
-  }
-}
-
-// ============================================================================
-// TRANSPORTS: STDIO & HTTP/SSE
-// ============================================================================
-
-function startStdioTransport() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    terminal: false
-  })
-
-  rl.on('line', async (line) => {
-    const trimmed = line.trim()
-    if (!trimmed) return
-
-    try {
-      const request = JSON.parse(trimmed)
-      const response = await dispatchJsonRpc(request)
-      if (response) {
-        process.stdout.write(JSON.stringify(response) + '\n')
-      }
-    } catch (err) {
-      const errorResp = {
-        jsonrpc: '2.0',
-        id: null,
-        error: { code: -32700, message: `Parse error: ${err.message}` }
-      }
-      process.stdout.write(JSON.stringify(errorResp) + '\n')
-    }
-  })
-
-  process.stderr.write('[MCP] Hedera by Example MCP Server listening on stdio (JSON-RPC 2.0)\n')
-}
-
-function startHttpTransport(port = 3001) {
-  const server = http.createServer(async (req, res) => {
-    // CORS headers for universal web studio access
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204)
-      res.end()
-      return
-    }
-
-    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`)
-
-    // 1. Health check
-    if (url.pathname === '/health' || url.pathname === '/') {
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({
-        status: 'online',
-        server: 'hedera-by-example-mcp',
-        version: '1.0.0',
-        toolsCount: TOOLS.length,
-        endpoints: ['/mcp', '/sse', '/tools', '/health']
-      }, null, 2))
-      return
-    }
-
-    // 2. Tools manifest
-    if (url.pathname === '/tools' || url.pathname === '/mcp/tools.json') {
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({ tools: TOOLS }, null, 2))
-      return
-    }
-
-    // 3. SSE Transport (Server-Sent Events)
-    if (url.pathname === '/sse') {
-      res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      })
-      res.write(`event: endpoint\ndata: /mcp\n\n`)
-      return
-    }
-
-    // 4. JSON-RPC POST Handler
-    if (url.pathname === '/mcp' || url.pathname === '/api/mcp') {
-      let body = ''
-      req.on('data', chunk => { body += chunk })
-      req.on('end', async () => {
+      case 'ping': return rpcResult(id, {})
+      case 'tools/list': return rpcResult(id, { tools: TOOLS })
+      case 'tools/call': {
+        const name = params.name
+        if (!TOOLS.some((t) => t.name === name)) return rpcError(id, -32602, `Unknown tool: ${name}`)
         try {
-          const json = JSON.parse(body)
-          const response = await dispatchJsonRpc(json)
-          res.writeHead(200, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify(response || { jsonrpc: '2.0', id: json.id, result: {} }))
+          const text = await callTool(name, params.arguments || {})
+          return rpcResult(id, { content: [{ type: 'text', text: String(text) }] })
         } catch (err) {
-          res.writeHead(400, { 'Content-Type': 'application/json' })
-          res.end(JSON.stringify({
-            jsonrpc: '2.0',
-            id: null,
-            error: { code: -32700, message: `Invalid JSON payload: ${err.message}` }
-          }))
+          return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : `Tool error: ${err.message}` }] })
         }
-      })
+      }
+      case 'resources/list': return rpcResult(id, { resources: listResources() })
+      case 'resources/templates/list': return rpcResult(id, { resourceTemplates: [{ uriTemplate: 'hbe://lab/{lang}/{slug}', name: 'lab', title: 'A lab (lang: en | es)', mimeType: 'text/markdown' }] })
+      case 'resources/read': {
+        const text = readResource(params.uri)
+        if (text == null) return rpcError(id, -32002, `Resource not found: ${params.uri}`)
+        return rpcResult(id, { contents: [{ uri: params.uri, mimeType: 'text/markdown', text }] })
+      }
+      case 'prompts/list': return rpcResult(id, { prompts: PROMPTS })
+      case 'prompts/get': {
+        const prompt = getPrompt(params.name, params.arguments || {})
+        if (!prompt) return rpcError(id, -32602, `Unknown prompt: ${params.name}`)
+        return rpcResult(id, prompt)
+      }
+      default: return rpcError(id, -32601, `Method not found: ${method}`)
+    }
+  } catch (err) {
+    return rpcError(id, err instanceof InvalidParams ? -32602 : -32603, err.message)
+  }
+}
+
+/** One message or a batch; returns what to send back (null when nothing). */
+async function dispatchJsonRpc (payload) {
+  if (Array.isArray(payload)) {
+    if (!payload.length) return rpcError(null, -32600, 'Invalid Request: empty batch')
+    const out = (await Promise.all(payload.map(dispatchOne))).filter(Boolean)
+    return out.length ? out : null
+  }
+  return dispatchOne(payload)
+}
+
+// ============================================================================
+// TRANSPORTS
+// ============================================================================
+
+function startStdio () {
+  const rl = readline.createInterface({ input: process.stdin, terminal: false })
+  rl.on('line', async (line) => {
+    if (!line.trim()) return
+    let payload
+    try { payload = JSON.parse(line) } catch (err) {
+      process.stdout.write(JSON.stringify(rpcError(null, -32700, `Parse error: ${err.message}`)) + '\n')
       return
     }
-
-    res.writeHead(404, { 'Content-Type': 'application/json' })
-    res.end(JSON.stringify({ error: 'Endpoint not found' }))
+    const response = await dispatchJsonRpc(payload)
+    if (response) process.stdout.write(JSON.stringify(response) + '\n')
   })
-
-  server.listen(port, () => {
-    console.log(`[MCP HTTP] Hedera by Example MCP Server running at: http://localhost:${port}`)
-    console.log(`  - Tools manifest: http://localhost:${port}/tools`)
-    console.log(`  - JSON-RPC POST:  http://localhost:${port}/mcp`)
-    console.log(`  - SSE Endpoint:   http://localhost:${port}/sse`)
-  })
+  process.stderr.write(`[hedera-by-example-mcp ${VERSION}] listening on stdio\n`)
 }
 
-// CLI Argument parsing
-const args = process.argv.slice(2)
-const isHttp = args.includes('--http') || args.includes('-p') || args.includes('--port')
+function startHttp ({ port, host, allowOrigins }) {
+  const sessions = new Map() // legacy SSE sessions: id -> response stream
+  const MAX_BODY = 1_000_000
+  const originAllowed = (origin) => !origin || allowOrigins.includes('*') || allowOrigins.includes(origin) ||
+    /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin)
+  const readBody = (req) => new Promise((resolve, reject) => {
+    let size = 0
+    const chunks = []
+    req.on('data', (c) => { size += c.length; if (size > MAX_BODY) { reject(new Error('Body too large')); req.destroy() } else chunks.push(c) })
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+    req.on('error', reject)
+  })
+  const json = (res, status, body, extra = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', ...extra }); res.end(body == null ? '' : JSON.stringify(body)) }
 
-if (isHttp) {
-  const portIdx = args.findIndex(a => a === '--http' || a === '-p' || a === '--port')
-  const port = (portIdx !== -1 && args[portIdx + 1] && !isNaN(Number(args[portIdx + 1])))
-    ? Number(args[portIdx + 1])
-    : 3001
-  startHttpTransport(port)
+  const server = http.createServer(async (req, res) => {
+    const origin = req.headers.origin
+    if (!originAllowed(origin)) return json(res, 403, { error: 'Origin not allowed' })
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin)
+      res.setHeader('Vary', 'Origin')
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version')
+    res.setHeader('Access-Control-Expose-Headers', 'Mcp-Session-Id')
+    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end() }
+    const url = new URL(req.url, 'http://localhost')
+
+    if (url.pathname === '/' || url.pathname === '/health') {
+      return json(res, 200, { status: 'online', server: 'hedera-by-example-mcp', version: VERSION, protocols: SUPPORTED_PROTOCOLS, tools: TOOLS.length, endpoints: { streamableHttp: '/mcp', legacySse: '/sse', tools: '/tools' } })
+    }
+    if (url.pathname === '/tools') return json(res, 200, { tools: TOOLS })
+
+    // Streamable HTTP (2025-03-26+): POST JSON-RPC, JSON response.
+    if (url.pathname === '/mcp' || url.pathname === '/api/mcp') {
+      if (req.method === 'GET') return json(res, 405, { error: 'This server answers POST requests with JSON; no server-initiated stream.' }, { Allow: 'POST' })
+      if (req.method === 'DELETE') { res.writeHead(204); return res.end() }
+      if (req.method !== 'POST') return json(res, 405, { error: 'Use POST' }, { Allow: 'POST' })
+      let payload
+      try { payload = JSON.parse(await readBody(req)) } catch (err) { return json(res, 400, rpcError(null, -32700, `Parse error: ${err.message}`)) }
+      const response = await dispatchJsonRpc(payload)
+      if (!response) { res.writeHead(202); return res.end() }
+      return json(res, 200, response)
+    }
+
+    // Legacy HTTP+SSE (2024-11-05): GET /sse opens the stream, POST /messages?sessionId=… sends.
+    if (url.pathname === '/sse' && req.method === 'GET') {
+      const sessionId = crypto.randomUUID()
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
+      res.write(`event: endpoint\ndata: /messages?sessionId=${sessionId}\n\n`)
+      sessions.set(sessionId, res)
+      const keepAlive = setInterval(() => res.write(': keep-alive\n\n'), 25000)
+      req.on('close', () => { clearInterval(keepAlive); sessions.delete(sessionId) })
+      return
+    }
+    if (url.pathname === '/messages' && req.method === 'POST') {
+      const stream = sessions.get(url.searchParams.get('sessionId'))
+      if (!stream) return json(res, 404, { error: 'Unknown or closed session' })
+      let payload
+      try { payload = JSON.parse(await readBody(req)) } catch (err) { return json(res, 400, rpcError(null, -32700, `Parse error: ${err.message}`)) }
+      res.writeHead(202); res.end()
+      const response = await dispatchJsonRpc(payload)
+      if (response) stream.write(`event: message\ndata: ${JSON.stringify(response)}\n\n`)
+      return
+    }
+    json(res, 404, { error: 'Not found', endpoints: ['/mcp', '/sse', '/messages', '/tools', '/health'] })
+  })
+  server.listen(port, host, () => {
+    process.stderr.write(`[hedera-by-example-mcp ${VERSION}] http://${host}:${port}\n  Streamable HTTP: POST http://${host}:${port}/mcp\n  Legacy SSE:      GET  http://${host}:${port}/sse\n`)
+  })
+  return server
+}
+
+// ============================================================================
+// CLI
+// ============================================================================
+
+const argv = process.argv.slice(2)
+const flag = (name) => { const i = argv.indexOf(name); return i === -1 ? undefined : (argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : true) }
+if (argv.includes('--help') || argv.includes('-h')) {
+  process.stdout.write(`hedera-by-example-mcp ${VERSION}
+Usage:
+  node mcp/index.js                       stdio transport (Claude Code, Claude Desktop, Cursor, VS Code)
+  node mcp/index.js --http [port]         HTTP transport (default port 3001)
+      --host <addr>                       bind address (default 127.0.0.1)
+      --allow-origin <origin,...|*>       browser origins allowed besides localhost
+`)
+} else if (argv.includes('--http') || argv.includes('--port') || argv.includes('-p')) {
+  const p = flag('--http') ?? flag('--port') ?? flag('-p')
+  startHttp({
+    port: Number.isFinite(Number(p)) && p !== true ? Number(p) : 3001,
+    host: typeof flag('--host') === 'string' ? flag('--host') : '127.0.0.1',
+    allowOrigins: String(flag('--allow-origin') || '').split(',').filter(Boolean)
+  })
 } else {
-  startStdioTransport()
+  startStdio()
 }
+

@@ -2,7 +2,7 @@
   "mcpServers": {
     "hedera-by-example": {
       "command": "node",
-      "args": ["C:/Users/VAI/Github/Hedera-By-Example/mcp/index.js"]
+      "args": ["/ABSOLUTE/PATH/TO/Hedera-By-Example/mcp/index.js"]
     }
   }
 }

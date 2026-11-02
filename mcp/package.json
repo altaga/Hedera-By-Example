@@ -1,7 +1,7 @@
 {
   "name": "hedera-by-example-mcp",
-  "version": "1.0.0",
-  "description": "Universal Model Context Protocol (MCP) server for Hedera: stdio, HTTP & SSE transports for AI coding agents and web studios",
+  "version": "2.0.0",
+  "description": "Model Context Protocol server for Hedera by Example: 131 runnable Hedera labs, verified guardrails, live Mirror Node reads and fee estimates (stdio, Streamable HTTP, SSE)",
   "type": "module",
   "main": "index.js",
   "bin": {
