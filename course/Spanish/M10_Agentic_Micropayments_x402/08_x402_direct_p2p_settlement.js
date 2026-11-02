@@ -28,6 +28,14 @@
  * - Anterior: M10 Lab 07: Pasarela de Streaming de IA en Vivo
  * - Fin de Módulo: Suite Completa de Arquitectura x402 de Doble Variante
  *
+ * [ SECUENCIA ]
+ * Comprador -> Vendedor: GET /api/v1/quantum-pricing/derivatives-matrix
+ * Vendedor -> Comprador: 402 (0.02 ℏ, memo x402:direct:<nonce>)
+ * Comprador -> Hedera: Pagar 0.02 ℏ con el memo
+ * Comprador -> Vendedor: Reintentar con PAYMENT-TXID
+ * Vendedor -> Hedera: Verificar recibo, beneficiario, monto y memo
+ * Vendedor -> Comprador: 200 OK + prueba de liquidación
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
  * ============================================================================

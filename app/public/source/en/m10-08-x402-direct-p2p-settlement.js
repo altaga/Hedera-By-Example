@@ -28,6 +28,14 @@
  * - Previous: M10 Lab 07: Live AI Streaming Gateway
  * - Module Finish: Complete x402 Dual-Variant Architecture Suite
  *
+ * [ SEQUENCE ]
+ * Buyer -> Seller: GET /api/v1/quantum-pricing/derivatives-matrix
+ * Seller -> Buyer: 402 (0.02 ℏ, memo x402:direct:<nonce>)
+ * Buyer -> Hedera: Pay 0.02 ℏ with the memo
+ * Buyer -> Seller: Retry with PAYMENT-TXID
+ * Seller -> Hedera: Verify receipt, payee, amount and memo
+ * Seller -> Buyer: 200 OK + settlement proof
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
  * ============================================================================

@@ -21,6 +21,15 @@
  * - Previous: M10 Lab 05: Financial Guardrails
  * - Next:     M10 Lab 07: Live AI Streaming Proxy Gateway
  *
+ * [ SEQUENCE ]
+ * Agent -> Registry: Find providers and quotes
+ * Note Agent: Picks the best price/quality score
+ * Agent -> Oracle: GET sentiment signal
+ * Oracle -> Agent: 402 Payment Required
+ * Agent -> Hedera: Pay 0.35 ℏ
+ * Agent -> Oracle: Retry with payment proof
+ * Oracle -> Agent: 200 OK + signal
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

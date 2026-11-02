@@ -25,6 +25,13 @@
  * - Actual:   M9 Lab 07: Comunicación Agente-a-Agente (A2A)
  * - Siguiente: M9 Lab 08: Simulación de Ataque de Suplantación
  *
+ * [ SECUENCIA ]
+ * Agente A -> Buzón del agente B: Mensaje de la ronda 1
+ * Agente B -> Buzón del agente A: Respuesta
+ * Agente A -> Buzón del agente B: Mensaje de la ronda 2
+ * Agente B -> Buzón del agente A: Respuesta
+ * Nota Agente B: Los mensajes son públicos y sin firma
+ *
  * [ CÓMO EJECUTAR ]
  * node 07_hcs10_a2a_public.js
  * ============================================================================

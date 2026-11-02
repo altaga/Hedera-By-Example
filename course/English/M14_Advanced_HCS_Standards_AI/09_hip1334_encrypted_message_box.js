@@ -32,6 +32,13 @@
  * - Previous: M14 Lab 08: HCS-12 HashLinks & HCS-21 Verified Adapters
  * - Next:     M14 Lab 10: Hashnet MCP Server & HOL Guard Security Policy Firewall
  *
+ * [ SEQUENCE ]
+ * Recipient -> Hedera: Create inbox topic; memo advertises its public key
+ * Sender -> Hedera: Read the inbox key from the memo
+ * Note Sender: Ephemeral ECDH + AES-256-GCM
+ * Sender -> Hedera: Encrypted envelope to the inbox
+ * Recipient -> Hedera: Read and decrypt with its private key
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
  * ============================================================================

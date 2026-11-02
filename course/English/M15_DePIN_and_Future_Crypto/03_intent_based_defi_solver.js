@@ -28,6 +28,13 @@
  * - Hedera Atomic Transfers Documentation: https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  * - CoW Protocol Architecture: https://docs.cow.fi/overview/introduction
  *
+ * [ SEQUENCE ]
+ * Alice -> Solver: Signed intent: USD for HBAR
+ * Bob -> Solver: Signed intent: HBAR for USD
+ * Note Solver: Matches the intents off-chain
+ * Solver -> Hedera: One atomic transfer settles both
+ * Solver -> Hedera: Settlement record on HCS
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

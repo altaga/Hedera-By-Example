@@ -21,6 +21,11 @@
  * - Previous: M9 Lab 11: A2A Encrypted Handshake
  * - Next:     M10 Lab 02: Agent Payment Signature
  *
+ * [ SEQUENCE ]
+ * Agent -> Server: GET /api/v1/alpha-intelligence/market-depth
+ * Note Server: No API key, token or cookie
+ * Server -> Agent: 402 Payment Required (price, payee, nonce, expiry)
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

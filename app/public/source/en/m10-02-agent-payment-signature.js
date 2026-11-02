@@ -21,6 +21,12 @@
  * - Previous: M10 Lab 01: Server 402 Challenge
  * - Next:     M10 Lab 03: Facilitator Settlement
  *
+ * [ SEQUENCE ]
+ * Server -> Agent: 402 challenge (0.5 ℏ, payee, nonce)
+ * Note Agent: Checks its budget policy (max 1 ℏ)
+ * Note Agent: Signs the payment authorization with its key
+ * Agent -> Server: Retry with PAYMENT-SIGNATURE header
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/02_agent_payment_signature.js
  * ============================================================================

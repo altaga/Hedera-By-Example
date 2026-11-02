@@ -26,6 +26,12 @@
  * - Actual:   M9 Lab 09: Comunicación Segura y Verificada
  * - Siguiente: M9 Lab 10: Defensa Activa contra Adversarios
  *
+ * [ SECUENCIA ]
+ * Agente A -> Buzón del agente B: Contenido + hash + firma (llave de sesión)
+ * Nota Agente B: Verifica la firma con la llave del agente A
+ * Agente B -> Buzón del agente A: Respuesta firmada
+ * Nota Agente A: Verifica antes de confiar en la respuesta
+ *
  * [ CÓMO EJECUTAR ]
  * node 09_hcs10_a2a_secure.js
  * ============================================================================

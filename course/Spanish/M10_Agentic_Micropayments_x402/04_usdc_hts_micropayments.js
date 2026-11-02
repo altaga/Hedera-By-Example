@@ -22,6 +22,12 @@
  * - Actual:   M10 Lab 04: Micropagos USDC en HTS
  * - Siguiente: M10 Lab 05: Límites Financieros (Guardrails)
  *
+ * [ SECUENCIA ]
+ * Servidor -> Agente: Desafío 402 con precio en USDC ($0.025)
+ * Agente -> Hedera: Transferencia de token HTS de 25,000 unidades base
+ * Hedera -> Agente: Recibo SUCCESS
+ * Agente -> Servidor: Reintenta con el ID de la transacción de pago
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================

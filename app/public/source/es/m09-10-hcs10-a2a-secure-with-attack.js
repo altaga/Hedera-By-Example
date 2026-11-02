@@ -25,6 +25,12 @@
  * - Actual:   M9 Lab 10: Defensa Activa contra Adversarios
  * - Siguiente: M9 Lab 11: Comunicación Cifrada (Cipher enabled)
  *
+ * [ SECUENCIA ]
+ * Agente A -> Buzón del agente B: Mensaje firmado
+ * Atacante -> Buzón del agente B: Mensaje falsificado (llave incorrecta)
+ * Nota Agente B: La verificación de firma rechaza la falsificación
+ * Agente B -> Buzón del agente A: Solo responde al mensaje confiable
+ *
  * [ CÓMO EJECUTAR ]
  * node 10_hcs10_a2a_secure_with_attack.js
  * ============================================================================

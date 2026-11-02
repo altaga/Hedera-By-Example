@@ -28,6 +28,14 @@
  * - Previous: M10 Lab 06: Autonomous Market Agent
  * - Next:     M11 Lab 01: Regulated Token ERC-3643
  *
+ * [ SEQUENCE ]
+ * Client -> Gateway: POST inference stream (no payment)
+ * Gateway -> Client: 402 + WWW-Authenticate: x402 (0.05 ℏ, nonce)
+ * Client -> Hedera: Pay 0.05 ℏ
+ * Client -> Gateway: Retry with payment transaction ID
+ * Gateway -> Hedera: Verify the payment on the Mirror Node
+ * Gateway -> Client: text/event-stream tokens
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
  * ============================================================================

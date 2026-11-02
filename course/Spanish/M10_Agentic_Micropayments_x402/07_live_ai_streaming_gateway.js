@@ -29,6 +29,14 @@
  * - Anterior:  M10 Lab 06: Agente de Mercado Autónomo
  * - Siguiente: M11 Lab 01: Registro de Identidad ERC-3643
  *
+ * [ SECUENCIA ]
+ * Cliente -> Gateway: POST de streaming de inferencia (sin pago)
+ * Gateway -> Cliente: 402 + WWW-Authenticate: x402 (0.05 ℏ, nonce)
+ * Cliente -> Hedera: Pagar 0.05 ℏ
+ * Cliente -> Gateway: Reintentar con el ID de la transacción de pago
+ * Gateway -> Hedera: Verificar el pago en el Mirror Node
+ * Gateway -> Cliente: Tokens por text/event-stream
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
  * ============================================================================

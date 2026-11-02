@@ -23,6 +23,15 @@
  * - Actual:   M10 Lab 05: Límites Financieros (Guardrails)
  * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo
  *
+ * [ SECUENCIA ]
+ * Servidor -> Agente: Solicitud 1: 0.5 ℏ a un comercio verificado
+ * Nota Agente: Aprobada (dentro del presupuesto y la lista permitida)
+ * Servidor -> Agente: Solicitud 2: 12 ℏ
+ * Nota Agente: Rechazada: supera 1.5 ℏ por solicitud
+ * Servidor -> Agente: Solicitud 3: comercio desconocido
+ * Nota Agente: Rechazada: no está en la lista permitida
+ * Agente -> Hedera: Auditar el pago aprobado en HCS
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================

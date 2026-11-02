@@ -26,6 +26,12 @@
  * - Actual:   M9 Lab 11: Comunicación Cifrada (Confidencialidad)
  * - Siguiente: [ FIN DEL CURSO - ¡FELICIDADES! ]
  *
+ * [ SECUENCIA ]
+ * Agente A -> Buzón del agente B: Solicitud cifrada con la llave pública RSA del agente B
+ * Nota Agente B: Solo su llave privada puede descifrarla
+ * Agente B -> Buzón del agente A: Respuesta cifrada con la llave pública del agente A
+ * Nota HCS: Todos ven el texto cifrado, nadie más puede leerlo
+ *
  * [ CÓMO EJECUTAR ]
  * node 11_hcs10_a2a_encrypted.js
  * ============================================================================

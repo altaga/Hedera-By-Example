@@ -25,6 +25,13 @@
  * - Actual:   M9 Lab 06: Interacción Humano-a-Agente (HCS-10)
  * - Siguiente: M9 Lab 07: Comunicación Agente-a-Agente (A2A)
  *
+ * [ SECUENCIA ]
+ * Usuario -> Buzón del agente: Mensaje de solicitud (HCS-10)
+ * Agente -> Buzón del agente: Suscribirse y leer la solicitud
+ * Nota Agente: Procesa la solicitud
+ * Agente -> Buzón del usuario: Mensaje de respuesta
+ * Usuario -> Buzón del usuario: Leer la respuesta
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_hcs10_u2a_public.js
  * ============================================================================

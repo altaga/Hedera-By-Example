@@ -22,6 +22,11 @@
  * - Actual:   M10 Lab 01: Desafío 402 del Servidor
  * - Siguiente: M10 Lab 02: Firma de Pago del Agente
  *
+ * [ SECUENCIA ]
+ * Agente -> Servidor: GET /api/v1/alpha-intelligence/market-depth
+ * Nota Servidor: Sin API key, token ni cookie
+ * Servidor -> Agente: 402 Payment Required (precio, beneficiario, nonce, vencimiento)
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

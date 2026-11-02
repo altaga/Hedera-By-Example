@@ -26,6 +26,12 @@
  * - Actual:   M9 Lab 08: Simulación de Ataque de Suplantación
  * - Siguiente: M9 Lab 09: Comunicación Segura y Verificada
  *
+ * [ SECUENCIA ]
+ * Agente A -> Buzón del agente B: Mensaje legítimo
+ * Atacante -> Buzón del agente B: Mensaje que dice ser del agente A
+ * Nota Agente B: Sin firmas no puede distinguirlos
+ * Agente B -> Buzón del agente A: Responde a ambos
+ *
  * [ CÓMO EJECUTAR ]
  * node 08_hcs10_impersonation_attack.js
  * ============================================================================

@@ -48,6 +48,8 @@ const SECTION_ALIASES = {
   'OFFICIAL REFERENCES': 'refs',
   'REFERENCIAS OFICIALES': 'refs',
   'HOW TO RUN': 'run',
+  SEQUENCE: 'sequence',
+  SECUENCIA: 'sequence',
   'COMO EJECUTAR': 'run'
 }
 
@@ -67,6 +69,22 @@ const toParagraphs = (lines) => {
   }
   if (buf.length) paras.push(buf.join(' '))
   return paras
+}
+
+// "A -> B: message" and "Note A: text" / "Nota A: texto" lines from a [ SEQUENCE ] section.
+function parseSequence (lines) {
+  const actors = []
+  const steps = []
+  const actor = (name) => { if (!actors.includes(name)) actors.push(name); return name }
+  for (const raw of lines) {
+    const line = raw.trim()
+    if (!line) continue
+    const note = line.match(/^(?:Note|Nota)\s+([^:]+):\s*(.+)$/)
+    const msg = line.match(/^(.+?)\s*->\s*(.+?):\s*(.+)$/)
+    if (note) steps.push({ note: note[2].trim(), actor: actor(note[1].trim()) })
+    else if (msg) steps.push({ from: actor(msg[1].trim()), to: actor(msg[2].trim()), label: msg[3].trim() })
+  }
+  return steps.length ? { actors, steps } : null
 }
 
 function parseHeader (lines) {
@@ -96,6 +114,7 @@ function parseHeader (lines) {
   out.moment = toParagraphs(sections.moment || []).join(' ')
   out.refs = (sections.refs || []).map((l) => l.trim().replace(/^-\s*/, '')).filter((l) => /^https?:\/\//.test(l))
   out.run = (sections.run || []).map((l) => l.trim()).filter(Boolean)[0] || ''
+  out.sequence = parseSequence(sections.sequence || [])
   return out
 }
 
@@ -159,7 +178,7 @@ function parseLab (file) {
   const lines = text.split('\n')
   let i = 0
   while (i < lines.length && (/^\s*\/\*\s*eslint/.test(lines[i]) || !lines[i].trim())) i++
-  let header = { title: '', kicker: '', concept: [], moment: '', refs: [], run: '' }
+  let header = { title: '', kicker: '', concept: [], moment: '', refs: [], run: '', sequence: null }
   if (/^\s*\/\*\*/.test(lines[i] || '')) {
     const start = i
     while (i < lines.length && !/\*\/\s*$/.test(lines[i])) i++
@@ -256,6 +275,7 @@ function build () {
           sdk: lab.sdk,
           segments: lab.segments,
           lines: lab.lines,
+          sequence: lab.sequence,
           files: files.map((rel) => ({ name: path.basename(rel), url: `/source/files/${lang}/${dir}/${rel}` }))
         }
       }

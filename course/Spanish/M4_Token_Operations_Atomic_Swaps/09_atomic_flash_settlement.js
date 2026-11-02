@@ -35,6 +35,11 @@
  * - Anterior:  M4 Lab 08: Libro de Órdenes en Memoria y Liquidación L1 Triangular
  * - Siguiente: M5 Lab 01: Temas Inmutables
  *
+ * [ SECUENCIA ]
+ * Prestatario -> Hedera: Una transacción: pedir prestado + operar + pagar
+ * Nota Hedera: Cada parte se valida contra los saldos al llegar a consenso
+ * Hedera -> Prestatario: Solo se liquida si el préstamo se paga en la misma transacción
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js
  * ============================================================================

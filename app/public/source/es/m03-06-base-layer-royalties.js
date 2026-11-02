@@ -24,6 +24,13 @@
  * - Actual:   M3 Lab 06: Regalías de Capa Base
  * - Siguiente: M4 Lab 01: Mensajería Pública
  *
+ * [ SECUENCIA ]
+ * Artista -> Hedera: TokenCreate NFT con regalía 10% + respaldo 0.01 ℏ
+ * Artista -> Hedera: Acuñar NFT #1
+ * Comprador -> Artista: Pagar 1 ℏ por el NFT #1 (una transferencia atómica)
+ * Hedera -> Recolector: Regalía de 0.1 ℏ aplicada por la red
+ * Nota Hedera: Ningún contrato de marketplace puede saltarse la regalía
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_base_layer_royalties.js
  * ============================================================================

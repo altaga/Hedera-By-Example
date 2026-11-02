@@ -33,6 +33,11 @@
  * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Clearing
  * - Next:     M5 Lab 01: Immutable Topics
  *
+ * [ SEQUENCE ]
+ * Borrower -> Hedera: One transaction: borrow + trade + repay
+ * Note Hedera: Every leg checked against balances at consensus
+ * Hedera -> Borrower: Settles only if the loan is repaid in the same transaction
+ *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js
  * ============================================================================

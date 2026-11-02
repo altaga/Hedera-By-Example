@@ -25,6 +25,14 @@
  * - Anterior:  M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
  * - Siguiente: M14 Lab 07: Enjambres Botánicos HCS-15..18
  *
+ * [ SECUENCIA ]
+ * Alpha -> Hedera: Publicar llave pública ECDH (handshake)
+ * Beta -> Hedera: Publicar llave pública ECDH (handshake)
+ * Nota Alpha: Deriva la llave AES compartida
+ * Nota Beta: Deriva la misma llave AES
+ * Alpha -> Hedera: Mensaje cifrado con AES-256-GCM
+ * Beta -> Hedera: Leer y descifrar
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/06_encrypted_ai_agent_swarm_chat.js
  * ============================================================================

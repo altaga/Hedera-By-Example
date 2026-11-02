@@ -27,6 +27,14 @@
  * - Anterior:  M4 Lab 07: Cancelación de Airdrop y Rechazo de Tokens (HIP-904)
  * - Siguiente: M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica L1
  *
+ * [ SECUENCIA ]
+ * Alpha -> Solver: Orden límite firmada (USD → GOLD)
+ * Beta -> Solver: Orden límite firmada (GOLD → HBAR)
+ * Gamma -> Solver: Orden límite firmada (HBAR → USD)
+ * Nota Solver: Encuentra el anillo (coincidencia de deseos)
+ * Solver -> Hedera: Una TransferTransaction de 6 partes firmada por los tres
+ * Hedera -> Solver: Anillo liquidado de forma atómica
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/08_orderbook_triangular_settlement.js
  * ============================================================================

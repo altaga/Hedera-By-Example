@@ -8,6 +8,7 @@ import {
 import type { Strings } from '../lib/i18n'
 import type { TerminalLogLine } from '../lib/hederaBrowser'
 import { OutputLine } from './OutputLine'
+import { SequenceDiagram } from './SequenceDiagram'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source' | 'playground'
@@ -201,6 +202,13 @@ export function LabPage (props: Props) {
           </div>
         )}
       </dl>
+
+      {body.sequence && (
+        <section className='lab-sequence' aria-labelledby='seq-title'>
+          <h2 id='seq-title' className='section-title'>{t.sequenceTitle}</h2>
+          <SequenceDiagram spec={body.sequence} title={t.sequenceTitle} />
+        </section>
+      )}
 
       {needsPractice && (
         <div className='notice' role='note' data-testid='practice-notice'>

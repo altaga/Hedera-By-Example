@@ -646,3 +646,39 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .out-file img { display: block; max-width: 100%; max-height: 360px; margin: 12px auto; }
 .out-file pre { margin: 0; padding: 10px 12px; max-height: 240px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
 .visual-fallback { margin: 0; font-size: 12px; white-space: pre-wrap; }
+
+/* ---------- sequence diagrams ---------- */
+
+.lab-sequence { margin: 0 0 32px; }
+.seq { margin: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+.seq-scroll { overflow-x: auto; }
+.seq-inner { min-width: calc(var(--seq-cols) * 150px); padding: 16px 12px 12px; }
+.seq-actors { display: grid; grid-template-columns: repeat(var(--seq-cols), minmax(0, 1fr)); gap: 8px; }
+.seq-actor { display: flex; justify-content: center; }
+.seq-actor span {
+  padding: 6px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg-subtle); font-size: 13px; font-weight: 600; text-align: center;
+}
+.seq-steps { position: relative; list-style: none; margin: 0; padding: 8px 0 4px; }
+.seq-lifeline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1px dashed var(--border-strong); }
+.seq-row { position: relative; }
+.seq-msg { position: relative; padding: 10px 0 8px; }
+.seq-label {
+  display: block; padding: 0 6px 4px; text-align: center; font-size: 12.5px; line-height: 1.35; color: var(--text);
+}
+.seq-no {
+  display: inline-grid; place-items: center; width: 17px; height: 17px; margin-right: 6px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent); font-size: 10.5px; font-weight: 600; vertical-align: 1px;
+}
+.seq-arrow { position: relative; display: block; height: 0; border-top: 1.5px solid var(--text-2); }
+.seq-arrow::after {
+  content: ''; position: absolute; right: -1px; top: -5.5px;
+  border: 5px solid transparent; border-left: 8px solid var(--text-2); border-right: 0;
+}
+.is-back .seq-arrow::after { right: auto; left: -1px; border-left: 0; border-right: 8px solid var(--text-2); }
+.seq-row-note { min-height: 0; padding: 6px 0; }
+.seq-note {
+  position: relative; padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-subtle); color: var(--text-2); font-size: 12.5px; line-height: 1.4; text-align: center;
+}
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

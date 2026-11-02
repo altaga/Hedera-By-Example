@@ -28,6 +28,13 @@
  * - Anterior:  M7 Lab 06: Verificación de Login Criptográfico
  * - Siguiente: M7 Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad
  *
+ * [ SECUENCIA ]
+ * Fideicomisario 1 -> Hedera: ScheduleCreate de pago (tesorería multifirma 2 de 3)
+ * Monitor -> Hedera: Consultar el Mirror Node buscando propuestas pendientes
+ * Monitor -> Fideicomisario 2: Webhook: propuesta esperando firma
+ * Fideicomisario 2 -> Hedera: ScheduleSign
+ * Hedera -> Tesorería: Umbral cumplido: el pago se ejecuta solo
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M7_Governance_Cron/07_webhook_slack_treasury_dao.js
  * ============================================================================

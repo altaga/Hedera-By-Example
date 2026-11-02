@@ -22,6 +22,12 @@
  * - Previous: M9 Lab 07: HCS-10 A2A Public
  * - Next:     M9 Lab 09: HCS-10 A2A Secure
  *
+ * [ SEQUENCE ]
+ * Agent A -> Agent B Inbox: Legitimate message
+ * Attacker -> Agent B Inbox: Message claiming to be Agent A
+ * Note Agent B: Without signatures it cannot tell them apart
+ * Agent B -> Agent A Inbox: Replies to both
+ *
  * [ HOW TO RUN ]
  * node 08_hcs10_impersonation_attack.js
  * ============================================================================

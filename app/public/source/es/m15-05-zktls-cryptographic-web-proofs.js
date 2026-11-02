@@ -29,6 +29,13 @@
  * - Documentación Oficial del Protocolo Reclaim: https://docs.reclaimprotocol.org/
  * - Servicio de Consenso de Hedera (HCS): https://docs.hedera.com/hedera/services/consensus-service
  *
+ * [ SECUENCIA ]
+ * Probador -> Banco: Sesión TLS 1.3 (simulada)
+ * Notario -> Probador: Firma un compromiso de la respuesta (Ed25519)
+ * Nota Probador: Revela solo la afirmación, no los datos privados
+ * Probador -> Hedera: Prueba en HCS
+ * Verificador -> Hedera: Revisar la firma del notario y el compromiso
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/05_zktls_cryptographic_web_proofs.js
  * ============================================================================

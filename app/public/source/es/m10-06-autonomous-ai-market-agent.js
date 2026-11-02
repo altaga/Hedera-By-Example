@@ -22,6 +22,15 @@
  * - Actual:   M10 Lab 06: Agente de Mercado Autónomo
  * - Siguiente: M10 Lab 07: Pasarela Proxy de Streaming de IA
  *
+ * [ SECUENCIA ]
+ * Agente -> Registro: Buscar proveedores y cotizaciones
+ * Nota Agente: Elige el mejor puntaje precio/calidad
+ * Agente -> Oráculo: GET de la señal de sentimiento
+ * Oráculo -> Agente: 402 Payment Required
+ * Agente -> Hedera: Pagar 0.35 ℏ
+ * Agente -> Oráculo: Reintentar con la prueba de pago
+ * Oráculo -> Agente: 200 OK + señal
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

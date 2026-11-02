@@ -21,6 +21,12 @@
  * - Previous: M10 Lab 03: Facilitator Settlement
  * - Next:     M10 Lab 05: Financial Guardrails
  *
+ * [ SEQUENCE ]
+ * Server -> Agent: 402 challenge priced in USDC ($0.025)
+ * Agent -> Hedera: HTS token transfer of 25,000 base units
+ * Hedera -> Agent: Receipt SUCCESS
+ * Agent -> Server: Retry with the payment transaction ID
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================

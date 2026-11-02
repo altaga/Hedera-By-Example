@@ -23,6 +23,12 @@
  * - Previous: M9 Lab 10: Secure with Attack
  * - Next:     🏁 GRADUATION: Curriculum Complete
  *
+ * [ SEQUENCE ]
+ * Agent A -> Agent B Inbox: Request encrypted with Agent B RSA public key
+ * Note Agent B: Only Agent B private key can decrypt it
+ * Agent B -> Agent A Inbox: Reply encrypted with Agent A public key
+ * Note HCS: Everyone sees the ciphertext, nobody else reads it
+ *
  * [ HOW TO RUN ]
  * node 11_hcs10_a2a_encrypted.js
  * ============================================================================

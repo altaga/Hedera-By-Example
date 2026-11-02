@@ -27,6 +27,13 @@
  * - Previous: M7 Lab 06: Cryptographic Login with DID
  * - Next:     M7 Lab 08: Timelock Governance Controller & Security Council Veto
  *
+ * [ SEQUENCE ]
+ * Trustee 1 -> Hedera: ScheduleCreate payout (2-of-3 multisig treasury)
+ * Monitor -> Hedera: Poll Mirror Node for pending schedules
+ * Monitor -> Trustee 2: Webhook: proposal awaiting signature
+ * Trustee 2 -> Hedera: ScheduleSign
+ * Hedera -> Treasury: Threshold met: payout executes automatically
+ *
  * [ HOW TO RUN ]
  * node English/M7_Governance_Cron/07_webhook_slack_treasury_dao.js
  * ============================================================================

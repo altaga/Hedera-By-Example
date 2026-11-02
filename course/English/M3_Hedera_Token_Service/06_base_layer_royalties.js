@@ -20,6 +20,13 @@
  * - Previous: M3 Lab 05: Custom Fees
  * - Next:     M4 Lab 01: HBAR Transfers
  *
+ * [ SEQUENCE ]
+ * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback
+ * Artist -> Hedera: Mint NFT #1
+ * Buyer -> Artist: Pay 1 ℏ for NFT #1 (one atomic transfer)
+ * Hedera -> Collector: Royalty 0.1 ℏ enforced by the network
+ * Note Hedera: No marketplace contract can skip the royalty
+ *
  * [ HOW TO RUN ]
  * node 06_base_layer_royalties.js
  * ============================================================================

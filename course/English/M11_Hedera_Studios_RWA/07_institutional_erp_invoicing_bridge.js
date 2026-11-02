@@ -31,6 +31,14 @@
  * - Previous: M11 Lab 06: Multi-Asset Pool Tokens
  * - Next:     M12 Lab 01: Direct HTS ERC-20 Facade
  *
+ * [ SEQUENCE ]
+ * ERP -> Issuer: UBL 2.1 invoice
+ * Issuer -> Hedera: Anchor the invoice hash on HCS
+ * Issuer -> Compliance: ERC-3643 investor check
+ * Issuer -> Hedera: Mint 1,000 tranche units on HTS
+ * Issuer -> Investor: Grant KYC and deliver 250 units (DvP)
+ * Investor -> Issuer: Payment in the same atomic transaction
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/07_institutional_erp_invoicing_bridge.js
  * ============================================================================

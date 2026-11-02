@@ -32,6 +32,13 @@
  * - Anterior:  M14 Lab 08: HashLinks HCS-12 y Adaptadores Verificados HCS-21
  * - Siguiente: M14 Lab 10: Servidor MCP Hashnet y Firewall de Políticas HOL Guard
  *
+ * [ SECUENCIA ]
+ * Destinatario -> Hedera: Crear tema buzón; el memo anuncia su llave pública
+ * Remitente -> Hedera: Leer la llave del buzón desde el memo
+ * Nota Remitente: ECDH efímero + AES-256-GCM
+ * Remitente -> Hedera: Sobre cifrado al buzón
+ * Destinatario -> Hedera: Leer y descifrar con su llave privada
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
  * ============================================================================

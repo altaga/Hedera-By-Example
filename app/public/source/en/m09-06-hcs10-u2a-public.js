@@ -22,6 +22,13 @@
  * - Previous: M9 Lab 05: HCS-14 UAID
  * - Next:     M9 Lab 07: HCS-10 A2A Public
  *
+ * [ SEQUENCE ]
+ * User -> Agent Inbox: Request message (HCS-10)
+ * Agent -> Agent Inbox: Subscribe and read request
+ * Note Agent: Processes the request
+ * Agent -> User Inbox: Response message
+ * User -> User Inbox: Read response
+ *
  * [ HOW TO RUN ]
  * node 06_hcs10_u2a_public.js
  * ============================================================================

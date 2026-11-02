@@ -21,6 +21,13 @@
  * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
  * - Next:     M13 Lab 06: Protobuf Block Stream Parser & State Change Indexer
  *
+ * [ SEQUENCE ]
+ * Trader -> Relayer: Grant an HBAR allowance (HIP-1068)
+ * Trader -> Hedera: Signed intent on HCS (fees sponsored)
+ * Relayer -> Other Chain: Fill the foreign leg
+ * Note Relayer: State proof of the foreign fill (simulated CLPR)
+ * Relayer -> Hedera: Settle the Hedera leg via the allowance
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/05_cross_chain_intent_settlement_engine.js
  * ============================================================================

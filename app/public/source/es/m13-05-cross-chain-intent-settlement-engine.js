@@ -21,6 +21,13 @@
  * - Anterior:  M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos
  * - Siguiente: M13 Lab 06: Parser de Flujo de Bloques Protobuf e Indexador de Estado
  *
+ * [ SECUENCIA ]
+ * Trader -> Relayer: Otorgar una asignación de HBAR (HIP-1068)
+ * Trader -> Hedera: Intención firmada en HCS (comisiones patrocinadas)
+ * Relayer -> Otra cadena: Completar la parte externa
+ * Nota Relayer: Prueba de estado de la parte externa (CLPR simulado)
+ * Relayer -> Hedera: Liquidar la parte de Hedera usando la asignación
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/05_cross_chain_intent_settlement_engine.js
  * ============================================================================

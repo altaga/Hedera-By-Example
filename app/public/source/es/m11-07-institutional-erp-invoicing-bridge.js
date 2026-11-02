@@ -31,6 +31,14 @@
  * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo
  * - Siguiente: M12 Lab 01: Fachada Directa HTS ERC-20
  *
+ * [ SECUENCIA ]
+ * ERP -> Emisor: Factura UBL 2.1
+ * Emisor -> Hedera: Anclar el hash de la factura en HCS
+ * Emisor -> Cumplimiento: Verificación del inversionista ERC-3643
+ * Emisor -> Hedera: Acuñar 1,000 unidades del tramo en HTS
+ * Emisor -> Inversionista: Otorgar KYC y entregar 250 unidades (DvP)
+ * Inversionista -> Emisor: Pago en la misma transacción atómica
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/07_institutional_erp_invoicing_bridge.js
  * ============================================================================

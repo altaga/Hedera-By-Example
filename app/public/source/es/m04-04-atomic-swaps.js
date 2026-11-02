@@ -23,6 +23,12 @@
  * - Actual:   M4 Lab 04: Swaps Atómicos
  * - Siguiente: M4 Lab 05: Transferencias en Paralelo
  *
+ * [ SECUENCIA ]
+ * Tesorería -> Comprador: NFT #1
+ * Comprador -> Tesorería: Pago en HBAR
+ * Nota Hedera: Ambas partes en UNA TransferTransaction firmada por los dos
+ * Hedera -> Tesorería: Todo se liquida junto o nada se liquida
+ *
  * [ CÓMO EJECUTAR ]
  * node 04_atomic_swaps.js
  * ============================================================================

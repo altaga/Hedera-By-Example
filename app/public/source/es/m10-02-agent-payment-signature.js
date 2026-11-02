@@ -22,6 +22,12 @@
  * - Actual:   M10 Lab 02: Firma de Pago del Agente
  * - Siguiente: M10 Lab 03: Liquidación del Facilitador
  *
+ * [ SECUENCIA ]
+ * Servidor -> Agente: Desafío 402 (0.5 ℏ, beneficiario, nonce)
+ * Nota Agente: Revisa su política de presupuesto (máx. 1 ℏ)
+ * Nota Agente: Firma la autorización de pago con su llave
+ * Agente -> Servidor: Reintenta con el encabezado PAYMENT-SIGNATURE
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/02_agent_payment_signature.js
  * ============================================================================

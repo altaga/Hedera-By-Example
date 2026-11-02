@@ -28,6 +28,13 @@
  * - Reclaim Protocol Whitepaper: https://docs.reclaimprotocol.org/
  * - Hedera Consensus Service: https://docs.hedera.com/hedera/services/consensus-service
  *
+ * [ SEQUENCE ]
+ * Prover -> Bank: TLS 1.3 session (simulated)
+ * Notary -> Prover: Signs a commitment to the response (Ed25519)
+ * Note Prover: Reveals only the claim, not the private data
+ * Prover -> Hedera: Proof on HCS
+ * Verifier -> Hedera: Check the notary signature and commitment
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/05_zktls_cryptographic_web_proofs.js
  * ============================================================================

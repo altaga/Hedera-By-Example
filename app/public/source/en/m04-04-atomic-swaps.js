@@ -20,6 +20,12 @@
  * - Previous: M4 Lab 03: NFT Transfers
  * - Next:     M4 Lab 05: Parallel Transfers
  *
+ * [ SEQUENCE ]
+ * Treasury -> Buyer: NFT #1
+ * Buyer -> Treasury: HBAR payment
+ * Note Hedera: Both legs in ONE TransferTransaction, signed by both
+ * Hedera -> Treasury: All legs settle together or none do
+ *
  * [ HOW TO RUN ]
  * node 04_atomic_swaps.js
  * ============================================================================

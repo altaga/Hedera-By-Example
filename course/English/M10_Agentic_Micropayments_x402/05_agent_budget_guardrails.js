@@ -22,6 +22,15 @@
  * - Previous: M10 Lab 04: HTS USDC Micropayments
  * - Next:     M10 Lab 06: Autonomous Market Agent
  *
+ * [ SEQUENCE ]
+ * Server -> Agent: Request 1: 0.5 ℏ to a verified merchant
+ * Note Agent: Approved (within budget and allowlist)
+ * Server -> Agent: Request 2: 12 ℏ
+ * Note Agent: Rejected: exceeds 1.5 ℏ per request
+ * Server -> Agent: Request 3: unknown merchant
+ * Note Agent: Rejected: not on the allowlist
+ * Agent -> Hedera: Audit the approved payment on HCS
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================

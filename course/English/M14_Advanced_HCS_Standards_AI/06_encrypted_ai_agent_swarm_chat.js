@@ -25,6 +25,14 @@
  * - Previous: M14 Lab 05: HCS-28 Agent Audit Stream
  * - Next:     M14 Lab 07: HCS-15..18 Botanical Agent Swarms
  *
+ * [ SEQUENCE ]
+ * Alpha -> Hedera: Publish ECDH public key (handshake)
+ * Beta -> Hedera: Publish ECDH public key (handshake)
+ * Note Alpha: Derives the shared AES key
+ * Note Beta: Derives the same AES key
+ * Alpha -> Hedera: AES-256-GCM encrypted message
+ * Beta -> Hedera: Read and decrypt
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/06_encrypted_ai_agent_swarm_chat.js
  * ============================================================================

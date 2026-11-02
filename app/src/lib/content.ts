@@ -39,6 +39,8 @@ export interface LabBody {
   lines: number
   /** Non-code files the lab reads (course assets, .sol sources). */
   files: { name: string; url: string }[]
+  /** Parties and messages, from the lab's [ SEQUENCE ] header section. */
+  sequence: { actors: string[]; steps: any[] } | null
 }
 
 export interface LabEntry {

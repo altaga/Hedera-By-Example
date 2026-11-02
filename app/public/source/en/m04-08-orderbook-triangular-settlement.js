@@ -27,6 +27,14 @@
  * - Previous: M4 Lab 07: Airdrop Cancel & Reject (HIP-904)
  * - Next:     M4 Lab 09: Zero-Capital Flash Loans & Atomic L1 Settlement
  *
+ * [ SEQUENCE ]
+ * Alpha -> Solver: Signed limit order (USD → GOLD)
+ * Beta -> Solver: Signed limit order (GOLD → HBAR)
+ * Gamma -> Solver: Signed limit order (HBAR → USD)
+ * Note Solver: Finds the ring (coincidence of wants)
+ * Solver -> Hedera: One 6-leg TransferTransaction signed by all three
+ * Hedera -> Solver: Ring settled atomically
+ *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/08_orderbook_triangular_settlement.js
  * ============================================================================

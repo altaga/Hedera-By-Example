@@ -23,6 +23,13 @@
  * - Actual:   M10 Lab 03: Liquidación del Facilitador
  * - Siguiente: M10 Lab 04: Micropagos USDC en HTS
  *
+ * [ SECUENCIA ]
+ * Agente -> Servidor: Solicitud con PAYMENT-SIGNATURE
+ * Servidor -> Facilitador: Verificar firma y nonce de un solo uso
+ * Facilitador -> Hedera: TransferTransaction de 0.5 ℏ
+ * Hedera -> Facilitador: Recibo SUCCESS
+ * Servidor -> Agente: 200 OK + PAYMENT-RESPONSE (txId) + datos
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================

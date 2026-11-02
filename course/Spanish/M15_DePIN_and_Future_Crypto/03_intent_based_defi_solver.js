@@ -30,6 +30,13 @@
  * - Documentación de Transferencias Atómicas en Hedera: https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  * - Arquitectura del Protocolo CoW: https://docs.cow.fi/overview/introduction
  *
+ * [ SECUENCIA ]
+ * Alice -> Solver: Intención firmada: USD por HBAR
+ * Bob -> Solver: Intención firmada: HBAR por USD
+ * Nota Solver: Empareja las intenciones fuera de la cadena
+ * Solver -> Hedera: Una transferencia atómica liquida a ambos
+ * Solver -> Hedera: Registro de liquidación en HCS
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

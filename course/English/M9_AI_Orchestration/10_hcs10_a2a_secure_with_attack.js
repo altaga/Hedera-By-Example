@@ -22,6 +22,12 @@
  * - Previous: M9 Lab 09: HCS-10 A2A Secure
  * - Next:     M9 Lab 11: HCS-10 A2A Encrypted
  *
+ * [ SEQUENCE ]
+ * Agent A -> Agent B Inbox: Signed message
+ * Attacker -> Agent B Inbox: Forged message (wrong key)
+ * Note Agent B: Signature check rejects the forgery
+ * Agent B -> Agent A Inbox: Replies only to the trusted message
+ *
  * [ HOW TO RUN ]
  * node 10_hcs10_a2a_secure_with_attack.js
  * ============================================================================

@@ -22,6 +22,13 @@
  * - Previous: M9 Lab 06: HCS-10 U2A Public
  * - Next:     M9 Lab 08: Impersonation Attack
  *
+ * [ SEQUENCE ]
+ * Agent A -> Agent B Inbox: Round 1 message
+ * Agent B -> Agent A Inbox: Reply
+ * Agent A -> Agent B Inbox: Round 2 message
+ * Agent B -> Agent A Inbox: Reply
+ * Note Agent B: Messages are public and unsigned
+ *
  * [ HOW TO RUN ]
  * node 07_hcs10_a2a_public.js
  * ============================================================================

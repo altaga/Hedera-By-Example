@@ -21,6 +21,13 @@
  * - Previous: M10 Lab 02: Agent Payment Signature
  * - Next:     M10 Lab 04: HTS USDC Micropayments
  *
+ * [ SEQUENCE ]
+ * Agent -> Server: Request with PAYMENT-SIGNATURE
+ * Server -> Facilitator: Verify signature and single-use nonce
+ * Facilitator -> Hedera: TransferTransaction 0.5 ℏ
+ * Hedera -> Facilitator: Receipt SUCCESS
+ * Server -> Agent: 200 OK + PAYMENT-RESPONSE (txId) + data
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================
