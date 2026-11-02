@@ -10,7 +10,9 @@
 import { sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
 import { md5, sha1 } from '@noble/hashes/legacy.js'
 import { hmac } from '@noble/hashes/hmac.js'
-import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js'
+import { utf8ToBytes } from '@noble/hashes/utils.js'
+import { Buffer, NodeOnlyError, adaptSolcCalls, bindingValue, createFs, extractImports, resolveModule, type LabFileEvent } from './labModules'
+import { createCipher, createECDH, generateKeyPairSync, sign, verify } from './nodeCrypto'
 
 export interface BrowserWallet {
   accountId: string
@@ -27,6 +29,19 @@ export interface TerminalLogLine {
   type: 'info' | 'success' | 'warn' | 'error' | 'link' | 'system'
   text: string
   url?: string
+  /** How to render the line: plain text (default) or structured output. */
+  kind?: 'text' | 'table' | 'json' | 'file' | 'visual'
+  data?: any
+}
+
+export interface PracticeAccount { accountId: string; privateKey: string; evmAddress: string }
+export interface PracticeAccounts { account1?: PracticeAccount; account2?: PracticeAccount }
+
+export interface RunOptions {
+  /** ACCOUNT_1 / ACCOUNT_2 for labs with more than one party. */
+  practice?: PracticeAccounts
+  /** Files the lab reads (course assets or the learner's own), by file name. */
+  files?: Record<string, Uint8Array>
 }
 
 export const EMPTY_WALLET: BrowserWallet = {
@@ -130,40 +145,89 @@ function parsePrivateKey (hedera: any, raw: string) {
   return hedera.PrivateKey.fromString(value)
 }
 
+/** Labs that read ACCOUNT_1_* / ACCOUNT_2_* need practice accounts. */
+export const labUsesPracticeAccounts = (code: string) => /ACCOUNT_[12]_/.test(code)
+
+const PRACTICE_STORAGE_KEY = 'hbe_practice_accounts_v1'
+
+export function getPracticeAccounts (): PracticeAccounts {
+  if (typeof window === 'undefined') return {}
+  try { return JSON.parse(localStorage.getItem(PRACTICE_STORAGE_KEY) || '{}') } catch (_) { return {} }
+}
+
+export function savePracticeAccounts (accounts: PracticeAccounts): void {
+  try { localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(accounts)) } catch (_) {}
+}
+
+export function clearPracticeAccounts (): void {
+  try { localStorage.removeItem(PRACTICE_STORAGE_KEY) } catch (_) {}
+}
+
+const waitForAccountId = async (evmAddress: string, timeoutMs = 60_000) => {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const id = await findAccountByEvmAddress(evmAddress)
+    if (id) return id
+    if (Date.now() > deadline) throw new Error(`The Mirror Node does not list ${evmAddress} yet. Try again in a minute.`)
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+  }
+}
+
 /**
- * Strip module syntax and the Node entry-point guard so a lab body can run
- * inside an async function, then call main() if the lab defines it.
+ * Create two ECDSA practice accounts funded from the learner's account: one
+ * transfer to each new key's EVM address makes the network create the account.
  */
-export function sanitizeSourceForExecution (code: string): string {
+export async function createPracticeAccounts (wallet: BrowserWallet, hbarEach = 10): Promise<PracticeAccounts> {
+  if (!isAccountId(wallet.accountId) || !wallet.privateKey) throw new Error('Set up your testnet account first.')
+  const hedera = await import('@hiero-ledger/sdk')
+  const client = hedera.Client.forTestnet()
+  client.setOperator(hedera.AccountId.fromString(wallet.accountId), parsePrivateKey(hedera, wallet.privateKey))
+  const keys = [hedera.PrivateKey.generateECDSA(), hedera.PrivateKey.generateECDSA()]
+  const evms = keys.map((k) => '0x' + k.publicKey.toEvmAddress())
+  const tx = new hedera.TransferTransaction().addHbarTransfer(wallet.accountId, new hedera.Hbar(-hbarEach * 2))
+  for (const evm of evms) tx.addHbarTransfer(hedera.AccountId.fromEvmAddress(0, 0, evm), new hedera.Hbar(hbarEach))
+  try {
+    await (await tx.execute(client)).getReceipt(client)
+  } finally {
+    client.close()
+  }
+  const ids = await Promise.all(evms.map((evm) => waitForAccountId(evm)))
+  const accounts: PracticeAccounts = {
+    account1: { accountId: ids[0], privateKey: keys[0].toStringDer(), evmAddress: evms[0] },
+    account2: { accountId: ids[1], privateKey: keys[1].toStringDer(), evmAddress: evms[1] }
+  }
+  savePracticeAccounts(accounts)
+  return accounts
+}
+
+/** Name of the function the lab's entry block calls (usually main). */
+function entryFunctionName (code: string): string {
+  const m = code.match(/if\s*\(\s*process\.argv\[1\][^\n]*\{\s*\n\s*([A-Za-z_$][\w$]*)\(\)/)
+  return m ? m[1] : 'main'
+}
+
+/**
+ * Turn a lab body (imports already removed) into code that runs inside an
+ * async function: drop module syntax and the Node entry guard, give
+ * import.meta values that work with new URL()/path, route dynamic import()
+ * through the browser module system, then call the entry function.
+ */
+export function sanitizeSourceForExecution (code: string, entry = 'main'): string {
   const sanitized = code
-    .replace(/import\s+[\s\S]*?from\s*['"][^'"]*['"]\s*;?/gm, '')
-    .replace(/import\s*['"][^'"]*['"]\s*;?/gm, '')
     .replace(/export\s+default\s+.*?;?/gm, '')
     .replace(/export\s*\{[^}]*\}\s*;?/gm, '')
+    .replace(/^[ \t]*export\s+(?=(?:const|let|var|function|class|async)\b)/gm, '')
     .replace(/if\s*\(\s*process\.argv\[1\][\s\S]*$/gm, '')
+    .replace(/import\.meta\.url/g, '"file:///lab/lab.js"')
+    .replace(/import\.meta\.filename/g, '"/lab/lab.js"')
+    .replace(/import\.meta\.dirname/g, '"/lab"')
     .replace(/import\.meta\.[a-zA-Z0-9_$]+/gm, '""')
+    .replace(/\bimport\(/g, '__import(')
     .trim()
-  return sanitized + '\n\nif (typeof main === "function") {\n  await main();\n}'
+  return `${sanitized}\n\nif (typeof ${entry} === "function") {\n  await ${entry}();\n}`
 }
 
-class NodeOnlyError extends Error {
-  constructor (api: string) {
-    super(`${api} is a Node.js API that is not available in the browser runner. Run this lab locally with Node.js.`)
-    this.name = 'NodeOnlyError'
-  }
-}
-
-// Byte output that behaves like a Buffer for the calls the labs make.
-function asBufferLike (bytes: Uint8Array) {
-  const out = new Uint8Array(bytes) as Uint8Array & { toString: (enc?: string) => string }
-  out.toString = (enc?: string) => {
-    if (enc === 'hex') return bytesToHex(bytes)
-    if (enc === 'base64') return btoa(String.fromCharCode(...bytes))
-    return new TextDecoder().decode(bytes)
-  }
-  return out
-}
-
+// Byte output that behaves like a Node Buffer for the calls the labs make.
 const toBytes = (chunk: unknown): Uint8Array => {
   if (chunk instanceof Uint8Array) return chunk
   return utf8ToBytes(typeof chunk === 'string' ? chunk : String(chunk))
@@ -177,10 +241,9 @@ function pickHash (algo: string) {
   return fn
 }
 
-function digestOut (bytes: Uint8Array, enc?: string) {
-  if (enc === 'hex') return bytesToHex(bytes)
-  if (enc === 'base64') return btoa(String.fromCharCode(...bytes))
-  return asBufferLike(bytes)
+const digestOut = (bytes: Uint8Array, enc?: string) => {
+  const buf = Buffer.from(bytes)
+  return enc ? buf.toString(enc as BufferEncoding) : buf
 }
 
 function makeCryptoShim () {
@@ -188,13 +251,19 @@ function makeCryptoShim () {
     randomBytes: (size: number) => {
       const arr = new Uint8Array(size)
       window.crypto.getRandomValues(arr)
-      return asBufferLike(arr)
+      return Buffer.from(arr)
     },
     randomUUID: () => window.crypto.randomUUID(),
+    randomInt: (min: number, max?: number) => {
+      const [lo, hi] = max === undefined ? [0, min] : [min, max]
+      const arr = new Uint32Array(1)
+      window.crypto.getRandomValues(arr)
+      return lo + (arr[0] % (hi - lo))
+    },
     createHash: (algo: string) => {
       const h = pickHash(algo).create()
       const api = {
-        update: (chunk: unknown) => { h.update(toBytes(chunk)); return api },
+        update: (chunk: unknown, enc?: string) => { h.update(typeof chunk === 'string' && enc ? Buffer.from(chunk, enc as BufferEncoding) : toBytes(chunk)); return api },
         digest: (enc?: string) => digestOut(h.digest(), enc)
       }
       return api
@@ -206,7 +275,16 @@ function makeCryptoShim () {
         digest: (enc?: string) => digestOut(h.digest(), enc)
       }
       return api
-    }
+    },
+    timingSafeEqual: (a: Uint8Array, b: Uint8Array) => a.length === b.length && a.every((v, i) => v === b[i]),
+    createCipheriv: (alg: string, key: any, iv: any) => createCipher(false, alg, key, iv),
+    createDecipheriv: (alg: string, key: any, iv: any) => createCipher(true, alg, key, iv),
+    createECDH,
+    generateKeyPairSync,
+    sign,
+    verify,
+    webcrypto: window.crypto,
+    subtle: window.crypto.subtle
   }
   return new Proxy(supported, {
     get (target, prop) {
@@ -239,20 +317,40 @@ function hashscanUrl (target: any): string {
   return `${base}/topic/${clean}`
 }
 
-/** Run a lab's code in this browser, streaming console output to onLog. */
+const MIME: Record<string, string> = {
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', svg: 'image/svg+xml', webp: 'image/webp',
+  json: 'application/json', csv: 'text/csv', md: 'text/markdown', txt: 'text/plain', sol: 'text/plain', pem: 'text/plain'
+}
+export const mimeOf = (name: string) => MIME[name.split('.').pop()?.toLowerCase() || ''] || 'application/octet-stream'
+
+/** Turn console.table input into columns and rows. */
+function tableOf (data: any, columns?: string[]) {
+  const entries: [string, any][] = Array.isArray(data) ? data.map((v, i) => [String(i), v]) : Object.entries(data || {})
+  const cols = columns || [...new Set(entries.flatMap(([, v]) => (v && typeof v === 'object' ? Object.keys(v) : ['Values'])))]
+  const rows = entries.map(([k, v]) => [k, ...cols.map((c) => (v && typeof v === 'object' ? v[c] : c === 'Values' ? v : ''))])
+  return { columns: ['(index)', ...cols], rows }
+}
+
+const jsonSafe = (v: any) => {
+  try { return JSON.parse(JSON.stringify(v, (_k, x) => (typeof x === 'bigint' ? x.toString() : x))) } catch (_) { return String(v) }
+}
+
+/** Run a lab's code in this browser, streaming its output to onLog. */
 export async function executeInBrowser (
   sourceCode: string,
   wallet: BrowserWallet,
-  onLog: (line: TerminalLogLine) => void
+  onLog: (line: TerminalLogLine) => void,
+  options: RunOptions = {}
 ): Promise<{ success: boolean; durationMs: number }> {
   const startTime = Date.now()
   let seq = 0
 
-  const pushLog = (type: TerminalLogLine['type'], text: string, url?: string) => {
+  const emit = (line: Omit<TerminalLogLine, 'id' | 'timestamp'>) => {
     const d = new Date()
     const ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':')
-    onLog({ id: `${startTime}-${seq++}`, timestamp: ts, type, text, url })
+    onLog({ id: `${startTime}-${seq++}`, timestamp: ts, ...line })
   }
+  const pushLog = (type: TerminalLogLine['type'], text: string, url?: string) => emit({ type, text, url })
 
   if (isAccountId(wallet.accountId) && wallet.privateKey) {
     pushLog('system', `Operator ${wallet.accountId} on testnet`)
@@ -260,6 +358,16 @@ export async function executeInBrowser (
     pushLog('warn', 'No testnet account configured. Labs that send transactions will fail; set one up under "Testnet account".')
   }
 
+  const practice = options.practice || {}
+  if (labUsesPracticeAccounts(sourceCode)) {
+    if (practice.account1 && practice.account2) {
+      pushLog('system', `Practice accounts ${practice.account1.accountId} and ${practice.account2.accountId}`)
+    } else {
+      pushLog('warn', 'This lab uses ACCOUNT_1 / ACCOUNT_2. Create practice accounts under "Testnet account" first.')
+    }
+  }
+
+  let failedWithExitCode = false
   try {
     const hedera = await import('@hiero-ledger/sdk')
     // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
@@ -274,7 +382,6 @@ export async function executeInBrowser (
       return c
     }
     const client = createClient()
-
     if (isAccountId(wallet.accountId) && wallet.privateKey) {
       try {
         client.setOperator(hedera.AccountId.fromString(wallet.accountId), parsePrivateKey(hedera, wallet.privateKey))
@@ -283,19 +390,21 @@ export async function executeInBrowser (
       }
     }
 
-    // Supports both `const client = getClient()` and `const { client } = getClient()`.
-    // Never shadow SDK properties: only add the names the labs destructure.
-    const clientWrapper: any = client
-    const extras: Record<string, unknown> = {
-      client,
-      operatorId: wallet.accountId,
-      operatorKey: wallet.privateKey,
-      network: 'testnet'
+    // Same shape as course/*/M99_Utilities/config.js getClient().
+    const getClient = () => ({ client, operatorId: wallet.accountId, operatorKey: wallet.privateKey, network: 'testnet' })
+
+    const env: Record<string, string> = {
+      OPERATOR_ID: wallet.accountId,
+      OPERATOR_PRIVATE_KEY: wallet.privateKey,
+      OPERATOR_EVM_ADDRESS: wallet.evmAddress || '',
+      NETWORK: 'testnet'
     }
-    for (const [name, value] of Object.entries(extras)) {
-      if (!(name in clientWrapper)) Object.defineProperty(clientWrapper, name, { value, enumerable: false })
+    for (const [n, acc] of [['1', practice.account1], ['2', practice.account2]] as const) {
+      if (!acc) continue
+      env[`ACCOUNT_${n}_ID`] = acc.accountId
+      env[`ACCOUNT_${n}_PRIVATE_KEY`] = acc.privateKey
+      env[`ACCOUNT_${n}_EVM_ADDRESS`] = acc.evmAddress
     }
-    const getClient = () => clientWrapper
 
     const readState = () => {
       try { return JSON.parse(localStorage.getItem(STATE_STORAGE_KEY) || '{}') } catch (_) { return {} }
@@ -308,20 +417,33 @@ export async function executeInBrowser (
       } catch (_) {}
       return val
     }
-    const getState = (key: string) => readState()[key]
+    const getState = (key: string) => readState()[key] ?? env[key]
     const updateEnv = updateState
 
-    const mockProcess = {
-      argv: ['node', 'browser.js'],
-      env: {
-        OPERATOR_ID: wallet.accountId,
-        OPERATOR_PRIVATE_KEY: wallet.privateKey,
-        OPERATOR_EVM_ADDRESS: wallet.evmAddress || '',
-        NETWORK: 'testnet'
-      },
+    const perf = window.performance
+    const mockProcess: any = {
+      argv: ['node', '/lab/lab.js'],
+      env,
+      platform: 'browser',
+      version: 'browser',
+      exitCode: undefined,
       exit: (code: number = 0) => {
-        if (code !== 0) throw new Error(`process.exit(${code})`)
-      }
+        if (code !== 0 || mockProcess.exitCode) {
+          failedWithExitCode = true
+          throw new Error(`process.exit(${code || mockProcess.exitCode})`)
+        }
+      },
+      hrtime: Object.assign((prev?: [number, number]) => {
+        const ns = Math.round(perf.now() * 1e6)
+        const t: [number, number] = [Math.floor(ns / 1e9), ns % 1e9]
+        return prev ? [t[0] - prev[0], t[1] - prev[1]] : t
+      }, { bigint: () => BigInt(Math.round(perf.now() * 1e6)) }),
+      memoryUsage: () => ({ rss: 0, heapTotal: 0, heapUsed: 0, external: 0 }),
+      uptime: () => perf.now() / 1000,
+      on: () => mockProcess,
+      once: () => mockProcess,
+      nextTick: (fn: (...a: any[]) => void, ...args: any[]) => queueMicrotask(() => fn(...args)),
+      stdout: { write: (s: string) => { pushLog('info', String(s).replace(/\n$/, '')); return true } }
     }
 
     const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -343,13 +465,13 @@ export async function executeInBrowser (
         }
       }
     }
-    const executeWithGas = (build: (gas: number) => any, c: any, options?: { gas?: number, maxGas?: number }) =>
+    const executeWithGas = (build: (gas: number) => any, c: any, opts?: { gas?: number, maxGas?: number }) =>
       withGasRetry(async (gas: number) => {
         const tx = await build(gas)
         const response = await tx.execute(c)
         await response.getReceipt(c)
         return response
-      }, options)
+      }, opts)
     const waitForMirror = async (check: () => Promise<any>, { timeoutMs = 30_000, intervalMs = 2_000 } = {}) => {
       const deadline = Date.now() + timeoutMs
       for (;;) {
@@ -374,88 +496,154 @@ export async function executeInBrowser (
       const current = (account?.balance?.balance ?? 0) / 1e8
       if (current >= minHbar) return
       const topUp = Math.ceil(minHbar - current + 1)
+      pushLog('info', `${accountId} has ${current.toFixed(2)} ℏ; topping up ${topUp} ℏ from your account...`)
       const tx = await new hedera.TransferTransaction()
         .addHbarTransfer(c.operatorAccountId, new hedera.Hbar(-topUp))
         .addHbarTransfer(accountId, new hedera.Hbar(topUp))
         .execute(c)
       await tx.getReceipt(c)
     }
-    const nodeOnly = (name: string) => () => { throw new NodeOnlyError(name) }
-    const courseHelpers: Record<string, unknown> = {
-      loadEnv: () => {},
-      getJsonRpcUrl: () => 'https://testnet.hashio.io/api',
-      getJsonRpcSigner: nodeOnly('getJsonRpcSigner (JSON-RPC relay signing)'),
-      AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } },
-      createClient, withGasRetry, executeWithGas, waitForMirror, exitIfStuck: () => {}, getAccountEvmAddress, ensureFunded, MAX_GAS,
-      maxTransactionFeeHbar: () => 100
-    }
+    const parseKey = (value: string) => parsePrivateKey(hedera, value)
 
-    const pathShim = {
-      join: (...args: string[]) => args.filter(Boolean).join('/'),
-      resolve: (...args: string[]) => args.filter(Boolean).join('/'),
-      basename: (p: string) => String(p).split(/[\\/]/).pop() || '',
+    const pathShim: any = {
+      sep: '/',
+      join: (...args: string[]) => args.filter(Boolean).join('/').replace(/\/+/g, '/'),
+      resolve: (...args: string[]) => args.filter(Boolean).join('/').replace(/\/+/g, '/'),
+      basename: (p: string, ext?: string) => { const b = String(p).split(/[\\/]/).pop() || ''; return ext && b.endsWith(ext) ? b.slice(0, -ext.length) : b },
       dirname: (p: string) => String(p).split(/[\\/]/).slice(0, -1).join('/') || '.',
-      extname: (p: string) => '.' + String(p).split('.').pop()
+      extname: (p: string) => { const b = String(p).split(/[\\/]/).pop() || ''; return b.includes('.') ? '.' + b.split('.').pop() : '' },
+      relative: (_from: string, to: string) => to,
+      isAbsolute: (p: string) => String(p).startsWith('/')
     }
+    pathShim.posix = pathShim
 
     class EventEmitterShim {
       _e: Record<string, Function[]> = {}
       on (e: string, fn: Function) { (this._e[e] = this._e[e] || []).push(fn); return this }
+      addListener (e: string, fn: Function) { return this.on(e, fn) }
       once (e: string, fn: Function) {
         const g = (...a: any[]) => { this.off(e, g); fn(...a) }
         return this.on(e, g)
       }
       off (e: string, fn: Function) { this._e[e] = (this._e[e] || []).filter((f) => f !== fn); return this }
-      emit (e: string, ...args: any[]) { (this._e[e] || []).forEach((fn) => fn(...args)); return true }
+      removeListener (e: string, fn: Function) { return this.off(e, fn) }
+      removeAllListeners (e?: string) { if (e) delete this._e[e]; else this._e = {}; return this }
+      emit (e: string, ...args: any[]) { (this._e[e] || []).forEach((fn) => fn(...args)); return (this._e[e] || []).length > 0 }
+      listenerCount (e: string) { return (this._e[e] || []).length }
     }
+
+    // Files the lab reads; anything it writes is shown in the output.
+    const files = new Map<string, Uint8Array>(Object.entries(options.files || {}))
+    const onWrite = ({ name, data }: LabFileEvent) => {
+      const mime = mimeOf(name)
+      const url = URL.createObjectURL(new Blob([data as BlobPart], { type: mime }))
+      const text = mime.startsWith('text/') || mime === 'application/json' ? new TextDecoder().decode(data.slice(0, 4000)) : undefined
+      emit({ type: 'info', text: `Wrote ${name} (${data.length.toLocaleString('en-US')} bytes)`, kind: 'file', data: { name, mime, url, size: data.length, text } })
+    }
+    const fs = createFs(files, onWrite)
+    const cryptoShim = makeCryptoShim()
 
     const fmt = (a: any) => {
       if (typeof a === 'string') return a
       if (a instanceof Error) return a.message
       try { return JSON.stringify(a, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)) } catch (_) { return String(a) }
     }
+    const classify = (msg: string): TerminalLogLine['type'] =>
+      /SUCCESS|ÉXITO|✅/.test(msg) ? 'success' : /WARN|⚠️/.test(msg) ? 'warn' : /FAILED|FALLO|❌/.test(msg) ? 'error' : 'info'
+    const asJson = (s: string) => {
+      const t = s.trim()
+      if (!/^[[{]/.test(t) || !t.includes('\n')) return undefined
+      try { return JSON.parse(t) } catch (_) { return undefined }
+    }
+    const logWith = (forced?: TerminalLogLine['type']) => (...args: any[]) => {
+      // A single object, or a pretty-printed JSON string, is shown as a JSON tree.
+      if (args.length === 1 && args[0] && typeof args[0] === 'object' && !(args[0] instanceof Error)) {
+        emit({ type: forced || 'info', text: fmt(args[0]), kind: 'json', data: jsonSafe(args[0]) })
+        return
+      }
+      const json = args.length === 1 && typeof args[0] === 'string' ? asJson(args[0]) : undefined
+      if (json !== undefined) {
+        emit({ type: forced || 'info', text: args[0], kind: 'json', data: json })
+        return
+      }
+      const msg = args.map(fmt).join(' ')
+      const url = msg.match(/(https:\/\/hashscan\.io\/[^\s)]+)/)
+      if (url && !forced) emit({ type: 'link', text: msg, url: url[1] })
+      else emit({ type: forced || classify(msg), text: msg })
+    }
     const customConsole = {
-      log: (...args: any[]) => {
-        const msg = args.map(fmt).join(' ')
-        const url = msg.match(/(https:\/\/hashscan\.io\/[^\s)]+)/)
-        if (url) pushLog('link', msg, url[1])
-        else if (/SUCCESS|ÉXITO|✅/.test(msg)) pushLog('success', msg)
-        else if (/WARN|⚠️/.test(msg)) pushLog('warn', msg)
-        else if (/FAILED|FALLO|❌/.test(msg)) pushLog('error', msg)
-        else pushLog('info', msg)
-      },
-      info: (...args: any[]) => pushLog('info', args.map(fmt).join(' ')),
-      warn: (...args: any[]) => pushLog('warn', args.map(fmt).join(' ')),
-      error: (...args: any[]) => pushLog('error', args.map(fmt).join(' ')),
-      table: (data: any) => pushLog('info', fmt(data))
+      log: logWith(),
+      info: logWith('info'),
+      debug: logWith('info'),
+      warn: logWith('warn'),
+      error: logWith('error'),
+      table: (data: any, columns?: string[]) => emit({ type: 'info', text: fmt(data), kind: 'table', data: tableOf(data, columns) }),
+      dir: logWith('info'),
+      group: logWith('info'),
+      groupEnd: () => {},
+      time: () => {},
+      timeEnd: () => {}
     }
 
-    const sanitized = sanitizeSourceForExecution(sourceCode)
-    const scopeKeys = Object.keys(hedera)
-    const scopeValues = Object.values(hedera)
+    const nodeOnly = (name: string) => () => { throw new NodeOnlyError(name) }
+    const helpers: Record<string, unknown> = {
+      getClient,
+      getHashscanUrl: hashscanUrl,
+      getMirrorNodeBaseUrl,
+      getJsonRpcUrl: () => 'https://testnet.hashio.io/api',
+      updateState,
+      updateEnv,
+      getState,
+      sleep,
+      loadEnv: () => {},
+      createClient,
+      parsePrivateKey: parseKey,
+      withGasRetry,
+      executeWithGas,
+      waitForMirror,
+      getAccountEvmAddress,
+      ensureFunded,
+      exitIfStuck: () => {},
+      maxTransactionFeeHbar: () => 100,
+      MAX_GAS,
+      getJsonRpcSigner: nodeOnly('getJsonRpcSigner (JSON-RPC relay signing)'),
+      AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } }
+    }
+
+    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv }
+    const { imports, body } = extractImports(sourceCode)
+    const bound: Record<string, unknown> = {}
+    for (const imp of imports) {
+      const mod = await resolveModule(imp.specifier, ctx)
+      for (const b of imp.bindings) bound[b.local] = bindingValue(mod, b.imported)
+    }
+    const __import = (spec: string) => resolveModule(spec, ctx)
+
+    // Globals a Node module sees without importing them, then the lab's own imports.
+    const scope: Record<string, unknown> = {
+      ...hedera,
+      ...helpers,
+      client,
+      wallet,
+      console: customConsole,
+      process: mockProcess,
+      Buffer,
+      __import,
+      ...bound
+    }
+    const RESERVED = new Set(['default', 'class', 'function', 'delete', 'new', 'return', 'var', 'let', 'const', 'import', 'export', 'this', 'typeof', 'void', 'with', 'yield', 'await', 'enum', 'super', 'in', 'of', 'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'break', 'continue', 'try', 'catch', 'finally', 'throw', 'null', 'true', 'false', 'instanceof', 'debugger', 'extends', 'static'])
+    const names = Object.keys(scope).filter((n) => /^[A-Za-z_$][\w$]*$/.test(n) && !RESERVED.has(n))
+    const usesSolc = imports.some((i) => i.specifier === 'solc')
+    const sanitized = sanitizeSourceForExecution(usesSolc ? adaptSolcCalls(body) : body, entryFunctionName(sourceCode))
 
     // eslint-disable-next-line no-new-func
-    const runner = new Function(
-      ...scopeKeys,
-      'client', 'getClient', 'getHashscanUrl', 'getMirrorNodeBaseUrl',
-      'updateState', 'updateEnv', 'getState', 'sleep', 'dotenv',
-      'crypto', 'path', 'EventEmitter', 'wallet', 'console', 'process',
-      ...Object.keys(courseHelpers),
-      'return (async () => {\n' + sanitized + '\n})()'
-    )
-
-    await runner(
-      ...scopeValues,
-      client, getClient, hashscanUrl, getMirrorNodeBaseUrl,
-      updateState, updateEnv, getState, sleep, dotenv,
-      makeCryptoShim(), pathShim, EventEmitterShim, wallet, customConsole, mockProcess,
-      ...Object.values(courseHelpers)
-    )
+    const runner = new Function(...names, 'return (async () => {\n' + sanitized + '\n})()')
+    await runner(...names.map((n) => scope[n]))
 
     try { client.close() } catch (_) {}
     const durationMs = Date.now() - startTime
     // Labs flag handled failures with process.exitCode = 1 instead of throwing.
-    if ((mockProcess as any).exitCode) {
+    if (mockProcess.exitCode) {
       pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
       return { success: false, durationMs }
     }
@@ -464,8 +652,11 @@ export async function executeInBrowser (
   } catch (err: any) {
     const durationMs = Date.now() - startTime
     const message = err?.message || String(err)
-    pushLog('error', `Stopped: ${message}`)
-    if (err instanceof ReferenceError && /Buffer|require|__dirname|fs\b/.test(message)) {
+    if (!failedWithExitCode) pushLog('error', `Stopped: ${message}`)
+    else pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
+    if (err instanceof NodeOnlyError) {
+      pushLog('warn', 'This lab uses a Node.js-only API. The commands to run it on your machine are below the code.')
+    } else if (err instanceof ReferenceError && /require|__dirname/.test(message)) {
       pushLog('warn', 'This lab uses Node.js-only APIs. Run it locally with Node.js to see its full behaviour.')
     }
     return { success: false, durationMs }

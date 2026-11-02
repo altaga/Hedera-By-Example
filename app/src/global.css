@@ -579,3 +579,70 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* ---------- lab extras: notices, files, structured output ---------- */
+
+.notice {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+  margin: 0 0 16px; padding: 12px 16px;
+  border: 1px solid var(--border); border-left: 3px solid var(--warn); border-radius: var(--radius);
+  background: var(--bg-subtle); font-size: 14.5px;
+}
+.notice p { margin: 0; color: var(--text-2); }
+
+.lab-files { margin-top: 40px; }
+.lab-files > .muted { margin: 0 0 14px; max-width: 72ch; }
+.file-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.file-item {
+  display: flex; align-items: center; gap: 14px; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg);
+}
+.file-thumb {
+  width: 48px; height: 48px; flex-shrink: 0; object-fit: contain;
+  border: 1px solid var(--border); border-radius: 4px; background: var(--bg-code);
+}
+.file-thumb-ext {
+  display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px;
+  text-transform: uppercase; color: var(--text-3);
+}
+.file-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+.file-meta code { word-break: break-all; }
+.file-pick { position: relative; overflow: hidden; }
+.file-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.log-block { flex-wrap: wrap; }
+.log-block > :not(.log-ts) { flex: 1 1 100%; min-width: 0; margin: 4px 0 8px; }
+
+.out-json {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-code); overflow-x: auto;
+}
+.json-row { white-space: nowrap; }
+.json-children { padding-left: 16px; border-left: 1px dotted var(--border-strong); margin-left: 5px; }
+.json-toggle {
+  display: inline-flex; align-items: baseline; gap: 2px; padding: 0; border: 0; background: none;
+  font: inherit; color: inherit; cursor: pointer; text-align: left;
+}
+.json-caret { width: 1em; color: var(--text-3); }
+.json-key { color: var(--t-fn); }
+.json-str { color: var(--t-str); white-space: pre-wrap; word-break: break-all; }
+.json-num { color: var(--t-num); }
+.json-lit { color: var(--t-kw); }
+.json-brace, .json-summary { color: var(--text-3); }
+
+.out-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.out-table { border-collapse: collapse; font-size: 12.5px; min-width: 100%; }
+.out-table th, .out-table td { padding: 5px 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.out-table th { background: var(--bg-subtle); color: var(--text-2); font-weight: 600; }
+.out-table tr:last-child td { border-bottom: 0; }
+.out-table td:first-child, .out-table th:first-child { color: var(--text-3); }
+
+.out-file { margin: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.out-file figcaption {
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--bg-subtle);
+  font-family: var(--font-sans); font-size: 13px;
+}
+.out-file img { display: block; max-width: 100%; max-height: 360px; margin: 12px auto; }
+.out-file pre { margin: 0; padding: 10px 12px; max-height: 240px; overflow: auto; font-size: 12px; white-space: pre-wrap; }
+.visual-fallback { margin: 0; font-size: 12px; white-space: pre-wrap; }

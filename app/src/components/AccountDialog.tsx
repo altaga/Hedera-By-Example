@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import type { Strings } from '../lib/i18n'
 import {
   createLocalKey, describePrivateKey, fetchLiveBalance, findAccountByEvmAddress, isAccountId,
-  type BrowserWallet
+  type BrowserWallet, type PracticeAccounts
 } from '../lib/hederaBrowser'
 
 const FAUCET_URL = 'https://portal.hedera.com/faucet'
@@ -13,6 +13,9 @@ interface Props {
   wallet: BrowserWallet
   onChange: (wallet: BrowserWallet) => void
   onForget: () => void
+  practice: PracticeAccounts
+  onCreatePractice: () => Promise<void>
+  onClearPractice: () => void
   onClose: () => void
 }
 
@@ -40,7 +43,61 @@ function CopyValue ({ value, secret, t }: { value: string; secret?: boolean; t: 
   )
 }
 
-export function AccountDialog ({ t, wallet, onChange, onForget, onClose }: Props) {
+function PracticeSection ({ t, wallet, practice, onCreatePractice, onClearPractice }: Pick<Props, 't' | 'wallet' | 'practice' | 'onCreatePractice' | 'onClearPractice'>) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [balances, setBalances] = useState<Record<string, number | null>>({})
+  const accounts = [practice.account1, practice.account2].filter(Boolean) as NonNullable<PracticeAccounts['account1']>[]
+
+  useEffect(() => {
+    accounts.forEach((a) => fetchLiveBalance(a.accountId).then((b) => setBalances((m) => ({ ...m, [a.accountId]: b }))))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practice])
+
+  const create = async () => {
+    setBusy(true)
+    setError(null)
+    try { await onCreatePractice() } catch (e: any) { setError(e?.message || String(e)) } finally { setBusy(false) }
+  }
+
+  return (
+    <section className='dialog-section' data-testid='practice-section'>
+      <h3>{t.practiceTitle}</h3>
+      <p className='muted'>{t.practiceIntro}</p>
+      {accounts.length === 2
+        ? (
+          <>
+            <dl className='kv'>
+              {accounts.map((a, i) => (
+                <div key={a.accountId}>
+                  <dt>ACCOUNT_{i + 1}</dt>
+                  <dd className='kv-inline'>
+                    <a href={`https://hashscan.io/testnet/account/${a.accountId}`} target='_blank' rel='noopener noreferrer'><code>{a.accountId}</code></a>
+                    <code>{balances[a.accountId] != null ? `${balances[a.accountId]!.toFixed(2)} ℏ` : ''}</code>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <button type='button' className='link-btn link-danger' onClick={onClearPractice}>{t.removePractice}</button>
+          </>
+          )
+        : (
+          <button
+            type='button'
+            className='btn btn-secondary btn-sm'
+            data-testid='create-practice'
+            onClick={create}
+            disabled={busy || !isAccountId(wallet.accountId) || !wallet.privateKey}
+          >
+            {busy ? t.creatingPractice : t.createPractice}
+          </button>
+          )}
+      {error && <p className='form-msg is-error' role='alert'>{error}</p>}
+    </section>
+  )
+}
+
+export function AccountDialog ({ t, wallet, onChange, onForget, onClose, practice, onCreatePractice, onClearPractice }: Props) {
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const [accountId, setAccountId] = useState(wallet.accountId)
   const [privateKey, setPrivateKey] = useState('')
@@ -227,6 +284,10 @@ export function AccountDialog ({ t, wallet, onChange, onForget, onClose }: Props
               </button>
             </div>
           </section>
+
+          {isAccountId(wallet.accountId) && (
+            <PracticeSection t={t} wallet={wallet} practice={practice} onCreatePractice={onCreatePractice} onClearPractice={onClearPractice} />
+          )}
 
           <p className='fine-print'>{t.accountStorageNote}</p>
         </div>

@@ -16,6 +16,26 @@ const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, '..', 'course'))
 const OUT = path.join(ROOT, 'src', 'content')
 // Exact lab files, served as static assets for copy / download / full-source view.
 const SOURCE_OUT = path.join(ROOT, 'public', 'source')
+// Solidity compiler (WebAssembly) for labs that compile contracts in the browser.
+const VENDOR_OUT = path.join(ROOT, 'public', 'vendor')
+
+// Non-code files a lab reads (images, CSV, .sol…), found by name in its source.
+function labFiles (moduleDirAbs, source) {
+  const found = []
+  const walk = (dir, rel) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const relPath = rel ? `${rel}/${entry.name}` : entry.name
+      if (entry.isDirectory()) { if (entry.name !== 'node_modules') walk(path.join(dir, entry.name), relPath); continue }
+      if (/\.(js|md)$/.test(entry.name) && !/^hedera_meta\.md$/.test(entry.name)) continue
+      if (/^state\.json/.test(entry.name) || /^reconstructed_/.test(entry.name)) continue
+      // A lab that lists a directory (fs.readdirSync) uses every file in it.
+      const listsDir = rel && source.includes('readdirSync') && source.includes(`./${rel}`)
+      if (source.includes(entry.name) || listsDir) found.push(relPath)
+    }
+  }
+  walk(moduleDirAbs, '')
+  return found
+}
 const LANGS = { en: 'English', es: 'Spanish' }
 
 const SECTION_ALIASES = {
@@ -175,6 +195,11 @@ function build () {
     throw new Error(`Curriculum not found at ${SOURCE}`)
   }
   fs.mkdirSync(OUT, { recursive: true })
+  fs.rmSync(path.join(SOURCE_OUT, 'files'), { recursive: true, force: true })
+  fs.mkdirSync(VENDOR_OUT, { recursive: true })
+  const soljson = path.join(SOURCE, 'node_modules', 'solc', 'soljson.js')
+  if (fs.existsSync(soljson)) fs.copyFileSync(soljson, path.join(VENDOR_OUT, 'soljson.js'))
+  else warnings.push('course/node_modules/solc/soljson.js not found: run `npm ci` in course/ so Solidity labs can compile in the browser')
   for (const lang of Object.keys(LANGS)) {
     fs.rmSync(path.join(SOURCE_OUT, lang), { recursive: true, force: true })
     fs.mkdirSync(path.join(SOURCE_OUT, lang), { recursive: true })
@@ -213,6 +238,12 @@ function build () {
         }
         const lab = parseLab(abs)
         fs.copyFileSync(abs, path.join(SOURCE_OUT, lang, `${slug}.js`))
+        const files = labFiles(path.dirname(abs), fs.readFileSync(abs, 'utf8'))
+        for (const rel of files) {
+          const dest = path.join(SOURCE_OUT, 'files', lang, dir, rel)
+          fs.mkdirSync(path.dirname(dest), { recursive: true })
+          fs.copyFileSync(path.join(path.dirname(abs), rel), dest)
+        }
         const title = lab.title || titleFromFile(file)
         if (lang === 'en') entry.sdk = lab.sdk
         entry[lang] = { title, kicker: lab.kicker }
@@ -224,7 +255,8 @@ function build () {
           refs: lab.refs,
           sdk: lab.sdk,
           segments: lab.segments,
-          lines: lab.lines
+          lines: lab.lines,
+          files: files.map((rel) => ({ name: path.basename(rel), url: `/source/files/${lang}/${dir}/${rel}` }))
         }
       }
       labs.push(entry)

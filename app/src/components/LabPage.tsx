@@ -7,6 +7,7 @@ import {
 } from '../lib/content'
 import type { Strings } from '../lib/i18n'
 import type { TerminalLogLine } from '../lib/hederaBrowser'
+import { OutputLine } from './OutputLine'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source' | 'playground'
@@ -27,6 +28,44 @@ interface Props {
   logs: TerminalLogLine[]
   onRun: () => void
   onClearLogs: () => void
+  needsPractice: boolean
+  onOpenAccount: () => void
+  fileOverrides: Record<string, File>
+  onReplaceFile: (name: string, file: File | null) => void
+}
+
+const isImage = (name: string) => /\.(png|jpe?g|gif|webp|svg)$/i.test(name)
+
+/** The files a lab reads, with a preview and the option to use your own. */
+function LabFiles ({ t, files, overrides, onReplace }: { t: Strings; files: { name: string; url: string }[]; overrides: Record<string, File>; onReplace: (name: string, file: File | null) => void }) {
+  const previewUrl = (f: { name: string; url: string }) => (overrides[f.name] ? URL.createObjectURL(overrides[f.name]) : f.url)
+  return (
+    <section className='lab-files' aria-labelledby='lab-files-title' data-testid='lab-files'>
+      <h2 id='lab-files-title' className='section-title'>{t.filesTitle}</h2>
+      <p className='muted'>{t.filesIntro}</p>
+      <ul className='file-list'>
+        {files.map((f) => (
+          <li key={f.name} className='file-item'>
+            {isImage(f.name)
+              ? <img className='file-thumb' src={previewUrl(f)} alt='' />
+              : <span className='file-thumb file-thumb-ext' aria-hidden='true'>{f.name.split('.').pop()}</span>}
+            <span className='file-meta'>
+              <code>{f.name}</code>
+              <span className='muted'>{overrides[f.name] ? `${t.yourFile}: ${overrides[f.name].name}` : t.courseFile}</span>
+            </span>
+            {overrides[f.name]
+              ? <button type='button' className='btn btn-ghost btn-sm' onClick={() => onReplace(f.name, null)}>{t.revertFile}</button>
+              : (
+                <label className='btn btn-ghost btn-sm file-pick'>
+                  {t.useOwnFile}
+                  <input type='file' accept={isImage(f.name) ? 'image/*' : undefined} onChange={(e) => onReplace(f.name, e.target.files?.[0] || null)} />
+                </label>
+                )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
 }
 
 // ---------- small helpers ----------
@@ -111,7 +150,8 @@ function CommandBlock ({ label, command, copyLabel, copiedLabel }: { label: stri
 export function LabPage (props: Props) {
   const {
     t, lang, entry, body, prev, next, onSelect,
-    code, isEdited, onEditCode, onResetCode, runStatus, logs, onRun, onClearLogs
+    code, isEdited, onEditCode, onResetCode, runStatus, logs, onRun, onClearLogs,
+    needsPractice, onOpenAccount, fileOverrides, onReplaceFile
   } = props
   const { mod, lab } = entry
   const [tab, setTab] = useState<Tab>('walkthrough')
@@ -161,6 +201,13 @@ export function LabPage (props: Props) {
           </div>
         )}
       </dl>
+
+      {needsPractice && (
+        <div className='notice' role='note' data-testid='practice-notice'>
+          <p>{t.practiceNeeded}</p>
+          <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenAccount}>{t.setupPractice}</button>
+        </div>
+      )}
 
       <section className='code-panel' aria-label={t.walkthrough}>
         <div className='code-panel-bar'>
@@ -270,19 +317,13 @@ export function LabPage (props: Props) {
               )}
             </div>
             <div className='output-log' role='log' aria-live='polite'>
-              {logs.map((l) => (
-                <div key={l.id} className={`log-line log-${l.type}`} data-testid='output-line'>
-                  <span className='log-ts'>{l.timestamp}</span>
-                  <span className='log-text'>
-                    {l.text}
-                    {l.url && <> <a href={l.url} target='_blank' rel='noopener noreferrer'>HashScan</a></>}
-                  </span>
-                </div>
-              ))}
+              {logs.map((l) => <OutputLine key={l.id} line={l} t={t} />)}
             </div>
           </div>
         )}
       </section>
+
+      {body.files?.length > 0 && <LabFiles t={t} files={body.files} overrides={fileOverrides} onReplace={onReplaceFile} />}
 
       {body.moment && (
         <aside className='note' aria-label={t.goodToKnow}>

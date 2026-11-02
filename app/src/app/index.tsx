@@ -10,6 +10,7 @@ import {
 } from '../lib/content'
 import {
   EMPTY_WALLET, clearActiveWallet, executeInBrowser, fetchLiveBalance, getActiveWallet, saveActiveWallet,
+  getPracticeAccounts, createPracticeAccounts, clearPracticeAccounts, labUsesPracticeAccounts, type PracticeAccounts,
   type BrowserWallet, type TerminalLogLine
 } from '../lib/hederaBrowser'
 
@@ -45,7 +46,12 @@ export default function HederaByExample () {
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
+  const [practice, setPractice] = useState<PracticeAccounts>({})
+  // Files the learner chose to use instead of the course assets, per lab.
+  const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
+  // Each run gets an id; output from a run that belongs to a lab we left is ignored.
+  const runIdRef = useRef(0)
   const t = STRINGS[lang]
 
   // Restore preferences, route and wallet after the static HTML hydrates.
@@ -57,13 +63,20 @@ export default function HederaByExample () {
 
     const stored = getActiveWallet()
     setWallet(stored)
+    setPractice(getPracticeAccounts())
     if (stored.accountId) {
       fetchLiveBalance(stored.accountId).then((balance) => {
         if (balance != null) setWallet((w) => ({ ...w, balanceHbar: balance }))
       })
     }
 
-    const onHash = () => setRoute(routeFromHash())
+    // Back/forward or an edited URL: leave the current run behind like go() does.
+    const onHash = () => {
+      runIdRef.current++
+      setRoute(routeFromHash())
+      setRunStatus('idle')
+      setLogs([])
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -88,6 +101,7 @@ export default function HederaByExample () {
   const go = useCallback((target: Route) => {
     const hash = target.view === 'lab' ? `#${target.slug}` : '#index'
     if (window.location.hash !== hash) window.history.pushState(null, '', hash)
+    runIdRef.current++
     setRoute(target)
     setMenuOpen(false)
     setRunStatus('idle')
@@ -103,9 +117,20 @@ export default function HederaByExample () {
 
   const run = useCallback(async () => {
     if (!entry || runStatus === 'running') return
+    const runId = ++runIdRef.current
+    const live = () => runIdRef.current === runId
     setRunStatus('running')
     setLogs([])
-    const result = await executeInBrowser(code, wallet, (line) => setLogs((prev) => [...prev, line]))
+    const files: Record<string, Uint8Array> = {}
+    try {
+      await Promise.all((body?.files || []).map(async (f) => {
+        const own = fileOverrides[entry.lab.slug]?.[f.name]
+        const bytes = own ? await own.arrayBuffer() : await (await fetch(f.url)).arrayBuffer()
+        files[f.name] = new Uint8Array(bytes)
+      }))
+    } catch (_) {}
+    const result = await executeInBrowser(code, wallet, (line) => { if (live()) setLogs((prev) => [...prev, line]) }, { practice, files })
+    if (!live()) return
     setRunStatus(result.success ? 'success' : 'error')
     if (wallet.accountId) {
       const balance = await fetchLiveBalance(wallet.accountId)
@@ -117,7 +142,7 @@ export default function HederaByExample () {
         })
       }
     }
-  }, [entry, runStatus, code, wallet])
+  }, [entry, body, runStatus, code, wallet, practice, fileOverrides])
 
   // Keyboard: "/" search, ←/→ previous/next lab, Ctrl/Cmd+Enter run.
   useEffect(() => {
@@ -205,6 +230,15 @@ export default function HederaByExample () {
                 logs={logs}
                 onRun={run}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
+                needsPractice={labUsesPracticeAccounts(code) && !(practice.account1 && practice.account2)}
+                onOpenAccount={() => setAccountOpen(true)}
+                fileOverrides={fileOverrides[entry.lab.slug] || {}}
+                onReplaceFile={(name, file) => setFileOverrides((m) => {
+                  const forLab = { ...(m[entry.lab.slug] || {}) }
+                  if (file) forLab[name] = file
+                  else delete forLab[name]
+                  return { ...m, [entry.lab.slug]: forLab }
+                })}
               />
               )
             : <CourseIndex t={t} lang={lang} modules={modules} onSelect={selectLab} />}
@@ -217,6 +251,9 @@ export default function HederaByExample () {
           wallet={wallet}
           onChange={updateWallet}
           onForget={() => { clearActiveWallet(); setWallet(EMPTY_WALLET) }}
+          practice={practice}
+          onCreatePractice={async () => setPractice(await createPracticeAccounts(wallet))}
+          onClearPractice={() => { clearPracticeAccounts(); setPractice({}) }}
           onClose={() => setAccountOpen(false)}
         />
       )}

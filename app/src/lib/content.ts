@@ -37,6 +37,8 @@ export interface LabBody {
   sdk: string[]
   segments: Segment[]
   lines: number
+  /** Non-code files the lab reads (course assets, .sol sources). */
+  files: { name: string; url: string }[]
 }
 
 export interface LabEntry {
