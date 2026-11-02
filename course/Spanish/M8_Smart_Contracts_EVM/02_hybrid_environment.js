@@ -74,7 +74,10 @@ const executeContractWithEthers = async (evmAddress, privateKey, value) => {
   // Instanciación del contrato estándar
   const contract = new ethers.Contract(evmAddress, ABI, wallet)
 
-  const tx = await contract.set(value)
+  // Pide al relay el precio de gas actual (en weibars) en vez de dejar que ethers estime
+  // comisiones EIP-1559 desde el historial, que el relay no siempre reporta en la misma escala.
+  const gasPrice = BigInt(await provider.send('eth_gasPrice', []))
+  const tx = await contract.set(value, { gasPrice })
   console.log(`📡 [📊 REGISTRO] Hash de Ethers: ${tx.hash}`)
 
   const receipt = await tx.wait()

@@ -71,7 +71,10 @@ const executeContractWithEthers = async (evmAddress, privateKey, value) => {
   const contract = new ethers.Contract(evmAddress, ABI, wallet)
 
   // Execute state-change
-  const tx = await contract.set(value)
+  // Ask the relay for the current gas price (in weibars) instead of letting ethers estimate
+  // EIP-1559 fees from fee history, which the relay does not always report on the same scale.
+  const gasPrice = BigInt(await provider.send('eth_gasPrice', []))
+  const tx = await contract.set(value, { gasPrice })
   console.log(`[📊 LOG] Ethers Transaction Hash: ${tx.hash}`)
 
   const receipt = await tx.wait()
