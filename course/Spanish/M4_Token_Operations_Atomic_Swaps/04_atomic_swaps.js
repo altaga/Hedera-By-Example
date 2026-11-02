@@ -35,7 +35,7 @@
  */
 
 import { AccountId, PrivateKey, TransferTransaction, TokenId, NftId, Hbar } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, findOwnedSerial } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Intercambio Atómico (HBAR <-> NFT) ---\n')
@@ -54,7 +54,13 @@ const main = async () => {
   const userPrivKey = PrivateKey.fromString(userKey)
 
   try {
-    const serial = 2
+    // El menor serial que el operador todavía tiene (el #1 puede haberse enviado en una ejecución anterior).
+    const serial = await findOwnedSerial(nftTokenId, operatorId)
+    if (!serial) {
+      console.error(`[❌ FALLO] ${operatorId} no tiene ningún serial de ${nftTokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
+      process.exitCode = 1
+      return
+    }
     console.log('[⚙️ PROCESO] Iniciando Intercambio Atómico Peer-to-Peer:')
     console.log(`   - Operador envía NFT Serial #${serial} -> Usuario`)
     console.log('   - Usuario envía 1 HBAR -> Operador')

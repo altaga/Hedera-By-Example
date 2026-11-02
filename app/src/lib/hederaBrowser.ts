@@ -574,6 +574,14 @@ export async function executeInBrowser (
       await ensureFunded(c, account, minHbar / 2)
       return { privateKey: key, accountId: account, evmAddress }
     }
+    /** Lowest serial of tokenId that accountId still holds (see M99 findOwnedSerial). */
+    const findOwnedSerial = async (tokenId: string, accountId: string) => {
+      const data = await waitForMirror(async () => {
+        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}/nfts?token.id=${tokenId}&order=asc&limit=1`)
+        return res.ok ? res.json() : null
+      }, { timeoutMs: 10_000 })
+      return data?.nfts?.[0]?.serial_number ?? null
+    }
     const parseKey = (value: string) => parsePrivateKey(hedera, value)
 
     const pathShim: any = {
@@ -687,6 +695,7 @@ export async function executeInBrowser (
       getAccountEvmAddress,
       ensureFunded,
       reuseToken,
+      findOwnedSerial,
       exitIfStuck: (ms: number, reason = 'the expected network events') => { stuck = { ms, reason } },
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,

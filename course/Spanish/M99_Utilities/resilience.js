@@ -200,3 +200,20 @@ export const reuseToken = async (stateKey, create, { check = () => true } = {}) 
   updateState(stateKey, `${tokenId}@${operator}`)
   return tokenId
 }
+
+/**
+ * Un serial de `tokenId` que `accountId` todavía tiene (el menor), o null.
+ * Los labs que mueven un NFT lo usan en vez de un serial fijo, así siguen
+ * funcionando aunque una ejecución anterior ya haya enviado el serial #1.
+ *
+ * @param {string} tokenId
+ * @param {string} accountId
+ * @returns {Promise<number|null>}
+ */
+export const findOwnedSerial = async (tokenId, accountId) => {
+  const data = await waitForMirror(async () => {
+    const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}/nfts?token.id=${tokenId}&order=asc&limit=1`)
+    return res.ok ? res.json() : null
+  }, { timeoutMs: 10_000 })
+  return data?.nfts?.[0]?.serial_number ?? null
+}
