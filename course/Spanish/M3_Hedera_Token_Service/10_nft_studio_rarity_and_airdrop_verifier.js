@@ -60,7 +60,9 @@ import {
   getClient,
   getHashscanUrl,
   getMirrorNodeBaseUrl,
-  updateState, reuseToken } from '../M99_Utilities/index.js'
+  updateState,
+  reuseToken
+} from '../M99_Utilities/index.js'
 
 /**
  * 1. Motor Validador de Esquema HIP-412

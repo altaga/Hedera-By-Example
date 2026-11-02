@@ -69,7 +69,8 @@ export async function runE2ELiveBrowserTest() {
     executablePath: chromePath,
     headless: 'new',
     defaultViewport: { width: 1440, height: 900 },
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // E2E_CHROME_ARGS adds flags for restricted networks, e.g. "--proxy-server=http://host:port --ignore-certificate-errors".
+    args: ['--no-sandbox', '--disable-setuid-sandbox', ...(process.env.E2E_CHROME_ARGS || '').split(' ').filter(Boolean)]
   })
 
   const page = await browser.newPage()
@@ -143,7 +144,14 @@ export async function runE2ELiveBrowserTest() {
     await expectOn('m15-04-passkeys-webauthn-p256-authenticator', '[data-testid=simulated-note]', 'Simulated note')
     await expectOn('m15-04-passkeys-webauthn-p256-authenticator', '[data-testid=passkey-demo]', 'Passkey demo')
     await expectOn('m06-04-economic-hcs1', '[data-testid=lab-files]', 'Lab files')
-    await expectOn('m09-06-hcs10-u2a-public', '[data-testid=node-only-notice]', 'Node-only notice')
+    // Labs built on standards-sdk used to be Node-only; they run in the browser now.
+    await page.goto(`${base}/#m09-06-hcs10-u2a-public`, { waitUntil: 'networkidle2', timeout: 45000 })
+    await page.waitForSelector('[data-testid=run-button]', { timeout: 15000 })
+    if (await page.$('[data-testid=node-only-notice]')) throw new Error('m09-06-hcs10-u2a-public still shows the Node-only notice')
+    console.log('  ✓ No Node-only notice on m09-06-hcs10-u2a-public (runs in the browser)')
+    await page.goto(`${base}/#resources`, { waitUntil: 'networkidle2', timeout: 45000 })
+    await page.waitForSelector('[data-testid=resources-panel]', { timeout: 15000 }).catch(() => { throw new Error('Resources panel missing') })
+    console.log('  ✓ Resources panel renders')
 
     // 6. A visual renders from a local-only lab (no transactions)
     console.log('  [STEP 6] Running m01-01-consensus-and-abft (hashgraph DAG)...')
