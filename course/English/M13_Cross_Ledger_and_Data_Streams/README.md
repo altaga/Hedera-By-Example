@@ -78,7 +78,7 @@ To prevent state bloat, Hedera decouples high-speed transaction ordering from te
 ---
 
 ## 📚 Official References
-- [HIP-1535: Cross-Ledger Protocol (CLPR)](https://github.com/hashgraph/hedera-improvement-proposals/pull/1535)
+- [HIP-1535: Cross-Ledger Protocol (CLPR), draft](https://hips.hedera.com/hip/hip-1535)
 - [HIP-1068: Native Delegated Fee Allowances](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1068.md)
 - [HIP-1056: Unified Block Streams](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1056.md)
 - [HIP-1081: Block Node Architecture](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1081.md)

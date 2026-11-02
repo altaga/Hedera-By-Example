@@ -18,6 +18,7 @@
  * Hedera guarantees atomic final settlement in 2.5 seconds for fractions of a cent.
  *
  * [ OFFICIAL REFERENCES ]
+ * - https://hips.hedera.com/hip/hip-1535
  * - https://hips.hedera.com/hip/hip-1068
  * - https://eips.ethereum.org/EIPS/eip-7683
  *

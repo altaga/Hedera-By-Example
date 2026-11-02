@@ -18,6 +18,7 @@
  * liquidación atómica final en 2.5 segundos con costo de centavos.
  *
  * [ REFERENCIAS OFICIALES ]
+ * - https://hips.hedera.com/hip/hip-1535
  * - https://hips.hedera.com/hip/hip-1068
  * - https://eips.ethereum.org/EIPS/eip-7683
  *

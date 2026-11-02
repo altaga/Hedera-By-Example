@@ -78,7 +78,7 @@ Para evitar la saturación de los validadores, Hedera desacopla el ordenamiento 
 ---
 
 ## 📚 Referencias Oficiales
-- [HIP-1535: Cross-Ledger Protocol (CLPR)](https://github.com/hashgraph/hedera-improvement-proposals/pull/1535)
+- [HIP-1535: Cross-Ledger Protocol (CLPR), borrador](https://hips.hedera.com/hip/hip-1535)
 - [HIP-1068: Asignaciones Nativas de Tarifas Delegadas](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1068.md)
 - [HIP-1056: Flujos de Bloques Unificados](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1056.md)
 - [HIP-1081: Arquitectura de Block Nodes](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1081.md)

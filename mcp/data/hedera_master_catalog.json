@@ -311,6 +311,23 @@
       },
       "antiHallucinationNotes": "The HBAR Foundation funds projects building directly on Hedera; applications require clear milestones, architectural diagrams, and open-source commitments.",
       "searchTriggers": ["hbar foundation", "grants", "funding hedera", "accelerator", "hackathon prizes", "venture"]
+    },
+    {
+      "id": "hip-1535-clpr",
+      "name": "Cross-Ledger Protocol (CLPR, HIP-1535)",
+      "category": "DeFi & Intent Settlement",
+      "layer": "Protocol (draft HIP)",
+      "audience": ["developer", "architect", "founder"],
+      "weight": 0.8,
+      "summary": "Draft HIP for a chain-agnostic, bridgeless cross-ledger messaging standard: state proofs instead of multisig bridges, message channels, pluggable proof verifiers, permissionless relaying and bonded connectors, integrated with the Hedera Consensus Service.",
+      "businessValue": "Moves value and messages between ledgers without bridge honeypots, so the trust assumption is the source ledger's consensus, not a bridge operator.",
+      "technicalStack": "HIP-1535 (draft), TSS / block stream state proofs (HIP-1056, HIP-1081), HCS",
+      "urls": {
+        "hip": "https://hips.hedera.com/hip/hip-1535",
+        "lab": "course/English/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js"
+      },
+      "antiHallucinationNotes": "HIP-1535 is a draft: there is no CLPR SDK class or network endpoint yet. Course labs simulate the state proof and only anchor real data on HCS. Do not invent CLPR APIs or claim it is live on mainnet.",
+      "searchTriggers": ["clpr", "cross-ledger", "cross chain", "bridge", "bridgeless", "state proof", "interoperability", "hip-1535", "relayer", "connector"]
     }
   ]
 }
