@@ -31,7 +31,7 @@ import {
   TopicMessageQuery,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 class HcsNode {
   constructor (name, client, topicId) {
@@ -73,6 +73,8 @@ class HcsNode {
 }
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Latencia de Consenso (RTT) ---\n')
 
   const { client } = getClient()
@@ -80,6 +82,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta el Lab 01 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -134,7 +137,7 @@ const main = async () => {
         if (benchmarkResults.length === TOTAL_CYCLES) {
           renderFinalReport(benchmarkResults)
           console.log('\n--- SESIÓN COMPLETADA ---')
-          process.exit(0)
+          process.exit()
         }
       }
     }, 100)
@@ -181,14 +184,15 @@ const main = async () => {
     console.log('esperar la confirmación definitiva del ledger sin fricción.')
   } catch (error) {
     console.error('\n[❌ FALLO] El Benchmark falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    // El proceso se mantiene vivo por los listeners hasta el reporte final
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

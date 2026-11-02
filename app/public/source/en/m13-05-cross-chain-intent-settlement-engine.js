@@ -40,7 +40,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 /**
  * Queries account balance in HBAR using Hedera Mirror Node REST API.
@@ -84,7 +84,6 @@ const main = async () => {
     const traderCreateTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(traderKey.publicKey)
       .setInitialBalance(new Hbar(0)) // Strict 0.0000 HBAR gasless Trader!
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const traderReceipt = await traderCreateTx.getReceipt(client)
@@ -102,7 +101,6 @@ const main = async () => {
     const settlementAllowance = new Hbar(2)
     await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(solverAccountId, relayerAccountId, settlementAllowance)
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     console.log(`[✅ SUCCESS] Solver granted ${settlementAllowance.toString()} allowance to Settlement Relayer (${relayerAccountId.toString()})!`)
 
@@ -133,7 +131,6 @@ const main = async () => {
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('INTENT:CLPR:ORDERBOOK')
       .setSubmitKey(traderKey.publicKey)
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
@@ -143,7 +140,6 @@ const main = async () => {
       .setTransactionId(TransactionId.generate(solverAccountId))
       .setTopicId(topicId)
       .setMessage(JSON.stringify(crossChainIntent))
-      .setMaxTransactionFee(new Hbar(2))
       .freezeWith(client)
 
     // Co-signed by 0-HBAR Trader (authorizes Topic submitKey) and Solver (pays network fee)
@@ -182,14 +178,15 @@ const main = async () => {
 
     // 6. Live Delegated Allowance Settlement on Hedera Testnet
     console.log('\n[⚙️ PROCESS] Relayer settling Hedera leg via Approved Allowance (`addApprovedHbarTransfer`)...')
-    const relayerClient = Client.forTestnet()
+    // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
+    await ensureFunded(client, relayerAccountId, 5)
+    const relayerClient = createClient()
     relayerClient.setOperator(relayerAccountId, relayerKey)
 
     const settlementTx = await new TransferTransaction()
       .addApprovedHbarTransfer(solverAccountId, new Hbar(-0.25)) // Pulled from Solver's approved allowance
       .addHbarTransfer(traderId, new Hbar(0.25)) // Credited to Trader on Hedera
       .setTransactionMemo(`CLPR:RESOLVE:${crossChainIntent.intentId}`)
-      .setMaxTransactionFee(new Hbar(1))
       .execute(relayerClient)
     await settlementTx.getReceipt(relayerClient)
     relayerClient.close()
@@ -239,10 +236,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

@@ -38,13 +38,17 @@ const main = async () => {
 
   // Load multisig context from shared state
   const multisigId = getState('MULTISIG_ACCOUNT_ID')
-  const aliceKey = PrivateKey.fromString(getState('MULTISIG_KEY_ALICE'))
-  const bobKey = PrivateKey.fromString(getState('MULTISIG_KEY_BOB'))
+  const aliceKeyStr = getState('MULTISIG_KEY_ALICE')
+  const bobKeyStr = getState('MULTISIG_KEY_BOB')
 
-  if (!multisigId) {
+  if (!multisigId || !aliceKeyStr || !bobKeyStr) {
     console.error('[❌ FAILED] Multisig Account ID not found. Run Lab 01 first.')
+    process.exitCode = 1
     return
   }
+
+  const aliceKey = PrivateKey.fromString(aliceKeyStr)
+  const bobKey = PrivateKey.fromString(bobKeyStr)
 
   console.log(`[ℹ️ INFO] Testing Threshold Policy for Account: ${multisigId}`)
 
@@ -96,14 +100,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Unexpected Authority Failure:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

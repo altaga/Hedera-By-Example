@@ -46,6 +46,7 @@ const main = async () => {
 
   if (!hfsFileId) {
     console.error('[❌ FAILED] Missing HFS_FILE_ID in configuration. Run Lab 01/02 first.')
+    process.exitCode = 1
     return
   }
 
@@ -117,14 +118,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Hashinal Minting Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

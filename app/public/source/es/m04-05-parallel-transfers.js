@@ -69,6 +69,7 @@ const main = async () => {
 
   if (!targetId) {
     console.error('[❌ FALLO] Falta ACCOUNT_1_ID en el archivo .env.')
+    process.exitCode = 1
     return
   }
 
@@ -108,14 +109,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] El Benchmark paralelizable falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

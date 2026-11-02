@@ -32,9 +32,11 @@
 
 import { Client, PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getClient, getState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   const sessionStart = new Date(Date.now() - 10000)
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Orquestación U2A Reactiva (HCS-10) ---\n')
 
@@ -48,12 +50,13 @@ const main = async () => {
 
   if (!agentId || !operatorId) {
     console.error('[❌ FALLO] Faltan identidades para la orquestación. Ejecuta Lab 04 primero.')
+    process.exitCode = 1
     return
   }
 
   // --- COMPONENTE: SERVIDOR DEL AGENTE (Escucha Reactiva) ---
   const startAgent = async () => {
-    const hederaClient = Client.forTestnet().setOperator(agentId, agentKeyRaw)
+    const hederaClient = createClient().setOperator(agentId, agentKeyRaw)
     const hcs10Agent = new HCS10Client({
       network: 'testnet',
       operatorId: agentId,
@@ -68,7 +71,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => console.error(` [❌ FALLO] Mirror Node Agente: ${err.message}`),
+        (err) => { console.error(` [❌ FALLO] Mirror Node Agente: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -126,7 +129,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => console.error(` [❌ FALLO] Mirror Node Usuario: ${err.message}`),
+        (err) => { console.error(` [❌ FALLO] Mirror Node Usuario: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -160,7 +163,7 @@ const main = async () => {
                   console.log('paralela reactiva. En vez de sondear una API, ambas partes escuchan el ledger')
                   console.log('y solo avanzan cuando se cumplen los criterios esperados.')
                   console.log('\n--- SESIÓN COMPLETADA ---')
-                  setTimeout(() => process.exit(0), 1000)
+                  setTimeout(() => process.exit(), 1000)
                 }
               }
             }
@@ -177,5 +180,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => console.error('[❌ FALLO] Fallo en la orquestación:', err.message))
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

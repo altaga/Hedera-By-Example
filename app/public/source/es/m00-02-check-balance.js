@@ -31,7 +31,7 @@
 import {
   MirrorNodeAccountBalanceQuery
 } from '@hiero-ledger/sdk'
-import { getClient, updateEnv } from '../M99_Utilities/index.js'
+import { getClient, updateEnv, loadEnv, createClient, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 // --- CONFIGURACIÓN MANUAL ---
 // Pega aquí el Account ID (0.0.X) que encontraste en HashScan.
@@ -41,25 +41,38 @@ const MANUAL_ACCOUNT_ID = '0.0.XXXXXX'
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Sincronización de Identidad On-Chain ---\n')
 
-  const { client } = getClient()
+  // Este lab corre antes de que exista OPERATOR_ID, así que no puede usar getClient() (que lo exige).
+  loadEnv()
+  const operatorKey = process.env.OPERATOR_PRIVATE_KEY
   const evmAddress = process.env.OPERATOR_EVM_ADDRESS
 
-  if (!evmAddress) {
-    console.error('[❌ FALLO] Falta OPERATOR_EVM_ADDRESS en el archivo .env. Ejecuta el Lab 01 primero.')
+  if (!operatorKey) {
+    console.error('[❌ FALLO] Falta OPERATOR_PRIVATE_KEY en el archivo .env. Ejecuta el Lab 01 primero.')
     process.exit(1)
   }
 
-  // Si no se reemplazó el marcador, usa OPERATOR_ID del archivo .env.
+  // Account ID: la constante de arriba, luego OPERATOR_ID del .env y, si no, la
+  // cuenta que el faucet creó para OPERATOR_EVM_ADDRESS (consultada en el Mirror Node).
   const isValidId = (id) => /^\d+\.\d+\.\d+$/.test(id || '')
-  const accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
+  let accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
+  if (!isValidId(accountId) && evmAddress) {
+    console.log(`[⚙️ PROCESO] Buscando la cuenta creada para ${evmAddress}...`)
+    accountId = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`)
+      return res.ok ? (await res.json()).account : null
+    }, { timeoutMs: 10_000 })
+  }
 
   if (!isValidId(accountId)) {
     console.log(`[ℹ️ INFO] Verificando Cuenta: ${evmAddress}`)
     console.log(`[📊 REGISTRO] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
     console.error('\n[❌ FALLO] MANUAL_ACCOUNT_ID no está definido y falta OPERATOR_ID en el archivo .env.')
+    process.exitCode = 1
     console.error('Pega el ID 0.0.X en la constante MANUAL_ACCOUNT_ID al inicio de este archivo.')
     process.exit(1)
   }
+
+  const client = createClient(accountId, operatorKey)
 
   try {
     const inputId = accountId
@@ -93,10 +106,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error Fatal:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -39,24 +39,29 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: NFT Base Layer Royalties ---\n')
 
-  const { operatorId } = getClient()
+  const { client: operatorClient, operatorId } = getClient()
 
   // Use Account 1 as the Artist & Payer for this simulation
   const account1Id = process.env.ACCOUNT_1_ID
   const account1Key = process.env.ACCOUNT_1_PRIVATE_KEY
   const account1PrivateKey = PrivateKey.fromString(account1Key)
 
-  const client = Client.forTestnet().setOperator(account1Id, account1PrivateKey)
+  const client = createClient().setOperator(account1Id, account1PrivateKey)
 
   const account2Id = process.env.ACCOUNT_2_ID
   const account2PrivateKey = PrivateKey.fromString(process.env.ACCOUNT_2_PRIVATE_KEY)
 
   try {
+    // Account 1 pays for the token creation (~30 ℏ with custom fees) and Account 2
+    // buys an NFT. Top them up from the operator if needed so the lab always runs.
+    await ensureFunded(operatorClient, account1Id, 40)
+    await ensureFunded(operatorClient, account2Id, 5)
+
     console.log(`[ℹ️ INFO] Using ${account1Id} as Artist. Collector: ${operatorId}`)
     console.log('[⚙️ PROCESS] Defining Artist Royalty (10% + 0.01 HBAR Fallback)...')
 
@@ -141,14 +146,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Royalty Demonstration Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

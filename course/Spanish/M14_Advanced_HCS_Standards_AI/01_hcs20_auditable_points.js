@@ -145,7 +145,6 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Creando tópico dedicado para el libro de inscripciones HCS-20...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-20:AUDITABLE:POINTS:V1')
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -161,7 +160,6 @@ const main = async () => {
     const deployTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(deployMsg))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const deployReceipt = await deployTx.getReceipt(client)
     stateEngine.processMessage(deployMsg, deployReceipt.topicSequenceNumber)
@@ -173,7 +171,6 @@ const main = async () => {
     const mintTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(mintMsg))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const mintReceipt = await mintTx.getReceipt(client)
     stateEngine.processMessage(mintMsg, mintReceipt.topicSequenceNumber)
@@ -185,7 +182,6 @@ const main = async () => {
     const transferTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(transferMsg))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const transferReceipt = await transferTx.getReceipt(client)
     stateEngine.processMessage(transferMsg, transferReceipt.topicSequenceNumber)
@@ -221,10 +217,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

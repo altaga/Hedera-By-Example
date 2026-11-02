@@ -54,6 +54,7 @@ const main = async () => {
 
   if (!targetAgentTopicId) {
     console.error('[❌ FALLO] No se encontró el ID del Agente HCS-1 en el estado. Ejecuta Lab 01 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -106,17 +107,18 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] El registro HCS-2 falló:', error.message)
+    process.exitCode = 1
     client.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }
 
 export { buildHcs2RegistryMessage }

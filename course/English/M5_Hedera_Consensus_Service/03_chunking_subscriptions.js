@@ -31,7 +31,7 @@ import {
   TopicMessageQuery,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Publisher: Automatically splits large messages underneath the hood.
@@ -63,7 +63,7 @@ const subscribeToTopic = (client, topicId) => {
     .setStartTime(0) // 0 = Get ALL historical messages first, then listen live
     .subscribe(
       client,
-      (error) => console.error('[❌ FAILED] Subscription Error:', error),
+      (error) => { console.error('[❌ FAILED] Subscription Error:', error); process.exit(1) },
       (message) => {
         const payload = Buffer.from(message.contents).toString()
         const timestamp = message.consensusTimestamp.toDate().toLocaleTimeString()
@@ -78,6 +78,8 @@ const subscribeToTopic = (client, topicId) => {
 }
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: HCS Chunking & Subscriptions ---\n')
 
   const { client } = getClient()
@@ -85,6 +87,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -107,7 +110,7 @@ const main = async () => {
       console.log('\n[ℹ️ INFO] Closing subscription and exiting demo.')
       client.close()
       console.log('\n--- SESSION COMPLETE ---')
-      process.exit(0)
+      process.exit()
     }, 10000)
 
     console.log('\n💡 KEY CONCEPT:')
@@ -117,14 +120,17 @@ const main = async () => {
     console.log('consensus.')
   } catch (error) {
     console.error('\n[❌ FAILED] HCS Operation Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }
 
 export { publishLargePayload, subscribeToTopic }

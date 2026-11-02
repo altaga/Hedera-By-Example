@@ -35,7 +35,7 @@
 
 import http from 'http'
 import { EventEmitter } from 'events'
-import { getClient, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Bus de Eventos Reactivo Enterprise del Ledger.
@@ -109,6 +109,8 @@ class LedgerEventBus extends EventEmitter {
 }
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'a que termine el servidor de la demo')
   console.log('--- INICIO DEL LABORATORIO: Bus de Eventos WebSocket en Tiempo Real ---\n')
 
   const { client, operatorId } = getClient()
@@ -189,10 +191,18 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error(`\n[❌ ERROR] Falló el Bus de Eventos: ${error.message}`)
+    process.exitCode = 1
     await eventBus.close()
     if (client) client.close()
     process.exit(1)
   }
 }
 
-main()
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
+}

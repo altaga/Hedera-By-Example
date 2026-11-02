@@ -262,7 +262,18 @@ export async function executeInBrowser (
 
   try {
     const hedera = await import('@hiero-ledger/sdk')
-    const client = hedera.Client.forTestnet()
+    // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
+    // (only the real fee is charged) so labs survive fee-schedule changes.
+    const createClient = (accountId?: string, privateKey?: any) => {
+      const c = hedera.Client.forTestnet()
+      c.setDefaultMaxTransactionFee(new hedera.Hbar(100))
+      c.setDefaultMaxQueryPayment(new hedera.Hbar(10))
+      if (accountId && privateKey) {
+        c.setOperator(hedera.AccountId.fromString(accountId), typeof privateKey === 'string' ? parsePrivateKey(hedera, privateKey) : privateKey)
+      }
+      return c
+    }
+    const client = createClient()
 
     if (isAccountId(wallet.accountId) && wallet.privateKey) {
       try {
@@ -317,6 +328,68 @@ export async function executeInBrowser (
     const dotenv = { config: () => ({ parsed: {} }) }
     const getMirrorNodeBaseUrl = () => 'https://testnet.mirrornode.hedera.com'
 
+    // Browser versions of course/*/M99_Utilities/resilience.js.
+    const MAX_GAS = 15_000_000
+    const withGasRetry = async (run: (gas: number) => Promise<any>, { gas = 300_000, maxGas = MAX_GAS } = {}) => {
+      let limit = Math.min(gas, maxGas)
+      for (;;) {
+        try {
+          return await run(limit)
+        } catch (error: any) {
+          const insufficient = String(error?.status ?? '') === 'INSUFFICIENT_GAS' || /INSUFFICIENT_GAS/.test(String(error?.message ?? error))
+          if (!insufficient || limit >= maxGas) throw error
+          limit = Math.min(limit * 2, maxGas)
+          pushLog('info', `Not enough gas; retrying with ${limit.toLocaleString('en-US')} gas...`)
+        }
+      }
+    }
+    const executeWithGas = (build: (gas: number) => any, c: any, options?: { gas?: number, maxGas?: number }) =>
+      withGasRetry(async (gas: number) => {
+        const tx = await build(gas)
+        const response = await tx.execute(c)
+        await response.getReceipt(c)
+        return response
+      }, options)
+    const waitForMirror = async (check: () => Promise<any>, { timeoutMs = 30_000, intervalMs = 2_000 } = {}) => {
+      const deadline = Date.now() + timeoutMs
+      for (;;) {
+        const value = await check().catch(() => null)
+        if (value) return value
+        if (Date.now() >= deadline) return null
+        await sleep(intervalMs)
+      }
+    }
+    const getAccountEvmAddress = async (accountId: string) => {
+      const data = await waitForMirror(async () => {
+        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+        return res.ok ? res.json() : null
+      })
+      return data?.evm_address || '0x' + hedera.AccountId.fromString(accountId).toEvmAddress()
+    }
+    const ensureFunded = async (c: any, accountId: string, minHbar: number) => {
+      const account = await waitForMirror(async () => {
+        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+        return res.ok ? res.json() : null
+      })
+      const current = (account?.balance?.balance ?? 0) / 1e8
+      if (current >= minHbar) return
+      const topUp = Math.ceil(minHbar - current + 1)
+      const tx = await new hedera.TransferTransaction()
+        .addHbarTransfer(c.operatorAccountId, new hedera.Hbar(-topUp))
+        .addHbarTransfer(accountId, new hedera.Hbar(topUp))
+        .execute(c)
+      await tx.getReceipt(c)
+    }
+    const nodeOnly = (name: string) => () => { throw new NodeOnlyError(name) }
+    const courseHelpers: Record<string, unknown> = {
+      loadEnv: () => {},
+      getJsonRpcUrl: () => 'https://testnet.hashio.io/api',
+      getJsonRpcSigner: nodeOnly('getJsonRpcSigner (JSON-RPC relay signing)'),
+      AgentCommunicationHandler: class { constructor () { throw new NodeOnlyError('AgentCommunicationHandler') } },
+      createClient, withGasRetry, executeWithGas, waitForMirror, exitIfStuck: () => {}, getAccountEvmAddress, ensureFunded, MAX_GAS,
+      maxTransactionFeeHbar: () => 100
+    }
+
     const pathShim = {
       join: (...args: string[]) => args.filter(Boolean).join('/'),
       resolve: (...args: string[]) => args.filter(Boolean).join('/'),
@@ -367,6 +440,7 @@ export async function executeInBrowser (
       'client', 'getClient', 'getHashscanUrl', 'getMirrorNodeBaseUrl',
       'updateState', 'updateEnv', 'getState', 'sleep', 'dotenv',
       'crypto', 'path', 'EventEmitter', 'wallet', 'console', 'process',
+      ...Object.keys(courseHelpers),
       'return (async () => {\n' + sanitized + '\n})()'
     )
 
@@ -374,11 +448,17 @@ export async function executeInBrowser (
       ...scopeValues,
       client, getClient, hashscanUrl, getMirrorNodeBaseUrl,
       updateState, updateEnv, getState, sleep, dotenv,
-      makeCryptoShim(), pathShim, EventEmitterShim, wallet, customConsole, mockProcess
+      makeCryptoShim(), pathShim, EventEmitterShim, wallet, customConsole, mockProcess,
+      ...Object.values(courseHelpers)
     )
 
     try { client.close() } catch (_) {}
     const durationMs = Date.now() - startTime
+    // Labs flag handled failures with process.exitCode = 1 instead of throwing.
+    if ((mockProcess as any).exitCode) {
+      pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
+      return { success: false, durationMs }
+    }
     pushLog('system', `Finished in ${(durationMs / 1000).toFixed(2)} s`)
     return { success: true, durationMs }
   } catch (err: any) {

@@ -89,12 +89,12 @@ const gossipSimulation = async () => {
 
 // Start the simulation if run directly
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  gossipSimulation().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  gossipSimulation()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }
 
 export { createEvent, generateEventHash }

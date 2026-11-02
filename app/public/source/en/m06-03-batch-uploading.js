@@ -39,6 +39,7 @@ const main = async () => {
 
   if (!fileId) {
     console.error('[❌ FAILED] Missing HFS_FILE_ID in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -100,14 +101,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] HFS Batch Operation Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

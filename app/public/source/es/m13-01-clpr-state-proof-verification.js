@@ -139,7 +139,6 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Inicializando tópico de anclaje EN VIVO para eventos cross-ledger...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('CLPR:Cross-Ledger:StateProof:HIP-1535')
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -160,7 +159,6 @@ const main = async () => {
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(crossLedgerPayload))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
@@ -229,10 +227,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

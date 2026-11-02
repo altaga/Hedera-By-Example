@@ -25,8 +25,8 @@
  * ============================================================================
  */
 
-import { AccountId, PrivateKey, AccountUpdateTransaction } from '@hiero-ledger/sdk'
-import { getClient, updateEnv } from '../M99_Utilities/index.js'
+import { AccountId, PrivateKey, AccountUpdateTransaction, AccountInfoQuery } from '@hiero-ledger/sdk'
+import { getClient } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Account Key Rotation & Sync ---\n')
@@ -37,6 +37,7 @@ const main = async () => {
 
   if (!targetId || !targetKey) {
     console.error('[❌ FAILED] Missing required credentials in .env (ACCOUNT_1).')
+    process.exitCode = 1
     return
   }
 
@@ -66,13 +67,26 @@ const main = async () => {
 
     console.log(`\n[✅ SUCCESS] On-Chain Success! Key Rotation Status: ${receipt.status.toString()}`)
 
-    // 4. AUTO-SYNC: Update the .env file using the project-standard strategy
-    console.log('[⚙️ PROCESS] Synchronizing .env with new account credentials...')
-    updateEnv('ACCOUNT_1_PRIVATE_KEY', newKeyStr)
-    updateEnv('ACCOUNT_1_EVM_ADDRESS', '0x' + newPublicKey.toEvmAddress())
+    // 4. Verify on-chain that the account now answers to the new key
+    const info = await new AccountInfoQuery().setAccountId(targetId).execute(client)
+    if (info.key.toString() !== newPublicKey.toString()) {
+      throw new Error('The network still reports the old key after the rotation.')
+    }
+    console.log(`[✅ SUCCESS] Network confirms the new key: ${newPublicKey.toStringRaw().slice(0, 20)}...`)
 
-    console.log('[✅ SUCCESS] Environment successfully synchronized.')
-    console.log(`[📊 LOG] NEW PRIVATE KEY: ${newKeyStr}`)
+    // 5. Rotate back so ACCOUNT_1 keeps matching ACCOUNT_1_PRIVATE_KEY in your .env.
+    //    The same dual-signature rule applies: current key (new) + incoming key (old).
+    //    In production you would keep the new key and store it in your secrets manager.
+    console.log('[⚙️ PROCESS] Rotating back to the original key so this lab can be re-run...')
+    const restoreTx = await new AccountUpdateTransaction()
+      .setAccountId(AccountId.fromString(targetId))
+      .setKey(oldPrivateKey.publicKey)
+      .freezeWith(client)
+    await restoreTx.sign(newPrivateKey)
+    await restoreTx.sign(oldPrivateKey)
+    const restoreReceipt = await (await restoreTx.execute(client)).getReceipt(client)
+    console.log(`[✅ SUCCESS] Original key restored: ${restoreReceipt.status.toString()}`)
+    console.log(`[📊 LOG] Temporary key used during the demo: ${newKeyStr.slice(0, 45)}...`)
 
     console.log('\n💡 KEY CONCEPT:')
     console.log('Security Hygiene: Regular key rotation is an industry standard for')
@@ -84,16 +98,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Key Rotation Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }
-
-export { updateEnv }

@@ -33,7 +33,7 @@ import {
   TopicMessageQuery,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Publicador: Divide automáticamente los mensajes grandes de forma interna.
@@ -65,7 +65,7 @@ const subscribeToTopic = (client, topicId) => {
     .setStartTime(0) // Recuperar histórico + Escucha en vivo
     .subscribe(
       client,
-      (error) => console.error('[❌ FALLO] Fallo en la suscripción gRPC:', error),
+      (error) => { console.error('[❌ FALLO] Fallo en la suscripción gRPC:', error); process.exit(1) },
       (message) => {
         const payload = Buffer.from(message.contents).toString()
         const timestamp = message.consensusTimestamp.toDate().toLocaleTimeString()
@@ -79,6 +79,8 @@ const subscribeToTopic = (client, topicId) => {
 }
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Streaming Descentralizado ---\n')
 
   const { client } = getClient()
@@ -86,6 +88,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local.')
+    process.exitCode = 1
     return
   }
 
@@ -111,20 +114,21 @@ const main = async () => {
     // Tiempo de espera para observar los mensajes en la consola antes de cerrar (demostración)
     setTimeout(() => {
       console.log('\n--- SESIÓN COMPLETADA ---')
-      process.exit(0)
+      process.exit()
     }, 12000)
   } catch (error) {
     console.error('\n[❌ FALLO] El flujo de mensajería fragmentada falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    // El proceso se mantiene vivo por gRPC hasta el timeout
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }
 
 export { publishLargePayload, subscribeToTopic }

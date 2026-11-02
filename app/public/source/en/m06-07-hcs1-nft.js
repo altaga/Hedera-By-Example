@@ -193,8 +193,16 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Operation Failed:', error.message)
+    process.exitCode = 1
     if (client) client.close()
   }
 }
 
-main().catch(console.error)
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
+}

@@ -45,7 +45,7 @@ import {
   PrivateKey,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, executeWithGas } from '../M99_Utilities/index.js'
 import solc from 'solc'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
@@ -125,11 +125,10 @@ const main = async () => {
       console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex (${bytecode.length / 2} bytes)`)
 
       console.log('\n[⚙️ PROCESO] Paso 1: Desplegando ZkPrivacyPool directamente en Hedera EVM (Bytecode Directo)...')
-      const deployTx = await new ContractCreateTransaction()
+      const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
-        .setGas(300000)
-        .setAdminKey(adminKey)
-        .execute(client)
+        .setGas(gas)
+        .setAdminKey(adminKey), client, { gas: 300000 })
 
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
@@ -157,12 +156,11 @@ const main = async () => {
 
     // 3. Depósito Anónimo en el Fondo de Privacidad (0.01 HBAR)
     console.log('\n[⚙️ PROCESO] Paso 3: Depositando 0.01 HBAR en el Fondo con el Compromiso Criptográfico...')
-    const depositTx = await new ContractExecuteTransaction()
+    const depositTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(250000)
+      .setGas(gas)
       .setPayableAmount(new Hbar(0.01))
-      .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer))
-      .execute(client)
+      .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer)), client, { gas: 250000 })
 
     const depositReceipt = await depositTx.getReceipt(client)
     console.log(`[✅ ÉXITO] ¡Depósito Confirmado! Estado en Consenso: ${depositReceipt.status.toString()}`)
@@ -181,15 +179,14 @@ const main = async () => {
     // Revelar nulificador y secreto al contrato:
     // El contrato calcula Keccak256(nullifier, secret) en la cadena, valida el compromiso,
     // registra el nulificador como gastado y libera los 0.01 HBAR a la dirección stealth.
-    const withdrawTx = await new ContractExecuteTransaction()
+    const withdrawTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(300000)
+      .setGas(gas)
       .setFunction('withdraw', new ContractFunctionParameters()
         .addBytes32(nullifier)
         .addBytes32(secret)
         .addAddress(stealthRecipientAddress)
-      )
-      .execute(client)
+      ), client, { gas: 300000 })
 
     const withdrawReceipt = await withdrawTx.getReceipt(client)
     console.log(`[✅ ÉXITO] ¡Retiro Confidencial Liquidado! Estado: ${withdrawReceipt.status.toString()}`)
@@ -209,18 +206,18 @@ const main = async () => {
     // 6. Probar Defensa Contra Doble Gasto (Simulación de Ataque)
     console.log('\n[⚙️ PROCESO] Paso 6: Probando Defensa Contra Replay y Doble Gasto (Simulación de Ataque)...')
     try {
-      const replayTx = await new ContractExecuteTransaction()
+      const replayTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(contractId)
-        .setGas(300000)
+        .setGas(gas)
         .setFunction('withdraw', new ContractFunctionParameters()
           .addBytes32(nullifier)
           .addBytes32(secret)
           .addAddress(stealthRecipientAddress)
-        )
-        .execute(client)
+        ), client, { gas: 300000 })
 
       await replayTx.getReceipt(client)
       console.error('[❌ ERROR] Violación de seguridad: ¡El ataque de repetición tuvo éxito!')
+      process.exitCode = 1
     } catch (replayError) {
       console.log('[✅ ÉXITO] ¡Ataque de doble gasto rechazado exitosamente por la verificación de nulificador en la EVM!')
       console.log(`[📊 REGISTRO] Motivo de Reversión Esperado: "${replayError.message}"`)
@@ -246,10 +243,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Fallo de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

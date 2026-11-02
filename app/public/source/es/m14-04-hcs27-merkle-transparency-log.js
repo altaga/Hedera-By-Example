@@ -128,7 +128,6 @@ const main = async () => {
     console.log(`[⚙️ PROCESO] Creando Tópico de Puntos de Control HCS-27 (Memo: ${topicMemo})...`)
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo(topicMemo)
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -171,7 +170,6 @@ const main = async () => {
       .setTopicId(topicId)
       .setTransactionMemo(buildHCS27TransactionMemo())
       .setMessage(JSON.stringify(checkpoint))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
@@ -219,10 +217,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

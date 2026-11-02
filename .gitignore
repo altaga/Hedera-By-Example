@@ -26,3 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 Thumbs.db
+
+# Lab state written by updateState() (course-wide and per module)
+state.json
+state.json.*.tmp

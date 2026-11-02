@@ -32,9 +32,11 @@
 
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient } from '../M99_Utilities/index.js'
+import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Seguridad con Defensa Activa (HCS-10) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES ---
@@ -51,6 +53,7 @@ const main = async () => {
   const sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivKeyDer) {
     console.error('[❌ FALLO] Falta HCS10_SESSION_PRIVATE_KEY. Ejecuta Lab 00 primero.')
+    process.exitCode = 1
     return
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
@@ -58,7 +61,7 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE B (Defensa Activa - IDS Operativo) ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     let lastProcessedRound = 0
@@ -109,7 +112,7 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Iniciador Legítimo) ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
@@ -148,7 +151,7 @@ const main = async () => {
             console.log('Al incorporar validación criptográfica de sesión, protegimos la conversación')
             console.log('de actores maliciosos, incluso en un tópico de consenso público y sin permisos.')
             console.log('\n--- SESIÓN COMPLETADA ---\n')
-            setTimeout(() => process.exit(0), 1000)
+            setTimeout(() => process.exit(), 1000)
           }
         }
       })
@@ -194,5 +197,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => console.error('[❌ FALLO] Fallo en la auditoría de defensa activa:', err.message))
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

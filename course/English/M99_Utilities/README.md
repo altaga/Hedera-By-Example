@@ -11,10 +11,29 @@
 | File | Purpose | Description |
 | :--- | :--- | :--- |
 | **lib.js** | **Core Library** | Shared functions for HCS communication, signatures, and key management. |
-| **config.js** | **Env Management**| Loading and validating variables from the `.env` file. |
-| **storage.js** | **Local Persistence**| State management in JSON files (`state.json`). |
+| **config.js** | **Env Management**| Loads `.env`, validates credentials and builds clients (`getClient`, `createClient`) with a generous fee ceiling. |
+| **storage.js** | **Local Persistence**| `updateState`/`getState`: per-module `state.json` plus a course-wide `state.json`, written atomically. |
+| **resilience.js** | **Network Resilience**| `withGasRetry`/`executeWithGas`, `waitForMirror`, `getAccountEvmAddress`, `ensureFunded`, `getJsonRpcSigner`. |
 | **transfer.js** | **Sending Engines** | Simplification of complex HBAR and token transfers. |
 | **explorer.js** | **Audit Links**| Generation of direct links to HashScan for verification. |
+
+---
+
+## 🛡️ Writing Labs That Keep Working
+
+Fees, gas costs and Mirror Node timing change over time. Labs stay reliable when they use these helpers instead of fixed numbers:
+
+| Problem | Use | Why |
+| :--- | :--- | :--- |
+| `INSUFFICIENT_TX_FEE` | `getClient()` / `createClient()` | Clients come with a 100 ℏ fee ceiling (`MAX_TRANSACTION_FEE_HBAR`). Only the real fee is charged. Avoid `setMaxTransactionFee` with small values. |
+| `INSUFFICIENT_GAS` | `executeWithGas((gas) => tx.setGas(gas), client, { gas })`, `withGasRetry` for queries | Retries with double the gas, up to the 15M limit. |
+| Data not on the Mirror Node yet | `waitForMirror(async () => …)` | The Mirror Node shows new data a few seconds after consensus. |
+| A secondary account pays | `ensureFunded(client, accountId, minHbar)` | Tops it up from the operator before it runs out. |
+| EVM address of an account | `getAccountEvmAddress(accountId)` | Returns the alias or long-zero address the network actually uses. |
+| ethers / JSON-RPC relay | `getJsonRpcSigner(client, operatorKey)` | The relay only maps ECDSA alias accounts; creates one once if needed. |
+| State from another module | `getState(key)` | Reads the module's `state.json`, then the course-wide one, then `.env`. |
+
+Every lab ends the same way: a printed `❌` failure sets `process.exitCode = 1`, and the entry block exits so no lab hangs.
 
 ---
 

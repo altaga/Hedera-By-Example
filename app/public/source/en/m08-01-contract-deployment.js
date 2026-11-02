@@ -33,7 +33,7 @@ import {
   PrivateKey
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, executeWithGas, withGasRetry } from '../M99_Utilities/index.js'
 
 // --- 1. SOLIDITY SOURCE CODE ---
 const SOURCE_CODE = `
@@ -103,13 +103,11 @@ const main = async () => {
 
     // Step B: Direct Bytecode Deployment
     console.log('\n[⚙️ PROCESS] Deploying to Hedera Consensus Nodes (Direct Bytecode)...')
-    const contractTx = await new ContractCreateTransaction()
+    const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
       .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(2000000)
+      .setGas(gas)
       .setAdminKey(adminKey) // Sets the Operator as admin to allow updates (like rent)
-      .freezeWith(client)
-
-    const contractResponse = await contractTx.execute(client)
+      .freezeWith(client), client, { gas: 2000000 })
     const contractReceipt = await contractResponse.getReceipt(client)
     const contractId = contractReceipt.contractId
 
@@ -120,21 +118,20 @@ const main = async () => {
 
     // Step C: Interact (Set)
     console.log("\n[⚙️ PROCESS] Calling 'set(42)' via native HAPI call...")
-    const setTx = await new ContractExecuteTransaction()
+    const setTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(2000000)
-      .setFunction('set', new ContractFunctionParameters().addUint256(42))
-      .execute(client)
+      .setGas(gas)
+      .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
     await setTx.getReceipt(client)
     console.log('[✅ SUCCESS] State updated to 42.')
 
     // Step D: Query (Get)
     console.log("\n[⚙️ PROCESS] Querying 'get()' value from on-chain state...")
-    const getQuery = await new ContractCallQuery()
+    const getQuery = await withGasRetry((gas) => new ContractCallQuery()
       .setContractId(contractId)
-      .setGas(2000000)
+      .setGas(gas)
       .setFunction('get')
-      .execute(client)
+      .execute(client), { gas: 2000000 })
     const value = getQuery.getUint256(0)
     console.log(`[📊 LOG] Retrieved Value: ${value}`)
 
@@ -148,14 +145,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Deployment Lifecycle Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

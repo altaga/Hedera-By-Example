@@ -30,11 +30,13 @@
 import { Client, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import dotenv from 'dotenv'
-import { getState, sleep, getClient } from '../M99_Utilities/index.js'
+import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   const sessionStart = new Date(Date.now() - 10000) // 10s look-back for Mirror Node propagation
   console.log('--- SESSION START: Autonomous Orchestration Simulation ---\n')
 
@@ -49,12 +51,13 @@ const main = async () => {
 
   if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
     console.error('[❌ FAILED] Missing Agent IDs or Topic configurations in state.')
+    process.exitCode = 1
     return
   }
 
   // --- AGENT B: THE REACTIVE SERVICE ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
     const processedMessages = new Set()
 
@@ -97,7 +100,7 @@ const main = async () => {
 
   // --- AGENT A: THE SEQUENCE INITIATOR ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
     const processedMessages = new Set()
 
@@ -144,11 +147,12 @@ const main = async () => {
               console.log('the ledger as a coordination layer, you create a system that is')
               console.log('fault-tolerant and easily auditable.')
               console.log('\n--- SESSION COMPLETE ---\n')
-              process.exit(0)
+              process.exit()
             }
           }
         } catch (e) {
           console.error('\n[❌ FAILED] Reactor failure:', e.message)
+          process.exitCode = 1
         }
       })
 
@@ -160,8 +164,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => {
-    console.error('[❌ FAILED] Orchestration Error:', err)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

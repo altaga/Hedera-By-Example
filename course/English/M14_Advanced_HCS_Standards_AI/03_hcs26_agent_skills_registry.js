@@ -67,7 +67,6 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Initializing HCS-26 Decentralized Agent Skills Registry Topic...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-26:AGENT:SKILLS:REGISTRY')
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -122,7 +121,6 @@ const main = async () => {
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(skillManifest))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
@@ -166,10 +164,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

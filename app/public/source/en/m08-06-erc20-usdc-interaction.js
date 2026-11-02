@@ -30,17 +30,19 @@
 import {
   AccountId, TokenId,
   ContractExecuteTransaction, ContractFunctionParameters,
-  ContractCallQuery, ContractId
+  ContractCallQuery, ContractId, TokenAssociateTransaction
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, executeWithGas, withGasRetry, getAccountEvmAddress } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Advanced USDC Ecosystem ---')
   console.log('[ℹ️ INFO] EXECUTION TARGET: ERC-20 COMPATIBILITY\n')
 
-  const { client } = getClient()
+  const { client, operatorId } = getClient()
   const USDC_TOKEN_ID = '0.0.429274'
-  const ownerEVM = process.env.OPERATOR_EVM_ADDRESS
+  // The address the network actually uses for the operator (alias or long-zero).
+  // Deriving it from the key only works for accounts created from an EVM address.
+  const ownerEVM = await getAccountEvmAddress(operatorId)
 
   // Spender: Using ACCOUNT_1 to avoid self-approval reverts
   const spenderIdStr = process.env.ACCOUNT_1_ID
@@ -48,6 +50,7 @@ const main = async () => {
 
   if (!ownerEVM || !spenderIdStr) {
     console.error('[❌ FAILED] Missing OPERATOR_EVM_ADDRESS or ACCOUNT_1_ID in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -58,21 +61,21 @@ const main = async () => {
     const contractId = ContractId.fromString(USDC_TOKEN_ID)
 
     // Name
-    const nameQuery = await new ContractCallQuery()
-      .setContractId(contractId).setGas(100000)
-      .setFunction('name').execute(client)
+    const nameQuery = await withGasRetry((gas) => new ContractCallQuery()
+      .setContractId(contractId).setGas(gas)
+      .setFunction('name').execute(client), { gas: 100000 })
     const name = nameQuery.getString(0)
 
     // Symbol
-    const symbolQuery = await new ContractCallQuery()
-      .setContractId(contractId).setGas(100000)
-      .setFunction('symbol').execute(client)
+    const symbolQuery = await withGasRetry((gas) => new ContractCallQuery()
+      .setContractId(contractId).setGas(gas)
+      .setFunction('symbol').execute(client), { gas: 100000 })
     const symbol = symbolQuery.getString(0)
 
     // Decimals
-    const decimalsQuery = await new ContractCallQuery()
-      .setContractId(contractId).setGas(100000)
-      .setFunction('decimals').execute(client)
+    const decimalsQuery = await withGasRetry((gas) => new ContractCallQuery()
+      .setContractId(contractId).setGas(gas)
+      .setFunction('decimals').execute(client), { gas: 100000 })
     const decimals = decimalsQuery.getUint8(0)
 
     console.log('\n--- TOKEN FACT SHEET ---')
@@ -81,12 +84,23 @@ const main = async () => {
     console.log(`🔹 DECIMALS:  ${decimals}`)
     console.log(`🔹 ADDRESS:   ${usdcSolidityAddress}\n`)
 
+    // The operator must be associated with USDC to hold or approve it. Associating
+    // twice returns TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT, which is fine.
+    try {
+      await (await new TokenAssociateTransaction()
+        .setAccountId(operatorId)
+        .setTokenIds([TokenId.fromString(USDC_TOKEN_ID)])
+        .execute(client)).getReceipt(client)
+      console.log('[✅ SUCCESS] Operator associated with USDC.')
+    } catch (error) {
+      if (!/TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT/.test(error.message)) throw error
+    }
+
     // --- STAGE 2: BALANCE TELEMETRY ---
     console.log('[⚙️ PROCESS] Stage 2: Fetching live balance telemetry...')
-    const balanceTx = await new ContractExecuteTransaction()
-      .setContractId(contractId).setGas(1000000)
-      .setFunction('balanceOf', new ContractFunctionParameters().addAddress(ownerEVM))
-      .execute(client)
+    const balanceTx = await executeWithGas((gas) => new ContractExecuteTransaction()
+      .setContractId(contractId).setGas(gas)
+      .setFunction('balanceOf', new ContractFunctionParameters().addAddress(ownerEVM)), client, { gas: 1000000 })
     const balanceRec = await balanceTx.getRecord(client)
     const rawBalance = balanceRec.contractFunctionResult.getUint256(0)
     const formattedBalance = Number(rawBalance) / Math.pow(10, decimals)
@@ -101,13 +115,12 @@ const main = async () => {
     console.log(`[ℹ️ INFO] Target Spender: ${spenderIdStr} (${spenderSolidity})`)
 
     try {
-      const approveTx = await new ContractExecuteTransaction()
-        .setContractId(contractId).setGas(2000000)
+      const approveTx = await executeWithGas((gas) => new ContractExecuteTransaction()
+        .setContractId(contractId).setGas(gas)
         .setFunction('approve', new ContractFunctionParameters()
           .addAddress(spenderSolidity)
           .addUint256(amountToAuthorize)
-        )
-        .execute(client)
+        ), client, { gas: 2000000 })
       await approveTx.getReceipt(client)
       console.log('[✅ SUCCESS] Spender authorized successfully.')
     } catch (e) {
@@ -117,13 +130,13 @@ const main = async () => {
 
     // --- STAGE 4: ALLOWANCE AUDIT ---
     console.log('\n[⚙️ PROCESS] Stage 4: Auditing active ledger-side allowance...')
-    const allowanceQuery = await new ContractCallQuery()
-      .setContractId(contractId).setGas(100000)
+    const allowanceQuery = await withGasRetry((gas) => new ContractCallQuery()
+      .setContractId(contractId).setGas(gas)
       .setFunction('allowance', new ContractFunctionParameters()
         .addAddress(ownerEVM)
         .addAddress(spenderSolidity)
       )
-      .execute(client)
+      .execute(client), { gas: 100000 })
 
     const activeAllowance = Number(allowanceQuery.getUint256(0)) / Math.pow(10, decimals)
     console.log(`[✅ SUCCESS] ACTIVE ALLOWANCE: $${activeAllowance.toFixed(2)} USDC available.`)
@@ -138,14 +151,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error(`\n[❌ FAILED] USDC Interaction Failed: ${error.message}`)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

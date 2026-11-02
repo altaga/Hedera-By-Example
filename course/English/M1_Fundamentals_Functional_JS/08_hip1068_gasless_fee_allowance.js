@@ -33,7 +33,7 @@
  */
 
 import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar, PrivateKey, Client } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Native Gas Sponsorship & Allowances (HIP-1068) ---\n')
@@ -46,6 +46,7 @@ const main = async () => {
 
   if (!spenderId || !spenderKeyStr) {
     console.error('[❌ FAILED] Missing ACCOUNT_1_ID or ACCOUNT_1_PRIVATE_KEY in .env configuration.')
+    process.exitCode = 1
     console.log('[ℹ️ INFO] Run M0 Lab 04 to provision child accounts first.')
     return
   }
@@ -88,7 +89,9 @@ const main = async () => {
     console.log(`\n[⚙️ PROCESS] Stage 2: Spender (${spenderId}) transferring ${SPONSORED_TRANSFER_HBAR} HBAR debited from Sponsor's allowance...`)
 
     // Initialize spender client instance (Sponsor's key is NOT present here)
-    const spenderClient = Client.forTestnet()
+    // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
+    await ensureFunded(client, spenderId, 5)
+    const spenderClient = createClient()
     spenderClient.setOperator(spenderId, spenderKey)
 
     const transferTx = await new TransferTransaction()
@@ -131,9 +134,17 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error(`\n[❌ FAILED] Gasless Allowance Execution Failed: ${error.message}`)
+    process.exitCode = 1
     if (client) client.close()
     process.exit(1)
   }
 }
 
-main()
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
+}

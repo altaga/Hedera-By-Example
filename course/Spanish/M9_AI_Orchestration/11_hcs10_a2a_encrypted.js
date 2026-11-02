@@ -35,9 +35,11 @@ import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AgentCommunicationHandler, getState, sleep } from '../M99_Utilities/index.js'
+import { AgentCommunicationHandler, getState, sleep, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Flujos Cifrados Híbridos (RSA + AES) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES Y CANALES ---
@@ -51,6 +53,7 @@ const main = async () => {
 
   if (!agentA_Id || !agentB_Id || !agentA_Inbox || !agentB_Inbox) {
     console.error('[❌ FALLO] Faltan identidades o canales para la orquestación cifrada.')
+    process.exitCode = 1
     return
   }
 
@@ -147,7 +150,7 @@ const main = async () => {
           console.log('por sí solo. En este laboratorio unimos cifrado híbrido sobre validación de sesión')
           console.log('ECDSA para crear el estándar de oro en comunicación segura de agentes en Hedera.')
           console.log('\n--- SESIÓN COMPLETADA ---\n')
-          setTimeout(() => process.exit(0), 1000)
+          setTimeout(() => process.exit(), 1000)
         }
       }
     })
@@ -165,5 +168,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => console.error('[❌ FALLO] Fallo en la comunicación confidencial:', err.message))
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

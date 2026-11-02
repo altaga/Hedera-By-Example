@@ -35,7 +35,7 @@ import {
   ContractCallQuery, ContractFunctionParameters, Hbar
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, executeWithGas, withGasRetry } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE SOLIDITY (SimpleStorage) ---
 const SOURCE_CODE = `
@@ -97,13 +97,11 @@ const main = async () => {
 
     // FASE B: Despliegue del Contrato
     console.log('\n[⚙️ PROCESO] Desplegando Smart Contract en la EVM de Hedera...')
-    const contractTx = await new ContractCreateTransaction()
+    const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
       .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(2000000)
+      .setGas(gas)
       .setAdminKey(adminKey) // Permite actualizaciones y gestión de renta
-      .freezeWith(client)
-
-    const contractResponse = await contractTx.execute(client)
+      .freezeWith(client), client, { gas: 2000000 })
     const contractReceipt = await contractResponse.getReceipt(client)
     const contractId = contractReceipt.contractId
 
@@ -112,22 +110,21 @@ const main = async () => {
 
     // FASE C: Interacción (Escritura de Estado)
     console.log(`\n[⚙️ PROCESO] Ejecutando función 'set(42)' en el contrato ${contractId}...`)
-    const setTx = await new ContractExecuteTransaction()
+    const setTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(2000000)
-      .setFunction('set', new ContractFunctionParameters().addUint256(42))
-      .execute(client)
+      .setGas(gas)
+      .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
     await setTx.getReceipt(client)
     console.log('[✅ ÉXITO] Estado del contrato actualizado a 42.')
 
     // FASE D: Consulta (Lectura de Estado)
     console.log("[⚙️ PROCESO] Consultando valor actual vía 'get()...'")
-    const getQuery = await new ContractCallQuery()
+    const getQuery = await withGasRetry((gas) => new ContractCallQuery()
       .setContractId(contractId)
-      .setGas(2000000)
+      .setGas(gas)
       .setFunction('get')
-      .execute(client)
+      .execute(client), { gas: 2000000 })
 
     const value = getQuery.getUint256(0)
     console.log(`\n🎉 [✅ ÉXITO] Valor recuperado del ledger: ${value}`)
@@ -142,14 +139,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] El despliegue o la interacción con el contrato falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

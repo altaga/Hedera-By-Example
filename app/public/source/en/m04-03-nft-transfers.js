@@ -37,6 +37,7 @@ const main = async () => {
 
   if (!targetId || !tokenId) {
     console.error('[❌ FAILED] Missing ACCOUNT_1_ID or NFT_TOKEN_ID in configuration.')
+    process.exitCode = 1
     console.log('[ℹ️ INFO] Tip: Run M3.3 to issue an NFT collection first.')
     return
   }
@@ -66,18 +67,20 @@ const main = async () => {
   } catch (error) {
     if (error.message.includes('TOKEN_NOT_ASSOCIATED_TO_ACCOUNT')) {
       console.error('\n[❌ FAILED] Transfer Failed: Target Account is not associated with this NFT collection.')
+      process.exitCode = 1
       console.log('[ℹ️ INFO] Tip: Run M3.2 or perform a TokenAssociateTransaction for the child wallet.')
     } else {
       console.error('\n[❌ FAILED] Transfer Failed:', error.message)
+      process.exitCode = 1
     }
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

@@ -66,7 +66,21 @@ export async function runBrowserSandboxTest() {
     'EventEmitter',
     'wallet',
     'console',
-    'process'
+    'process',
+    // course helpers injected by app/src/lib/hederaBrowser.ts
+    'createClient',
+    'withGasRetry',
+    'executeWithGas',
+    'waitForMirror',
+    'getAccountEvmAddress',
+    'ensureFunded',
+    'MAX_GAS',
+    'maxTransactionFeeHbar',
+    'exitIfStuck',
+    'loadEnv',
+    'getJsonRpcUrl',
+    'getJsonRpcSigner',
+    'AgentCommunicationHandler'
   ]
 
   let enFailures = []

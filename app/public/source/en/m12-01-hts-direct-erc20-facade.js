@@ -36,7 +36,7 @@ import {
   TokenSupplyType,
   ContractFunctionParameters
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, executeWithGas } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[⚙️ PROCESS] Compiling Solidity smart contract with solc 0.8.20...')
@@ -108,11 +108,10 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Deploying HtsTokenVault smart contract to Hedera Smart Contract Service...')
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
-    const contractDeployTx = await new ContractCreateFlow()
+    const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
       .setBytecode(bytecode)
-      .setGas(300000)
-      .setConstructorParameters(contractParams)
-      .execute(client)
+      .setGas(gas)
+      .setConstructorParameters(contractParams), client, { gas: 300000 })
 
     const contractReceipt = await contractDeployTx.getReceipt(client)
     const contractId = contractReceipt.contractId
@@ -139,10 +138,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

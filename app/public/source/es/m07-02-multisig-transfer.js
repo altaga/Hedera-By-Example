@@ -42,13 +42,17 @@ const main = async () => {
 
   // Recuperar contexto de gobernanza del estado local
   const multisigId = getState('MULTISIG_ACCOUNT_ID')
-  const aliceKey = PrivateKey.fromString(getState('MULTISIG_KEY_ALICE'))
-  const bobKey = PrivateKey.fromString(getState('MULTISIG_KEY_BOB'))
+  const aliceKeyStr = getState('MULTISIG_KEY_ALICE')
+  const bobKeyStr = getState('MULTISIG_KEY_BOB')
 
-  if (!multisigId) {
+  if (!multisigId || !aliceKeyStr || !bobKeyStr) {
     console.error('[❌ FALLO] No se encontró el ID de la cuenta multi-firma. Ejecuta el Lab 01 primero.')
+    process.exitCode = 1
     return
   }
+
+  const aliceKey = PrivateKey.fromString(aliceKeyStr)
+  const bobKey = PrivateKey.fromString(bobKeyStr)
 
   console.log(`[ℹ️ INFO] Aplicando auditoría sobre la cuenta corporativa: ${multisigId}`)
 
@@ -102,14 +106,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] Fallo inesperado en el flujo de auditoría:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

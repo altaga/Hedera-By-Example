@@ -1,7 +1,53 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
-import { Client, AccountId, PrivateKey } from '@hiero-ledger/sdk'
+import { Client, AccountId, PrivateKey, Hbar } from '@hiero-ledger/sdk'
 import dotenv from 'dotenv'
 import path from 'path'
+
+/**
+ * Ceiling for transaction fees, in HBAR. The network only charges the real fee;
+ * this is the most a single transaction may cost. A generous ceiling keeps the
+ * labs working when the fee schedule or the HBAR exchange rate changes.
+ * Override with MAX_TRANSACTION_FEE_HBAR in .env.
+ */
+export const maxTransactionFeeHbar = () => Number(process.env.MAX_TRANSACTION_FEE_HBAR) || 100
+
+/**
+ * Creates a client for the configured network with the course defaults
+ * (fee ceilings). Use it for any extra signer, e.g. ACCOUNT_1.
+ *
+ * @param {string} [accountId] - Operator account ID.
+ * @param {string|PrivateKey} [privateKey] - Operator private key (DER/hex string or PrivateKey).
+ * @returns {Client}
+ */
+// Accepts DER (302e…/3030…) and raw hex keys.
+export const parsePrivateKey = (value) => {
+  const text = String(value).trim()
+  return /^30[0-9a-fA-F]{60,}$/.test(text) ? PrivateKey.fromStringDer(text) : PrivateKey.fromString(text)
+}
+
+export const createClient = (accountId, privateKey) => {
+  const network = (process.env.NETWORK || 'testnet').toLowerCase()
+  const client = network === 'mainnet'
+    ? Client.forMainnet()
+    : network === 'previewnet' ? Client.forPreviewnet() : Client.forTestnet()
+  client.setDefaultMaxTransactionFee(new Hbar(maxTransactionFeeHbar()))
+  client.setDefaultMaxQueryPayment(new Hbar(10))
+  if (accountId && privateKey) {
+    const key = typeof privateKey === 'string' ? parsePrivateKey(privateKey) : privateKey
+    client.setOperator(AccountId.fromString(accountId), key)
+  }
+  return client
+}
+
+/**
+ * Loads course/.env, then the monorepo root .env. Values already set in the
+ * shell take precedence; dotenv never overrides them.
+ */
+export const loadEnv = () => {
+  const dir = path.dirname(import.meta.filename)
+  dotenv.config({ path: path.resolve(dir, '../../.env'), quiet: true })
+  dotenv.config({ path: path.resolve(dir, '../../../.env'), quiet: true })
+}
 
 /**
  * Encapsulates environment configuration and client initialization.
@@ -9,10 +55,7 @@ import path from 'path'
  * @returns {Object} { client, operatorId, operatorKey, network }
  */
 export const getClient = () => {
-  const __dirname = path.dirname(import.meta.filename)
-  // course/.env first, then the monorepo root .env (dotenv never overrides already-set values)
-  dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true })
-  dotenv.config({ path: path.resolve(__dirname, '../../../.env'), quiet: true })
+  loadEnv()
 
   const operatorId = process.env.OPERATOR_ID
   const operatorKey = process.env.OPERATOR_PRIVATE_KEY
@@ -23,15 +66,7 @@ export const getClient = () => {
     process.exit(1)
   }
 
-  let client
-  if (network.toLowerCase() === 'mainnet') {
-    client = Client.forMainnet()
-  } else if (network.toLowerCase() === 'previewnet') {
-    client = Client.forPreviewnet()
-  } else {
-    client = Client.forTestnet()
-  }
-  client.setOperator(AccountId.fromString(operatorId), PrivateKey.fromStringDer(operatorKey))
+  const client = createClient(operatorId, operatorKey)
 
   return {
     client,

@@ -37,7 +37,7 @@ import {
   PrivateKey, TokenId
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, executeWithGas } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE DEL ORÁCULO DE SISTEMA ---
 const SOURCE_CODE = `
@@ -123,11 +123,10 @@ const main = async () => {
       const bytecode = compile('SystemOracle', SOURCE_CODE)
 
       console.log('[⚙️ PROCESO] Desplegando Oráculo de Sistema en el ledger...')
-      const contractTx = await new ContractCreateTransaction()
+      const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
-        .setGas(2000000)
-        .setAdminKey(adminKey)
-        .execute(client)
+        .setGas(gas)
+        .setAdminKey(adminKey), client, { gas: 2000000 })
 
       const receipt = await contractTx.getReceipt(client)
       oracleId = receipt.contractId.toString()
@@ -137,19 +136,17 @@ const main = async () => {
 
     // 2. Consulta de Tasa de Cambio (0x168)
     console.log('\n[⚙️ PROCESO] Consultando Telemetría de Mercado (HBAR/USD)...')
-    const rateTx = await new ContractExecuteTransaction()
-      .setContractId(oracleId).setGas(1000000)
-      .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100))
-      .execute(client)
+    const rateTx = await executeWithGas((gas) => new ContractExecuteTransaction()
+      .setContractId(oracleId).setGas(gas)
+      .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100)), client, { gas: 1000000 })
     const rateRec = await rateTx.getRecord(client)
     console.log(`   └─ [📊 REGISTRO] 100 tinycents = ${rateRec.contractFunctionResult.getUint256(0)} tinybars`)
 
     // 3. Consulta de Entropía (0x169)
     console.log('[⚙️ PROCESO] Solicitando Semilla de Entropía de Red...')
-    const prngTx = await new ContractExecuteTransaction()
-      .setContractId(oracleId).setGas(1000000)
-      .setFunction('fetchNetworkEntropy')
-      .execute(client)
+    const prngTx = await executeWithGas((gas) => new ContractExecuteTransaction()
+      .setContractId(oracleId).setGas(gas)
+      .setFunction('fetchNetworkEntropy'), client, { gas: 1000000 })
     const prngRec = await prngTx.getRecord(client)
     const seed = Buffer.from(prngRec.contractFunctionResult.bytes).toString('hex')
     console.log(`   └─ [📊 REGISTRO] Entropía: 0x${seed.substring(0, 32)}...`)
@@ -157,13 +154,12 @@ const main = async () => {
     // 4. Puente HTS vía Solidity (0x167)
     if (tokenIdStr) {
       console.log(`\n[⚙️ PROCESO] Probando Puente HTS: Asociando token ${tokenIdStr}...`)
-      const htsTx = await new ContractExecuteTransaction()
-        .setContractId(oracleId).setGas(1000000)
+      const htsTx = await executeWithGas((gas) => new ContractExecuteTransaction()
+        .setContractId(oracleId).setGas(gas)
         .setFunction('associateAsset', new ContractFunctionParameters()
           .addAddress(ContractId.fromString(oracleId).toEvmAddress())
           .addAddress(TokenId.fromString(tokenIdStr).toEvmAddress())
-        )
-        .execute(client)
+        ), client, { gas: 1000000 })
       await htsTx.getReceipt(client)
       console.log('[✅ ÉXITO] Asociación de activo completada vía Smart Contract.')
     }
@@ -178,14 +174,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] El acceso a los contratos de sistema falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

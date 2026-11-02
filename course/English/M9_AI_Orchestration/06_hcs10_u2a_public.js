@@ -30,11 +30,13 @@
 import { Client, PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import dotenv from 'dotenv'
-import { getClient, getState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   const sessionStart = new Date(Date.now() - 10000) // 10s look-back for Mirror Node propagation
   console.log('--- SESSION START: Real-Time U2A Orchestration ---\n')
 
@@ -48,12 +50,13 @@ const main = async () => {
 
   if (!agentId || !operatorId) {
     console.error('[❌ FAILED] Missing Agent A or Account 1 data in configuration.')
+    process.exitCode = 1
     return
   }
 
   // --- AGENT SERVER: REACTIVE SERVICE ---
   const startAgent = async () => {
-    const hederaClient = Client.forTestnet().setOperator(agentId, agentKeyRaw)
+    const hederaClient = createClient().setOperator(agentId, agentKeyRaw)
     const hcs10Agent = new HCS10Client({
       network: 'testnet',
       operatorId: agentId,
@@ -68,7 +71,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => console.error(`\n[❌ FAILED] AGENT MIRROR ERROR: ${err.message}`),
+        (err) => { console.error(`\n[❌ FAILED] AGENT MIRROR ERROR: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -100,7 +103,7 @@ const main = async () => {
 
   // --- HUMAN USER CLIENT: REACTIVE HANDLER ---
   const startClient = async () => {
-    const hederaClient = Client.forTestnet().setOperator(operatorId, operatorKeyRaw)
+    const hederaClient = createClient().setOperator(operatorId, operatorKeyRaw)
     const processedMessages = new Set()
 
     console.log(`👤 [ℹ️ INFO] User live: Monitoring Outbox [${agentOutbox}]`)
@@ -125,7 +128,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => console.error(`\n[❌ FAILED] CLIENT MIRROR ERROR: ${err.message}`),
+        (err) => { console.error(`\n[❌ FAILED] CLIENT MIRROR ERROR: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -159,12 +162,13 @@ const main = async () => {
                   console.log('communication. Instead of "polling" an API, both sides listen to')
                   console.log('the public ledger and only progress when specific criteria is met.')
                   console.log('\n--- SESSION COMPLETE ---\n')
-                  process.exit(0)
+                  process.exit()
                 }
               }
             }
           } catch (e) {
             console.error('\n[❌ FAILED] Malformed callback packet:', e.message)
+            process.exitCode = 1
           }
         })
 
@@ -177,8 +181,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

@@ -29,7 +29,7 @@
 
 import { PrivateKey, PublicKey } from '@hiero-ledger/sdk'
 import { KeysUtility } from '@hiero-did-sdk/core'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 import dotenv from 'dotenv'
 import path from 'path'
 
@@ -44,6 +44,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FAILED] DID_TOPIC_ID not found in configuration. Run Lab 05 first.')
+    process.exitCode = 1
     return
   }
 
@@ -52,9 +53,12 @@ const main = async () => {
     console.log(`[⚙️ PROCESS] Resolving DID for Topic: ${topicId}...`)
 
     // Fetch the latest message from the HCS Topic using the Mirror Node
-    const mirrorUrl = `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId}/messages?limit=1&order=desc`
-    const response = await fetch(mirrorUrl)
-    const data = await response.json()
+    // The Mirror Node lists a message a few seconds after consensus; wait for it.
+    const mirrorUrl = `${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?limit=1&order=desc`
+    const data = (await waitForMirror(async () => {
+      const json = await (await fetch(mirrorUrl)).json()
+      return json.messages?.length ? json : null
+    })) || {}
 
     if (!data.messages || data.messages.length === 0) {
       throw new Error('No DID document found on this topic.')
@@ -115,14 +119,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Login Process Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

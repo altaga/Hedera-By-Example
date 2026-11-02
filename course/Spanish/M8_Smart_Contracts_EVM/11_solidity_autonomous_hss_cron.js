@@ -42,7 +42,7 @@ import {
   PrivateKey,
   AccountId
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, updateState, executeWithGas } from '../M99_Utilities/index.js'
 import solc from 'solc'
 
 const compileCronVaultContract = () => {
@@ -102,11 +102,10 @@ const main = async () => {
       console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
 
       console.log('\n[⚙️ PROCESO] Paso 1: Desplegando AutonomousCronVault en Hedera EVM...')
-      const deployTx = await new ContractCreateTransaction()
+      const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
-        .setGas(1500000)
-        .setAdminKey(adminKey)
-        .execute(client)
+        .setGas(gas)
+        .setAdminKey(adminKey), client, { gas: 1500000 })
 
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
@@ -120,11 +119,10 @@ const main = async () => {
 
     // 2. Disparar Latido Autónomo On-Chain
     console.log('\n[⚙️ PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat()...')
-    const heartbeatTx = await new ContractExecuteTransaction()
+    const heartbeatTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(200000)
-      .setFunction('performAutonomousHeartbeat')
-      .execute(client)
+      .setGas(gas)
+      .setFunction('performAutonomousHeartbeat'), client, { gas: 200000 })
 
     const heartbeatRecord = await heartbeatTx.getRecord(client)
     console.log(`[✅ ÉXITO] ¡Latido Ejecutado! Estado: ${heartbeatRecord.receipt.status.toString()}`)
@@ -134,11 +132,10 @@ const main = async () => {
     console.log('\n[⚙️ PROCESO] Paso 3: Disparando scheduleNextHeartbeat() mediante Precompilación 0x16b...')
     const payerEvmAddress = `0x${AccountId.fromString(operatorId).toEvmAddress()}`
 
-    const scheduleCallTx = await new ContractExecuteTransaction()
+    const scheduleCallTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(300000)
-      .setFunction('scheduleNextHeartbeat', new ContractFunctionParameters().addAddress(payerEvmAddress))
-      .execute(client)
+      .setGas(gas)
+      .setFunction('scheduleNextHeartbeat', new ContractFunctionParameters().addAddress(payerEvmAddress)), client, { gas: 300000 })
 
     const scheduleRecord = await scheduleCallTx.getRecord(client)
     console.log(`[✅ ÉXITO] ¡Tarea Cron Autónoma Programada! Estado: ${scheduleRecord.receipt.status.toString()}`)
@@ -167,10 +164,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Fallo de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -86,7 +86,6 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Desplegando Tópico de Comunicación Segura en HCS...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS:A2A:ENCRYPTED:SWARM:CHANNEL')
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -120,7 +119,6 @@ const main = async () => {
           ephemeralPublicKey: pubKey,
           timestamp: new Date().toISOString()
         }))
-        .setMaxTransactionFee(new Hbar(2))
         .execute(client)
       const hsReceipt = await handshakeTx.getReceipt(client)
       console.log(`[🤝 HANDSHAKE] Clave Pública ECDH de ${agentName} anclada en Secuencia #${hsReceipt.topicSequenceNumber}`)
@@ -185,7 +183,6 @@ const main = async () => {
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
         .setMessage(JSON.stringify(onChainPayload))
-        .setMaxTransactionFee(new Hbar(2))
         .execute(client)
 
       const receipt = await submitTx.getReceipt(client)
@@ -231,10 +228,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

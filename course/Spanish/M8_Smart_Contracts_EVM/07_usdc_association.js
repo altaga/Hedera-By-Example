@@ -67,16 +67,17 @@ const main = async () => {
       console.log('\n✔ [✅ ÉXITO] El Operador ya está asociado con USDC. Saltando paso.')
     } else {
       console.error(`\n[❌ FALLO] El proceso de asociación falló: ${error.message}`)
+      process.exitCode = 1
     }
     client.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -29,7 +29,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -40,6 +40,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta Lab 04 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -50,24 +51,41 @@ const main = async () => {
      * Recuperación de fragmentos vía Mirror Node REST API.
      * Avanzamos por la paginación para asegurar que capturamos todo el activo.
      */
-    let nextLink = `/api/v1/topics/${topicId}/messages`
-    const allMessages = []
-
-    console.log('[⚙️ PROCESO] Descargando fragmentos del ledger descentralizado...')
-
-    while (nextLink) {
-      const response = await fetch(`${getMirrorNodeBaseUrl()}${nextLink}`)
-      if (!response.ok) {
-        throw new Error(`La API del Mirror Node falló: ${response.statusText}`)
+    const fetchAllMessages = async () => {
+      let nextLink = `/api/v1/topics/${topicId}/messages`
+      const messages = []
+      while (nextLink) {
+        const response = await fetch(`${getMirrorNodeBaseUrl()}${nextLink}`)
+        if (!response.ok) {
+          throw new Error(`La API del Mirror Node falló: ${response.statusText}`)
+        }
+        const data = await response.json()
+        messages.push(...data.messages)
+        nextLink = data.links?.next || null
       }
-
-      const data = await response.json()
-      allMessages.push(...data.messages)
-      nextLink = data.links?.next || null
+      return messages
     }
 
+    // Cada fragmento HCS-1 indica el total (t). El Mirror Node muestra los mensajes unos
+    // segundos después del consenso; esperamos a que estén todos los del archivo más reciente.
+    const hasAllShards = (messages) => {
+      const parsed = messages
+        .map((m) => { try { return JSON.parse(Buffer.from(m.message, 'base64').toString()) } catch (_) { return null } })
+        .filter((sh) => sh && sh.h === 'hcs-1')
+      if (!parsed.length) return false
+      const latest = parsed[parsed.length - 1]
+      return parsed.filter((sh) => sh.fid === latest.fid).length >= latest.t
+    }
+
+    console.log('[⚙️ PROCESO] Descargando fragmentos del ledger descentralizado...')
+    const allMessages = (await waitForMirror(async () => {
+      const messages = await fetchAllMessages()
+      return hasAllShards(messages) ? messages : null
+    }, { timeoutMs: 60_000 })) || await fetchAllMessages()
+
     if (allMessages.length === 0) {
-      console.log('[ℹ️ INFO] No se encontraron mensajes. Sincronización en curso...')
+      console.error('[❌ FALLO] No hay mensajes en este tema. Ejecuta el Lab 04 primero.')
+      process.exitCode = 1
       return
     }
 
@@ -135,14 +153,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La reconstrucción de datos falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -32,11 +32,13 @@
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import dotenv from 'dotenv'
-import { getState, sleep } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: Secure Parallel Security Audit ---\n')
 
   // --- CONFIGURATION ---
@@ -51,6 +53,7 @@ const main = async () => {
   const sessionPrivStr = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivStr) {
     console.error('[❌ FAILED] Missing HCS10_SESSION_PRIVATE_KEY in state.')
+    process.exitCode = 1
     return
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
@@ -58,7 +61,7 @@ const main = async () => {
 
   // --- AGENT B: THE SECURE SERVICE ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     let lastProcessedRound = 0
@@ -114,7 +117,7 @@ const main = async () => {
 
   // --- AGENT A: THE SECURE INITIATOR ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
@@ -154,7 +157,7 @@ const main = async () => {
             console.log('you transform a public HCS topic into a secure, tamper-proof')
             console.log('command channel.')
             console.log('\n--- SESSION COMPLETE ---\n')
-            process.exit(0)
+            process.exit()
           }
         }
       })
@@ -167,8 +170,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => {
-    console.error('[❌ FAILED] Secure Session Error:', err)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

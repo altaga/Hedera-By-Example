@@ -43,12 +43,12 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Regalías Nativas de NFT ---\n')
 
-  const { operatorId } = getClient()
+  const { client: operatorClient, operatorId } = getClient()
 
   // Configuración de roles para la simulación
   const account1Id = process.env.ACCOUNT_1_ID
@@ -56,12 +56,17 @@ const main = async () => {
   const account1PrivateKey = PrivateKey.fromString(account1Key)
 
   // El Artista actúa como pagador en esta demo
-  const client = Client.forTestnet().setOperator(account1Id, account1PrivateKey)
+  const client = createClient().setOperator(account1Id, account1PrivateKey)
 
   const account2Id = process.env.ACCOUNT_2_ID
   const account2PrivateKey = PrivateKey.fromString(process.env.ACCOUNT_2_PRIVATE_KEY)
 
   try {
+    // La Cuenta 1 paga la creación del token (~30 ℏ con comisiones personalizadas) y la
+    // Cuenta 2 compra un NFT. Se recargan desde el operador si hace falta.
+    await ensureFunded(operatorClient, account1Id, 40)
+    await ensureFunded(operatorClient, account2Id, 5)
+
     console.log(`[ℹ️ INFO] Configurando Artista: ${account1Id} | Colector: ${operatorId}`)
 
     // 1. Definir Políticas de Regalías
@@ -144,14 +149,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La demostración de regalías falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

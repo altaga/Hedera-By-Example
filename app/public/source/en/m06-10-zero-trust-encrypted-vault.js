@@ -276,6 +276,7 @@ const main = async () => {
 
       reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
       console.error('[❌ ERROR] Security violation: Tampered ciphertext was accepted!')
+      process.exitCode = 1
     } catch (tamperErr) {
       console.log(`[✅ SUCCESS] Adversarial tamper detected and blocked by AES-GCM GMAC: "${tamperErr.message}"`)
     }
@@ -300,10 +301,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

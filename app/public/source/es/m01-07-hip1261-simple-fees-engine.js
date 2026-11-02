@@ -140,9 +140,17 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error(`\n[❌ ERROR] Falló el Cálculo del Motor de Tarifas: ${error.message}`)
+    process.exitCode = 1
     if (client) client.close()
     process.exit(1)
   }
 }
 
-main()
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
+}

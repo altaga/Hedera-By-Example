@@ -34,7 +34,7 @@ import {
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
 import fs from 'fs'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, executeWithGas } from '../M99_Utilities/index.js'
 
 const compile = (contractName, source) => {
   console.log(`[⚙️ PROCESS] Compiling ${contractName}.sol...`)
@@ -60,11 +60,10 @@ const main = async () => {
     const bytecode = compile('AdvancedHTS', sourceCode)
 
     console.log('[⚙️ PROCESS] Deploying AdvancedHTS Contract to the EVM...')
-    const contractTx = await new ContractCreateTransaction()
+    const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
       .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(100000)
-      .setAdminKey(adminKey)
-      .execute(client)
+      .setGas(gas)
+      .setAdminKey(adminKey), client, { gas: 100000 })
     let receipt = await contractTx.getReceipt(client)
     const contractId = receipt.contractId
     console.log(`[✅ SUCCESS] Contract deployed with ID: ${contractId.toString()}`)
@@ -91,14 +90,13 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Calling Smart Contract to Mint 1000 Tokens (0x167 Precompile)...')
     const mintAmount = 1000
 
-    const execTx = await new ContractExecuteTransaction()
+    const execTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(2000000)
+      .setGas(gas)
       .setFunction('mintFungibleToken', new ContractFunctionParameters()
         .addAddress(tokenId.toEvmAddress()) // The Token Address
         .addUint64(mintAmount) // The Amount to Mint
-      )
-      .execute(client)
+      ), client, { gas: 2000000 })
 
     const execRecord = await execTx.getRecord(client)
 
@@ -121,14 +119,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Execution Error:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

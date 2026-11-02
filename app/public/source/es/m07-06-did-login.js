@@ -31,7 +31,7 @@
 
 import { PrivateKey, PublicKey } from '@hiero-ledger/sdk'
 import { KeysUtility } from '@hiero-did-sdk/core'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Autenticación Criptográfica (DID-Login) ---\n')
@@ -41,6 +41,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FALLO] No se encontró DID_TOPIC_ID en el estado local. Ejecuta Lab 05 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -49,9 +50,12 @@ const main = async () => {
     console.log(`[⚙️ PROCESO] Resolviendo DID Document para el Tema: ${topicId}...`)
 
     // Consulta al Mirror Node para obtener el estado actual de la identidad
-    const mirrorUrl = `https://testnet.mirrornode.hedera.com/api/v1/topics/${topicId}/messages?limit=1&order=desc`
-    const response = await fetch(mirrorUrl)
-    const data = await response.json()
+    // El Mirror Node muestra el mensaje unos segundos después del consenso; esperamos.
+    const mirrorUrl = `${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?limit=1&order=desc`
+    const data = (await waitForMirror(async () => {
+      const json = await (await fetch(mirrorUrl)).json()
+      return json.messages?.length ? json : null
+    })) || {}
 
     if (!data.messages || data.messages.length === 0) {
       throw new Error('No se encontró ningún documento DID anclado en este tema.')
@@ -112,14 +116,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] El flujo de autenticación DID falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

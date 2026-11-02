@@ -33,9 +33,11 @@
 
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient } from '../M99_Utilities/index.js'
+import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Simulación de Ataque de Suplantación (Vulnerabilidad HCS-10) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES ---
@@ -52,13 +54,14 @@ const main = async () => {
   const sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivKeyDer) {
     console.error('[❌ FALLO] Falta HCS10_SESSION_PRIVATE_KEY. Asegúrate de que M9 Lab 00 haya inicializado el entorno.')
+    process.exitCode = 1
     return
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
 
   // --- COMPONENTE: AGENTE B (Servicio Vulnerable - Modo Legado) ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     console.log(`🛡️  [ℹ️ INFO] Agente B: Operativo en Modo Vulnerable en Inbox [${inbox}]...`)
@@ -90,7 +93,7 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Emisor Legítimo) ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
@@ -129,7 +132,7 @@ const main = async () => {
             console.log('suplantó la conversación. Sin validación criptográfica de sesión, los agentes')
             console.log('quedan indefensos ante actores maliciosos que conocen el formato del protocolo.')
             console.log('\n--- SESIÓN COMPLETADA ---\n')
-            process.exit(0)
+            process.exit()
           }
         }
       })
@@ -177,5 +180,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => console.error('[❌ FALLO] Fallo en la simulación de ataque:', err.message))
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -59,7 +59,6 @@ const main = async () => {
       .setMaxSupply(50)
       .setTreasuryAccountId(operatorId)
       .setSupplyKey(supplyKey)
-      .setMaxTransactionFee(new Hbar(20))
       .freezeWith(client)
 
     const signedCreate = await createTx.sign(supplyKey)
@@ -160,10 +159,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -47,6 +47,7 @@ const main = async () => {
 
   if (!hfsFileId) {
     console.error('[❌ FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01 o 02 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -122,14 +123,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La emisión del Hashinal falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

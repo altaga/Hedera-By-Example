@@ -11,10 +11,29 @@
 | Archivo | Propósito | Descripción |
 | :--- | :--- | :--- |
 | **lib.js** | **Librería Core** | Funciones compartidas para comunicación HCS, firmas y manejo de claves. |
-| **config.js** | **Gestión de Entorno**| Carga y validación de variables desde el archivo `.env`. |
-| **storage.js** | **Persistencia Local**| Gestión del estado en archivos JSON (`state.json`). |
+| **config.js** | **Gestión de Entorno**| Carga `.env`, valida credenciales y crea clientes (`getClient`, `createClient`) con un tope de comisión holgado. |
+| **storage.js** | **Persistencia Local**| `updateState`/`getState`: `state.json` por módulo más uno compartido por todo el curso, con escritura atómica. |
+| **resilience.js** | **Resiliencia de Red**| `withGasRetry`/`executeWithGas`, `waitForMirror`, `getAccountEvmAddress`, `ensureFunded`, `getJsonRpcSigner`. |
 | **transfer.js** | **Motores de Envío** | Simplificación de transferencias complejas de HBAR y tokens. |
 | **explorer.js** | **Links de Auditoría**| Generación de enlaces directos a HashScan para verificación. |
+
+---
+
+## 🛡️ Labs que siguen funcionando
+
+Las comisiones, el costo del gas y los tiempos del Mirror Node cambian con el tiempo. Los labs se mantienen confiables cuando usan estas utilidades en lugar de números fijos:
+
+| Problema | Usa | Por qué |
+| :--- | :--- | :--- |
+| `INSUFFICIENT_TX_FEE` | `getClient()` / `createClient()` | Los clientes traen un tope de 100 ℏ (`MAX_TRANSACTION_FEE_HBAR`). Solo se cobra la comisión real. Evita `setMaxTransactionFee` con valores bajos. |
+| `INSUFFICIENT_GAS` | `executeWithGas((gas) => tx.setGas(gas), client, { gas })`, `withGasRetry` para consultas | Reintenta duplicando el gas, hasta el límite de 15M. |
+| Datos que aún no están en el Mirror Node | `waitForMirror(async () => …)` | El Mirror Node muestra los datos nuevos unos segundos después del consenso. |
+| Paga una cuenta secundaria | `ensureFunded(client, accountId, minHbar)` | La recarga desde el operador antes de que se quede sin saldo. |
+| Dirección EVM de una cuenta | `getAccountEvmAddress(accountId)` | Devuelve el alias o la dirección long-zero que la red realmente usa. |
+| ethers / relay JSON-RPC | `getJsonRpcSigner(client, operatorKey)` | El relay solo asocia cuentas ECDSA con alias; crea una la primera vez si hace falta. |
+| Estado de otro módulo | `getState(key)` | Lee el `state.json` del módulo, luego el del curso y por último `.env`. |
+
+Todos los labs terminan igual: una falla impresa con `❌` marca `process.exitCode = 1` y el bloque de entrada termina el proceso, así ningún lab se queda colgado.
 
 ---
 

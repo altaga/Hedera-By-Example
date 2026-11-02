@@ -31,9 +31,11 @@
  */
 
 import { TopicMessageQuery } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Resolución de Directorio (HCS-2) ---\n')
 
   const { client } = getClient()
@@ -41,6 +43,7 @@ const main = async () => {
 
   if (!registryTopicId) {
     console.error('[❌ FALLO] No se encontró el ID del Registro HCS-2. Ejecuta Lab 02 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -55,7 +58,7 @@ const main = async () => {
     .setStartTime(0)
     .subscribe(
       client,
-      (error) => console.error(`[❌ FALLO] Nodo Espejo: ${error.message}`),
+      (error) => { console.error(`[❌ FALLO] Nodo Espejo: ${error.message}`); process.exit(1) },
       (message) => {
         try {
           // 1. Decodificación del mensaje HCS
@@ -87,15 +90,15 @@ const main = async () => {
     console.log('no necesita una API key para hallar reglas: simplemente lee el stream del registro')
     console.log('público y descubre los agentes activos automáticamente.')
     console.log('\n--- SESIÓN COMPLETADA ---')
-    process.exit(0)
+    process.exit()
   }, 5000)
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    // No salimos inmediatamente para permitir el flujo asíncrono del mirror node en el inicio
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

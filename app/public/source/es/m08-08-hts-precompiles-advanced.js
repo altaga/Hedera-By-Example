@@ -36,7 +36,7 @@ import {
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
 import fs from 'fs'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, executeWithGas } from '../M99_Utilities/index.js'
 
 const compile = (contractName, source) => {
   console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol...`)
@@ -62,11 +62,10 @@ const main = async () => {
     const bytecode = compile('AdvancedHTS', sourceCode)
 
     console.log('[⚙️ PROCESO] Desplegando el Contrato AdvancedHTS en la EVM...')
-    const contractTx = await new ContractCreateTransaction()
+    const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
       .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(100000)
-      .setAdminKey(adminKey)
-      .execute(client)
+      .setGas(gas)
+      .setAdminKey(adminKey), client, { gas: 100000 })
     let receipt = await contractTx.getReceipt(client)
     const contractId = receipt.contractId
     console.log(`[✅ ÉXITO] Contrato desplegado con ID: ${contractId.toString()}`)
@@ -93,14 +92,13 @@ const main = async () => {
     console.log('\n[⚙️ PROCESO] Llamando al Contrato Inteligente para Mintear 1000 Tokens (Precompilado 0x167)...')
     const mintAmount = 1000
 
-    const execTx = await new ContractExecuteTransaction()
+    const execTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(2000000)
+      .setGas(gas)
       .setFunction('mintFungibleToken', new ContractFunctionParameters()
         .addAddress(tokenId.toEvmAddress()) // La Dirección del Token
         .addUint64(mintAmount) // La Cantidad a Mintear
-      )
-      .execute(client)
+      ), client, { gas: 2000000 })
 
     const execRecord = await execTx.getRecord(client)
 
@@ -123,14 +121,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -35,11 +35,13 @@ import {
   HCS10Client,
   InboundTopicType
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, exitIfStuck } from '../M99_Utilities/index.js'
 
 getClient()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: Specialized Agent Provisioning Audit (HCS-11) ---\n')
 
   const accountId = process.env.ACCOUNT_1_ID
@@ -47,6 +49,7 @@ const main = async () => {
 
   if (!accountId || !privateKeyDer) {
     console.error('[❌ FAILED] Missing ACCOUNT_1_ID or its private key. Check Lab 00.')
+    process.exitCode = 1
     return
   }
 
@@ -126,14 +129,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] HCS-11 agent provisioning failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

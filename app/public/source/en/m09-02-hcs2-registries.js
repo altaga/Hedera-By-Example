@@ -54,6 +54,7 @@ const main = async () => {
 
   if (!targetAgentTopicId) {
     console.error('[❌ FAILED] Missing HCS-1 Topic ID. Please run Lab 01 first.')
+    process.exitCode = 1
     return
   }
 
@@ -107,16 +108,17 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Registry Lifecycle Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }
 
 export { buildHcs2RegistryMessage }

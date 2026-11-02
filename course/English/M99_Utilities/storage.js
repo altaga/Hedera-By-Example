@@ -30,40 +30,54 @@ export const updateEnv = (key, value) => {
   console.log(`\n✅ .env Synchronized: ${key}=${value}`)
 }
 
+// course/state.json is shared by every module, so a lab can read what an earlier
+// module created (e.g. M4 uses the token from M3). Each module keeps its own
+// state.json too, which wins when both have the key.
+const SHARED_STATE_PATH = path.resolve(path.dirname(import.meta.filename), '../../state.json')
+const moduleStatePath = () => path.join(path.dirname(process.argv[1]), 'state.json')
+
+const readJson = (file) => {
+  try {
+    return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : {}
+  } catch (_) {
+    return {} // a half-written or hand-edited file must not crash a lab
+  }
+}
+
+// Write to a temp file and rename it, so readers never see a partial file.
+const writeJsonAtomic = (file, data) => {
+  const tmp = `${file}.${process.pid}.tmp`
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2), 'utf8')
+  fs.renameSync(tmp, file)
+}
+
 /**
- * Persists a key-value pair to a local state.json file in the module directory.
+ * Persists a key-value pair to the module's state.json and to the course-wide
+ * state.json, so later labs in any module can read it.
  *
  * @param {string} key - The state key.
  * @param {any} value - The value to store.
  */
 export const updateState = (key, value) => {
-  const moduleDir = path.dirname(process.argv[1])
-  const statePath = path.join(moduleDir, 'state.json')
-
-  let state = {}
-  if (fs.existsSync(statePath)) {
-    state = JSON.parse(fs.readFileSync(statePath, 'utf8'))
+  for (const file of new Set([moduleStatePath(), SHARED_STATE_PATH])) {
+    const state = readJson(file)
+    state[key] = value
+    writeJsonAtomic(file, state)
   }
-
-  state[key] = value
-  fs.writeFileSync(statePath, JSON.stringify(state, null, 2), 'utf8')
   console.log(`\n✅ State Synchronized: ${key}=${value}`)
 }
 
 /**
- * Retrieves a value from the local state.json or fallback to process.env.
+ * Retrieves a value from the module's state.json, then the course-wide
+ * state.json, then process.env.
  *
  * @param {string} key - The state key.
  * @returns {any} The stored value.
  */
 export const getState = (key) => {
-  const moduleDir = path.dirname(process.argv[1])
-  const statePath = path.join(moduleDir, 'state.json')
-
-  if (fs.existsSync(statePath)) {
-    const state = JSON.parse(fs.readFileSync(statePath, 'utf8'))
-    if (state[key]) return state[key]
+  for (const file of [moduleStatePath(), SHARED_STATE_PATH]) {
+    const value = readJson(file)[key]
+    if (value !== undefined && value !== null && value !== '') return value
   }
-
   return process.env[key]
 }

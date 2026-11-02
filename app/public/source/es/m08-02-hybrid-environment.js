@@ -37,7 +37,7 @@ import {
   PrivateKey
 } from '@hiero-ledger/sdk'
 import { ethers } from 'ethers'
-import { getClient, getJsonRpcUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getJsonRpcUrl, getState, executeWithGas, getJsonRpcSigner } from '../M99_Utilities/index.js'
 
 // ABI de SimpleStorage (Necesario para que Ethers comprenda la interfaz)
 const ABI = [
@@ -51,11 +51,10 @@ const ABI = [
 const executeContractNatively = async (client, contractId, value) => {
   console.log(`[⚙️ PROCESO] Ruta 1: Ejecutando set(${value}) vía SDK Nativo (gRPC)...`)
 
-  const txResponse = await new ContractExecuteTransaction()
+  const txResponse = await executeWithGas((gas) => new ContractExecuteTransaction()
     .setContractId(contractId)
-    .setGas(2000000)
-    .setFunction('set', new ContractFunctionParameters().addUint256(value))
-    .execute(client)
+    .setGas(gas)
+    .setFunction('set', new ContractFunctionParameters().addUint256(value)), client, { gas: 2000000 })
 
   const receipt = await txResponse.getReceipt(client)
   console.log(`   └─ [✅ ÉXITO] Consenso Nativo: ${receipt.status.toString()}`)
@@ -91,6 +90,7 @@ const main = async () => {
 
   if (!contractId) {
     console.error('[❌ FALLO] Falta SC_STORAGE_ID en el estado local. Ejecuta Lab 01 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -106,7 +106,9 @@ const main = async () => {
     await executeContractNatively(client, contractId, 111)
 
     // EJECUCIÓN RUTA 2: Ethers.js
-    const rawEthersKey = PrivateKey.fromString(operatorKey).toStringRaw()
+    // El relay necesita una cuenta ECDSA cuya dirección EVM coincida con su llave (ver getJsonRpcSigner).
+    const signer = await getJsonRpcSigner(client, operatorKey)
+    const rawEthersKey = signer.privateKey.toStringRaw()
     await executeContractWithEthers(evmAddress, rawEthersKey, 222)
 
     // VERIFICACIÓN FINAL: Consulta cruzada del estado
@@ -127,14 +129,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La verificación híbrida falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

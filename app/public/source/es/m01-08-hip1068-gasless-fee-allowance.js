@@ -34,7 +34,7 @@
  */
 
 import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar, PrivateKey, Client } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Patrocinio de Gas y Asignaciones (HIP-1068) ---\n')
@@ -47,6 +47,7 @@ const main = async () => {
 
   if (!spenderId || !spenderKeyStr) {
     console.error('[❌ FALLO] Faltan ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en la configuración .env.')
+    process.exitCode = 1
     console.log('[ℹ️ INFO] Ejecuta M0 Lab 04 para aprovisionar cuentas secundarias primero.')
     return
   }
@@ -89,7 +90,9 @@ const main = async () => {
     console.log(`\n[⚙️ PROCESO] Etapa 2: Usuario (${spenderId}) transfiriendo ${SPONSORED_TRANSFER_HBAR} HBAR debitados de la asignación del patrocinador...`)
 
     // Inicializar instancia de cliente del usuario (La clave del patrocinador NO está presente aquí)
-    const spenderClient = Client.forTestnet()
+    // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
+    await ensureFunded(client, spenderId, 5)
+    const spenderClient = createClient()
     spenderClient.setOperator(spenderId, spenderKey)
 
     const transferTx = await new TransferTransaction()
@@ -132,9 +135,17 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error(`\n[❌ ERROR] Falló la Ejecución de Asignación Sin Gas: ${error.message}`)
+    process.exitCode = 1
     if (client) client.close()
     process.exit(1)
   }
 }
 
-main()
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
+}

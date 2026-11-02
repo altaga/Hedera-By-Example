@@ -40,7 +40,7 @@ import {
   TopicMessageSubmitTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Tópicos Monetizados HIP-991 ---\n')
@@ -93,7 +93,6 @@ const main = async () => {
       .setFeeScheduleKey(adminKey.publicKey)
       .addFeeExemptKey(adminKey.publicKey) // ¡El operador está exento de pagar peaje!
       .addCustomFee(topicCustomFee)
-      .setMaxTransactionFee(new Hbar(30))
       .freezeWith(client)
 
     const topicRes = await (await topicTx.sign(adminKey)).execute(client)
@@ -103,7 +102,7 @@ const main = async () => {
 
     // 4. El Agente Consumidor Envía un Mensaje Autorizando con `CustomFeeLimit`
     console.log('\n[⚙️ PROCESO] Paso 4: Agente Consumidor enviando consulta al Tópico Monetizado...')
-    const consumerClient = Client.forTestnet()
+    const consumerClient = createClient()
     consumerClient.setOperator(consumerId, consumerKey)
 
     const maxAllowedFee = new CustomFeeLimit()
@@ -122,7 +121,6 @@ const main = async () => {
         pair: 'HBAR/USD'
       }))
       .addCustomFeeLimit(maxAllowedFee)
-      .setMaxTransactionFee(new Hbar(1))
       .execute(consumerClient)
 
     const paidSubmitReceipt = await paidSubmitRes.getReceipt(consumerClient)
@@ -160,10 +158,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

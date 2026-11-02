@@ -99,7 +99,6 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Initializing on-chain HCS-25 Agent Reputation Topic...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-25:AI:TRUST:REGISTRY')
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
@@ -143,7 +142,6 @@ const main = async () => {
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(attestation))
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
@@ -189,10 +187,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

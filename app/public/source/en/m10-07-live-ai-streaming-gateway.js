@@ -41,7 +41,7 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Synthetic AI LLM Token Generator (Simulates live LLM inference)
@@ -55,6 +55,8 @@ const INFERENCE_TOKENS = [
 ]
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'the demo server to finish')
   console.log('--- SESSION START: Live AI Streaming Proxy Gateway (SSE + x402) ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const serverPort = 8402
@@ -267,10 +269,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

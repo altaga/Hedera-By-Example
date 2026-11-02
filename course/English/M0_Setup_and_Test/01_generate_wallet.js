@@ -25,7 +25,7 @@
  */
 
 import { PrivateKey } from '@hiero-ledger/sdk'
-import { updateEnv } from '../M99_Utilities/index.js'
+import { updateEnv, loadEnv } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Hedera ECDSA Wallet Generation ---\n')
@@ -43,10 +43,19 @@ const main = async () => {
   console.log(`[📊 LOG] Public Key:  ${publicKey.toStringDer()}`)
   console.log(`[📊 LOG] EVM Address: 0x${evmAddress}`)
 
-  // 3. Save to .env as OPERATOR keys
-  console.log('\n[ℹ️ INFO] Synchronizing .env file...')
-  updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
-  updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+  // 3. Save to .env as OPERATOR keys, unless an operator is already configured:
+  //    overwriting only the key would leave OPERATOR_ID pointing at an account
+  //    this new key does not control, and every later lab would fail.
+  loadEnv()
+  if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
+    console.log(`\n[ℹ️ INFO] An operator is already configured (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
+    console.log('[ℹ️ INFO] The new key was NOT saved, so your current credentials keep working.')
+    console.log('[ℹ️ INFO] To use this key as your operator, remove OPERATOR_ID and OPERATOR_PRIVATE_KEY from .env and run this lab again.')
+  } else {
+    console.log('\n[ℹ️ INFO] Synchronizing .env file...')
+    updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
+    updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+  }
 
   console.log('\n=======================================================')
   console.log('ACTION REQUIRED: FUND YOUR WALLET TO OBTAIN AN ACCOUNT ID')
@@ -67,10 +76,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

@@ -42,7 +42,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, updateState, sleep, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 /**
  * Queries account balance in tinybars and HBAR using the Hedera Mirror Node REST API.
@@ -78,7 +78,6 @@ const main = async () => {
     const agentCreateTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(zeroGasAgentKey.publicKey)
       .setInitialBalance(new Hbar(0)) // Literally 0.0000 HBAR!
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const agentReceipt = await agentCreateTx.getReceipt(client)
@@ -99,7 +98,6 @@ const main = async () => {
       .setAccountId(zeroGasAgentId)
       .setAccountMemo('HIP-1068:Gasless-Agent-Verified')
       .setTransactionId(TransactionId.generate(sponsorAccountId))
-      .setMaxTransactionFee(new Hbar(1))
       .freezeWith(client)
 
     // Agent signs to authorize its own state mutation; Sponsor signs to pay the network fee
@@ -122,21 +120,21 @@ const main = async () => {
 
     const allowanceTx = await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(sponsorAccountId, delegateSpenderId, allowanceAmount)
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const allowanceReceipt = await allowanceTx.getReceipt(client)
     console.log(`[✅ SUCCESS] Allowance Approved! Status: ${allowanceReceipt.status.toString()}`)
 
     // Spender transfers 0.25 HBAR from Sponsor's treasury to the Zero-Gas Agent without Sponsor's signature
     console.log(`\n[⚙️ PROCESS] Spender (${delegateSpenderId}) drawing 0.25 HBAR from Sponsor's allowance to fund Agent (${zeroGasAgentId})...`)
-    const spenderClient = Client.forTestnet()
+    // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
+    await ensureFunded(client, delegateSpenderId, 5)
+    const spenderClient = createClient()
     spenderClient.setOperator(delegateSpenderId, delegateSpenderKey)
 
     const allowanceTransfer = await new TransferTransaction()
       .addApprovedHbarTransfer(sponsorAccountId, new Hbar(-0.25))
       .addHbarTransfer(zeroGasAgentId, new Hbar(0.25))
       .setTransactionMemo('HIP-1068:DelegatedAllowanceSpend')
-      .setMaxTransactionFee(new Hbar(1))
       .execute(spenderClient)
     const transferReceipt = await allowanceTransfer.getReceipt(spenderClient)
     spenderClient.close()
@@ -179,10 +177,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

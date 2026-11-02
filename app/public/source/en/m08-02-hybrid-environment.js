@@ -32,7 +32,7 @@ import {
   ContractExecuteTransaction, ContractFunctionParameters,
   Hbar, ContractInfoQuery
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, executeWithGas, getJsonRpcSigner } from '../M99_Utilities/index.js'
 import { ethers } from 'ethers'
 
 // SimpleStorage ABI (Required for Ethers interaction)
@@ -47,11 +47,10 @@ const ABI = [
 const executeContractNatively = async (client, contractId, value) => {
   console.log(`[⚙️ PROCESS] Path 1: Executing set(${value}) via Native Hedera SDK (gRPC)...`)
 
-  const txResponse = await new ContractExecuteTransaction()
+  const txResponse = await executeWithGas((gas) => new ContractExecuteTransaction()
     .setContractId(contractId)
-    .setGas(2000000)
-    .setFunction('set', new ContractFunctionParameters().addUint256(value))
-    .execute(client)
+    .setGas(gas)
+    .setFunction('set', new ContractFunctionParameters().addUint256(value)), client, { gas: 2000000 })
 
   const receipt = await txResponse.getReceipt(client)
   console.log(`[✅ SUCCESS] Native Call Successful (Status: ${receipt.status.toString()})`)
@@ -88,6 +87,7 @@ const main = async () => {
 
   if (!contractId) {
     console.error('[❌ FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
+    process.exitCode = 1
     return
   }
 
@@ -104,7 +104,9 @@ const main = async () => {
 
     // PATH 2: Ethers.js
     // We pass the RAW hex string to Ethers, as it cannot handle DER-prefixes (3030...)
-    const rawEthersKey = PrivateKey.fromString(operatorKey).toStringRaw()
+    // The relay needs an ECDSA account whose EVM address matches its key (see getJsonRpcSigner).
+    const signer = await getJsonRpcSigner(client, operatorKey)
+    const rawEthersKey = signer.privateKey.toStringRaw()
     await executeContractWithEthers(evmAddress, rawEthersKey, 222)
 
     // FINAL VERIFICATION: Query the state
@@ -126,14 +128,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Hybrid Verification Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

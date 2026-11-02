@@ -29,7 +29,7 @@
  */
 
 import { PrivateKey } from '@hiero-ledger/sdk'
-import { updateEnv } from '../M99_Utilities/index.js'
+import { updateEnv, loadEnv } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Generación de Identidad Soberana ---\n')
@@ -49,10 +49,19 @@ const main = async () => {
     console.log(`[📊 REGISTRO] Llave Pública (DER): ${publicKey.toStringDer()}`)
     console.log(`[📊 REGISTRO] Dirección EVM (Alias): 0x${evmAddress}`)
 
-    // PASO 3: Persistir las llaves en el archivo .env
-    console.log('\n[ℹ️ INFO] Sincronizando credenciales en el archivo .env...')
-    updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
-    updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+    // PASO 3: Persistir las llaves en el archivo .env, salvo que ya haya un operador:
+    //    sobrescribir solo la llave dejaría OPERATOR_ID apuntando a una cuenta que
+    //    esta llave nueva no controla, y todos los labs siguientes fallarían.
+    loadEnv()
+    if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
+      console.log(`\n[ℹ️ INFO] Ya hay un operador configurado (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
+      console.log('[ℹ️ INFO] La llave nueva NO se guardó, así que tus credenciales actuales siguen funcionando.')
+      console.log('[ℹ️ INFO] Para usar esta llave como operador, quita OPERATOR_ID y OPERATOR_PRIVATE_KEY de .env y vuelve a correr este lab.')
+    } else {
+      console.log('\n[ℹ️ INFO] Sincronizando credenciales en el archivo .env...')
+      updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
+      updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+    }
 
     console.log('\n[ℹ️ INFO] ACCIÓN REQUERIDA: FINANCIA TU BILLETERA')
     console.log('-------------------------------------------------------')
@@ -71,14 +80,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] Fallo en la generación de billetera:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

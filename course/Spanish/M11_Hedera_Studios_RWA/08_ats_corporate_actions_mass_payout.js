@@ -266,10 +266,14 @@ const main = async () => {
   console.log('====================================================================')
 
   client.close()
-  process.exit(0)
+  process.exit()
 }
 
-main().catch((err) => {
-  console.error('Error fatal de ejecución:', err)
-  process.exit(1)
-})
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
+}

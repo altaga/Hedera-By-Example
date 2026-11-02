@@ -33,11 +33,13 @@ import * as crypto from 'crypto'
 import dotenv from 'dotenv'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AgentCommunicationHandler, getState, sleep } from '../M99_Utilities/index.js'
+import { AgentCommunicationHandler, getState, sleep, exitIfStuck } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: Full-Duplex RSA Encrypted Streams ---\n')
 
   // --- CONFIGURATION ---
@@ -51,6 +53,7 @@ const main = async () => {
 
   if (!agentA_Id || !agentB_Id || !agentA_Inbox || !agentB_Inbox) {
     console.error('[❌ FAILED] Missing Agent data or Inbox Topics in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -135,7 +138,7 @@ const main = async () => {
           console.log('Encryption on top of ECDSA session validation to create the gold')
           console.log('standard for secure Agentic communication on Hedera.')
           console.log('\n--- SESSION COMPLETE ---\n')
-          process.exit(0)
+          process.exit()
         }
       }
     })
@@ -152,8 +155,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => {
-    console.error('[❌ FAILED] Execution Error:', err)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

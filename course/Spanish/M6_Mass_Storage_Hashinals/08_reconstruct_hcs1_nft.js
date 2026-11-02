@@ -25,7 +25,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -37,14 +37,19 @@ const main = async () => {
 
   if (!tokenId) {
     console.error('[❌ FALLÓ] Falta el ID del Token en el estado. Ejecuta el Lab 07 primero.')
+    process.exitCode = 1
     return
   }
 
   try {
     // 1. Obtener Puntero de Metadatos (Serial #1)
     console.log(`[⚙️ PROCESO] Obteniendo Puntero de Metadatos para ${tokenId} Serial 1...`)
-    const nftResponse = await fetch(`${mirrorNodeUrl}/api/v1/tokens/${tokenId}/nfts/1`)
-    if (!nftResponse.ok) throw new Error(`Token no encontrado o error de Mirror Node: ${nftResponse.statusText}`)
+    // Un NFT recién acuñado aparece en el Mirror Node unos segundos después del consenso.
+    const nftResponse = await waitForMirror(async () => {
+      const res = await fetch(`${mirrorNodeUrl}/api/v1/tokens/${tokenId}/nfts/1`)
+      return res.ok ? res : null
+    })
+    if (!nftResponse) throw new Error(`Token no encontrado o error de Mirror Node: ${tokenId}/nfts/1`)
 
     const nftData = await nftResponse.json()
     const rawMetadata = Buffer.from(nftData.metadata, 'base64').toString()
@@ -139,7 +144,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLÓ] Reconstrucción Fallida:', error.message)
+    process.exitCode = 1
   }
 }
 
-main().catch(console.error)
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
+}

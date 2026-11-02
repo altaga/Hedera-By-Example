@@ -30,11 +30,13 @@
 import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import dotenv from 'dotenv'
-import { getState, sleep } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 dotenv.config()
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: Public Stream Vulnerability Audit ---\n')
 
   // --- CONFIGURATION ---
@@ -50,12 +52,13 @@ const main = async () => {
 
   if (!agentA_Id || !agentB_Id || !agentC_Id) {
     console.error('[❌ FAILED] Missing Agent IDs in configuration.')
+    process.exitCode = 1
     return
   }
 
   // --- AGENT B: THE VULNERABLE SERVICE ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     console.log(`🛡️  [ℹ️ INFO] Agent B Listening on ${inbox} (Vulnerable Mode)`)
@@ -88,7 +91,7 @@ const main = async () => {
 
   // --- AGENT A: THE TARGET INITIATOR ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
@@ -120,7 +123,7 @@ const main = async () => {
             console.log('our agents are defenseless against malicious actors who know')
             console.log('the protocol format.')
             console.log('\n--- SESSION COMPLETE ---\n')
-            process.exit(0)
+            process.exit()
           }
         }
       })
@@ -149,8 +152,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => {
-    console.error('[❌ FAILED] Execution Error:', err)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

@@ -41,6 +41,7 @@ const main = async () => {
 
   if (!agentId) {
     console.error('[❌ FALLO] HCS11_AGENT_C_ID no encontrado. Ejecuta Lab 04 primero.')
+    process.exitCode = 1
     return
   }
 
@@ -82,14 +83,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La generación del UAID falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

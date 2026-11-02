@@ -28,9 +28,11 @@
  */
 
 import { TopicMessageQuery } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: HCS-2 Registry Discovery (MirroNode Query) ---\n')
   const { client } = getClient()
 
@@ -39,6 +41,7 @@ const main = async () => {
 
   if (!registryTopicId) {
     console.error('[❌ FAILED] Missing Registry Topic ID. Please run Lab 02 first.')
+    process.exitCode = 1
     return
   }
 
@@ -55,6 +58,7 @@ const main = async () => {
       client,
       (error) => {
         console.error(`\n[❌ FAILED] Mirror Node Subscription Failed: ${error.message}`)
+        process.exitCode = 1
       },
       (message) => {
         try {
@@ -92,15 +96,15 @@ const main = async () => {
     console.log('doesn\'t need an API key to find the Anti-Cheat rules. It simply reads')
     console.log('the public registry stream and discovers the active Agents automatically.')
     console.log('\n--- SESSION COMPLETE ---')
-    process.exit(0)
+    process.exit()
   }, 6000)
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    // Wait for async stream
-  }).catch((error) => {
-    console.error('[❌ FAILED] Discovery Script Failed:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

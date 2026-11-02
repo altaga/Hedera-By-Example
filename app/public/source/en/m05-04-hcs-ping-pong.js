@@ -30,7 +30,7 @@ import {
   TopicMessageQuery,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 
 class HcsNode {
   constructor (name, client, topicId) {
@@ -72,6 +72,8 @@ class HcsNode {
 }
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: HCS Precision Latency Teardown ---\n')
 
   const { client } = getClient()
@@ -79,6 +81,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -134,7 +137,7 @@ const main = async () => {
           renderFinalReport(benchmarkResults)
           console.log('\n--- SESSION COMPLETE ---')
           client.close()
-          process.exit(0)
+          process.exit()
         }
       }
     }, 100)
@@ -182,12 +185,15 @@ const main = async () => {
     console.log('globally recognized.')
   } catch (error) {
     console.error('\n[❌ FAILED] Benchmark Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

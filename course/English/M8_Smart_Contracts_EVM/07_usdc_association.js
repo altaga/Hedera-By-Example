@@ -65,15 +65,16 @@ const main = async () => {
       console.log('\n✔ [📊 LOG] Note: Operator is already associated. Skipping.')
     } else {
       console.error(`\n[❌ FAILED] ASSOCIATION FAILED: ${error.message}`)
+      process.exitCode = 1
     }
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

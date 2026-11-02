@@ -32,9 +32,11 @@ import {
   TopicMessageSubmitTransaction,
   TopicMessageQuery
 } from '@hiero-ledger/sdk'
-import { getClient } from '../M99_Utilities/index.js'
+import { getClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'subscription messages')
   console.log('--- SESSION START: HCS-6 Registry ---\n')
 
   const { client } = getClient()
@@ -86,7 +88,7 @@ const main = async () => {
         .setStartTime(0)
         .subscribe(
           client,
-          (error) => console.error('[❌ FAILED] Subscription Error:', error),
+          (error) => { console.error('[❌ FAILED] Subscription Error:', error); process.exit(1) },
           (message) => {
             const content = Buffer.from(message.contents).toString('utf8')
             try {
@@ -117,14 +119,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Execution Error:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

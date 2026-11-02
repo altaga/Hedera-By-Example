@@ -37,11 +37,13 @@ import {
   HCS10Client,
   InboundTopicType
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, exitIfStuck } from '../M99_Utilities/index.js'
 
 getClient()
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Provisión de Agentes Especializados (HCS-11) ---\n')
 
   const accountId = process.env.ACCOUNT_1_ID
@@ -49,6 +51,7 @@ const main = async () => {
 
   if (!accountId || !privateKeyDer) {
     console.error('[❌ FALLO] Falta ACCOUNT_1_ID o su llave privada. Verifica el Lab 00.')
+    process.exitCode = 1
     return
   }
 
@@ -128,14 +131,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La provisión del agente HCS-11 falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -29,8 +29,8 @@
  * ============================================================================
  */
 
-import { AccountId, AccountUpdateTransaction, PrivateKey } from '@hiero-ledger/sdk'
-import { getClient, updateEnv } from '../M99_Utilities/index.js'
+import { AccountId, AccountInfoQuery, AccountUpdateTransaction, PrivateKey } from '@hiero-ledger/sdk'
+import { getClient } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Rotación de Credenciales ---\n')
@@ -41,6 +41,7 @@ const main = async () => {
 
   if (!targetId || !targetKey) {
     console.error('[❌ FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
+    process.exitCode = 1
     return
   }
 
@@ -71,13 +72,26 @@ const main = async () => {
 
     console.log(`\n[✅ ÉXITO] Estado de Rotación en el Ledger: ${receipt.status.toString()}`)
 
-    // 4. AUTO-SYNC: Actualizar el archivo .env
-    console.log('[ℹ️ INFO] Sincronizando nuevas credenciales en el archivo .env...')
-    updateEnv('ACCOUNT_1_PRIVATE_KEY', newKeyStr)
-    updateEnv('ACCOUNT_1_EVM_ADDRESS', '0x' + newPublicKey.toEvmAddress())
+    // 4. Verificar en la red que la cuenta ahora responde a la llave nueva
+    const info = await new AccountInfoQuery().setAccountId(targetId).execute(client)
+    if (info.key.toString() !== newPublicKey.toString()) {
+      throw new Error('La red sigue reportando la llave anterior después de la rotación.')
+    }
+    console.log(`[✅ ÉXITO] La red confirma la llave nueva: ${newPublicKey.toStringRaw().slice(0, 20)}...`)
 
-    console.log('\n[📊 REGISTRO] Rotación completada exitosamente.')
-    console.log(`[📊 REGISTRO] Nueva Llave Guardada: ${newKeyStr.substring(0, 45)}...`)
+    // 5. Rotar de vuelta para que ACCOUNT_1 siga coincidiendo con ACCOUNT_1_PRIVATE_KEY de tu .env.
+    //    Aplica la misma regla de doble firma: llave actual (nueva) + llave entrante (original).
+    //    En producción conservarías la llave nueva y la guardarías en tu gestor de secretos.
+    console.log('[⚙️ PROCESO] Rotando de vuelta a la llave original para poder repetir este lab...')
+    const restoreTx = await new AccountUpdateTransaction()
+      .setAccountId(AccountId.fromString(targetId))
+      .setKey(oldPrivateKey.publicKey)
+      .freezeWith(client)
+    await restoreTx.sign(newPrivateKey)
+    await restoreTx.sign(oldPrivateKey)
+    const restoreReceipt = await (await restoreTx.execute(client)).getReceipt(client)
+    console.log(`[✅ ÉXITO] Llave original restaurada: ${restoreReceipt.status.toString()}`)
+    console.log(`[📊 REGISTRO] Llave temporal usada en la demo: ${newKeyStr.slice(0, 45)}...`)
 
     console.log('\n💡 CONCEPTO CLAVE:')
     console.log('Al desacoplar la Identidad (0.0.X) de la Credencial (Key),')
@@ -89,14 +103,15 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     console.error('\n[❌ FALLO] La rotación de llaves falló:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FALLO] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

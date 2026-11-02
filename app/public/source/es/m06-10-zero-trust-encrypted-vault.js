@@ -276,6 +276,7 @@ const main = async () => {
 
       reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
       console.error('[❌ ERROR] Violación de seguridad: ¡Se aceptó un texto cifrado alterado!')
+      process.exitCode = 1
     } catch (tamperErr) {
       console.log(`[✅ ÉXITO] Intento de alteración detectado y bloqueado por GMAC de AES-GCM: "${tamperErr.message}"`)
     }
@@ -300,10 +301,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Fallo de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

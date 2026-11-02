@@ -26,7 +26,7 @@
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, getState, waitForMirror } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
@@ -41,6 +41,7 @@ const main = async () => {
 
   if (!topicId) {
     console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration. Run Lab 04 first.')
+    process.exitCode = 1
     return
   }
 
@@ -52,24 +53,41 @@ const main = async () => {
      * We must increment through pages using the 'links.next' field to ensure
      * we get every shard of the file.
      */
-    let nextLink = `/api/v1/topics/${topicId}/messages`
-    const allMessages = []
-
-    console.log('[ℹ️ INFO] Fetching shards from Mirror Node...')
-
-    while (nextLink) {
-      const response = await fetch(`${getMirrorNodeBaseUrl()}${nextLink}`)
-      if (!response.ok) {
-        throw new Error(`Mirror Node API failed: ${response.statusText}`)
+    const fetchAllMessages = async () => {
+      let nextLink = `/api/v1/topics/${topicId}/messages`
+      const messages = []
+      while (nextLink) {
+        const response = await fetch(`${getMirrorNodeBaseUrl()}${nextLink}`)
+        if (!response.ok) {
+          throw new Error(`Mirror Node API failed: ${response.statusText}`)
+        }
+        const data = await response.json()
+        messages.push(...data.messages)
+        nextLink = data.links?.next || null
       }
-
-      const data = await response.json()
-      allMessages.push(...data.messages)
-      nextLink = data.links?.next || null
+      return messages
     }
 
+    // Each HCS-1 shard carries the total count (t). The Mirror Node lists messages a
+    // few seconds after consensus, so wait until every shard of the latest file is there.
+    const hasAllShards = (messages) => {
+      const parsed = messages
+        .map((m) => { try { return JSON.parse(Buffer.from(m.message, 'base64').toString()) } catch (_) { return null } })
+        .filter((sh) => sh && sh.h === 'hcs-1')
+      if (!parsed.length) return false
+      const latest = parsed[parsed.length - 1]
+      return parsed.filter((sh) => sh.fid === latest.fid).length >= latest.t
+    }
+
+    console.log('[ℹ️ INFO] Fetching shards from Mirror Node...')
+    const allMessages = (await waitForMirror(async () => {
+      const messages = await fetchAllMessages()
+      return hasAllShards(messages) ? messages : null
+    }, { timeoutMs: 60_000 })) || await fetchAllMessages()
+
     if (allMessages.length === 0) {
-      console.log('[ℹ️ INFO] No messages found yet. Wait a few seconds for Mirror Node sync...')
+      console.error('[❌ FAILED] No messages found in this topic. Run Lab 04 first.')
+      process.exitCode = 1
       return
     }
 
@@ -137,14 +155,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Reconstruction Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

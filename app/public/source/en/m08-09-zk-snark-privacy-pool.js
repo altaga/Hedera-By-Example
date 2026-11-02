@@ -45,7 +45,7 @@ import {
   PrivateKey,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, executeWithGas } from '../M99_Utilities/index.js'
 import solc from 'solc'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
@@ -125,11 +125,10 @@ const main = async () => {
       console.log(`[✅ SUCCESS] Contract Compiled! Bytecode Length: ${bytecode.length} hex chars (${bytecode.length / 2} bytes)`)
 
       console.log('\n[⚙️ PROCESS] Step 1: Deploying ZkPrivacyPool directly to Hedera EVM (Direct Bytecode)...')
-      const deployTx = await new ContractCreateTransaction()
+      const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
-        .setGas(300000)
-        .setAdminKey(adminKey)
-        .execute(client)
+        .setGas(gas)
+        .setAdminKey(adminKey), client, { gas: 300000 })
 
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
@@ -157,12 +156,11 @@ const main = async () => {
 
     // 3. Anonymous Deposit into Privacy Pool (0.01 HBAR)
     console.log('\n[⚙️ PROCESS] Step 3: Depositing 0.01 HBAR into Pool with Commitment...')
-    const depositTx = await new ContractExecuteTransaction()
+    const depositTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(250000)
+      .setGas(gas)
       .setPayableAmount(new Hbar(0.01))
-      .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer))
-      .execute(client)
+      .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer)), client, { gas: 250000 })
 
     const depositReceipt = await depositTx.getReceipt(client)
     console.log(`[✅ SUCCESS] Deposit Confirmed! Consensus Status: ${depositReceipt.status.toString()}`)
@@ -181,15 +179,14 @@ const main = async () => {
     // Reveal nullifier and secret to the smart contract:
     // The contract computes Keccak256(nullifier, secret) on-chain, validates the commitment,
     // marks the nullifier as spent, and releases the 0.01 HBAR to the stealth address!
-    const withdrawTx = await new ContractExecuteTransaction()
+    const withdrawTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
-      .setGas(300000)
+      .setGas(gas)
       .setFunction('withdraw', new ContractFunctionParameters()
         .addBytes32(nullifier)
         .addBytes32(secret)
         .addAddress(stealthRecipientAddress)
-      )
-      .execute(client)
+      ), client, { gas: 300000 })
 
     const withdrawReceipt = await withdrawTx.getReceipt(client)
     console.log(`[✅ SUCCESS] Confidential Withdrawal Settled! Status: ${withdrawReceipt.status.toString()}`)
@@ -209,18 +206,18 @@ const main = async () => {
     // 6. Test Double-Spend & Replay Defense (Adversarial Simulation)
     console.log('\n[⚙️ PROCESS] Step 6: Testing Double-Spend Replay Defense (Adversarial Simulation)...')
     try {
-      const replayTx = await new ContractExecuteTransaction()
+      const replayTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(contractId)
-        .setGas(300000)
+        .setGas(gas)
         .setFunction('withdraw', new ContractFunctionParameters()
           .addBytes32(nullifier)
           .addBytes32(secret)
           .addAddress(stealthRecipientAddress)
-        )
-        .execute(client)
+        ), client, { gas: 300000 })
 
       await replayTx.getReceipt(client)
       console.error('[❌ ERROR] Security violation: Replay attack succeeded!')
+      process.exitCode = 1
     } catch (replayError) {
       console.log('[✅ SUCCESS] Double-spend attack successfully rejected by EVM nullifier check!')
       console.log(`[📊 LOG] Expected Revert Reason: "${replayError.message}"`)
@@ -246,10 +243,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Execution Failure:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

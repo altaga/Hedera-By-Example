@@ -42,7 +42,7 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Generador Sintético de Tokens de LLM (Simula inferencia en streaming en vivo)
@@ -57,6 +57,8 @@ const INFERENCE_TOKENS = [
 ]
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'a que termine el servidor de la demo')
   console.log('--- INICIO DE SESIÓN: Pasarela Proxy de Streaming de IA (SSE + x402) ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const serverPort = 8403
@@ -269,10 +271,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Fallo de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

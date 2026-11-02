@@ -32,9 +32,11 @@
 
 import { Client, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
 const main = async () => {
+  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
+  exitIfStuck(180_000, 'mensajes de la suscripción')
   const sessionStart = new Date(Date.now() - 10000)
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Orquestación A2A Autónoma (HCS-10) ---\n')
 
@@ -49,12 +51,13 @@ const main = async () => {
 
   if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
     console.error('[❌ FALLO] Faltan identidades de agentes o canales de comunicación.')
+    process.exitCode = 1
     return
   }
 
   // --- COMPONENTE: AGENTE B (Servicio Reactivo) ---
   const startAgentB = async () => {
-    const client = Client.forTestnet().setOperator(agentB_Id, agentB_Key)
+    const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
     const processedMessages = new Set()
 
@@ -65,7 +68,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         client,
-        (err) => console.error(` [❌ FALLO] Mirror Node Agente B: ${err.message}`),
+        (err) => { console.error(` [❌ FALLO] Mirror Node Agente B: ${err.message}`); process.exit(1) },
         async (msg) => {
           const tsString = msg.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -102,7 +105,7 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Iniciador de Secuencia) ---
   const startAgentA = async () => {
-    const client = Client.forTestnet().setOperator(agentA_Id, agentA_Key)
+    const client = createClient().setOperator(agentA_Id, agentA_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
     const processedMessages = new Set()
 
@@ -127,7 +130,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         client,
-        (err) => console.error(` [❌ FALLO] Mirror Node Agente A: ${err.message}`),
+        (err) => { console.error(` [❌ FALLO] Mirror Node Agente A: ${err.message}`); process.exit(1) },
         async (msg) => {
           const tsString = msg.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -152,7 +155,7 @@ const main = async () => {
               console.log('donde dos agentes actúan como un "Enjambre". Al desacoplar los agentes y usar')
               console.log('el ledger como capa de coordinación, se crea un sistema tolerante a fallos y auditable.')
               console.log('\n--- SESIÓN COMPLETADA ---\n')
-              setTimeout(() => process.exit(0), 1000)
+              setTimeout(() => process.exit(), 1000)
             }
           }
         }
@@ -167,5 +170,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().catch(err => console.error('[❌ FALLO] Error de Orquestación A2A:', err.message))
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

@@ -34,7 +34,7 @@
 
 import http from 'http'
 import { EventEmitter } from 'events'
-import { getClient, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, exitIfStuck } from '../M99_Utilities/index.js'
 
 /**
  * Enterprise Reactive Ledger Event Bus.
@@ -108,6 +108,8 @@ class LedgerEventBus extends EventEmitter {
 }
 
 const main = async () => {
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'the demo server to finish')
   console.log('--- SESSION START: Real-Time WebSocket Ledger Event Bus ---\n')
 
   const { client, operatorId } = getClient()
@@ -188,10 +190,18 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error(`\n[❌ FAILED] Event Bus Error: ${error.message}`)
+    process.exitCode = 1
     await eventBus.close()
     if (client) client.close()
     process.exit(1)
   }
 }
 
-main()
+if (process.argv[1] && import.meta.filename === process.argv[1]) {
+  main()
+    .then(() => { if (process.exitCode) process.exit() })
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
+}

@@ -43,7 +43,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, updateState, sleep, createClient, ensureFunded } from '../M99_Utilities/index.js'
 
 /**
  * Consulta el balance de una cuenta en tinybars y HBAR mediante el REST API del Mirror Node.
@@ -79,7 +79,6 @@ const main = async () => {
     const agentCreateTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(zeroGasAgentKey.publicKey)
       .setInitialBalance(new Hbar(0)) // ¡Literalmente 0.0000 HBAR!
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
 
     const agentReceipt = await agentCreateTx.getReceipt(client)
@@ -100,7 +99,6 @@ const main = async () => {
       .setAccountId(zeroGasAgentId)
       .setAccountMemo('HIP-1068:Gasless-Agent-Verified')
       .setTransactionId(TransactionId.generate(sponsorAccountId))
-      .setMaxTransactionFee(new Hbar(1))
       .freezeWith(client)
 
     // El Agente firma para autorizar el cambio en su cuenta; el Patrocinador firma para pagar el gas
@@ -123,21 +121,21 @@ const main = async () => {
 
     const allowanceTx = await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(sponsorAccountId, delegateSpenderId, allowanceAmount)
-      .setMaxTransactionFee(new Hbar(2))
       .execute(client)
     const allowanceReceipt = await allowanceTx.getReceipt(client)
     console.log(`[✅ ÉXITO] ¡Asignación Aprobada! Estado: ${allowanceReceipt.status.toString()}`)
 
     // El Operador transfiere 0.25 HBAR de la tesorería del Patrocinador al Agente 0-HBAR sin la firma del Patrocinador
     console.log(`\n[⚙️ PROCESO] Operador (${delegateSpenderId}) debitando 0.25 HBAR de la asignación del Patrocinador hacia el Agente (${zeroGasAgentId})...`)
-    const spenderClient = Client.forTestnet()
+    // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
+    await ensureFunded(client, delegateSpenderId, 5)
+    const spenderClient = createClient()
     spenderClient.setOperator(delegateSpenderId, delegateSpenderKey)
 
     const allowanceTransfer = await new TransferTransaction()
       .addApprovedHbarTransfer(sponsorAccountId, new Hbar(-0.25))
       .addHbarTransfer(zeroGasAgentId, new Hbar(0.25))
       .setTransactionMemo('HIP-1068:DelegatedAllowanceSpend')
-      .setMaxTransactionFee(new Hbar(1))
       .execute(spenderClient)
     const transferReceipt = await allowanceTransfer.getReceipt(spenderClient)
     spenderClient.close()
@@ -180,10 +178,10 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ ERROR] Error de Ejecución:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      process.exit(1)
+    })
 }

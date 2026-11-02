@@ -38,6 +38,7 @@ const main = async () => {
 
   if (!userId || !userKey || !nftTokenId) {
     console.error('[❌ FAILED] Missing ACCOUNT_1_ID, ACCOUNT_1_PRIVATE_KEY, or NFT_TOKEN_ID in configuration.')
+    process.exitCode = 1
     return
   }
 
@@ -82,14 +83,15 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[❌ FAILED] Atomic Swap Failed:', error.message)
+    process.exitCode = 1
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => {
-    process.exit(0)
-  }).catch((error) => {
-    console.error('[❌ FAILED] Execution Error:', error.message)
-    process.exit(1)
-  })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[❌ FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }
