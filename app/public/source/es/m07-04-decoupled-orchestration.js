@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Orquestación Desacoplada y Quórum
- * [ CONCEPTO CLAVE ]
+ * [ CONCEPTO ] Recolección de Fragmentos de Firma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Orquestación sin Confianza: Una de las ventajas más potentes de las

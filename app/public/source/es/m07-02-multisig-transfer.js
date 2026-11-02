@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Probando la Autoridad de la Multi-firma
- * [ CONCEPTO CLAVE ]
+ * [ CONCEPTO ] Capa de Permisos Aplicada Criptográficamente
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Capa de Cumplimiento: En sistemas tradicionales, la lógica de permisos

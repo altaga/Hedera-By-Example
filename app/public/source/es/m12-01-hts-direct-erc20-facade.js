@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Fachada Directa HTS como ERC-20 (Ejecución en Solidity)
- * [ CONCEPTO CLAVE ] Compatibilidad Directa Solidity ERC-20 con HIP-719
+ * [ CONCEPTO ] Compatibilidad Directa Solidity ERC-20 con HIP-719
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Adiós al Precompilado 0x167: Históricamente, interactuar con un token HTS desde

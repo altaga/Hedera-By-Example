@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Creación Nativa de Cuentas (Provisionamiento)
- * [ CONCEPTO CLAVE ] Idempotencia y Orquestación del Entorno
+ * [ CONCEPTO ] Idempotencia y Orquestación del Entorno
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Independencia de la Tesorería: Usar cuentas secundarias permite observar

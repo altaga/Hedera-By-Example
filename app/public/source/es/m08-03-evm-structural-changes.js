@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Ciclo de Vida de Contratos y Renta de Almacenamiento
- * [ CONCEPTO CLAVE ]
+ * [ CONCEPTO ] Sostenibilidad Operativa y Gestión del Estado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Ledger Sostenible: A diferencia de otras redes donde el almacenamiento

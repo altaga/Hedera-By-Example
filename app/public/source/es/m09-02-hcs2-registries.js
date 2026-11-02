@@ -2,9 +2,9 @@
 /**
  * ============================================================================
  * Lab 02: Registros de Temas HCS-2
- * [ CONCEPTO CLAVE ] Descubrimiento de Servicios Descentralizados
+ * [ CONCEPTO ] Descubrimiento de Servicios Descentralizados
  * ============================================================================
- * [ MOMENTO DE APRENDIZAJE ]
+ * [ CONCEPTO CLAVE ]
  * Páginas Amarillas Descentralizadas: HCS-2 define un estándar de metadatos
  * para convertir temas de HCS en directorios legibles por máquinas. Al
  * utilizar el encabezado `h: "hcs-2"`, cualquier billetera o explorador
@@ -13,6 +13,9 @@
  * auditores localicen instantáneamente el oráculo Anti-Cheat verificado sin
  * necesidad de consultar una base de datos central o depender de una API
  * privada.
+ *
+ * [ MOMENTO DE APRENDIZAJE ]
+ * Los registros HCS-2 permiten a los agentes de IA publicar y descubrir esquemas de temas on-chain, sin depender de registros de servicios centralizados ni de directorios web de terceros vulnerables.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hashgraphonline.com/standards/hcs-2/

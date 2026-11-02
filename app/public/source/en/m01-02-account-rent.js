@@ -2,6 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: State Rent & Account Lifecycle
+ * [ CONCEPT ] Sustainability and Serverless Storage
  * ============================================================================
  * [ KEY CONCEPT ]
  * This is effectively "Serverless Cloud Storage" for your identity. If you

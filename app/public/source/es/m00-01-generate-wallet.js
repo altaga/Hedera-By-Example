@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Generación de Billetera Local (ECDSA Offline)
- * [ CONCEPTO CLAVE ] Identidad Soberana y Derivación de Alias
+ * [ CONCEPTO ] Identidad Soberana y Derivación de Alias
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Soberanía de Identidad: Tu llave privada nunca debe tocar la red. Al

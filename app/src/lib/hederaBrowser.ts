@@ -254,8 +254,40 @@ const isExit = (e: unknown) => e instanceof ExitSignal
  * open topic subscriptions and pending timers. The run ends when the lab
  * calls process.exit(), when nothing is pending, or at the time limit.
  */
-interface RunHandles { subs: Set<object>; timers: Set<number>; exited: boolean; wake: () => void }
+interface RunHandles { subs: Set<object>; timers: Set<number>; clients: Set<any>; exited: boolean; wake: () => void }
 let activeRun: RunHandles | null = null
+
+/** Stop a run for good: timers, subscriptions and every client it opened, so nothing more is sent. */
+function stopRun (run: RunHandles | null) {
+  if (!run) return
+  run.exited = true
+  run.timers.forEach((id) => { window.clearTimeout(id); window.clearInterval(id) })
+  run.timers.clear()
+  run.clients.forEach((c) => { try { c.close() } catch (_) {} })
+  run.clients.clear()
+  run.wake()
+}
+
+/** Called when the learner leaves the lab or starts another run: the old run must not keep spending HBAR. */
+export function abortActiveRun (): void {
+  stopRun(activeRun)
+}
+
+/** Every Client a lab (or a library it uses) opens belongs to the run that opened it. */
+function trackClients (hedera: any) {
+  const C = hedera.Client
+  if (C.__hbeTracked) return
+  C.__hbeTracked = true
+  for (const name of ['forTestnet', 'forMainnet', 'forPreviewnet', 'forName', 'forNetwork', 'fromConfig', 'fromConfigFile']) {
+    const original = C[name]
+    if (typeof original !== 'function') continue
+    C[name] = function (this: any, ...args: any[]) {
+      const client = original.apply(this, args)
+      activeRun?.clients.add(client)
+      return client
+    }
+  }
+}
 
 /**
  * gRPC-web cannot hold the Mirror Node's server stream open in the browser,
@@ -400,13 +432,14 @@ export async function executeInBrowser (
   }
 
   let failedWithExitCode = false
-  if (activeRun) { activeRun.exited = true; activeRun.wake() }
-  const run: RunHandles = { subs: new Set(), timers: new Set(), exited: false, wake: () => {} }
+  stopRun(activeRun)
+  const run: RunHandles = { subs: new Set(), timers: new Set(), clients: new Set(), exited: false, wake: () => {} }
   activeRun = run
   let stuck: { ms: number, reason: string } | null = null
   try {
     const hedera = await import('@hiero-ledger/sdk')
     useRestTopicSubscriptions(hedera)
+    trackClients(hedera)
     // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
     // (only the real fee is charged) so labs survive fee-schedule changes.
     const createClient = (accountId?: string, privateKey?: any) => {
@@ -901,8 +934,7 @@ export async function executeInBrowser (
         mockProcess.exitCode = 1
       }
     } finally {
-      run.exited = true
-      run.timers.forEach((id) => { window.clearTimeout(id); window.clearInterval(id) })
+      stopRun(run)
       window.removeEventListener('unhandledrejection', swallowExit)
     }
     if (failedWithExitCode) throw new ExitSignal(1)

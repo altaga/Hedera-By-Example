@@ -10,7 +10,7 @@ import { STRINGS } from '../lib/i18n'
 import {
   FLAT_LABS, LAB_BY_SLUG, getBody, runnableCode, searchModules, type Lang
 } from '../lib/content'
-import { executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
+import { abortActiveRun, executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
 import {
   EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
 } from '../lib/wallets'
@@ -71,6 +71,7 @@ export default function HederaByExample () {
     // Back/forward or an edited URL: leave the current run behind like go() does.
     const onHash = () => {
       runIdRef.current++
+      abortActiveRun()
       setRoute(routeFromHash())
       setRunStatus('idle')
       setLogs([])
@@ -104,6 +105,7 @@ export default function HederaByExample () {
     const hash = target.view === 'lab' ? `#${target.slug}` : `#${target.view}`
     if (window.location.hash !== hash) window.history.pushState(null, '', hash)
     runIdRef.current++
+    abortActiveRun()
     setRoute(target)
     setMenuOpen(false)
     setRunStatus('idle')

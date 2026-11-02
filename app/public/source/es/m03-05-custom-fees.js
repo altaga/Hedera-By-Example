@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Implementación de Tarifas Personalizadas (Custom Fees)
- * [ CONCEPTO CLAVE ] Lógica de Negocio Embebida en el Protocolo
+ * [ CONCEPTO ] Lógica de Negocio Embebida en el Protocolo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Economía Programable: Las Custom Fees de Hedera permiten embeber reglas de

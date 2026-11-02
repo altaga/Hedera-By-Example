@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Flujos de Automatización con Foundry y Hardhat
- * [ CONCEPTO CLAVE ] Plantillas de Configuración para Frameworks de Ethereum
+ * [ CONCEPTO ] Plantillas de Configuración para Frameworks de Ethereum
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Flujos de Ethereum sin Fricción: No necesitas reescribir tus scripts de despliegue

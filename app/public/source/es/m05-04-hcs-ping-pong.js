@@ -2,6 +2,8 @@
 /**
  * ============================================================================
  * Lab 04: Benchmark de Latencia HCS (Protocolo Ping-Pong)
+ * [ CONCEPTO ] Latencia de Ida y Vuelta Descentralizada
+ * ============================================================================
  * [ CONCEPTO CLAVE ]
  * SLA Descentralizado: La "Latencia de Consenso" es el tiempo que tarda la
  * red en recibir tu mensaje, alcanzar el quorum entre los nodos ("Gossip

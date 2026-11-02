@@ -2,6 +2,8 @@
 /**
  * ============================================================================
  * Lab 01: Creación de Topic HCS Inmutable
+ * [ CONCEPTO ] Colas de Mensajes Descentralizadas (Topics)
+ * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Auditoría Descentralizada: El Hedera Consensus Service (HCS) es una
  * implementación de grado empresarial del patrón Pub/Sub. A diferencia de

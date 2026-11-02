@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Agente de Mercado Autónomo (El Ciclo Completo)
- * [ CONCEPTO CLAVE ] Descubrimiento, Evaluación y Liquidación Autónoma
+ * [ CONCEPTO ] Descubrimiento, Evaluación y Liquidación Autónoma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Soberanía Económica Extremo a Extremo: La culminación de la Web Agéntica es una IA

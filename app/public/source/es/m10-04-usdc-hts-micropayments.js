@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Micropagos en Stablecoins (USDC) con HTS
- * [ CONCEPTO CLAVE ] Liquidaciones de Fracciones de Centavo con Hedera Token Service
+ * [ CONCEPTO ] Liquidaciones de Fracciones de Centavo con Hedera Token Service
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Paradoja de las Tarjetas de Crédito: Cobrar \$0.01 por una petición a una API

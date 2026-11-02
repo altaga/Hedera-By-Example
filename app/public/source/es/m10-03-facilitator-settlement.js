@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Liquidación del Facilitador con Cero Gas
- * [ CONCEPTO CLAVE ] Ejecución Patrocinada on-chain y Pruebas de Liquidación
+ * [ CONCEPTO ] Ejecución Patrocinada on-chain y Pruebas de Liquidación
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Desacoplamiento de Tarifas: En Web3 tradicional, quien llama debe poseer

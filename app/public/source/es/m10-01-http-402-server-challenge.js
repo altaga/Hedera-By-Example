@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Generación del Desafío Servidor HTTP 402
- * [ CONCEPTO CLAVE ] Desafíos de Pago Legibles por Máquinas
+ * [ CONCEPTO ] Desafíos de Pago Legibles por Máquinas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Cabecera del Paywall: En lugar de redirigir a un agente de IA a una página

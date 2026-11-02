@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
- * [ CONCEPTO CLAVE ] Atestación de Colateral en Tiempo Real y Prevención de Desanclaje
+ * [ CONCEPTO ] Atestación de Colateral en Tiempo Real y Prevención de Desanclaje
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Solvencia Criptográfica: Emitir stablecoins u oro tokenizado sin pruebas en tiempo
