@@ -55,7 +55,7 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
         >
           <span className={`account-dot ${hasAccount ? 'is-on' : ''}`} aria-hidden='true' />
           <span className='account-btn-label'>
-            {hasAccount ? wallet.accountId : t.account}
+            {hasAccount ? wallet.accountId : wallet.privateKey ? t.account : (lang === 'es' ? 'Crear wallet' : 'Create wallet')}
           </span>
           {hasAccount && wallet.balanceHbar != null && (
             <span className='account-btn-balance'>{wallet.balanceHbar.toFixed(2)} ℏ</span>

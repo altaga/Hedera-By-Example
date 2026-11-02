@@ -89,31 +89,7 @@ export async function findAccountByEvmAddress (evmAddress: string): Promise<stri
   }
 }
 
-/** Generate a new key in the browser. The account ID is filled in later. */
-export async function createLocalKey (keyType: 'ED25519' | 'ECDSA'): Promise<BrowserWallet> {
-  const hedera = await import('@hiero-ledger/sdk')
-  const key = keyType === 'ECDSA' ? hedera.PrivateKey.generateECDSA() : hedera.PrivateKey.generateED25519()
-  return {
-    accountId: '',
-    privateKey: key.toStringDer(),
-    publicKey: key.publicKey.toStringDer(),
-    evmAddress: keyType === 'ECDSA' ? '0x' + key.publicKey.toEvmAddress() : '',
-    keyType,
-    balanceHbar: null
-  }
-}
 
-/** Derive public key / EVM address from a pasted private key (DER or hex). */
-export async function describePrivateKey (privateKey: string): Promise<Pick<BrowserWallet, 'publicKey' | 'evmAddress' | 'keyType'>> {
-  const hedera = await import('@hiero-ledger/sdk')
-  const key = parsePrivateKey(hedera, privateKey)
-  const isEcdsa = key.type === 'secp256k1'
-  return {
-    publicKey: key.publicKey.toStringDer(),
-    evmAddress: isEcdsa ? '0x' + key.publicKey.toEvmAddress() : '',
-    keyType: isEcdsa ? 'ECDSA' : 'ED25519'
-  }
-}
 
 function parsePrivateKey (hedera: any, raw: string) {
   const value = raw.trim()

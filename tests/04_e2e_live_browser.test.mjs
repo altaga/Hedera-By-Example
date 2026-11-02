@@ -108,7 +108,8 @@ export async function runE2ELiveBrowserTest() {
     console.log('  [STEP 3] Generating an ECDSA key in the browser...')
     await page.click('[data-testid=account-button]')
     await page.waitForSelector('[data-testid=account-dialog]', { timeout: 10000 })
-    await page.click('[data-testid=generate-ecdsa]')
+    await page.waitForSelector('[data-testid=create-wallet]', { timeout: 10000 })
+    await page.click('[data-testid=create-wallet]')
     await page.waitForFunction(
       () => /0x[0-9a-f]{40}/i.test(document.querySelector('[data-testid=account-dialog]')?.textContent || ''),
       { timeout: 15000 }

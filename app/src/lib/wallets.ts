@@ -4,7 +4,7 @@
  * runs with (the operator) and the ones that play ACCOUNT_1 / ACCOUNT_2.
  */
 import {
-  EMPTY_WALLET, createLocalKey, describePrivateKey, fetchLiveBalance, findAccountByEvmAddress, isAccountId,
+  EMPTY_WALLET, fetchLiveBalance, findAccountByEvmAddress, isAccountId,
   type BrowserWallet, type PracticeAccounts
 } from './hederaBrowser'
 
@@ -17,6 +17,8 @@ export interface Wallet {
   evmAddress: string
   keyType: 'ECDSA' | 'ED25519'
   createdAt: number
+  /** BIP-39 recovery phrase, when the wallet was made from one. */
+  mnemonic?: string
 }
 
 export type Role = 'account1' | 'account2'
@@ -94,32 +96,144 @@ export function practiceFromStore (store: WalletStore): PracticeAccounts {
   return out
 }
 
-/** A new key; it gets an on-chain account once someone funds its EVM address (ECDSA) or creates one. */
-export async function createWallet (keyType: 'ECDSA' | 'ED25519', label: string): Promise<Wallet> {
-  const k = await createLocalKey(keyType)
-  return { id: newId(), label, accountId: '', privateKey: k.privateKey, publicKey: k.publicKey, evmAddress: k.evmAddress || '', keyType, createdAt: Date.now() }
+export type Curve = 'ECDSA' | 'ED25519'
+
+const toWallet = (key: any, keyType: Curve, label: string, extra: Partial<Wallet> = {}): Wallet => ({
+  id: newId(),
+  label,
+  accountId: '',
+  privateKey: key.toStringDer(),
+  publicKey: key.publicKey.toStringDer(),
+  evmAddress: keyType === 'ECDSA' ? '0x' + key.publicKey.toEvmAddress() : '',
+  keyType,
+  createdAt: Date.now(),
+  ...extra
+})
+
+/**
+ * A new key; it gets an on-chain account once someone funds its EVM address
+ * (ECDSA) or creates one for it. With `mnemonic`, the key is derived from a new
+ * 24-word BIP-39 recovery phrase (standard path m/44'/3030'/0'/0'/0).
+ */
+export async function createWallet (keyType: Curve, label: string, { mnemonic = false } = {}): Promise<Wallet> {
+  const hedera = await import('@hiero-ledger/sdk')
+  if (!mnemonic) {
+    const key = keyType === 'ECDSA' ? hedera.PrivateKey.generateECDSA() : hedera.PrivateKey.generateED25519()
+    return toWallet(key, keyType, label)
+  }
+  const words = await hedera.Mnemonic.generate()
+  const key = keyType === 'ECDSA' ? await words.toStandardECDSAsecp256k1PrivateKey('', 0) : await words.toStandardEd25519PrivateKey('', 0)
+  return toWallet(key, keyType, label, { mnemonic: words.toString() })
 }
 
-/** An existing account the learner already controls. */
-export async function importWallet (accountId: string, privateKey: string, label: string): Promise<Wallet> {
-  if (!isAccountId(accountId)) throw new Error('INVALID_ACCOUNT_ID')
-  let details
-  try { details = await describePrivateKey(privateKey) } catch (_) { throw new Error('INVALID_KEY') }
-  return {
-    id: newId(),
-    label,
-    accountId: accountId.trim(),
-    privateKey: privateKey.trim(),
-    publicKey: details.publicKey,
-    evmAddress: details.evmAddress || '',
-    keyType: details.keyType || 'ECDSA',
-    createdAt: Date.now()
+/**
+ * Find the account a key controls: by EVM alias first (accounts the faucet or
+ * an EVM transfer created), then by public key, which also covers Ed25519 and
+ * ECDSA accounts created without an alias. The oldest match wins.
+ */
+export async function findAccountForKey (evmAddress: string, publicKeyRaw: string): Promise<string | null> {
+  if (evmAddress) {
+    const id = await findAccountByEvmAddress(evmAddress)
+    if (id) return id
+  }
+  try {
+    const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${publicKeyRaw}&order=asc&limit=1`)
+    if (!res.ok) return null
+    return (await res.json()).accounts?.[0]?.account || null
+  } catch (_) {
+    return null
   }
 }
 
-/** Look up the account the network created for an ECDSA wallet's EVM address. */
+/** Parse a private key in DER, raw hex or 0x hex. Raw hex needs the curve: 32 bytes fit both. */
+async function parseAnyKey (value: string, curve: Curve | 'auto'): Promise<{ key: any, keyType: Curve }> {
+  const hedera = await import('@hiero-ledger/sdk')
+  const v = value.trim().replace(/^0x/i, '')
+  if (!/^[0-9a-fA-F]+$/.test(v)) throw new Error('INVALID_KEY')
+  const isDer = /^30[0-9a-fA-F]{60,}$/.test(v) && v.length > 64
+  let key
+  if (isDer) key = hedera.PrivateKey.fromStringDer(v)
+  else if (v.length !== 64) throw new Error('INVALID_KEY')
+  else if (curve === 'ECDSA' || (curve === 'auto' && /^0x/i.test(value.trim()))) key = hedera.PrivateKey.fromStringECDSA(v)
+  else if (curve === 'ED25519') key = hedera.PrivateKey.fromStringED25519(v)
+  else throw new Error('AMBIGUOUS_KEY')
+  return { key, keyType: key.type === 'secp256k1' ? 'ECDSA' : 'ED25519' }
+}
+
+/**
+ * An account the learner already controls. The account ID is optional for
+ * ECDSA keys: their account is found through the EVM alias.
+ */
+export async function importWallet (accountId: string, privateKey: string, label: string, curve: Curve | 'auto' = 'auto'): Promise<Wallet> {
+  if (accountId.trim() && !isAccountId(accountId)) throw new Error('INVALID_ACCOUNT_ID')
+  let parsed
+  try { parsed = await parseAnyKey(privateKey, curve) } catch (e: any) { throw new Error(e?.message === 'AMBIGUOUS_KEY' ? 'AMBIGUOUS_KEY' : 'INVALID_KEY') }
+  const w = toWallet(parsed.key, parsed.keyType, label, { accountId: accountId.trim() })
+  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, parsed.key.publicKey.toStringRaw())) || ''
+  return w
+}
+
+/** Recover a wallet from its BIP-39 phrase (12 or 24 words). */
+export async function importMnemonic (phrase: string, keyType: Curve, label: string, accountId = ''): Promise<Wallet> {
+  const hedera = await import('@hiero-ledger/sdk')
+  let words
+  try { words = await hedera.Mnemonic.fromString(phrase.trim().toLowerCase().split(/\s+/).join(' ')) } catch (_) { throw new Error('INVALID_MNEMONIC') }
+  const key = keyType === 'ECDSA' ? await words.toStandardECDSAsecp256k1PrivateKey('', 0) : await words.toStandardEd25519PrivateKey('', 0)
+  const w = toWallet(key, keyType, label, { mnemonic: words.toString(), accountId: accountId.trim() })
+  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, key.publicKey.toStringRaw())) || ''
+  return w
+}
+
+export interface KeyFormat {
+  id: string
+  group: 'private' | 'public' | 'address' | 'recovery'
+  value: string
+  secret?: boolean
+  recommended?: boolean
+}
+
+/** Every representation of a wallet's keys and addresses, for the "all formats" view. */
+export async function keyFormats (w: Wallet): Promise<KeyFormat[]> {
+  const hedera = await import('@hiero-ledger/sdk')
+  const key = (await parseAnyKey(w.privateKey, w.keyType)).key
+  const pub = key.publicKey
+  const ecdsa = w.keyType === 'ECDSA'
+  const out: KeyFormat[] = [
+    { id: 'privDer', group: 'private', value: key.toStringDer(), secret: true, recommended: true },
+    { id: 'privRaw', group: 'private', value: key.toStringRaw(), secret: true }
+  ]
+  if (ecdsa) out.push({ id: 'priv0x', group: 'private', value: '0x' + key.toStringRaw(), secret: true })
+  out.push({ id: 'pubDer', group: 'public', value: pub.toStringDer() }, { id: 'pubRaw', group: 'public', value: pub.toStringRaw(), recommended: true })
+  if (ecdsa) {
+    const { SigningKey } = await import('ethers')
+    out.push({ id: 'pubUncompressed', group: 'public', value: new SigningKey('0x' + key.toStringRaw()).publicKey.slice(2) })
+  }
+  if (isAccountId(w.accountId)) {
+    const id = hedera.AccountId.fromString(w.accountId)
+    const client = hedera.Client.forTestnet()
+    try { out.push({ id: 'accountChecksum', group: 'address', value: id.toStringWithChecksum(client), recommended: true }) } finally { client.close() }
+    out.push({ id: 'longZero', group: 'address', value: '0x' + id.toEvmAddress() })
+  }
+  if (ecdsa) out.push({ id: 'evmAlias', group: 'address', value: w.evmAddress, recommended: true })
+  if (w.mnemonic) out.push({ id: 'mnemonic', group: 'recovery', value: w.mnemonic, secret: true })
+  return out
+}
+
+/** Poll the Mirror Node until the faucet (or anyone) has created this ECDSA wallet's account. */
+export async function waitForFunding (w: Wallet, { timeoutMs = 10 * 60_000, signal }: { timeoutMs?: number, signal?: AbortSignal } = {}): Promise<string | null> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline && !signal?.aborted) {
+    const id = await findAccountByEvmAddress(w.evmAddress).catch(() => null)
+    if (id) return id
+    await new Promise((resolve) => setTimeout(resolve, 4000))
+  }
+  return null
+}
+
+/** Look up the account this wallet's key controls (EVM alias or public key). */
 export async function lookUpAccount (w: Wallet): Promise<string | null> {
-  return w.evmAddress ? findAccountByEvmAddress(w.evmAddress) : null
+  const { key } = await parseAnyKey(w.privateKey, w.keyType)
+  return findAccountForKey(w.evmAddress, key.publicKey.toStringRaw())
 }
 
 const parseKey = (hedera: any, value: string) =>

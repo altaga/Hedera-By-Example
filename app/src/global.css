@@ -865,3 +865,62 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   .res-detail { scroll-margin-top: calc(var(--topbar-h) + 8px); }
 }
 @media (max-width: 640px) { .res-detail .kv > div { grid-template-columns: 1fr; gap: 2px; } }
+
+/* ---------- wallet onboarding, curves, key formats ---------- */
+.form select, .form textarea {
+  padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 13.5px;
+}
+.form textarea { resize: vertical; line-height: 1.5; }
+.form select { font-family: var(--font-sans); height: 38px; padding: 0 8px; }
+.form select:focus, .form textarea:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--radius); overflow: hidden; justify-self: start; }
+.seg button { border: 0; background: var(--bg); color: var(--text-2); font: inherit; font-size: 13px; padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--border-strong); }
+.seg button[aria-selected='true'] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.wallet-new { margin: 12px 0; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); display: grid; gap: 14px; }
+.step-title { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 15px; font-weight: 600; }
+.step-n {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 999px;
+  background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 700; font-family: var(--font-mono);
+}
+.first-steps-next { list-style: none; margin: 0; padding: 12px 0 0; border-top: 1px solid var(--border); display: grid; gap: 8px; color: var(--text-3); font-size: 14px; }
+.first-steps-next li { display: flex; align-items: center; gap: 8px; }
+.first-steps-next .step-n { background: var(--bg-hover); color: var(--text-3); }
+.curve-picker { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+.curve-card {
+  position: relative; display: grid; gap: 6px; padding: 12px 14px; cursor: pointer;
+  border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg);
+}
+.curve-card:hover { border-color: var(--text-3); }
+.curve-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.curve-card input { position: absolute; opacity: 0; pointer-events: none; }
+.curve-card:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.curve-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.curve-pros, .curve-cons { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 12.5px; }
+.curve-pros li, .curve-cons li { padding-left: 16px; position: relative; color: var(--text-2); }
+.curve-pros li::before { content: '+'; position: absolute; left: 2px; color: var(--ok); font-weight: 700; }
+.curve-cons li::before { content: '−'; position: absolute; left: 2px; color: var(--err); font-weight: 700; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; cursor: pointer; }
+.check input { margin-top: 3px; }
+.check span { display: grid; gap: 2px; }
+.check small { font-size: 12.5px; }
+.faucet-steps { margin: 4px 0 10px; padding: 12px 14px; border: 1px dashed var(--border-strong); border-radius: var(--radius); display: grid; gap: 8px; justify-items: start; }
+.faucet-steps ol { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--text-2); display: grid; gap: 2px; }
+.faucet-steps .kv-value code { font-size: 12.5px; word-break: break-all; }
+.waiting { display: flex; align-items: center; gap: 8px; margin: 0; }
+.spinner { width: 12px; height: 12px; flex: none; border: 2px solid var(--border-strong); border-top-color: var(--accent); border-radius: 999px; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+.wallet-more { margin: 4px 0 10px; }
+.wallet-more summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.key-formats { margin-top: 10px; display: grid; gap: 14px; }
+.key-formats h4 { margin: 0 0 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3); }
+.key-formats h4.is-secret { color: var(--err); }
+.format-list { margin: 0; display: grid; gap: 10px; }
+.format-row { display: grid; grid-template-columns: minmax(130px, 190px) minmax(0, 1fr); gap: 4px 12px; }
+.format-row dt { font-size: 13px; color: var(--text-2); display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; }
+.format-row dd { margin: 0; min-width: 0; }
+.format-row code { font-size: 12px; word-break: break-all; }
+.format-note { margin: 3px 0 0; font-size: 12.5px; color: var(--text-3); line-height: 1.45; }
+@media (max-width: 640px) { .format-row { grid-template-columns: 1fr; } }
