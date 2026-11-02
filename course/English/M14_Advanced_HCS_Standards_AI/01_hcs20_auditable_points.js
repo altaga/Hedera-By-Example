@@ -150,10 +150,12 @@ const main = async () => {
   try {
     // 1. Create dedicated HCS-20 Inscription Topic
     console.log('[⚙️ PROCESS] Creating dedicated HCS-20 Inscription Ledger Topic...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-20:AUDITABLE:POINTS:V1')
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] HCS-20 Point Ledger Created: Topic ID ${topicId}`)
@@ -164,6 +166,7 @@ const main = async () => {
     // 2. Inscribe Deploy Action (Validated via HCS20DeployMessageSchema)
     console.log('\n[⚙️ PROCESS] Inscribing HCS-20 Token Deployment: Ticker [aipnt] (Max: 1,000,000)...')
     const deployMsg = HCS20.deploy('AI Reputation Points', 'aipnt', 1000000)
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const deployTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(deployMsg))

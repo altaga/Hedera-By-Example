@@ -111,10 +111,12 @@ const main = async () => {
   try {
     // 1. Deploy an Audit Anchor HCS Topic
     console.log('[⚙️ PROCESS] Step 1: Deploying Immutable HCS Audit Anchor Topic...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('ENTERPRISE:MERKLE_BATCH_ANCHOR:V1')
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId
     console.log(`[✅ SUCCESS] HCS Anchor Topic Created: ${topicId.toString()}`)
@@ -156,6 +158,7 @@ const main = async () => {
       anchored_at: new Date().toISOString()
     }
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(anchorPayload))

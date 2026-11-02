@@ -47,9 +47,11 @@ const main = async () => {
     }
 
     console.log(`[⚙️ PROCESS] Provisioning ${accountName} with 1 HBAR...`)
+    // Generate a key locally: the private key never leaves this process.
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
 
+    // Create an account: its key controls it; the initial balance comes from the payer.
     const tx = new AccountCreateTransaction()
       .setKeyWithoutAlias(newPublicKey)
       .setInitialBalance(Hbar.from(1))
@@ -57,6 +59,7 @@ const main = async () => {
       .freezeWith(client)
 
     const response = await tx.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
     const newAccountId = receipt.accountId.toString()
     const evmAddress = '0x' + newPublicKey.toEvmAddress()

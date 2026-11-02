@@ -41,6 +41,7 @@ import path from 'path'
  * HCS-1 Pipeline: Chunks a buffer into standard JSON messages
  */
 const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
+  // Hash the content: anyone can recompute this digest to verify the data.
   const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
   const base64Str = fileBuffer.toString('base64')
 
@@ -79,11 +80,13 @@ const main = async () => {
 
     // 1. Create a dedicated topic for our HCS-1 Storage
     console.log('[⚙️ PROCESS] Creating a dedicated HCS-1 Storage Topic...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1 Asset Anchor')
       .freezeWith(client)
 
     const topicRes = await topicTx.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
 
@@ -100,6 +103,7 @@ const main = async () => {
       show.shards({ id: 'hcs1-upload', title: 'HCS-1 shards submitted', total: payload.t, done: payload.i + 1 })
       console.log(`[⚙️ PROCESS] Submitting Shard ${payload.i + 1}/${payload.t}...`)
 
+      // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
         .setMessage(JSON.stringify(payload))

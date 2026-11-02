@@ -137,10 +137,12 @@ const main = async () => {
     // 1. Crear Tópico de Puntos de Control HCS-27
     const topicMemo = buildHCS27TopicMemo()
     console.log(`[⚙️ PROCESO] Creando Tópico de Puntos de Control HCS-27 (Memo: ${topicMemo})...`)
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo(topicMemo)
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico HCS-27 Creado: ${topicId}`)
@@ -177,6 +179,7 @@ const main = async () => {
     }
 
     console.log('\n[⚙️ PROCESO] Anclando Punto de Control HCS-27 al Consenso de Hedera...')
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setTransactionMemo(buildHCS27TransactionMemo())

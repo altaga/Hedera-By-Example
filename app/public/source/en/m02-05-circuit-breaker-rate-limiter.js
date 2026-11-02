@@ -157,6 +157,7 @@ const main = async () => {
 
     // Baseline request to warm up cache
     const res1 = await breaker.execute(`account:${targetAccount}`, async () => {
+      // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
       const res = await fetch(`${mirrorBase}/api/v1/accounts/${targetAccount}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()

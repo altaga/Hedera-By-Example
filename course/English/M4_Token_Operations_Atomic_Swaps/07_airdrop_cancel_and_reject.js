@@ -58,6 +58,7 @@ const main = async () => {
     // 1. Create a Fungible Token for our Airdrop Lifecycle Test
     console.log('[⚙️ PROCESS] Creating Fungible Token (SPAM / PROMO)...')
     const tokenId = await reuseToken('REUSE_M4_07_TOKEN', async () => {
+      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Promo Drop Token')
         .setTokenSymbol('PROMO')
@@ -69,13 +70,16 @@ const main = async () => {
 
       const signedToken = await tokenTx.sign(supplyKey)
       const tokenRes = await signedToken.execute(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       return (await tokenRes.getReceipt(client)).tokenId
     }, { minBalance: 1000 })
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()} (Initial Supply: 10,000 PROMO)`)
 
     // 2. PART A: Sender Cancels an Unclaimed Pending Airdrop (`TokenCancelAirdropTransaction`)
     console.log('\n[⚙️ PROCESS] Part A: Creating Dormant Account (0 Auto-Association Slots)...')
+    // Generate a key locally: the private key never leaves this process.
     const dormantKey = PrivateKey.generateED25519()
+    // Create an account: its key controls it; the initial balance comes from the payer.
     const dormantRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(dormantKey.publicKey)
       .setInitialBalance(new Hbar(0))
@@ -85,6 +89,7 @@ const main = async () => {
     console.log(`[👤 ACTOR] Dormant Receiver: ${dormantId.toString()}`)
 
     console.log(`[⚙️ PROCESS] Airdropping 500 PROMO to ${dormantId.toString()} (Enters Pending Queue)...`)
+    // Airdrop (HIP-904): delivered at once with a free auto-association slot, otherwise left pending until claimed.
     const pendingDropRes = await new TokenAirdropTransaction()
       .addTokenTransfer(tokenId, operatorId, -500)
       .addTokenTransfer(tokenId, dormantId, 500)
@@ -95,6 +100,7 @@ const main = async () => {
     console.log('[✅ SUCCESS] Airdrop is now PENDING on ledger.')
 
     console.log('[⚙️ PROCESS] Sender executing `TokenCancelAirdropTransaction` to claw back unclaimed drop...')
+    // Cancel: the sender takes back an airdrop that was never claimed.
     const cancelRes = await new TokenCancelAirdropTransaction()
       .addPendingAirdropId(pendingAirdropId)
       .execute(client)
@@ -127,6 +133,7 @@ const main = async () => {
     console.log(`[📊 LOG] User Token Balance Before Reject: ${userBalBefore.balance.toString()} PROMO`)
 
     console.log('[⚙️ PROCESS] User executing `TokenRejectTransaction` to purge unwanted tokens back to Treasury...')
+    // Reject: the holder sends unwanted tokens back to the treasury (anti-spam).
     const rejectTx = await new TokenRejectTransaction()
       .setOwnerId(userId)
       .addTokenId(tokenId)

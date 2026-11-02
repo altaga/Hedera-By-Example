@@ -96,10 +96,12 @@ const main = async () => {
   try {
     // 1. Crear Tópico de Auditoría HCS-28
     console.log('[⚙️ PROCESO] Creando tópico dedicado para auditoría cognitiva HCS-28...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-28:AGENT:COGNITIVE:AUDIT')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico de Auditoría HCS-28 Creado: ${topicId}`)
@@ -140,6 +142,7 @@ const main = async () => {
 
     // 3. Anclar Registro al Consenso de HCS
     console.log('\n[⚙️ PROCESO] Anclando registro inmutable al tópico de consenso HCS...')
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(auditRecord))

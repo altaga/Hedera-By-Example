@@ -60,6 +60,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESO] Creando contenedor de archivos persistente en Hedera...')
 
+    // Crea el archivo en HFS: hasta ~4 KB por transacción; el resto se agrega con appends.
     const transaction = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // El almacenamiento se cobra por tamaño x vigencia: en testnet, corta
       .setKeys([adminKey.publicKey]) // Solo el admin puede modificarlo
@@ -67,6 +68,7 @@ const main = async () => {
       .freezeWith(client)
 
     const response = await transaction.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
     const fileId = receipt.fileId
 

@@ -111,11 +111,13 @@ const main = async () => {
       console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
 
       console.log('\n[⚙️ PROCESO] Paso 1: Desplegando AutonomousCronVault en Hedera EVM...')
+      // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
         .setAdminKey(adminKey), client, { gas: 1500000 })
 
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
       contractIdStr = contractId.toString()
@@ -128,6 +130,7 @@ const main = async () => {
 
     // 2. Disparar Latido Autónomo On-Chain
     console.log('\n[⚙️ PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat()...')
+    // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
     const heartbeatTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)

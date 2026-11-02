@@ -84,6 +84,7 @@ const main = async () => {
     // 1. Crear un token fungible nativo en HTS
     console.log('[⚙️ PROCESO] Creando token nativo HTS...')
     const htsTokenId = await reuseToken('REUSE_M12_01_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Vault Collateral Token')
         .setTokenSymbol('VCT')
@@ -96,6 +97,7 @@ const main = async () => {
         .freezeWith(client)
 
       const tokenResponse = await tokenCreateTx.execute(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const tokenReceipt = await tokenResponse.getReceipt(client)
       return tokenReceipt.tokenId
     })
@@ -116,6 +118,7 @@ const main = async () => {
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
     const contractId = await reuseContract('REUSE_M12_01_CONTRACT', bytecode + tokenEvmAddress, async () => {
+      // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
         .setBytecode(bytecode)
         .setGas(gas)

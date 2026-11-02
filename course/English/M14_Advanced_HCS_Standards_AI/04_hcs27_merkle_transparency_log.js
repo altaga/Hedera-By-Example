@@ -137,10 +137,12 @@ const main = async () => {
     // 1. Create HCS-27 Checkpoint Topic
     const topicMemo = buildHCS27TopicMemo()
     console.log(`[⚙️ PROCESS] Initializing HCS-27 Transparency Log Topic (Memo: ${topicMemo})...`)
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo(topicMemo)
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] HCS-27 Topic Created: ${topicId}`)
@@ -177,6 +179,7 @@ const main = async () => {
     }
 
     console.log('\n[⚙️ PROCESS] Anchoring HCS-27 Checkpoint to Hedera Consensus...')
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setTransactionMemo(buildHCS27TransactionMemo())

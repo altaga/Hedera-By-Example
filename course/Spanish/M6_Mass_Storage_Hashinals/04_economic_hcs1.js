@@ -44,6 +44,7 @@ import path from 'path'
  * Pipeline HCS-1: Fragmenta un buffer en mensajes JSON estandarizados.
  */
 const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
+  // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
   const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
   const base64Str = fileBuffer.toString('base64')
 
@@ -83,11 +84,13 @@ const main = async () => {
 
     // 1. Crear el Topic ancla para HCS-1
     console.log('[⚙️ PROCESO] Creando Tema de Consenso (Topic) dedicado para HCS-1...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1 Asset Anchor')
       .freezeWith(client)
 
     const topicRes = await topicTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
 
@@ -104,6 +107,7 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Anclando fragmentos al ledger de consenso...')
     for (const payload of payloads) {
       show.shards({ id: 'hcs1-upload', title: 'Fragmentos HCS-1 enviados', total: payload.t, done: payload.i + 1 })
+      // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
         .setMessage(JSON.stringify(payload))

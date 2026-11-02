@@ -320,6 +320,7 @@ const main = async () => {
 
   console.log('   Creando clase de Token No Fungible Único...')
   const tokenId = await reuseToken('REUSE_M3_10_TOKEN', async () => {
+    // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
     const createTx = await new TokenCreateTransaction()
       .setTokenName('Coleccion Centinela NFT Studio')
       .setTokenSymbol('SENTINEL')
@@ -332,6 +333,7 @@ const main = async () => {
 
     const createSign = await createTx.sign(supplyKey)
     const createSubmit = await createSign.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const createReceipt = await createSubmit.getReceipt(client)
     return createReceipt.tokenId
   })
@@ -343,6 +345,7 @@ const main = async () => {
   const metadataBytes = rawCollection.map((item) =>
     Buffer.from(`ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/${item.id}.json`)
   )
+  // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
   const mintTx = await new TokenMintTransaction()
     .setTokenId(tokenId)
     .setMetadata(metadataBytes)
@@ -357,6 +360,7 @@ const main = async () => {
   const targetRecipient = AccountId.fromString(targetAccounts[0])
   console.log(`\n   Dispersando Serie #1 (Puesto #1 ${rankedCollection[0].name}) a ${targetRecipient.toString()} vía HIP-904...`)
 
+  // Airdrop (HIP-904): se entrega de inmediato si hay un espacio de auto-asociación libre; si no, queda pendiente hasta reclamarlo.
   const airdropTx = await new TokenAirdropTransaction()
     .addNftTransfer(new NftId(tokenId, mintReceipt.serials[0]), operatorId, targetRecipient)
     .freezeWith(client)

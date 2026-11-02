@@ -137,10 +137,12 @@ const main = async () => {
 
     // 4. Log Approved Spending to Immutable HCS Audit Log
     console.log('\n[⚙️ PROCESS] Anchoring approved payment audit event to Hedera Consensus Service...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('x402:agent_guardrail_audit')
       .freezeWith(client)
     const topicResponse = await topicTx.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicResponse.getReceipt(client)
     const auditTopicId = topicReceipt.topicId.toString()
 
@@ -152,6 +154,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(auditTopicId)
       .setMessage(auditMessage)

@@ -152,6 +152,7 @@ const main = async () => {
     const invoiceXml = generateEnterpriseInvoiceXml()
     const invoiceData = parseInvoiceXml(invoiceXml)
 
+    // Hash the content: anyone can recompute this digest to verify the data.
     const legalHash = crypto.createHash('sha256').update(invoiceXml).digest('hex')
     console.log(`[📊 LOG] Parsed Invoice ID:      ${invoiceData.invoiceId}`)
     console.log(`[📊 LOG] Debtor Entity:          ${invoiceData.debtor} (Credit Rating: ${invoiceData.debtorRating})`)
@@ -162,12 +163,14 @@ const main = async () => {
 
     // 2. Legal Immutability & Consensus Timestamping (HCS Audit Topic)
     console.log('\n[⚙️ PROCESS] Step 2: Anchoring Legal Invoice Hash to Hedera Consensus Service...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo('ERP-AUDIT-REGISTRY:UBL-2.1')
       .setAdminKey(masterKey.publicKey)
       .setSubmitKey(masterKey.publicKey)
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const auditTopicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] HCS Legal Audit Topic Created: ${auditTopicId}`)
@@ -181,6 +184,7 @@ const main = async () => {
       timestamp: new Date().toISOString()
     }
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const anchorTx = await new TopicMessageSubmitTransaction()
       .setTopicId(auditTopicId)
       .setMessage(JSON.stringify(auditAnchorPayload))
@@ -218,6 +222,7 @@ const main = async () => {
     let trancheTokenId = getState('RWA_ERP_TRANCHE_TOKEN_ID')
 
     if (!trancheTokenId) {
+      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Siemens 90D Receivable Tranche')
         .setTokenSymbol('INV-SIE-90D')
@@ -247,6 +252,7 @@ const main = async () => {
 
       // Mint the 1,000 fractional shares
       console.log('[⚙️ PROCESS] Minting 1,000 fractional tranche units ($100 face value each)...')
+      // Mint: only the supply key can create new units or NFT serials.
       const mintTx = await new TokenMintTransaction()
         .setTokenId(trancheTokenId)
         .setAmount(1000)
@@ -266,6 +272,7 @@ const main = async () => {
     // Associate investor account
     if (investorPrivateKey) {
       try {
+        // Associate first: an account must opt in to a token before it can hold it.
         const associateTx = await new TokenAssociateTransaction()
           .setAccountId(AccountId.fromString(investorAccountId))
           .setTokenIds([trancheTokenId])
@@ -281,6 +288,7 @@ const main = async () => {
 
     // Grant KYC on Layer 1 (Enforced by Consensus Nodes)
     console.log(`[⚙️ PROCESS] Granting Institutional KYC on HTS to ${investorAccountId}...`)
+    // Grant KYC: with a KYC key set, only approved accounts can receive the token.
     const grantKycTx = await new TokenGrantKycTransaction()
       .setAccountId(AccountId.fromString(investorAccountId))
       .setTokenId(trancheTokenId)
@@ -293,6 +301,7 @@ const main = async () => {
 
     // Transfer 250 shares ($25,000 allocation) to investor
     console.log('[⚙️ PROCESS] Executing Atomic Delivery-versus-Payment (DvP) Tranche Allocation...')
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transferTx = await new TransferTransaction()
       .addTokenTransfer(trancheTokenId, operatorId, -250)
       .addTokenTransfer(trancheTokenId, AccountId.fromString(investorAccountId), 250)

@@ -59,6 +59,7 @@ const main = async () => {
     // 1. Crear o reutilizar un token fungible HTS que represente USDC (6 decimales)
     if (!mockUsdcTokenId) {
       console.log('[⚙️ PROCESO] Creando token HTS simulado de USDC en testnet (6 decimales)...')
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Hedera USD Coin')
         .setTokenSymbol('USDC')
@@ -72,6 +73,7 @@ const main = async () => {
         .freezeWith(client)
 
       const tokenCreateResponse = await tokenCreateTx.execute(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const tokenCreateReceipt = await tokenCreateResponse.getReceipt(client)
       mockUsdcTokenId = tokenCreateReceipt.tokenId.toString()
       console.log(`[✅ ÉXITO] Token USDC en HTS Creado: ${mockUsdcTokenId}`)
@@ -87,6 +89,7 @@ const main = async () => {
     console.log(`\n[⚙️ PROCESO] Iniciando liquidación x402 por $${costUsd} USD (${microUnits} unidades base)...`)
     console.log(`[📊 REGISTRO] Token de Pago: HTS (${mockUsdcTokenId})`)
 
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transferTx = await new TransferTransaction()
       .addTokenTransfer(mockUsdcTokenId, operatorId, -microUnits)
       .addTokenTransfer(mockUsdcTokenId, operatorId, microUnits) // Auto-transferencia atómica para la demo

@@ -49,6 +49,7 @@ class HcsNode {
 
   listen (messageType, onMessageCallback) {
     console.log(`[ℹ️ INFO] ${this.name}: Escuchando mensajes de tipo '${messageType}'...`)
+    // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
       .setTopicId(this.topicId)
       .subscribe(this.client, null, (message) => {
@@ -70,11 +71,13 @@ class HcsNode {
       ...extraData
     })
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const tx = await new TopicMessageSubmitTransaction()
       .setTopicId(this.topicId)
       .setMessage(payload)
       .execute(this.client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     return await tx.getReceipt(this.client)
   }
 }

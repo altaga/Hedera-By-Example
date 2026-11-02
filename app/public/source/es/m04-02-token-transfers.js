@@ -65,6 +65,7 @@ const main = async () => {
     console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
     console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
     console.log(`\n[✅ ÉXITO] Transferencia confirmada por la red. Estado: ${receipt.status.toString()}`)
 

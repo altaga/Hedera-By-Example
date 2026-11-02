@@ -78,10 +78,12 @@ const main = async () => {
   try {
     // 1. Crear Tópico de Registro HCS-26
     console.log('[⚙️ PROCESO] Inicializando Tópico de Registro de Habilidades de Agentes HCS-26...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-26:AGENT:SKILLS:REGISTRY')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico de Registro de Habilidades HCS-26 Creado: ${topicId}`)
@@ -131,6 +133,7 @@ const main = async () => {
 
     // 3. Registrar el Manifiesto en el Tópico de Consenso
     console.log('\n[⚙️ PROCESO] Transmitiendo y registrando habilidad en el tópico HCS-26...')
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(skillManifest))

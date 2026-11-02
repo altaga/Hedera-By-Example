@@ -63,6 +63,7 @@ const main = async () => {
     // 1. Create the Hashinal NFT Collection
     console.log("[⚙️ PROCESS] Creating the 'Hedera Syllabus Hashinal' collection...")
     const tokenId = await reuseToken('REUSE_M6_06_TOKEN', async () => {
+      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Hedera Batch Hashinal')
         .setTokenSymbol('HASH')
@@ -76,6 +77,7 @@ const main = async () => {
         .freezeWith(client)
 
       const tokenResponse = await tokenTx.execute(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       const tokenReceipt = await tokenResponse.getReceipt(client)
       return tokenReceipt.tokenId
     })
@@ -104,6 +106,7 @@ const main = async () => {
     // Final pointer to the on-chain file bundle
     const pointer = `hedera://1/${hfsFileId}`
 
+    // Mint: only the supply key can create new units or NFT serials.
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .addMetadata(Buffer.from(pointer))

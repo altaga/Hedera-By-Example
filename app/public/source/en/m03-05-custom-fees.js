@@ -73,6 +73,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESS] Issuing the Fee Regulated Token (FRT) with native logic...')
     const tokenId = await reuseToken('REUSE_M3_05_TOKEN', async () => {
+      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const transaction = await new TokenCreateTransaction()
         .setTokenName('Fee Regulated Token')
         .setTokenSymbol('FRT')
@@ -85,6 +86,7 @@ const main = async () => {
         .freezeWith(client)
 
       const response = await transaction.execute(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       const receipt = await response.getReceipt(client)
       return receipt.tokenId
     }, { minBalance: 100000 })
@@ -93,6 +95,7 @@ const main = async () => {
 
     // Fuel Account 1 with HBAR for Fixed Fees
     console.log(`\n[ℹ️ INFO] Fueling ${account1Id} with 3 HBAR and 100,000 tokens for simulation...`)
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const setupTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-3))
       .addHbarTransfer(account1Id, new Hbar(3))

@@ -47,6 +47,7 @@ import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '..
  * @returns {Promise<Object>} { cents, hbarEquiv, rateUsdPerHbar, expiration }
  */
 const fetchExchangeRate = async (mirrorBase) => {
+  // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
   const response = await fetch(`${mirrorBase}/api/v1/network/exchangerate`)
   if (!response.ok) {
     throw new Error(`Error en API de tipo de cambio del Mirror Node: ${response.statusText}`)

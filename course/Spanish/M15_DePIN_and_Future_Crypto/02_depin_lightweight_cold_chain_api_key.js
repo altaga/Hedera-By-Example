@@ -151,10 +151,12 @@ async function main () {
 
     // 1. Crear Tópico HCS para Monitoreo de SLA de Cadena de Frío
     console.log('\n[1/5] Creando Tópico HCS Dedicado para SLA Logístico...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo('DePIN Cold-Chain Vaccine SLA & Temperature Audit Trail')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ TÓPICO CREADO] ID: ${topicId}`)
@@ -219,6 +221,7 @@ async function main () {
       timestamp: Date.now()
     }
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const auditSubmitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(compliantAuditMessage))

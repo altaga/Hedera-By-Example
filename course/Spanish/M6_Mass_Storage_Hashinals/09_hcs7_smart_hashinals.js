@@ -64,6 +64,7 @@ const main = async () => {
 
     const signedRegistryTx = await (await registryTx.freezeWith(client)).sign(submitKey)
     const registryRes = await signedRegistryTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const registryTopicId = (await registryRes.getReceipt(client)).topicId.toString()
 
     const topicInfo = await new TopicInfoQuery().setTopicId(registryTopicId).execute(client)

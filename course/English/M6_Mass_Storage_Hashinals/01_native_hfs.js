@@ -56,6 +56,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESS] Creating a permissioned file on Hedera (Single Transaction)...')
 
+    // Create the file on HFS: up to ~4 KB per transaction; larger content is appended.
     const transaction = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
       .setKeys([adminKey.publicKey])
@@ -63,6 +64,7 @@ const main = async () => {
       .freezeWith(client)
 
     const response = await transaction.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
     const fileId = receipt.fileId
 

@@ -96,10 +96,12 @@ const main = async () => {
   try {
     // 1. Create HCS-28 Audit Stream Topic
     console.log('[⚙️ PROCESS] Creating dedicated HCS-28 Cognitive Audit Topic...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-28:AGENT:COGNITIVE:AUDIT')
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] HCS-28 Audit Topic Deployed: ${topicId}`)
@@ -140,6 +142,7 @@ const main = async () => {
 
     // 3. Commit Audit Record to HCS Consensus
     console.log('\n[⚙️ PROCESS] Anchoring immutable record to HCS consensus topic...')
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(auditRecord))

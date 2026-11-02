@@ -121,6 +121,7 @@ const main = async () => {
     // SPAN 1: Transaction Assembly & Memo Context Injection
     await tracer.startSpan('hedera.tx.build', traceContext, async ({ spanId }) => {
       console.log('\n[⚙️ PROCESS] Span [hedera.tx.build]: Constructing transfer with W3C trace tag...')
+      // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
       transaction = await new TransferTransaction()
         .addHbarTransfer(operatorId, new Hbar(0))
         .setTransactionMemo(`trace:${spanId}`)
@@ -138,6 +139,7 @@ const main = async () => {
     await tracer.startSpan('hedera.consensus.submit', traceContext, async () => {
       console.log('[⚙️ PROCESS] Span [hedera.consensus.submit]: Submitting to consensus nodes...')
       response = await transaction.execute(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       receipt = await response.getReceipt(client)
 
       return {
@@ -157,6 +159,7 @@ const main = async () => {
       let synced = false
       const maxRetries = 10
       for (let i = 0; i < maxRetries; i++) {
+        // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
         const res = await fetch(`${mirrorBase}/api/v1/transactions/${formattedTxId}`)
         if (res.ok) {
           const body = await res.json()

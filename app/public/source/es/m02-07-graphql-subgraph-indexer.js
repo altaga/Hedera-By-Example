@@ -63,6 +63,7 @@ class HederaSubgraphIndexer {
       fetch(`${this.mirrorBase}/api/v1/transactions?account.id=${accountId}&limit=${txLimit}&order=desc`).then(r => r.json())
     ])
 
+    // allSettled: si un endpoint falla, la respuesta se degrada en vez de fallar toda la consulta.
     const rawAccount = accountPromise.status === 'fulfilled' ? accountPromise.value : {}
     const rawTxs = txPromise.status === 'fulfilled' ? txPromise.value : { transactions: [] }
 
@@ -103,6 +104,7 @@ const main = async () => {
 
   const { client, operatorId } = getClient()
   const mirrorBase = getMirrorNodeBaseUrl()
+  // Una sola llamada al resolver reemplaza una cascada de peticiones REST.
   const indexer = new HederaSubgraphIndexer(mirrorBase)
 
   try {

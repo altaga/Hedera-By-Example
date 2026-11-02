@@ -152,6 +152,7 @@ const main = async () => {
     const invoiceXml = generateEnterpriseInvoiceXml()
     const invoiceData = parseInvoiceXml(invoiceXml)
 
+    // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
     const legalHash = crypto.createHash('sha256').update(invoiceXml).digest('hex')
     console.log(`[📊 REGISTRO] ID de Factura Parseada:   ${invoiceData.invoiceId}`)
     console.log(`[📊 REGISTRO] Entidad Deudora:          ${invoiceData.debtor} (Calificación: ${invoiceData.debtorRating})`)
@@ -162,12 +163,14 @@ const main = async () => {
 
     // 2. Anclaje Legal y Sello de Tiempo en Consenso (Tópico HCS de Auditoría)
     console.log('\n[⚙️ PROCESO] Paso 2: Anclando Huella Legal de la Factura en Hedera Consensus Service...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo('ERP-AUDIT-REGISTRY:UBL-2.1')
       .setAdminKey(masterKey.publicKey)
       .setSubmitKey(masterKey.publicKey)
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const auditTopicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico HCS de Auditoría Legal Creado: ${auditTopicId}`)
@@ -181,6 +184,7 @@ const main = async () => {
       timestamp: new Date().toISOString()
     }
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const anchorTx = await new TopicMessageSubmitTransaction()
       .setTopicId(auditTopicId)
       .setMessage(JSON.stringify(auditAnchorPayload))
@@ -218,6 +222,7 @@ const main = async () => {
     let trancheTokenId = getState('RWA_ERP_TRANCHE_TOKEN_ID')
 
     if (!trancheTokenId) {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Siemens 90D Receivable Tranche')
         .setTokenSymbol('INV-SIE-90D')
@@ -247,6 +252,7 @@ const main = async () => {
 
       // Mintear las 1,000 participaciones fraccionadas
       console.log('[⚙️ PROCESO] Minteando 1,000 unidades fraccionadas ($100 USD de valor nominal cada una)...')
+      // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
       const mintTx = await new TokenMintTransaction()
         .setTokenId(trancheTokenId)
         .setAmount(1000)
@@ -266,6 +272,7 @@ const main = async () => {
     // Asociar cuenta del inversor
     if (investorPrivateKey) {
       try {
+        // Asocia primero: una cuenta debe aceptar un token antes de poder tenerlo.
         const associateTx = await new TokenAssociateTransaction()
           .setAccountId(AccountId.fromString(investorAccountId))
           .setTokenIds([trancheTokenId])
@@ -281,6 +288,7 @@ const main = async () => {
 
     // Otorgar KYC en Capa 1 (Verificado por los Nodos de Consenso)
     console.log(`[⚙️ PROCESO] Otorgando KYC Institucional en HTS a ${investorAccountId}...`)
+    // Otorga KYC: con una KYC key, solo las cuentas aprobadas pueden recibir el token.
     const grantKycTx = await new TokenGrantKycTransaction()
       .setAccountId(AccountId.fromString(investorAccountId))
       .setTokenId(trancheTokenId)
@@ -293,6 +301,7 @@ const main = async () => {
 
     // Transferir 250 participaciones ($25,000 USD de asignación) al inversor
     console.log('[⚙️ PROCESO] Ejecutando Asignación Atómica de Tramos Entrega-contra-Pago (DvP)...')
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transferTx = await new TransferTransaction()
       .addTokenTransfer(trancheTokenId, operatorId, -250)
       .addTokenTransfer(trancheTokenId, AccountId.fromString(investorAccountId), 250)

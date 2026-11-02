@@ -39,6 +39,7 @@ import { getClient, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
  */
 const getAccountBalancesAsync = async (accountId) => {
   const baseUrl = getMirrorNodeBaseUrl()
+  // Arma la URL REST: las lecturas van al Mirror Node, nunca a los nodos de consenso.
   const targetUrl = `${baseUrl}/api/v1/balances?account.id=${accountId}`
 
   console.log(`[⚙️ PROCESO] Realizando HTTP GET al Mirror Node: ${targetUrl}`)
@@ -46,6 +47,7 @@ const getAccountBalancesAsync = async (accountId) => {
   try {
     const response = await fetch(targetUrl)
 
+    // Falla claramente ante errores HTTP en vez de leer una página de error como datos.
     if (!response.ok) {
       throw new Error(`Error del Mirror Node: ${response.status} ${response.statusText}`)
     }
@@ -56,6 +58,7 @@ const getAccountBalancesAsync = async (accountId) => {
       throw new Error('No se encontraron vinculaciones para la cuenta')
     }
 
+    // El Mirror Node reporta saldos en tinybars (1 HBAR = 100,000,000 tinybars).
     const balanceData = data.balances[0]
 
     return {

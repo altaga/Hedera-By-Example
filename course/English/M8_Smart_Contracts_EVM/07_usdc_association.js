@@ -47,11 +47,13 @@ const main = async () => {
   try {
     console.log(`[⚙️ PROCESS] Associating Operator (${operatorId}) with USDC (${USDC_TOKEN_ID})...`)
 
+    // Associate first: an account must opt in to a token before it can hold it.
     const tx = await new TokenAssociateTransaction()
       .setAccountId(AccountId.fromString(operatorId))
       .setTokenIds([TokenId.fromString(USDC_TOKEN_ID)])
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await tx.getReceipt(client)
 
     console.log(`\n[✅ SUCCESS] ASSOCIATION SUCCESSFUL (Status: ${receipt.status.toString()})`)

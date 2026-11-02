@@ -63,6 +63,7 @@ class HederaSubgraphIndexer {
       fetch(`${this.mirrorBase}/api/v1/transactions?account.id=${accountId}&limit=${txLimit}&order=desc`).then(r => r.json())
     ])
 
+    // allSettled: one failing endpoint degrades the answer instead of failing the whole query.
     const rawAccount = accountPromise.status === 'fulfilled' ? accountPromise.value : {}
     const rawTxs = txPromise.status === 'fulfilled' ? txPromise.value : { transactions: [] }
 
@@ -103,6 +104,7 @@ const main = async () => {
 
   const { client, operatorId } = getClient()
   const mirrorBase = getMirrorNodeBaseUrl()
+  // One resolver call replaces a cascade of REST requests.
   const indexer = new HederaSubgraphIndexer(mirrorBase)
 
   try {

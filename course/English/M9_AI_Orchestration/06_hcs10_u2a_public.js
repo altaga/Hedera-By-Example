@@ -79,6 +79,7 @@ const main = async () => {
     const processedMessages = new Set()
     console.log(`📡 [ℹ️ INFO] Agent A live: Listening on Inbox [${agentInbox}]`)
 
+    // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
       .setTopicId(agentInbox)
       .setStartTime(0)
@@ -127,11 +128,13 @@ const main = async () => {
     const sendPing = async (round) => {
       console.log(`\n--- 📤 [⚙️ PROCESS] USER: INITIATING ROUND ${round} ---`)
       const rawPayload = JSON.stringify({ operator_id: operatorId, data: `Hello ${round}` })
+      // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
       const tx = await new TopicMessageSubmitTransaction()
         .setTopicId(agentInbox)
         .setMessage(rawPayload)
         .execute(hederaClient)
 
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       await tx.getReceipt(hederaClient)
       console.log(`[✅ SUCCESS] Published "Hello ${round}". Waiting for Pong...`)
     }

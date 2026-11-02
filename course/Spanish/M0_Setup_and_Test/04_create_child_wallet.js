@@ -51,9 +51,11 @@ const main = async () => {
     }
 
     console.log(`[⚙️ PROCESO] Creando identidad para ${accountName}...`)
+    // Genera una llave localmente: la llave privada nunca sale de este proceso.
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
 
+    // Crea una cuenta: su llave la controla; el saldo inicial lo pone quien paga.
     const tx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(newPublicKey)
       .setInitialBalance(Hbar.from(1)) // Saldo inicial para operaciones de prueba
@@ -61,6 +63,7 @@ const main = async () => {
       .freezeWith(client)
 
     const response = await tx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
     const newAccountId = receipt.accountId.toString()
     const evmAddress = '0x' + newPublicKey.toEvmAddress()

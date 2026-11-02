@@ -43,10 +43,12 @@ import crypto from 'crypto'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
 const create402Challenge = (resourcePath, costHbar, payeeAccountId, network = 'testnet') => {
+  // Un nonce aleatorio hace que cada desafío sea de un solo uso, así una prueba de pago no se puede reutilizar.
   const nonce = crypto.randomBytes(16).toString('hex')
   const timestamp = Date.now()
   const expiresAt = timestamp + 120000 // 2 minutos de validez del desafío
 
+  // HTTP 402 Payment Required: los encabezados x402 dicen cuánto pagar, a quién y en qué red.
   const paymentChallenge = {
     status: 402,
     headers: {
@@ -90,6 +92,7 @@ const main = async () => {
     console.log('[ℹ️ INFO] No hay API Key, token Bearer de OAuth ni Cookie de sesión.')
 
     console.log('\n[⚙️ PROCESO] Interceptor del servidor disparando desafío HTTP 402...')
+    // El servidor responde a una petición protegida con un desafío de pago en vez de los datos.
     const challenge = create402Challenge(resourcePath, queryCostHbar, operatorId.toString(), network)
 
     console.log('\n[✅ ÉXITO] Desafío HTTP 402 Payment Required Generado:')

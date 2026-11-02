@@ -58,6 +58,7 @@ const main = async () => {
     }
     console.log(`[⚙️ PROCESS] Transferring NFT ${tokenId} Serial #${serial} to ${targetId}...`)
 
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transaction = await new TransferTransaction()
       .addNftTransfer(new NftId(TokenId.fromString(tokenId), serial), AccountId.fromString(operatorId), AccountId.fromString(targetId))
       .freezeWith(client)
@@ -66,6 +67,7 @@ const main = async () => {
 
     console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
     console.log(`\n[✅ SUCCESS] Success! NFT Transfer Status: ${receipt.status.toString()}`)
 

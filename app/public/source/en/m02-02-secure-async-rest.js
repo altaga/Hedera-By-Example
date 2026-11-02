@@ -36,6 +36,7 @@ import { getClient, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
  */
 const getAccountBalancesAsync = async (accountId) => {
   const baseUrl = getMirrorNodeBaseUrl()
+  // Build the REST URL: reads go to the Mirror Node, never to consensus nodes.
   const targetUrl = `${baseUrl}/api/v1/balances?account.id=${accountId}`
 
   console.log(`[⚙️ PROCESS] Interrogating Mirror Node at: ${targetUrl}`)
@@ -43,6 +44,7 @@ const getAccountBalancesAsync = async (accountId) => {
   try {
     const response = await fetch(targetUrl)
 
+    // Fail loudly on HTTP errors instead of parsing an error page as data.
     if (!response.ok) {
       throw new Error(`Mirror Node Error: ${response.status} ${response.statusText}`)
     }
@@ -53,6 +55,7 @@ const getAccountBalancesAsync = async (accountId) => {
       throw new Error('No bindings found for account')
     }
 
+    // The Mirror Node reports balances in tinybars (1 HBAR = 100,000,000 tinybars).
     const balanceData = data.balances[0]
 
     return {

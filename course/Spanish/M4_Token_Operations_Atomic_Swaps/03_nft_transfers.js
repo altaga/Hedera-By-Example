@@ -61,6 +61,7 @@ const main = async () => {
     }
     console.log(`[⚙️ PROCESO] Transfiriendo NFT ${tokenId} Serial #${serial} a ${targetId}...`)
 
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transaction = await new TransferTransaction()
       .addNftTransfer(
         new NftId(TokenId.fromString(tokenId), serial),
@@ -74,6 +75,7 @@ const main = async () => {
     console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
     console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
     console.log(`\n[✅ ÉXITO] Propiedad del serial transferida con éxito. Estado: ${receipt.status.toString()}`)
 

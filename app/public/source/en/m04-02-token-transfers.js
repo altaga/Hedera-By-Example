@@ -61,6 +61,7 @@ const main = async () => {
 
     console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
     console.log(`\n[✅ SUCCESS] Success! Token Transfer Status: ${receipt.status.toString()}`)
 

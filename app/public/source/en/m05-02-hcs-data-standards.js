@@ -72,12 +72,14 @@ const main = async () => {
 
     console.log(`[⚙️ PROCESS] Submitting Standardized Message: ${message}`)
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const transaction = await new TopicMessageSubmitTransaction()
       .setTopicId(TopicId.fromString(topicId))
       .setMessage(message)
       .freezeWith(client)
 
     const response = await transaction.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
 
     console.log('\n[✅ SUCCESS] Message Submitted successfully.')

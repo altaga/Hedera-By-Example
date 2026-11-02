@@ -70,6 +70,7 @@ const main = async () => {
   try {
     // 1. HCS-15: Create Two Isolated "Petal" Agent Accounts (`hcs-15:op:petal_account_create`)
     console.log('[⚙️ PROCESS] Step 1 [HCS-15]: Spawning Isolated Petal Sub-Accounts...')
+    // Generate a key locally: the private key never leaves this process.
     const masterKeyA = PrivateKey.generateECDSA()
     const masterKeyB = PrivateKey.generateECDSA()
 
@@ -79,6 +80,7 @@ const main = async () => {
       maxAutomaticTokenAssociations: 5,
       accountMemo: 'HCS-15:PETAL:ALPHA_QUANT'
     })
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const petalAId = (await (await petalATx.execute(client)).getReceipt(client)).accountId.toString()
 
     const petalBTx = buildHcs15PetalAccountCreateTx({
@@ -140,6 +142,7 @@ const main = async () => {
 
     // 3. HCS-16: Assemble Multi-Sig "Flora" Account & Topic Triad (Communication, Transaction, State)
     console.log('\n[⚙️ PROCESS] Step 3 [HCS-16]: Forming 2-of-2 Multi-Sig Flora Account & Topic Triad...')
+    // A KeyList with a threshold: M of N keys must sign.
     const floraKeyList = new KeyList([masterKeyA.publicKey, masterKeyB.publicKey], 2)
     const floraAccountTx = buildHcs16CreateAccountTx({
       keyList: floraKeyList,
@@ -188,6 +191,7 @@ const main = async () => {
       topics: [commTopicId, txTopicId, stateTopicId],
       epoch: 1
     })
+    // Hash the content: anyone can recompute this digest to verify the data.
     const stateHash = crypto.createHash('sha384').update(canonicalSwarmState).digest('hex')
 
     const hcs17Tx = buildHcs17MessageTx({

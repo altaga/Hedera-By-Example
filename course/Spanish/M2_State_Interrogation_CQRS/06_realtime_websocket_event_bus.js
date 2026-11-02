@@ -158,6 +158,7 @@ const main = async () => {
     await new Promise(r => setTimeout(r, 200))
 
     console.log('\n[⚙️ PROCESO] Paso 3: Obteniendo eventos de consenso en vivo desde Mirror Node para ingesta en el Bus...')
+    // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
     const mirrorRes = await fetch(`${mirrorBase}/api/v1/transactions?limit=3&order=desc`)
     if (!mirrorRes.ok) throw new Error(`Error en Mirror Node: ${mirrorRes.statusText}`)
     const mirrorData = await mirrorRes.json()

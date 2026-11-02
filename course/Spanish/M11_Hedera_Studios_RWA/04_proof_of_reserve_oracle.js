@@ -87,11 +87,13 @@ const main = async () => {
   try {
     // 1. Crear tópico dedicado de HCS para Atestaciones de Reservas
     console.log('[⚙️ PROCESO] Inicializando canal de consenso Proof-of-Reserve...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('por:custodian_attestation_feed')
       .freezeWith(client)
 
     const topicResponse = await topicTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicResponse.getReceipt(client)
     const porTopicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico de Atestación PoR Creado: ${porTopicId}`)
@@ -120,6 +122,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const msgTxA = await new TopicMessageSubmitTransaction()
       .setTopicId(porTopicId)
       .setMessage(attestationMsgA)

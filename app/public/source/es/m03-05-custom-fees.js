@@ -77,6 +77,7 @@ const main = async () => {
 
     console.log('[⚙️ PROCESO] Creando Token con tarifas embebidas (FRT)...')
     const tokenId = await reuseToken('REUSE_M3_05_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const transaction = await new TokenCreateTransaction()
         .setTokenName('Fee Regulated Token')
         .setTokenSymbol('FRT')
@@ -89,6 +90,7 @@ const main = async () => {
         .freezeWith(client)
 
       const response = await transaction.execute(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const receipt = await response.getReceipt(client)
       return receipt.tokenId
     }, { minBalance: 100000 })
@@ -97,6 +99,7 @@ const main = async () => {
 
     // Preparación del entorno de prueba (Tesorería -> Cuenta 1)
     console.log(`\n[⚙️ PROCESO] Provisionando fondos a ${account1Id} para la prueba...`)
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const setupTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-3))
       .addHbarTransfer(account1Id, new Hbar(3))

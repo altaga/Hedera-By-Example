@@ -115,11 +115,13 @@ const main = async () => {
       const adminKey = PrivateKey.fromString(operatorKey)
       const bytecode = compile('SystemOracle', SOURCE_CODE)
       console.log('[⚙️ PROCESS] Deploying Native Oracle to EVM runtime...')
+      // Deploy the contract: the bytecode goes on-chain and the network returns its contract ID and EVM address.
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
         .setAdminKey(adminKey), client, { gas: 2500000 })
 
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       const receipt = await contractTx.getReceipt(client)
       oracleId = receipt.contractId.toString()
       console.log(`[✅ SUCCESS] Oracle ID: ${oracleId}`)
@@ -130,6 +132,7 @@ const main = async () => {
 
     // Step 2: Market Telemetry (0x168)
     console.log('[⚙️ PROCESS] Querying Market Rate (0x168 precompile)...')
+    // Call the contract: a state-changing call is a transaction and pays gas.
     const rateTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100)), client, { gas: 1000000 })

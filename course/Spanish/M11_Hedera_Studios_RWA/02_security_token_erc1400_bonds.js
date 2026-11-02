@@ -75,6 +75,7 @@ const main = async () => {
     // 1. Emitir el Token de Seguridad en HTS representando la Serie de Bonos
     console.log('\n[⚙️ PROCESO] Desplegando token de bonos compatible con ERC-1400 en HTS...')
     const bondTokenId = (await reuseToken('REUSE_M11_02_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const bondCreateTx = await new TokenCreateTransaction()
         .setTokenName('Green Energy 2031 Bond')
         .setTokenSymbol('BOND-GRE-31')
@@ -89,6 +90,7 @@ const main = async () => {
         .setWipeKey(client.operatorPublicKey)
         .setTokenMemo('erc1400:isin:US42312A1099')
         .freezeWith(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       return (await (await bondCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
@@ -113,6 +115,7 @@ const main = async () => {
 
     // 3. Ejecutar Liquidación On-Chain de Cupones
     console.log('\n[⚙️ PROCESO] Ejecutando distribución atómica on-chain de cupones...')
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const couponDistributionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-1.0)) // Distribución de rendimiento de cupones
       .addHbarTransfer(operatorId, new Hbar(1.0))

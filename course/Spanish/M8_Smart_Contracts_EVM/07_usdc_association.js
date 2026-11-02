@@ -48,11 +48,13 @@ const main = async () => {
   try {
     console.log(`[⚙️ PROCESO] Ejecutando Opt-In oficial para USDC (${USDC_TOKEN_ID})...`)
 
+    // Asocia primero: una cuenta debe aceptar un token antes de poder tenerlo.
     const tx = await new TokenAssociateTransaction()
       .setAccountId(AccountId.fromString(operatorId))
       .setTokenIds([TokenId.fromString(USDC_TOKEN_ID)])
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await tx.getReceipt(client)
 
     console.log(`\n[✅ ÉXITO] Asociación de USDC exitosa. Estado: ${receipt.status.toString()}`)

@@ -67,11 +67,13 @@ const main = async () => {
       type: HCS21TopicType.ADAPTER_REGISTRY,
       metaTopicId: '0.0.100'
     }).setAutoRenewAccountId(operatorId.toString())
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const adapterTopicId = (await (await adapterRegistryTx.execute(client)).getReceipt(client)).topicId.toString()
     console.log(`[✅ HCS-21] Tópico de Registro de Adaptadores Creado: ${adapterTopicId}`)
 
     // 2. HCS-21: Publicar una Declaración de Adaptador con Huella Criptográfica SHA-256
     console.log('\n[⚙️ PROCESO] Paso 2 [HCS-21]: Registrando Adaptador de Oráculo Verificado...')
+    // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
     const artifactDigest = crypto.createHash('sha256')
       .update('@hol-org/pyth-saucer-adapter@1.4.0:dist/index.mjs')
       .digest('hex')

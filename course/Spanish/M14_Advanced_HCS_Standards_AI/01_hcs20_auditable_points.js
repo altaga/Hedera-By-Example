@@ -150,10 +150,12 @@ const main = async () => {
   try {
     // 1. Crear Tópico Dedicado para el Registro de Inscripciones HCS-20
     console.log('[⚙️ PROCESO] Creando tópico dedicado para el libro de inscripciones HCS-20...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-20:AUDITABLE:POINTS:V1')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Libro de Puntos HCS-20 Creado: Tópico ID ${topicId}`)
@@ -164,6 +166,7 @@ const main = async () => {
     // 2. Inscribir Despliegue de Token (Deploy validado por HCS20DeployMessageSchema)
     console.log('\n[⚙️ PROCESO] Inscribiendo Despliegue de Token HCS-20: Ticker [aipnt] (Máx: 1,000,000)...')
     const deployMsg = HCS20.deploy('AI Reputation Points', 'aipnt', 1000000)
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const deployTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(deployMsg))

@@ -61,6 +61,7 @@ const main = async () => {
   try {
     // 1. Create an NFT Collection WITH SupplyKey ONLY (NO MetadataKey!)
     console.log('[⚙️ PROCESS] Creating NFT Collection with SupplyKey ONLY (No MetadataKey)...')
+    // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
     const createTx = await new TokenCreateTransaction()
       .setTokenName('HIP-850 Mystery Vault')
       .setTokenSymbol('VAULT')
@@ -73,6 +74,7 @@ const main = async () => {
 
     const signedCreate = await createTx.sign(supplyKey)
     const createRes = await signedCreate.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const createReceipt = await createRes.getReceipt(client)
     const tokenId = createReceipt.tokenId
     console.log(`[✅ SUCCESS] Collection Created: ${tokenId.toString()} (MetadataKey: NONE)`)
@@ -80,6 +82,7 @@ const main = async () => {
     // 2. Mint Serial #1 with "Unrevealed Mystery Box" metadata in Treasury
     console.log('\n[⚙️ PROCESS] Minting Serial #1 in Treasury (Unrevealed Mystery State)...')
     const unrevealedMeta = Buffer.from('ipfs://bafkrei-mystery-box-unrevealed/box1.json')
+    // Mint: only the supply key can create new units or NFT serials.
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([unrevealedMeta])
@@ -98,6 +101,7 @@ const main = async () => {
     // 3. HIP-850 In Action: Update Metadata in Treasury using ONLY SupplyKey!
     console.log('\n[⚙️ PROCESS] [HIP-850] Updating Serial #1 in Treasury using SupplyKey...')
     const revealedMeta = Buffer.from('ipfs://bafkrei-genesis-dragon-revealed/dragon1.json')
+    // Update NFT metadata: only the metadata key can do this (HIP-657).
     const updateTreasuryTx = await new TokenUpdateNftsTransaction()
       .setTokenId(tokenId)
       .setSerialNumbers([serialNum])
@@ -116,7 +120,9 @@ const main = async () => {
 
     // 4. Transfer Serial #1 out of Treasury to a Collector Account
     console.log('\n[⚙️ PROCESS] Creating Collector Account and transferring Serial #1 out of Treasury...')
+    // Generate a key locally: the private key never leaves this process.
     const collectorKey = PrivateKey.generateED25519()
+    // Create an account: its key controls it; the initial balance comes from the payer.
     const accRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(collectorKey.publicKey)
       .setInitialBalance(new Hbar(0))
@@ -124,6 +130,7 @@ const main = async () => {
       .execute(client)
     const collectorId = (await accRes.getReceipt(client)).accountId
 
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transferRes = await new TransferTransaction()
       .addNftTransfer(tokenId, serialNum, operatorId, collectorId)
       .execute(client)

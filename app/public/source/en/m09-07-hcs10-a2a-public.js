@@ -75,6 +75,7 @@ const main = async () => {
 
     console.log(`📡 [ℹ️ INFO] Agent B monitoring Inbox [${inbox}]...`)
 
+    // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
       .setTopicId(inbox)
       .setStartTime(sessionStart)

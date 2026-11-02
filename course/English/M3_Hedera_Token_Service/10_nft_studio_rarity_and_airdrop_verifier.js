@@ -318,6 +318,7 @@ const main = async () => {
 
   console.log('   Creating Non-Fungible Unique Token Class...')
   const tokenId = await reuseToken('REUSE_M3_10_TOKEN', async () => {
+    // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
     const createTx = await new TokenCreateTransaction()
       .setTokenName('NFT Studio Sentinel Collection')
       .setTokenSymbol('SENTINEL')
@@ -330,6 +331,7 @@ const main = async () => {
 
     const createSign = await createTx.sign(supplyKey)
     const createSubmit = await createSign.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const createReceipt = await createSubmit.getReceipt(client)
     return createReceipt.tokenId
   })
@@ -341,6 +343,7 @@ const main = async () => {
   const metadataBytes = rawCollection.map((item) =>
     Buffer.from(`ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/${item.id}.json`)
   )
+  // Mint: only the supply key can create new units or NFT serials.
   const mintTx = await new TokenMintTransaction()
     .setTokenId(tokenId)
     .setMetadata(metadataBytes)
@@ -355,6 +358,7 @@ const main = async () => {
   const targetRecipient = AccountId.fromString(targetAccounts[0])
   console.log(`\n   Dispersing Serial #1 (Rank #1 ${rankedCollection[0].name}) to ${targetRecipient.toString()} via HIP-904...`)
 
+  // Airdrop (HIP-904): delivered at once with a free auto-association slot, otherwise left pending until claimed.
   const airdropTx = await new TokenAirdropTransaction()
     .addNftTransfer(new NftId(tokenId, mintReceipt.serials[0]), operatorId, targetRecipient)
     .freezeWith(client)

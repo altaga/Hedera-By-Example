@@ -148,10 +148,12 @@ const main = async () => {
 
   try {
     console.log('[⚙️ PROCESO] Inicializando tópico de anclaje EN VIVO para eventos cross-ledger...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('CLPR:Cross-Ledger:StateProof:HIP-1535')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ ÉXITO] Tópico de anclaje CLPR creado en Testnet: ${topicId}`)
@@ -167,6 +169,7 @@ const main = async () => {
     }
 
     console.log('\n[⚙️ PROCESO] Transmitiendo intención cross-chain al Hedera Consensus Service...')
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(crossLedgerPayload))

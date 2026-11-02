@@ -111,10 +111,12 @@ const main = async () => {
   try {
     // 1. Desplegar un Tópico de Auditoría HCS
     console.log('[⚙️ PROCESO] Paso 1: Desplegando Tópico de Auditoría Inmutable en HCS...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('ENTERPRISE:MERKLE_BATCH_ANCHOR:V1')
       .execute(client)
 
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId
     console.log(`[✅ ÉXITO] Tópico Ancla HCS Creado: ${topicId.toString()}`)
@@ -156,6 +158,7 @@ const main = async () => {
       anchored_at: new Date().toISOString()
     }
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(anchorPayload))

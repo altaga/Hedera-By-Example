@@ -41,6 +41,7 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
   console.log('[ℹ️ INFO] In @hiero-ledger/sdk v2.90+, this pattern is blocked in favor of Mirror Node CQRS.')
 
   try {
+    // The old way: ask a consensus node directly (slow, paid, and being phased out).
     const query = new AccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
     const balance = await query.execute(client)
@@ -48,6 +49,7 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
   } catch (deprecatedError) {
     console.log(`[✅ CQRS ENFORCED] SDK blocked legacy consensus query: "${deprecatedError.message}"`)
     console.log('[⚙️ PROCESS] Falling back to MirrorNodeAccountBalanceQuery...')
+    // The replacement: the SDK reads the same balance from the Mirror Node, for free.
     const mirrorBalance = await new MirrorNodeAccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
       .execute(client)

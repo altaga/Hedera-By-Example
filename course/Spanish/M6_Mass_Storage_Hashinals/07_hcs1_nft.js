@@ -48,6 +48,7 @@ import path from 'path'
  * Pipeline HCS-1: Divide un buffer en mensajes JSON estándar
  */
 const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
+  // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
   const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
   const base64Str = fileBuffer.toString('base64')
 
@@ -89,11 +90,13 @@ const main = async () => {
 
     // 1. Crear el Topic de Almacenamiento HCS
     console.log('\n[⚙️ PROCESO] Creando Topic de Almacenamiento HCS...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('Ancla de Activos HCS-1')
       .freezeWith(client)
 
     const topicRes = await topicTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
     const topicIdStr = topicId.toString()
@@ -107,6 +110,7 @@ const main = async () => {
     for (const payload of imagePayloads) {
       show.shards({ id: 'hcs1-image', title: 'Fragmentos de imagen enviados', total: payload.t, done: payload.i + 1 })
       process.stdout.write(` └─ [⚙️] Shard ${payload.i + 1}/${payload.t}\r`)
+      // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
         .setMessage(JSON.stringify(payload))
@@ -146,6 +150,7 @@ const main = async () => {
     // 4. Crear la Colección NFT
     console.log('\n[⚙️ PROCESO] Creando Colección NFT...')
     const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Artefacto Económico HCS-1')
         .setTokenSymbol('HCSNFT')
@@ -167,6 +172,7 @@ const main = async () => {
     const hcsPointer = `hcs://${topicIdStr}?fid=${metaHash}`
     console.log(`\n[⚙️ PROCESO] Minando Serial #1 con Puntero: ${hcsPointer}`)
 
+    // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .addMetadata(Buffer.from(hcsPointer))

@@ -53,6 +53,7 @@ const extendContractLifespan = async (client, contractId, adminKey) => {
   const signed = await tx.sign(adminKey)
   const result = await signed.execute(client)
 
+  // Espera el consenso: el recibo dice si la red aceptó la transacción.
   return await result.getReceipt(client)
 }
 

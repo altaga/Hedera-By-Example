@@ -86,11 +86,13 @@ const main = async () => {
   try {
     // 1. Create dedicated HCS topic for Proof-of-Reserve Attestations
     console.log('[⚙️ PROCESS] Initializing Proof-of-Reserve Consensus Feed...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('por:custodian_attestation_feed')
       .freezeWith(client)
 
     const topicResponse = await topicTx.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicResponse.getReceipt(client)
     const porTopicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] PoR Attestation Topic Created: ${porTopicId}`)
@@ -119,6 +121,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const msgTxA = await new TopicMessageSubmitTransaction()
       .setTopicId(porTopicId)
       .setMessage(attestationMsgA)

@@ -74,12 +74,14 @@ const main = async () => {
     console.log(`[📊 REGISTRO] Carga Útil Estándar: ${message}`)
 
     console.log('[⚙️ PROCESO] Publicando mensaje en el ledger de consenso...')
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const transaction = await new TopicMessageSubmitTransaction()
       .setTopicId(TopicId.fromString(topicId))
       .setMessage(message)
       .freezeWith(client)
 
     const response = await transaction.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
 
     console.log(`\n[✅ ÉXITO] Mensaje HCS-2 entregado correctamente. Estado: ${receipt.status.toString()}`)

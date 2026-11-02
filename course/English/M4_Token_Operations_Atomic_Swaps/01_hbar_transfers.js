@@ -48,6 +48,7 @@ const main = async () => {
   try {
     console.log(`[⚙️ PROCESS] Transferring 1 HBAR from ${operatorId} to ${targetId}...`)
 
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transaction = await new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(-1)) // Negative = Deduct
       .addHbarTransfer(AccountId.fromString(targetId), new Hbar(1)) // Positive = Credit
@@ -57,6 +58,7 @@ const main = async () => {
 
     console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
     console.log(`\n[✅ SUCCESS] Success! Transfer Status: ${receipt.status.toString()}`)
 

@@ -89,12 +89,14 @@ const main = async () => {
     for (let i = 0; i < combinedBuffer.length; i += CHUNK_SIZE) {
       const chunk = combinedBuffer.slice(i, i + CHUNK_SIZE)
 
+      // Agrega el siguiente fragmento: los archivos crecen una transacción a la vez.
       const transaction = await new FileAppendTransaction()
         .setFileId(FileId.fromString(fileId))
         .setContents(chunk)
         .freezeWith(client)
 
       lastResponse = await transaction.execute(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       await lastResponse.getReceipt(client)
       console.log(`   └─ Fragmento ${Math.floor(i / CHUNK_SIZE) + 1} anclado.`)
     }

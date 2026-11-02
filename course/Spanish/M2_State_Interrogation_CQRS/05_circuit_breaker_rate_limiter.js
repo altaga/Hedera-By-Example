@@ -158,6 +158,7 @@ const main = async () => {
 
     // Petición inicial para calentar la caché
     const res1 = await breaker.execute(`account:${targetAccount}`, async () => {
+      // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
       const res = await fetch(`${mirrorBase}/api/v1/accounts/${targetAccount}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()

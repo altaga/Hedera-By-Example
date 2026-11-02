@@ -62,19 +62,23 @@ const gossipSimulation = async () => {
   console.log('--- SESSION START: Gossip about Gossip Simulation ---\n')
 
   console.log('[ℹ️ INFO] Nodes A and B start with independent "Genesis" events...')
+  // Round 1: each node records its own first event; neither has heard from the other yet.
   const eventA1 = createEvent('Node A', 'Tx1: Alice pays Bob', '0x000', '0x000')
   const eventB1 = createEvent('Node B', 'Tx2: Charlie pays Dave', '0x000', '0x000')
 
   console.log('[⚙️ PROCESS] Node A gossips to Node B.')
   console.log('   -> Node B creates a NEW event linking its history (B1) with Node A\'s history (A1).')
+  // Gossip: Node B hears A's event and records a new one whose parents are its own last event and A's (the 'other parent').
   const eventB2 = createEvent('Node B', 'Tx3: Dave pays Alice', eventB1.hash, eventA1.hash)
 
   console.log('[⚙️ PROCESS] Node B gossips back to Node A.')
   console.log('   -> Node A creates a NEW event linking its history (A1) with Node B\'s latest (B2).')
+  // Gossip about gossip: A now learns what B knew, so every event carries the history of who told whom.
   const eventA2 = createEvent('Node A', 'Tx4: Bob pays Charlie', eventA1.hash, eventB2.hash)
 
   console.log('\n--- 📊 Final Hashgraph DAG Visualized ---')
 
+  // The resulting DAG: virtual voting reads it to agree on the order without sending any votes.
   const timeline = [eventA1, eventB1, eventB2, eventA2]
   const eventIds = new Map(timeline.map((ev, i) => [ev.hash, `E${i}`]))
   show.dag({ title: 'Hashgraph: events and their parents', events: timeline.map((ev, i) => ({ id: `E${i}`, creator: ev.creator, label: ev.transaction, selfParent: eventIds.get(ev.selfParent), otherParent: eventIds.get(ev.otherParent) })) })

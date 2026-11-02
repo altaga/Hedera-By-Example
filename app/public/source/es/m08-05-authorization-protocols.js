@@ -47,6 +47,7 @@ import { getClient, getState } from '../M99_Utilities/index.js'
 const establishContractApproval = async (client, ownerId, ownerKey, spenderContractId) => {
   console.log(`[⚙️ PROCESO] Aprobando asignación de 5 HBAR para el contrato: ${spenderContractId}...`)
 
+  // Aprueba una allowance: el spender puede mover hasta este monto en nombre del dueño.
   const tx = await new AccountAllowanceApproveTransaction()
     .approveHbarAllowance(
       ownerId, // Propietario de los fondos
@@ -58,6 +59,7 @@ const establishContractApproval = async (client, ownerId, ownerKey, spenderContr
   const signedTx = await tx.sign(ownerKey)
   const txResponse = await signedTx.execute(client)
 
+  // Espera el consenso: el recibo dice si la red aceptó la transacción.
   return await txResponse.getReceipt(client)
 }
 

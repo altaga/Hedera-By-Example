@@ -126,10 +126,12 @@ const main = async () => {
 
     // 3. Anchor Identity Registry Events to HCS for Compliance Audit
     console.log('\n[⚙️ PROCESS] Anchoring ERC-3643 Compliance Verification Event to HCS...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('erc3643:compliance_registry_v1')
       .freezeWith(client)
     const topicResponse = await topicTx.execute(client)
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicResponse.getReceipt(client)
     const complianceTopicId = topicReceipt.topicId.toString()
 
@@ -143,6 +145,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const msgTx = await new TopicMessageSubmitTransaction()
       .setTopicId(complianceTopicId)
       .setMessage(complianceAudit)

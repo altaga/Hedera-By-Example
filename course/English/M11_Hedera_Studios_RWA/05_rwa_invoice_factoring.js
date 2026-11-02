@@ -73,6 +73,7 @@ const main = async () => {
     // 2. Tokenize the Receivable on HTS
     console.log('\n[⚙️ PROCESS] Minting 50,000 Fractional Invoice Tokens on Hedera Token Service...')
     const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
+      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
         .setTokenSymbol('INV-8842')
@@ -86,6 +87,7 @@ const main = async () => {
         .setFreezeKey(client.operatorPublicKey)
         .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
         .freezeWith(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
@@ -94,6 +96,7 @@ const main = async () => {
 
     // 3. Simulate Investor Pool Subscription (Secondary Liquidity)
     console.log('\n[⚙️ PROCESS] Liquidity Pool purchases 50,000 tokens for upfront working capital...')
+    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const subscriptionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulation of liquidity transfer
       .addHbarTransfer(operatorId, new Hbar(0.5))

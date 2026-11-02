@@ -46,6 +46,7 @@ class HcsNode {
 
   listen (messageType, onMessageCallback) {
     console.log(`[ℹ️ INFO] ${this.name}: Listener active for '${messageType}' messages.`)
+    // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
       .setTopicId(this.topicId)
       .subscribe(this.client, null, (message) => {
@@ -67,11 +68,13 @@ class HcsNode {
       ...extraData
     })
 
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const tx = await new TopicMessageSubmitTransaction()
       .setTopicId(this.topicId)
       .setMessage(payload)
       .execute(this.client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     return await tx.getReceipt(this.client)
   }
 }

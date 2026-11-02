@@ -86,12 +86,14 @@ const main = async () => {
       const chunk = combinedBuffer.slice(i, i + CHUNK_SIZE)
       console.log(` └─ [APPEND] Shard ${Math.floor(i / CHUNK_SIZE) + 1}: ${chunk.length} bytes`)
 
+      // Append the next chunk: files grow one transaction at a time.
       const transaction = await new FileAppendTransaction()
         .setFileId(FileId.fromString(fileId))
         .setContents(chunk)
         .freezeWith(client)
 
       lastResponse = await transaction.execute(client)
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       await lastResponse.getReceipt(client)
     }
 

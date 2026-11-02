@@ -65,6 +65,7 @@ const main = async () => {
   // Llave de sesión compartida por los agentes: se crea la primera vez y los Labs 08-10 la reutilizan.
   let sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
   if (!sessionPrivKeyDer) {
+    // Genera una llave localmente: la llave privada nunca sale de este proceso.
     sessionPrivKeyDer = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivKeyDer)
     console.log('[ℹ️ INFO] Se generó una llave de sesión ECDSA nueva para Agente A ↔ Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
@@ -78,6 +79,7 @@ const main = async () => {
 
     console.log(`🛡️  [ℹ️ INFO] Agente B: Operativo en Modo Vulnerable en Inbox [${inbox}]...`)
 
+    // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
       .setTopicId(inbox)
       .subscribe(client, null, async (msg) => {

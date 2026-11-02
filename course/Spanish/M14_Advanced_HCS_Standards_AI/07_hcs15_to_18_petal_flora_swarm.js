@@ -70,6 +70,7 @@ const main = async () => {
   try {
     // 1. HCS-15: Crear Dos Sub-Cuentas Aisladas "Pétalo" (`hcs-15:op:petal_account_create`)
     console.log('[⚙️ PROCESO] Paso 1 [HCS-15]: Creando Sub-Cuentas Pétalo Aisladas...')
+    // Genera una llave localmente: la llave privada nunca sale de este proceso.
     const masterKeyA = PrivateKey.generateECDSA()
     const masterKeyB = PrivateKey.generateECDSA()
 
@@ -79,6 +80,7 @@ const main = async () => {
       maxAutomaticTokenAssociations: 5,
       accountMemo: 'HCS-15:PETAL:ALPHA_QUANT'
     })
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const petalAId = (await (await petalATx.execute(client)).getReceipt(client)).accountId.toString()
 
     const petalBTx = buildHcs15PetalAccountCreateTx({
@@ -140,6 +142,7 @@ const main = async () => {
 
     // 3. HCS-16: Fundar Cuenta Multi-Firma "Flora" y Tríada de Tópicos (Comunicación, Transacción, Estado)
     console.log('\n[⚙️ PROCESO] Paso 3 [HCS-16]: Creando Cuenta Flora Multi-Firma 2-de-2 y Tríada de Tópicos...')
+    // Un KeyList con umbral: deben firmar M de N llaves.
     const floraKeyList = new KeyList([masterKeyA.publicKey, masterKeyB.publicKey], 2)
     const floraAccountTx = buildHcs16CreateAccountTx({
       keyList: floraKeyList,
@@ -188,6 +191,7 @@ const main = async () => {
       topics: [commTopicId, txTopicId, stateTopicId],
       epoch: 1
     })
+    // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
     const stateHash = crypto.createHash('sha384').update(canonicalSwarmState).digest('hex')
 
     const hcs17Tx = buildHcs17MessageTx({

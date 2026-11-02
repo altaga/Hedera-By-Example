@@ -66,6 +66,7 @@ const main = async () => {
     // 1. Crear la Colección de NFT Hashinal
     console.log("[⚙️ PROCESO] Creando la colección de grado institucional 'Hedera Syllabus Hashinal'...")
     const tokenId = await reuseToken('REUSE_M6_06_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Hedera Batch Hashinal')
         .setTokenSymbol('HASH')
@@ -79,6 +80,7 @@ const main = async () => {
         .freezeWith(client)
 
       const tokenResponse = await tokenTx.execute(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const tokenReceipt = await tokenResponse.getReceipt(client)
       return tokenReceipt.tokenId
     })
@@ -108,6 +110,7 @@ const main = async () => {
     // El puntero indica que los datos están en la red 1 (Mainnet=0, Testnet=1) bajo el File ID dado
     const pointer = `hedera://1/${hfsFileId}`
 
+    // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .addMetadata(Buffer.from(pointer))

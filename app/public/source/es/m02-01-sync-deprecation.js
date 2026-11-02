@@ -43,6 +43,7 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
   console.log('\n⚠️  [ℹ️ INFO] Intentando Patrón Legacy: AccountBalanceQuery en Consenso...')
 
   try {
+    // La forma antigua: preguntar directo a un nodo de consenso (lento, de pago y en retiro).
     const query = new AccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
     const balance = await query.execute(client)
@@ -50,6 +51,7 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
   } catch (deprecatedError) {
     console.log(`[✅ CQRS APLICADO] El SDK bloqueó la consulta legacy: "${deprecatedError.message}"`)
     console.log('[⚙️ PROCESO] Ejecutando reemplazo oficial MirrorNodeAccountBalanceQuery...')
+    // El reemplazo: el SDK lee el mismo saldo del Mirror Node, gratis.
     const mirrorBalance = await new MirrorNodeAccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
       .execute(client)

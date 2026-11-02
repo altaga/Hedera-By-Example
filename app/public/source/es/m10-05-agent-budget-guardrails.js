@@ -138,10 +138,12 @@ const main = async () => {
 
     // 4. Anclar auditoría de gasto a un Tópico Inmutable de HCS
     console.log('\n[⚙️ PROCESO] Anclando evento de auditoría de pago a Hedera Consensus Service...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('x402:agent_guardrail_audit')
       .freezeWith(client)
     const topicResponse = await topicTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicResponse.getReceipt(client)
     const auditTopicId = topicReceipt.topicId.toString()
 
@@ -153,6 +155,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(auditTopicId)
       .setMessage(auditMessage)

@@ -49,6 +49,7 @@ import { getClient, updateState, show } from '../M99_Utilities/index.js'
  */
 const fetchLatestBlockAndTxs = async (network = 'testnet') => {
   const baseUrl = `https://${network}.mirrornode.hedera.com/api/v1`
+  // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
   const res = await fetch(`${baseUrl}/blocks?order=desc&limit=1`)
   if (!res.ok) {
     throw new Error(`Failed to fetch block stream: HTTP ${res.status}`)
@@ -109,6 +110,7 @@ const calculateBlockHash = (header) => {
     header.stateChangesRoot
   ].join('|')
 
+  // Hash the content: anyone can recompute this digest to verify the data.
   return crypto.createHash('sha384').update(payload).digest('hex')
 }
 

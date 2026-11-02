@@ -74,6 +74,7 @@ const main = async () => {
     // 2. Tokenizar la Cuenta por Cobrar en HTS
     console.log('\n[⚙️ PROCESO] Acuñando 50,000 Tokens Fraccionados de Factura en Hedera Token Service...')
     const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
+      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
         .setTokenSymbol('INV-8842')
@@ -87,6 +88,7 @@ const main = async () => {
         .setFreezeKey(client.operatorPublicKey)
         .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
         .freezeWith(client)
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
@@ -95,6 +97,7 @@ const main = async () => {
 
     // 3. Simular la Suscripción del Fondo de Liquidez (Mercado Secundario)
     console.log('\n[⚙️ PROCESO] El Fondo de Liquidez adquiere los 50,000 tokens adelantando el capital...')
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const subscriptionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulación de transferencia de liquidez
       .addHbarTransfer(operatorId, new Hbar(0.5))

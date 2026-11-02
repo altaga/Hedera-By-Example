@@ -85,9 +85,11 @@ const main = async () => {
   try {
     console.log('[⚙️ PROCESO] Validando compatibilidad del JSON-RPC Relay de Hedera con Foundry y Hardhat...')
     const rpcUrl = 'https://testnet.hashio.io/api'
+    // Hashio es el relay JSON-RPC de Hedera: Foundry y Hardhat le hablan como a cualquier cadena EVM (chain ID 296 en testnet).
     const provider = new ethers.JsonRpcProvider(rpcUrl)
 
     const startTime = Date.now()
+    // Una llamada barata para comprobar que el relay responde y medir su latencia.
     const blockNumber = await provider.getBlockNumber()
     const latencyMs = Date.now() - startTime
 

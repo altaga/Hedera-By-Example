@@ -128,11 +128,13 @@ const main = async () => {
       const bytecode = compile('SystemOracle', SOURCE_CODE)
 
       console.log('[⚙️ PROCESO] Desplegando Oráculo de Sistema en el ledger...')
+      // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
         .setAdminKey(adminKey), client, { gas: 2000000 })
 
+      // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const receipt = await contractTx.getReceipt(client)
       oracleId = receipt.contractId.toString()
       console.log(`[✅ ÉXITO] Oráculo desplegado: ${oracleId}`)
@@ -141,6 +143,7 @@ const main = async () => {
 
     // 2. Consulta de Tasa de Cambio (0x168)
     console.log('\n[⚙️ PROCESO] Consultando Telemetría de Mercado (HBAR/USD)...')
+    // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
     const rateTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100)), client, { gas: 1000000 })

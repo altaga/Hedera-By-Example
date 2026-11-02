@@ -111,11 +111,13 @@ const main = async () => {
       console.log(`[✅ SUCCESS] Contract Compiled! Bytecode Length: ${bytecode.length} hex chars`)
 
       console.log('\n[⚙️ PROCESS] Step 1: Deploying SystemContractsFacade to Hedera EVM...')
+      // Deploy the contract: the bytecode goes on-chain and the network returns its contract ID and EVM address.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
         .setAdminKey(adminKey), client, { gas: 1500000 })
 
+      // Wait for consensus: the receipt says whether the network accepted the transaction.
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
       contractIdStr = contractId.toString()
@@ -130,6 +132,7 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Step 2: Inquiring 0x168 Exchange Rate System Precompile directly from EVM...')
     const oneUsdTinycents = 100000000 // 1 USD = 10^8 tinycents
 
+    // Call the contract: a state-changing call is a transaction and pays gas.
     const execTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)

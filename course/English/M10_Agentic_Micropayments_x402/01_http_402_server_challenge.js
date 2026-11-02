@@ -42,10 +42,12 @@ import crypto from 'crypto'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
 const create402Challenge = (resourcePath, costHbar, payeeAccountId, network = 'testnet') => {
+  // A random nonce makes each challenge single-use, so a payment proof cannot be replayed.
   const nonce = crypto.randomBytes(16).toString('hex')
   const timestamp = Date.now()
   const expiresAt = timestamp + 120000 // 2 minutes challenge validity
 
+  // HTTP 402 Payment Required: the x402 headers say what to pay, to whom and on which network.
   const paymentChallenge = {
     status: 402,
     headers: {
@@ -89,6 +91,7 @@ const main = async () => {
     console.log('[ℹ️ INFO] No API Key, OAuth Bearer token, or Session Cookie present.')
 
     console.log('\n[⚙️ PROCESS] Server interceptor triggering HTTP 402 challenge...')
+    // The server answers a protected request with a payment challenge instead of the data.
     const challenge = create402Challenge(resourcePath, queryCostHbar, operatorId.toString(), network)
 
     console.log('\n[✅ SUCCESS] HTTP 402 Payment Required Challenge Generated:')

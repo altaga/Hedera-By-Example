@@ -127,10 +127,12 @@ const main = async () => {
 
     // 3. Anclar Eventos a HCS para Auditoría Regulatoria
     console.log('\n[⚙️ PROCESO] Anclando Evento de Verificación ERC-3643 a HCS...')
+    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('erc3643:compliance_registry_v1')
       .freezeWith(client)
     const topicResponse = await topicTx.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicResponse.getReceipt(client)
     const complianceTopicId = topicReceipt.topicId.toString()
 
@@ -144,6 +146,7 @@ const main = async () => {
       timestamp: Date.now()
     })
 
+    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const msgTx = await new TopicMessageSubmitTransaction()
       .setTopicId(complianceTopicId)
       .setMessage(complianceAudit)

@@ -75,6 +75,7 @@ const main = async () => {
 
     console.log(`🤖 [ℹ️ INFO] Agente B: Operativo en Inbox [${inbox}]...`)
 
+    // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
       .setTopicId(inbox)
       .setStartTime(0)

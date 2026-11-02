@@ -59,6 +59,7 @@ const main = async () => {
   try {
     // 1. Crear Colección NFT SOLO con SupplyKey (¡SIN MetadataKey!)
     console.log('[⚙️ PROCESO] Creando Colección NFT únicamente con SupplyKey (Sin MetadataKey)...')
+    // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
     const createTx = await new TokenCreateTransaction()
       .setTokenName('Boveda Misteriosa HIP-850')
       .setTokenSymbol('VAULT')
@@ -71,6 +72,7 @@ const main = async () => {
 
     const signedCreate = await createTx.sign(supplyKey)
     const createRes = await signedCreate.execute(client)
+    // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const createReceipt = await createRes.getReceipt(client)
     const tokenId = createReceipt.tokenId
     console.log(`[✅ ÉXITO] Colección Creada: ${tokenId.toString()} (MetadataKey: NINGUNA)`)
@@ -78,6 +80,7 @@ const main = async () => {
     // 2. Mintear Serie #1 con metadatos "Caja Misteriosa Sin Revelar" en Tesorería
     console.log('\n[⚙️ PROCESO] Minteando Serie #1 en Tesorería (Estado Sin Revelar)...')
     const unrevealedMeta = Buffer.from('ipfs://bafkrei-mystery-box-unrevealed/box1.json')
+    // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([unrevealedMeta])
@@ -96,6 +99,7 @@ const main = async () => {
     // 3. HIP-850 en Acción: ¡Actualizar Metadatos en Tesorería usando SOLO la SupplyKey!
     console.log('\n[⚙️ PROCESO] [HIP-850] Revelando Serie #1 en Tesorería usando SupplyKey...')
     const revealedMeta = Buffer.from('ipfs://bafkrei-genesis-dragon-revealed/dragon1.json')
+    // Actualiza la metadata del NFT: solo la metadata key puede hacerlo (HIP-657).
     const updateTreasuryTx = await new TokenUpdateNftsTransaction()
       .setTokenId(tokenId)
       .setSerialNumbers([serialNum])
@@ -114,7 +118,9 @@ const main = async () => {
 
     // 4. Transferir Serie #1 fuera de la Tesorería hacia la Cuenta del Coleccionista
     console.log('\n[⚙️ PROCESO] Creando Cuenta de Coleccionista y transfiriendo Serie #1 fuera de Tesorería...')
+    // Genera una llave localmente: la llave privada nunca sale de este proceso.
     const collectorKey = PrivateKey.generateED25519()
+    // Crea una cuenta: su llave la controla; el saldo inicial lo pone quien paga.
     const accRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(collectorKey.publicKey)
       .setInitialBalance(new Hbar(0))
@@ -122,6 +128,7 @@ const main = async () => {
       .execute(client)
     const collectorId = (await accRes.getReceipt(client)).accountId
 
+    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transferRes = await new TransferTransaction()
       .addNftTransfer(tokenId, serialNum, operatorId, collectorId)
       .execute(client)

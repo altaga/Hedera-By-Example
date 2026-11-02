@@ -76,10 +76,12 @@ const main = async () => {
   try {
     // 1. Create HCS-26 Registry Topic
     console.log('[⚙️ PROCESS] Initializing HCS-26 Decentralized Agent Skills Registry Topic...')
+    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-26:AGENT:SKILLS:REGISTRY')
       .execute(client)
 
+    // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
     console.log(`[✅ SUCCESS] HCS-26 Skills Registry Topic Created: ${topicId}`)
@@ -129,6 +131,7 @@ const main = async () => {
 
     // 3. Register Manifest on Consensus Topic
     console.log('\n[⚙️ PROCESS] Broadcast-registering skill to HCS-26 registry topic...')
+    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(skillManifest))

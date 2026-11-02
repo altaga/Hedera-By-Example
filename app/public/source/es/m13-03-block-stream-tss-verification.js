@@ -50,6 +50,7 @@ import { getClient, updateState, show } from '../M99_Utilities/index.js'
  */
 const fetchLatestBlockAndTxs = async (network = 'testnet') => {
   const baseUrl = `https://${network}.mirrornode.hedera.com/api/v1`
+  // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
   const res = await fetch(`${baseUrl}/blocks?order=desc&limit=1`)
   if (!res.ok) {
     throw new Error(`Fallo al consultar el flujo de bloques: HTTP ${res.status}`)
@@ -110,6 +111,7 @@ const calculateBlockHash = (header) => {
     header.stateChangesRoot
   ].join('|')
 
+  // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
   return crypto.createHash('sha384').update(payload).digest('hex')
 }
 
