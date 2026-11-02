@@ -36,7 +36,7 @@ import {
   TokenSupplyType,
   ContractFunctionParameters
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, executeWithGas } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[⚙️ PROCESS] Compiling Solidity smart contract with solc 0.8.20...')
@@ -78,20 +78,22 @@ const main = async () => {
   try {
     // 1. Create a native HTS fungible token
     console.log('[⚙️ PROCESS] Provisioning native HTS token...')
-    const tokenCreateTx = await new TokenCreateTransaction()
-      .setTokenName('Vault Collateral Token')
-      .setTokenSymbol('VCT')
-      .setDecimals(8)
-      .setInitialSupply(100000000)
-      .setTokenType(TokenType.FungibleCommon)
-      .setSupplyType(TokenSupplyType.Infinite)
-      .setTreasuryAccountId(operatorId)
-      .setAdminKey(client.operatorPublicKey)
-      .freezeWith(client)
+    const htsTokenId = await reuseToken('REUSE_M12_01_TOKEN', async () => {
+      const tokenCreateTx = await new TokenCreateTransaction()
+        .setTokenName('Vault Collateral Token')
+        .setTokenSymbol('VCT')
+        .setDecimals(8)
+        .setInitialSupply(100000000)
+        .setTokenType(TokenType.FungibleCommon)
+        .setSupplyType(TokenSupplyType.Infinite)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(client.operatorPublicKey)
+        .freezeWith(client)
 
-    const tokenResponse = await tokenCreateTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const htsTokenId = tokenReceipt.tokenId
+      const tokenResponse = await tokenCreateTx.execute(client)
+      const tokenReceipt = await tokenResponse.getReceipt(client)
+      return tokenReceipt.tokenId
+    })
 
     // Derive deterministic EVM address (HIP-719)
     const tokenEvmAddress = `0x${htsTokenId.toEvmAddress()}`

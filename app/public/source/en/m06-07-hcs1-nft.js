@@ -35,7 +35,7 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show, reuseToken } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
@@ -141,19 +141,21 @@ const main = async () => {
 
     // 4. Create the NFT Collection
     console.log('\n[⚙️ PROCESS] Creating NFT Collection...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('HCS-1 Economic Artifact')
-      .setTokenSymbol('HCSNFT')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setSupplyKey(adminKey)
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('HCS-1 Economic Artifact')
+        .setTokenSymbol('HCSNFT')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setSupplyKey(adminKey)
+        .freezeWith(client)
 
-    const tokenRes = await tokenTx.execute(client)
-    const tokenReceipt = await tokenRes.getReceipt(client)
-    const tokenId = tokenReceipt.tokenId
+      const tokenRes = await tokenTx.execute(client)
+      const tokenReceipt = await tokenRes.getReceipt(client)
+      return tokenReceipt.tokenId
+    })
 
     console.log(`[✅ SUCCESS] Collection ID: ${tokenId.toString()}`)
 

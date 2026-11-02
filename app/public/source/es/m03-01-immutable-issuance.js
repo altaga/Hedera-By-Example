@@ -33,7 +33,7 @@ import {
   AccountId, PrivateKey,
   TokenCreateTransaction, TokenType, TokenSupplyType
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Emisión de Activos Nativos (HTS) ---\n')
@@ -45,27 +45,29 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Creando "Hedera Syllabus Coin" (HSC) en el Ledger...')
 
     // 1. Definir y Ejecutar la Creación del Token Nativo
-    const transaction = await new TokenCreateTransaction()
-      .setTokenName('Hedera Syllabus Coin')
-      .setTokenSymbol('HSC')
-      .setTokenType(TokenType.FungibleCommon)
-      .setDecimals(2)
-      .setInitialSupply(1000000) // 10,000.00 HSC (2 decimales)
-      .setMaxSupply(10000000)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(treasuryKey)
-      .setSupplyKey(treasuryKey) // Permite mint/burn controlado
-      .setPauseKey(treasuryKey) // Freno de emergencia protocolar
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M3_01_TOKEN', async () => {
+      const transaction = await new TokenCreateTransaction()
+        .setTokenName('Hedera Syllabus Coin')
+        .setTokenSymbol('HSC')
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(2)
+        .setInitialSupply(1000000) // 10,000.00 HSC (2 decimales)
+        .setMaxSupply(10000000)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(treasuryKey)
+        .setSupplyKey(treasuryKey) // Permite mint/burn controlado
+        .setPauseKey(treasuryKey) // Freno de emergencia protocolar
+        .freezeWith(client)
 
-    const response = await transaction.execute(client)
+      const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] Transacción enviada: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+      console.log(`[📊 REGISTRO] Transacción enviada: ${response.transactionId.toString()}`)
+      console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
-    const receipt = await response.getReceipt(client)
-    const tokenId = receipt.tokenId
+      const receipt = await response.getReceipt(client)
+      return receipt.tokenId
+    })
 
     console.log('\n[✅ ÉXITO] Token Nativo emitido exitosamente.')
     console.log(`[📊 REGISTRO] Token ID: ${tokenId.toString()}`)

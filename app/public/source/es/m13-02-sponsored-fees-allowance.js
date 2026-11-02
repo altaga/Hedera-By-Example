@@ -128,7 +128,7 @@ const main = async () => {
     // El Operador transfiere 0.25 HBAR de la tesorería del Patrocinador al Agente 0-HBAR sin la firma del Patrocinador
     console.log(`\n[⚙️ PROCESO] Operador (${delegateSpenderId}) debitando 0.25 HBAR de la asignación del Patrocinador hacia el Agente (${zeroGasAgentId})...`)
     // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
-    await ensureFunded(client, delegateSpenderId, 5)
+    await ensureFunded(client, delegateSpenderId, 1)
     const spenderClient = createClient()
     spenderClient.setOperator(delegateSpenderId, delegateSpenderKey)
 

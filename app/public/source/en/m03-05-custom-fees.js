@@ -36,7 +36,7 @@ import {
   MirrorNodeTokenBalanceQuery,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep } from '../M99_Utilities/index.js'
+import { getClient, sleep, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: HTS Custom Fee Implementation ---\n')
@@ -67,28 +67,30 @@ const main = async () => {
       .setAssessmentMethod(false) // Inclusive
 
     console.log('[⚙️ PROCESS] Issuing the Fee Regulated Token (FRT) with native logic...')
-    const transaction = await new TokenCreateTransaction()
-      .setTokenName('Fee Regulated Token')
-      .setTokenSymbol('FRT')
-      .setTokenType(TokenType.FungibleCommon)
-      .setDecimals(0)
-      .setInitialSupply(1000000)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(adminKey)
-      .setCustomFees([fixedFee, fractionalFee])
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M3_05_TOKEN', async () => {
+      const transaction = await new TokenCreateTransaction()
+        .setTokenName('Fee Regulated Token')
+        .setTokenSymbol('FRT')
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(0)
+        .setInitialSupply(1000000)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(adminKey)
+        .setCustomFees([fixedFee, fractionalFee])
+        .freezeWith(client)
 
-    const response = await transaction.execute(client)
-    const receipt = await response.getReceipt(client)
-    const tokenId = receipt.tokenId
+      const response = await transaction.execute(client)
+      const receipt = await response.getReceipt(client)
+      return receipt.tokenId
+    })
 
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
 
     // Fuel Account 1 with HBAR for Fixed Fees
-    console.log(`\n[ℹ️ INFO] Fueling ${account1Id} with 10 HBAR and 100,000 tokens for simulation...`)
+    console.log(`\n[ℹ️ INFO] Fueling ${account1Id} with 3 HBAR and 100,000 tokens for simulation...`)
     const setupTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-10))
-      .addHbarTransfer(account1Id, new Hbar(10))
+      .addHbarTransfer(operatorId, new Hbar(-3))
+      .addHbarTransfer(account1Id, new Hbar(3))
       .addTokenTransfer(tokenId, operatorId, -100000)
       .addTokenTransfer(tokenId, account1Id, 100000)
       .execute(client)

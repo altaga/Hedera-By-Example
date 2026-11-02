@@ -419,13 +419,29 @@ export async function executeInBrowser (
       })
       const current = (account?.balance?.balance ?? 0) / 1e8
       if (current >= minHbar) return
-      const topUp = Math.ceil(minHbar - current + 1)
+      const topUp = Math.ceil(minHbar - current)
       pushLog('info', `${accountId} has ${current.toFixed(2)} ℏ; topping up ${topUp} ℏ from your account...`)
       const tx = await new hedera.TransferTransaction()
         .addHbarTransfer(c.operatorAccountId, new hedera.Hbar(-topUp))
         .addHbarTransfer(accountId, new hedera.Hbar(topUp))
         .execute(c)
       await tx.getReceipt(c)
+    }
+    /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
+    const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true } = {}) => {
+      const operator = wallet.accountId
+      const [savedId, owner] = String(getState(stateKey) || '').split('@')
+      if (savedId && owner === operator) {
+        const token = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+        if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' &&
+          !(token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
+          pushLog('info', `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
+          return hedera.TokenId.fromString(savedId)
+        }
+      }
+      const tokenId = hedera.TokenId.fromString(String(await create()))
+      updateState(stateKey, `${tokenId}@${operator}`)
+      return tokenId
     }
     const parseKey = (value: string) => parsePrivateKey(hedera, value)
 
@@ -539,6 +555,7 @@ export async function executeInBrowser (
       waitForMirror,
       getAccountEvmAddress,
       ensureFunded,
+      reuseToken,
       exitIfStuck: () => {},
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,

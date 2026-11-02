@@ -39,7 +39,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const BASKET_WEIGHTS = [
   { symbol: 'USTB-MMF', name: 'Fondo Mercado Monetario Tesoro EEUU (abrdn)', weight: 500 }, // 50%
@@ -58,20 +58,22 @@ const main = async () => {
     const underlyingTokens = []
 
     for (const item of BASKET_WEIGHTS) {
-      const tx = await new TokenCreateTransaction()
-        .setTokenName(item.name)
-        .setTokenSymbol(item.symbol)
-        .setDecimals(0)
-        .setInitialSupply(100000)
-        .setTokenType(TokenType.FungibleCommon)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(100000)
-        .setTreasuryAccountId(operatorId)
-        .setSupplyKey(issuerKey)
-        .freezeWith(client)
+      const tokenId = await reuseToken('REUSE_M11_06_TOKEN_1', async () => {
+        const tx = await new TokenCreateTransaction()
+          .setTokenName(item.name)
+          .setTokenSymbol(item.symbol)
+          .setDecimals(0)
+          .setInitialSupply(100000)
+          .setTokenType(TokenType.FungibleCommon)
+          .setSupplyType(TokenSupplyType.Finite)
+          .setMaxSupply(100000)
+          .setTreasuryAccountId(operatorId)
+          .setSupplyKey(issuerKey)
+          .freezeWith(client)
 
-      const res = await (await tx.sign(issuerKey)).execute(client)
-      const tokenId = (await res.getReceipt(client)).tokenId
+        const res = await (await tx.sign(issuerKey)).execute(client)
+        return (await res.getReceipt(client)).tokenId
+      })
       underlyingTokens.push({ ...item, tokenId })
       console.log(`[✅ ACTIVO RWA] ${item.symbol.padEnd(10)} (${item.name.padEnd(44)}) ➔ Token ID: ${tokenId.toString()}`)
     }
@@ -79,18 +81,20 @@ const main = async () => {
     // 2. Desplegar el "Pool Token Institucional RWA" Compuesto (POOL-RWA)
     console.log('\n[⚙️ PROCESO] Paso 2: Desplegando Pool Token Compuesto Multi-Activo [POOL-RWA]...')
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
-    const poolTx = await new TokenCreateTransaction()
-      .setTokenName('Canasta Institucional RWA Estilo Archax')
-      .setTokenSymbol('POOL-RWA')
-      .setDecimals(0)
-      .setInitialSupply(10000)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(issuerKey)
-      .setTokenMemo(poolMemo)
-      .freezeWith(client)
+    const poolTokenId = await reuseToken('REUSE_M11_06_TOKEN_2', async () => {
+      const poolTx = await new TokenCreateTransaction()
+        .setTokenName('Canasta Institucional RWA Estilo Archax')
+        .setTokenSymbol('POOL-RWA')
+        .setDecimals(0)
+        .setInitialSupply(10000)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(issuerKey)
+        .setTokenMemo(poolMemo)
+        .freezeWith(client)
 
-    const poolRes = await (await poolTx.sign(issuerKey)).execute(client)
-    const poolTokenId = (await poolRes.getReceipt(client)).tokenId
+      const poolRes = await (await poolTx.sign(issuerKey)).execute(client)
+      return (await poolRes.getReceipt(client)).tokenId
+    })
     console.log(`[✅ ÉXITO] Pool Token Compuesto Creado: ${poolTokenId.toString()}`)
     console.log(`[📊 REGISTRO] Memo de Composición On-Chain: ${poolMemo}`)
 
@@ -99,7 +103,7 @@ const main = async () => {
     const apKey = PrivateKey.generateED25519()
     const apRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(apKey.publicKey)
-      .setInitialBalance(new Hbar(2))
+      .setInitialBalance(new Hbar(0))
       .setMaxAutomaticTokenAssociations(10)
       .execute(client)
     const apAccountId = (await apRes.getReceipt(client)).accountId

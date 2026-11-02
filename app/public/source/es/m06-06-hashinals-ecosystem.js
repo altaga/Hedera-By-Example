@@ -35,7 +35,7 @@ import {
   TokenCreateTransaction, TokenType,
   TokenSupplyType, TokenMintTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, reuseToken } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -60,21 +60,23 @@ const main = async () => {
 
     // 1. Crear la Colección de NFT Hashinal
     console.log("[⚙️ PROCESO] Creando la colección de grado institucional 'Hedera Syllabus Hashinal'...")
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Hedera Batch Hashinal')
-      .setTokenSymbol('HASH')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setDecimals(0)
-      .setInitialSupply(0)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setSupplyKey(adminKey)
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M6_06_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Hedera Batch Hashinal')
+        .setTokenSymbol('HASH')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setDecimals(0)
+        .setInitialSupply(0)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setSupplyKey(adminKey)
+        .freezeWith(client)
 
-    const tokenResponse = await tokenTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const tokenId = tokenReceipt.tokenId
+      const tokenResponse = await tokenTx.execute(client)
+      const tokenReceipt = await tokenResponse.getReceipt(client)
+      return tokenReceipt.tokenId
+    })
 
     console.log(`[✅ ÉXITO] Colección Hashinal anclada: ${tokenId.toString()}`)
 

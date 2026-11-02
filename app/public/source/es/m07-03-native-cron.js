@@ -50,12 +50,12 @@ const main = async () => {
   }
 
   try {
-    console.log('[⚙️ PROCESO] Definiendo transferencia diferida de 2 HBAR...')
+    console.log('[⚙️ PROCESO] Definiendo transferencia diferida de 0.1 HBAR...')
 
     // 1. Transacción Interna (La que se ejecutará en el futuro)
     const innerTx = new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(targetId), new Hbar(-2))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(2))
+      .addHbarTransfer(AccountId.fromString(targetId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
 
     // 2. Programación (Schedule)
     // Definimos expiración en 5 minutos para esta demostración.

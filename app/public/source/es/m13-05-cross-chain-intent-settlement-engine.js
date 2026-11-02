@@ -189,7 +189,7 @@ const main = async () => {
     // 6. Liquidación Real Delegada en Hedera Testnet
     console.log('\n[⚙️ PROCESO] Relayer liquidando tramo en Hedera mediante asignación aprobada (`addApprovedHbarTransfer`)...')
     // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
-    await ensureFunded(client, relayerAccountId, 5)
+    await ensureFunded(client, relayerAccountId, 1)
     const relayerClient = createClient()
     relayerClient.setOperator(relayerAccountId, relayerKey)
 

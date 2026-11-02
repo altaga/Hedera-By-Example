@@ -69,10 +69,10 @@ const main = async () => {
   const account2PrivateKey = PrivateKey.fromString(process.env.ACCOUNT_2_PRIVATE_KEY)
 
   try {
-    // La Cuenta 1 paga la creación del token (~30 ℏ con comisiones personalizadas) y la
-    // Cuenta 2 compra un NFT. Se recargan desde el operador si hace falta.
-    await ensureFunded(operatorClient, account1Id, 40)
-    await ensureFunded(operatorClient, account2Id, 5)
+    // El operador paga la creación del token (la Cuenta 1 solo firma como tesorería),
+    // así las cuentas de práctica solo necesitan poco HBAR para la venta. Se recargan si hace falta.
+    await ensureFunded(operatorClient, account1Id, 2)
+    await ensureFunded(operatorClient, account2Id, 2)
 
     console.log(`[ℹ️ INFO] Configurando Artista: ${account1Id} | Colector: ${operatorId}`)
 
@@ -101,9 +101,9 @@ const main = async () => {
       .setMaxSupply(10)
       .setSupplyKey(account1PrivateKey.publicKey)
       .setCustomFees([royaltyFee])
-      .freezeWith(client)
+      .freezeWith(operatorClient)
 
-    const tokenId = (await (await createTx.execute(client)).getReceipt(client)).tokenId
+    const tokenId = (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
     console.log(`[✅ ÉXITO] Colección protegida creada: ${tokenId.toString()}`)
 
     // 3. Mintear y asociar

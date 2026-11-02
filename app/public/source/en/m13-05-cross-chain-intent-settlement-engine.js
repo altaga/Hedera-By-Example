@@ -189,7 +189,7 @@ const main = async () => {
     // 6. Live Delegated Allowance Settlement on Hedera Testnet
     console.log('\n[⚙️ PROCESS] Relayer settling Hedera leg via Approved Allowance (`addApprovedHbarTransfer`)...')
     // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
-    await ensureFunded(client, relayerAccountId, 5)
+    await ensureFunded(client, relayerAccountId, 1)
     const relayerClient = createClient()
     relayerClient.setOperator(relayerAccountId, relayerKey)
 

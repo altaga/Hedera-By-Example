@@ -91,7 +91,7 @@ const main = async () => {
 
     // Inicializar instancia de cliente del usuario (La clave del patrocinador NO está presente aquí)
     // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
-    await ensureFunded(client, spenderId, 5)
+    await ensureFunded(client, spenderId, 1)
     const spenderClient = createClient()
     spenderClient.setOperator(spenderId, spenderKey)
 

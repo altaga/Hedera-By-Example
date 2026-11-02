@@ -40,7 +40,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep } from '../M99_Utilities/index.js'
+import { getClient, sleep, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Economía Programable (Custom Fees) ---\n')
@@ -71,28 +71,30 @@ const main = async () => {
       .setAssessmentMethod(false) // El fee se deduce del monto enviado (Inclusivo)
 
     console.log('[⚙️ PROCESO] Creando Token con tarifas embebidas (FRT)...')
-    const transaction = await new TokenCreateTransaction()
-      .setTokenName('Fee Regulated Token')
-      .setTokenSymbol('FRT')
-      .setTokenType(TokenType.FungibleCommon)
-      .setDecimals(0)
-      .setInitialSupply(1000000)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(adminKey)
-      .setCustomFees([fixedFee, fractionalFee])
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M3_05_TOKEN', async () => {
+      const transaction = await new TokenCreateTransaction()
+        .setTokenName('Fee Regulated Token')
+        .setTokenSymbol('FRT')
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(0)
+        .setInitialSupply(1000000)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(adminKey)
+        .setCustomFees([fixedFee, fractionalFee])
+        .freezeWith(client)
 
-    const response = await transaction.execute(client)
-    const receipt = await response.getReceipt(client)
-    const tokenId = receipt.tokenId
+      const response = await transaction.execute(client)
+      const receipt = await response.getReceipt(client)
+      return receipt.tokenId
+    })
 
     console.log(`[✅ ÉXITO] Token con economía activa: ${tokenId.toString()}`)
 
     // Preparación del entorno de prueba (Tesorería -> Cuenta 1)
     console.log(`\n[⚙️ PROCESO] Provisionando fondos a ${account1Id} para la prueba...`)
     const setupTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-10))
-      .addHbarTransfer(account1Id, new Hbar(10))
+      .addHbarTransfer(operatorId, new Hbar(-3))
+      .addHbarTransfer(account1Id, new Hbar(3))
       .addTokenTransfer(tokenId, operatorId, -100000)
       .addTokenTransfer(tokenId, account1Id, 100000)
       .execute(client)

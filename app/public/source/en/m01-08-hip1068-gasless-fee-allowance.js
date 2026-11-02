@@ -90,7 +90,7 @@ const main = async () => {
 
     // Initialize spender client instance (Sponsor's key is NOT present here)
     // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
-    await ensureFunded(client, spenderId, 5)
+    await ensureFunded(client, spenderId, 1)
     const spenderClient = createClient()
     spenderClient.setOperator(spenderId, spenderKey)
 

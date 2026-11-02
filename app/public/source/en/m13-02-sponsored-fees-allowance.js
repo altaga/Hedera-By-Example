@@ -127,7 +127,7 @@ const main = async () => {
     // Spender transfers 0.25 HBAR from Sponsor's treasury to the Zero-Gas Agent without Sponsor's signature
     console.log(`\n[⚙️ PROCESS] Spender (${delegateSpenderId}) drawing 0.25 HBAR from Sponsor's allowance to fund Agent (${zeroGasAgentId})...`)
     // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
-    await ensureFunded(client, delegateSpenderId, 5)
+    await ensureFunded(client, delegateSpenderId, 1)
     const spenderClient = createClient()
     spenderClient.setOperator(delegateSpenderId, delegateSpenderKey)
 

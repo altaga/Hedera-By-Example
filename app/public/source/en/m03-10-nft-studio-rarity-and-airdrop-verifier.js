@@ -57,8 +57,7 @@ import {
   getClient,
   getHashscanUrl,
   getMirrorNodeBaseUrl,
-  updateState
-} from '../M99_Utilities/index.js'
+  updateState, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * 1. HIP-412 Schema Validator Engine
@@ -307,20 +306,22 @@ const main = async () => {
   console.log('[4/4] ⚡ Executing On-Chain Minting & Verified Airdrop on Testnet...')
 
   console.log('   Creating Non-Fungible Unique Token Class...')
-  const createTx = await new TokenCreateTransaction()
-    .setTokenName('NFT Studio Sentinel Collection')
-    .setTokenSymbol('SENTINEL')
-    .setTokenType(TokenType.NonFungibleUnique)
-    .setSupplyType(TokenSupplyType.Finite)
-    .setMaxSupply(rawCollection.length)
-    .setTreasuryAccountId(operatorId)
-    .setSupplyKey(supplyKey)
-    .freezeWith(client)
+  const tokenId = await reuseToken('REUSE_M3_10_TOKEN', async () => {
+    const createTx = await new TokenCreateTransaction()
+      .setTokenName('NFT Studio Sentinel Collection')
+      .setTokenSymbol('SENTINEL')
+      .setTokenType(TokenType.NonFungibleUnique)
+      .setSupplyType(TokenSupplyType.Finite)
+      .setMaxSupply(rawCollection.length)
+      .setTreasuryAccountId(operatorId)
+      .setSupplyKey(supplyKey)
+      .freezeWith(client)
 
-  const createSign = await createTx.sign(supplyKey)
-  const createSubmit = await createSign.execute(client)
-  const createReceipt = await createSubmit.getReceipt(client)
-  const tokenId = createReceipt.tokenId
+    const createSign = await createTx.sign(supplyKey)
+    const createSubmit = await createSign.execute(client)
+    const createReceipt = await createSubmit.getReceipt(client)
+    return createReceipt.tokenId
+  })
 
   console.log(`   ✅ NFT Collection Created: ${tokenId.toString()}`)
   console.log(`   🔗 Explorer: https://hashscan.io/${process.env.NETWORK || 'testnet'}/token/${tokenId.toString()}`)

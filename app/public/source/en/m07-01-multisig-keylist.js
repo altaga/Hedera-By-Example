@@ -54,7 +54,7 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Deploying Multisig Account to the ledger...')
     const transaction = await new AccountCreateTransaction()
       .setKeyWithoutAlias(thresholdList)
-      .setInitialBalance(new Hbar(2)) // Funding the multisig account
+      .setInitialBalance(new Hbar(0.5)) // Funding the multisig account
       .execute(client)
 
     const receipt = await transaction.getReceipt(client)
