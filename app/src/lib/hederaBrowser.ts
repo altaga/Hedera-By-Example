@@ -370,9 +370,19 @@ export async function executeInBrowser (
   const emit = (line: Omit<TerminalLogLine, 'id' | 'timestamp'>) => {
     const d = new Date()
     const ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':')
+    if (/INSUFFICIENT_(PAYER|ACCOUNT)_BALANCE/.test(String(line.text ?? ''))) lowBalance = true
     onLog({ id: `${startTime}-${seq++}`, timestamp: ts, ...line })
   }
   const pushLog = (type: TerminalLogLine['type'], text: string, url?: string) => emit({ type, text, url })
+  // When an account runs out of HBAR, say so plainly and where to get more.
+  let lowBalance = false
+  const lowBalanceHint = () => {
+    if (!lowBalance) return
+    pushLog('warn', options.lang === 'es'
+      ? 'Una cuenta se quedó sin HBAR suficientes. Crear un token o desplegar un contrato cuesta cerca de 1 USD (unos 14 ℏ en testnet). Recarga tu wallet en el faucet de Hedera, o desde otra de tus wallets en el gestor de wallets.'
+      : 'An account ran out of HBAR. Creating a token or deploying a contract costs about 1 USD (around 14 ℏ on testnet). Top up your wallet from the Hedera faucet, or from another of your wallets in the wallet manager.',
+    'https://portal.hedera.com/faucet')
+  }
 
   if (isAccountId(wallet.accountId) && wallet.privateKey) {
     pushLog('system', `Operator ${wallet.accountId} on testnet`)
@@ -901,6 +911,7 @@ export async function executeInBrowser (
     const durationMs = Date.now() - startTime
     // Labs flag handled failures with process.exitCode = 1 instead of throwing.
     if (mockProcess.exitCode) {
+      lowBalanceHint()
       pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
       return { success: false, durationMs }
     }
@@ -911,6 +922,7 @@ export async function executeInBrowser (
     const message = err?.message || String(err)
     if (!failedWithExitCode) pushLog('error', `Stopped: ${message}`)
     else pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
+    lowBalanceHint()
     if (err instanceof NodeOnlyError) {
       pushLog('warn', 'This lab uses a Node.js-only API. The commands to run it on your machine are below the code.')
     } else if (err instanceof ReferenceError && /require|__dirname/.test(message)) {

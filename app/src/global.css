@@ -429,7 +429,8 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 
 .run-local { margin-top: 48px; }
 .run-local > p { margin: 0 0 16px; color: var(--text-2); max-width: 72ch; }
-.cmd-steps { margin: 0; padding: 0 0 0 1.4em; display: grid; gap: 18px; }
+.cmd-steps { margin: 0; padding: 0 0 0 1.4em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.cmd-step { min-width: 0; }
 .cmd-step p { margin: 0 0 8px; color: var(--text-2); }
 .cmd-step::marker { color: var(--text-3); font-weight: 600; }
 .cmd {
@@ -437,7 +438,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   padding: 10px 10px 10px 14px; border: 1px solid var(--border); border-radius: var(--radius);
   background: var(--bg-code);
 }
-.cmd pre { margin: 0; padding-top: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+.cmd pre { margin: 0; padding-top: 4px; overflow-x: auto; font-size: 13px; line-height: 1.6; min-width: 0; flex: 1 1 auto; }
 
 .refs { margin-top: 40px; }
 .refs ul { margin: 0; padding-left: 1.2em; }

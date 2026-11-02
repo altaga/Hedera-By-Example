@@ -57,7 +57,9 @@ import {
   getClient,
   getHashscanUrl,
   getMirrorNodeBaseUrl,
-  updateState, reuseToken } from '../M99_Utilities/index.js'
+  updateState,
+  reuseToken
+} from '../M99_Utilities/index.js'
 
 /**
  * 1. HIP-412 Schema Validator Engine
