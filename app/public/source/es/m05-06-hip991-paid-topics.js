@@ -62,7 +62,7 @@ const main = async () => {
 
       const tokenRes = await (await tokenTx.sign(adminKey)).execute(client)
       return (await tokenRes.getReceipt(client)).tokenId
-    })
+    }, { minBalance: 500 })
     console.log(`[✅ ÉXITO] Token de Pago HTS Creado: ${paymentTokenId.toString()} (AICR)`)
 
     // 2. Crear una Cuenta de Agente Consumidor y fondearla con HBAR + 500 AICR

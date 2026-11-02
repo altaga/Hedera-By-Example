@@ -36,7 +36,7 @@ import {
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
 import fs from 'fs'
-import { getClient, executeWithGas } from '../M99_Utilities/index.js'
+import { getClient, executeWithGas, reuseContract, reuseToken } from '../M99_Utilities/index.js'
 
 const compile = (contractName, source) => {
   console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol...`)
@@ -62,30 +62,35 @@ const main = async () => {
     const bytecode = compile('AdvancedHTS', sourceCode)
 
     console.log('[⚙️ PROCESO] Desplegando el Contrato AdvancedHTS en la EVM...')
-    const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
-      .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(gas)
-      .setAdminKey(adminKey), client, { gas: 100000 })
-    let receipt = await contractTx.getReceipt(client)
-    const contractId = receipt.contractId
+    const contractId = await reuseContract('REUSE_M8_08_CONTRACT', bytecode, async () => {
+      const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
+        .setBytecode(Buffer.from(bytecode, 'hex'))
+        .setGas(gas)
+        .setAdminKey(adminKey), client, { gas: 1500000 })
+      const receipt = await contractTx.getReceipt(client)
+      return receipt.contractId
+    })
     console.log(`[✅ ÉXITO] Contrato desplegado con ID: ${contractId.toString()}`)
 
     // 2. Crear un Token HTS y establecer el Contrato como Llave de Suministro
     console.log('\n[⚙️ PROCESO] Creando Token Nativo con el Contrato como Llave de Suministro...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Precompile Coin')
-      .setTokenSymbol('PRC')
-      .setDecimals(2)
-      .setInitialSupply(0)
-      .setTreasuryAccountId(operatorId)
-      // ESTO LE DA AL CONTRATO INTELIGENTE EL PODER DE MINTEAR:
-      .setSupplyKey(contractId)
-      .freezeWith(client)
+    // La supply key del token es este contrato: el token se reutiliza solo junto con él.
+    const tokenId = await reuseToken(`REUSE_M8_08_TOKEN_${contractId}`, async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Precompile Coin')
+        .setTokenSymbol('PRC')
+        .setDecimals(2)
+        .setInitialSupply(0)
+        .setTreasuryAccountId(operatorId)
+        // ESTO LE DA AL CONTRATO INTELIGENTE EL PODER DE MINTEAR:
+        .setSupplyKey(contractId)
+        .freezeWith(client)
 
-    const signTx = await tokenTx.sign(adminKey)
-    const submitTx = await signTx.execute(client)
-    receipt = await submitTx.getReceipt(client)
-    const tokenId = receipt.tokenId
+      const signTx = await tokenTx.sign(adminKey)
+      const submitTx = await signTx.execute(client)
+      const tokenReceipt = await submitTx.getReceipt(client)
+      return tokenReceipt.tokenId
+    })
     console.log(`[✅ ÉXITO] Token creado: ${tokenId.toString()}`)
 
     // 3. Ejecutar la función del Contrato Inteligente para MINTEAR tokens nativamente
@@ -103,7 +108,7 @@ const main = async () => {
     const execRecord = await execTx.getRecord(client)
 
     // El código de respuesta 22 significa ÉXITO (SUCCESS) en HTS
-    const responseCode = execRecord.contractFunctionResult.getInt256(0)
+    const responseCode = Number(execRecord.contractFunctionResult.getInt256(0)) // BigNumber -> number
     console.log(`[📊 REGISTRO] Código de Respuesta del Precompilado: ${responseCode} (22 = ÉXITO)`)
 
     if (responseCode === 22) {

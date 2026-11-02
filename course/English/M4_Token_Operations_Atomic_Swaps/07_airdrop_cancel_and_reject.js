@@ -63,7 +63,7 @@ const main = async () => {
       const signedToken = await tokenTx.sign(supplyKey)
       const tokenRes = await signedToken.execute(client)
       return (await tokenRes.getReceipt(client)).tokenId
-    })
+    }, { minBalance: 1000 })
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()} (Initial Supply: 10,000 PROMO)`)
 
     // 2. PART A: Sender Cancels an Unclaimed Pending Airdrop (`TokenCancelAirdropTransaction`)

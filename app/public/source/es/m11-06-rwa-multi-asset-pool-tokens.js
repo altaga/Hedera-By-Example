@@ -58,7 +58,7 @@ const main = async () => {
     const underlyingTokens = []
 
     for (const item of BASKET_WEIGHTS) {
-      const tokenId = await reuseToken('REUSE_M11_06_TOKEN_1', async () => {
+      const tokenId = await reuseToken(`REUSE_M11_06_${item.symbol}`, async () => {
         const tx = await new TokenCreateTransaction()
           .setTokenName(item.name)
           .setTokenSymbol(item.symbol)
@@ -73,7 +73,7 @@ const main = async () => {
 
         const res = await (await tx.sign(issuerKey)).execute(client)
         return (await res.getReceipt(client)).tokenId
-      })
+      }, { minBalance: item.weight })
       underlyingTokens.push({ ...item, tokenId })
       console.log(`[✅ ACTIVO RWA] ${item.symbol.padEnd(10)} (${item.name.padEnd(44)}) ➔ Token ID: ${tokenId.toString()}`)
     }
@@ -81,7 +81,7 @@ const main = async () => {
     // 2. Desplegar el "Pool Token Institucional RWA" Compuesto (POOL-RWA)
     console.log('\n[⚙️ PROCESO] Paso 2: Desplegando Pool Token Compuesto Multi-Activo [POOL-RWA]...')
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
-    const poolTokenId = await reuseToken('REUSE_M11_06_TOKEN_2', async () => {
+    const poolTokenId = await reuseToken('REUSE_M11_06_POOL', async () => {
       const poolTx = await new TokenCreateTransaction()
         .setTokenName('Canasta Institucional RWA Estilo Archax')
         .setTokenSymbol('POOL-RWA')
@@ -94,7 +94,7 @@ const main = async () => {
 
       const poolRes = await (await poolTx.sign(issuerKey)).execute(client)
       return (await poolRes.getReceipt(client)).tokenId
-    })
+    }, { minBalance: 1000, check: (t) => t.memo === poolMemo })
     console.log(`[✅ ÉXITO] Pool Token Compuesto Creado: ${poolTokenId.toString()}`)
     console.log(`[📊 REGISTRO] Memo de Composición On-Chain: ${poolMemo}`)
 

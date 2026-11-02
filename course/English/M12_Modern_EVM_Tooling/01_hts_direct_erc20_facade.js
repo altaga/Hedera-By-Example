@@ -36,7 +36,7 @@ import {
   TokenSupplyType,
   ContractFunctionParameters
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[⚙️ PROCESS] Compiling Solidity smart contract with solc 0.8.20...')
@@ -110,18 +110,20 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Deploying HtsTokenVault smart contract to Hedera Smart Contract Service...')
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
-    const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
-      .setBytecode(bytecode)
-      .setGas(gas)
-      .setConstructorParameters(contractParams), client, { gas: 300000 })
+    const contractId = await reuseContract('REUSE_M12_01_CONTRACT', bytecode + tokenEvmAddress, async () => {
+      const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
+        .setBytecode(bytecode)
+        .setGas(gas)
+        .setConstructorParameters(contractParams), client, { gas: 1500000 })
 
-    const contractReceipt = await contractDeployTx.getReceipt(client)
-    const contractId = contractReceipt.contractId
+      const contractReceipt = await contractDeployTx.getReceipt(client)
+      return contractReceipt.contractId
+    })
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`
 
     console.log(`[✅ SUCCESS] Contract Deployed to Hedera: ${contractId.toString()}`)
     console.log(`[📊 LOG] Contract EVM Address: ${contractEvmAddress}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${getHashscanUrl(contractDeployTx)}`)
+    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/contract/${contractId}`}`)
 
     updateState('FACADE_HTS_TOKEN_ID', htsTokenId.toString())
     updateState('FACADE_HTS_EVM_ADDRESS', tokenEvmAddress)

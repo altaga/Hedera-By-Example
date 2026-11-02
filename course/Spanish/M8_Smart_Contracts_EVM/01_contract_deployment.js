@@ -35,7 +35,7 @@ import {
   ContractCallQuery, ContractFunctionParameters, Hbar
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState, executeWithGas, withGasRetry } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, executeWithGas, withGasRetry, reuseContract } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE SOLIDITY (SimpleStorage) ---
 const SOURCE_CODE = `
@@ -97,13 +97,15 @@ const main = async () => {
 
     // FASE B: Despliegue del Contrato
     console.log('\n[⚙️ PROCESO] Desplegando Smart Contract en la EVM de Hedera...')
-    const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
-      .setBytecode(Buffer.from(bytecode, 'hex'))
-      .setGas(gas)
-      .setAdminKey(adminKey) // Permite actualizaciones y gestión de renta
-      .freezeWith(client), client, { gas: 2000000 })
-    const contractReceipt = await contractResponse.getReceipt(client)
-    const contractId = contractReceipt.contractId
+    const contractId = await reuseContract('REUSE_M8_01_CONTRACT', bytecode, async () => {
+      const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
+        .setBytecode(Buffer.from(bytecode, 'hex'))
+        .setGas(gas)
+        .setAdminKey(adminKey) // Permite actualizaciones y gestión de renta
+        .freezeWith(client), client, { gas: 2000000 })
+      const contractReceipt = await contractResponse.getReceipt(client)
+      return contractReceipt.contractId
+    })
 
     console.log(`[✅ ÉXITO] Contrato anclado exitosamente: ${contractId}`)
     updateState('SC_STORAGE_ID', contractId.toString())

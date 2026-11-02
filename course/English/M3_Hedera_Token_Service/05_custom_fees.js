@@ -82,7 +82,7 @@ const main = async () => {
       const response = await transaction.execute(client)
       const receipt = await response.getReceipt(client)
       return receipt.tokenId
-    })
+    }, { minBalance: 100000 })
 
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
 

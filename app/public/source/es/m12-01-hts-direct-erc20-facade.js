@@ -37,7 +37,7 @@ import {
   TokenSupplyType,
   ContractFunctionParameters
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[⚙️ PROCESO] Compilando contrato inteligente Solidity con solc 0.8.20...')
@@ -111,18 +111,20 @@ const main = async () => {
     console.log('\n[⚙️ PROCESO] Desplegando contrato HtsTokenVault en el Smart Contract Service de Hedera...')
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
-    const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
-      .setBytecode(bytecode)
-      .setGas(gas)
-      .setConstructorParameters(contractParams), client, { gas: 300000 })
+    const contractId = await reuseContract('REUSE_M12_01_CONTRACT', bytecode + tokenEvmAddress, async () => {
+      const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
+        .setBytecode(bytecode)
+        .setGas(gas)
+        .setConstructorParameters(contractParams), client, { gas: 1500000 })
 
-    const contractReceipt = await contractDeployTx.getReceipt(client)
-    const contractId = contractReceipt.contractId
+      const contractReceipt = await contractDeployTx.getReceipt(client)
+      return contractReceipt.contractId
+    })
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`
 
     console.log(`[✅ ÉXITO] Contrato Desplegado en Hedera: ${contractId.toString()}`)
     console.log(`[📊 REGISTRO] Dirección EVM del Contrato: ${contractEvmAddress}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${getHashscanUrl(contractDeployTx)}`)
+    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/contract/${contractId}`}`)
 
     updateState('FACADE_HTS_TOKEN_ID', htsTokenId.toString())
     updateState('FACADE_HTS_EVM_ADDRESS', tokenEvmAddress)

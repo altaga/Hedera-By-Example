@@ -1,5 +1,6 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
-import { AccountId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
+import { createHash } from 'crypto'
+import { AccountId, ContractId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
 import { getMirrorNodeBaseUrl } from './config.js'
 import { getState, updateState } from './storage.js'
 
@@ -176,23 +177,29 @@ export const exitIfStuck = (ms, reason = 'the expected network events') => {
  * Creating a token costs about 1 USD in HBAR, the most expensive step in
  * most labs. When a lab already created its token on an earlier run, reuse
  * it if it still exists, is not paused and the current operator is still its
- * treasury (and a capped supply is less than half used). Set FRESH_TOKENS=1 to always create a new one.
+ * treasury (and a capped NFT collection is less than half minted). Set FRESH_TOKENS=1 to always create a new one.
  *
  * @param {string} stateKey - Where the token ID is remembered (state.json).
  * @param {() => Promise<import('@hiero-ledger/sdk').TokenId|string>} create - Creates the token and returns its ID.
- * @param {{ check?: (token: any) => boolean }} [options] - Extra condition on the Mirror Node token record.
+ * @param {{ check?: (token: any) => boolean, minBalance?: number }} [options] - Extra condition on the Mirror Node token record, and the balance the treasury must still hold for the lab to run.
  * @returns {Promise<TokenId>}
  */
-export const reuseToken = async (stateKey, create, { check = () => true } = {}) => {
+export const reuseToken = async (stateKey, create, { check = () => true, minBalance = 0 } = {}) => {
   const operator = process.env.OPERATOR_ID
   const [savedId, owner] = String(getState(stateKey) || '').split('@')
   if (process.env.FRESH_TOKENS !== '1' && savedId && owner === operator) {
     const token = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`)
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null)
-    if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' && !(token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
-      console.log(`[ℹ️ INFO] Reusing token ${savedId} from an earlier run (creating one costs about 1 USD). Set FRESH_TOKENS=1 to create a new one.`)
-      return TokenId.fromString(savedId)
+    if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' && !(token.type === 'NON_FUNGIBLE_UNIQUE' && token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
+      const enough = minBalance <= 0 || await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${operator}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => Number(data?.balances?.[0]?.balance ?? 0) >= minBalance)
+        .catch(() => false)
+      if (enough) {
+        console.log(`[ℹ️ INFO] Reusing token ${savedId} from an earlier run (creating one costs about 1 USD). Set FRESH_TOKENS=1 to create a new one.`)
+        return TokenId.fromString(savedId)
+      }
     }
   }
   const tokenId = TokenId.fromString(String(await create()))
@@ -215,4 +222,33 @@ export const findOwnedSerial = async (tokenId, accountId) => {
     return res.ok ? res.json() : null
   }, { timeoutMs: 10_000 })
   return data?.nfts?.[0]?.serial_number ?? null
+}
+
+/**
+ * Deploying a contract costs about 1 USD in HBAR plus gas. When a lab already
+ * deployed the same contract (same bytecode and constructor arguments, as
+ * `identity`) on an earlier run, reuse it if it still exists and was deployed
+ * by the current operator. Set FRESH_CONTRACTS=1 to always deploy a new one.
+ *
+ * @param {string} stateKey - Where the contract ID is remembered (state.json).
+ * @param {string} identity - Bytecode plus anything else that makes this deployment unique.
+ * @param {() => Promise<import('@hiero-ledger/sdk').ContractId|string>} deploy - Deploys and returns the contract ID.
+ * @returns {Promise<ContractId>}
+ */
+export const reuseContract = async (stateKey, identity, deploy) => {
+  const operator = process.env.OPERATOR_ID
+  const codeHash = createHash('sha256').update(String(identity)).digest('hex').slice(0, 16)
+  const [savedId, owner, savedHash] = String(getState(stateKey) || '').split('@')
+  if (process.env.FRESH_CONTRACTS !== '1' && savedId && owner === operator && savedHash === codeHash) {
+    const contract = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${savedId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null)
+    if (contract && !contract.deleted) {
+      console.log(`[ℹ️ INFO] Reusing contract ${savedId} from an earlier run (same bytecode; deploying costs about 1 USD plus gas). Set FRESH_CONTRACTS=1 to deploy a new one.`)
+      return ContractId.fromString(savedId)
+    }
+  }
+  const contractId = ContractId.fromString(String(await deploy()))
+  updateState(stateKey, `${contractId}@${operator}@${codeHash}`)
+  return contractId
 }

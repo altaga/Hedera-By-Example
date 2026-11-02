@@ -533,15 +533,21 @@ export async function executeInBrowser (
       await tx.getReceipt(c)
     }
     /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
-    const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true } = {}) => {
+    const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true, minBalance = 0 } = {}) => {
       const operator = wallet.accountId
       const [savedId, owner] = String(getState(stateKey) || '').split('@')
       if (savedId && owner === operator) {
         const token = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`, { ttlMs: 0 }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
         if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' &&
-          !(token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
-          pushLog('info', `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
-          return hedera.TokenId.fromString(savedId)
+          !(token.type === 'NON_FUNGIBLE_UNIQUE' && token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
+          const enough = minBalance <= 0 || await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}/balances?account.id=${operator}`, { ttlMs: 0 })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => Number(data?.balances?.[0]?.balance ?? 0) >= minBalance)
+            .catch(() => false)
+          if (enough) {
+            pushLog('info', `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
+            return hedera.TokenId.fromString(savedId)
+          }
         }
       }
       const tokenId = hedera.TokenId.fromString(String(await create()))
@@ -577,6 +583,23 @@ export async function executeInBrowser (
       if (!account) throw new Error(`The Mirror Node does not list ${evmAddress} yet; try again in a minute.`)
       await ensureFunded(c, account, minHbar / 2)
       return { privateKey: key, accountId: account, evmAddress }
+    }
+    /** Reuse the contract this lab deployed before, if the code is the same (see M99 reuseContract). */
+    const reuseContract = async (stateKey: string, identity: string, deploy: () => Promise<any>) => {
+      const operator = wallet.accountId
+      const codeHash = Buffer.from(sha256(utf8ToBytes(String(identity)))).toString('hex').slice(0, 16)
+      const [savedId, owner, savedHash] = String(getState(stateKey) || '').split('@')
+      if (savedId && owner === operator && savedHash === codeHash) {
+        const contract = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${savedId}`, { ttlMs: 0 })
+          .then((r) => (r.ok ? r.json() : null)).catch(() => null)
+        if (contract && !contract.deleted) {
+          pushLog('info', `Reusing contract ${savedId} from an earlier run (same bytecode; deploying costs about 1 USD plus gas).`)
+          return hedera.ContractId.fromString(savedId)
+        }
+      }
+      const contractId = hedera.ContractId.fromString(String(await deploy()))
+      updateState(stateKey, `${contractId}@${operator}@${codeHash}`)
+      return contractId
     }
     /** Lowest serial of tokenId that accountId still holds (see M99 findOwnedSerial). */
     const findOwnedSerial = async (tokenId: string, accountId: string) => {
@@ -700,6 +723,7 @@ export async function executeInBrowser (
       ensureFunded,
       reuseToken,
       findOwnedSerial,
+      reuseContract,
       exitIfStuck: (ms: number, reason = 'the expected network events') => { stuck = { ms, reason } },
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,

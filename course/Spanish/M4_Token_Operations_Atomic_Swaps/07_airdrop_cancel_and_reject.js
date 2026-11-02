@@ -63,7 +63,7 @@ const main = async () => {
       const signedToken = await tokenTx.sign(supplyKey)
       const tokenRes = await signedToken.execute(client)
       return (await tokenRes.getReceipt(client)).tokenId
-    })
+    }, { minBalance: 1000 })
     console.log(`[✅ ÉXITO] Token Creado: ${tokenId.toString()} (Suministro Inicial: 10,000 PROMO)`)
 
     // 2. PARTE A: El Emisor Cancela un Airdrop Pendiente No Reclamado (`TokenCancelAirdropTransaction`)
