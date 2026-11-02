@@ -21,6 +21,10 @@
  * - Previous: M5 Lab 04: HCS Ping-Pong
  * - Next:     M6 Lab 02: Large File HFS
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~5 ℏ each run (it uploads a file, about 0.3 USD).
+ *
  * [ HOW TO RUN ]
  * node 01_native_hfs.js
  * ============================================================================

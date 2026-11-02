@@ -27,6 +27,11 @@
  * - Previous: M1 Lab 07: HIP-1261 Simple Fees Engine
  * - Next:     M2 Lab 01: Legacy Query Deprecation
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M1_Fundamentals_Functional_JS/08_hip1068_gasless_fee_allowance.js
  * ============================================================================

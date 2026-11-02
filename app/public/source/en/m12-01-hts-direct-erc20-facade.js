@@ -21,6 +21,10 @@
  * - Previous: M11 Lab 07: Institutional ERP Integration Bridge
  * - Next:     M12 Lab 02: JSON-RPC Relay via Ethers.js
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~30 ℏ the first time (it creates a token and a contract, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/01_hts_direct_erc20_facade.js
  * ============================================================================

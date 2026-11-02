@@ -29,6 +29,10 @@
  * [ SIMULADO ]
  * El enclave de AWS KMS se simula en memoria salvo que configures credenciales de AWS y AWS_KMS_KEY_ARN. La transacción que firma es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M0_Setup_and_Test/05_aws_kms_enterprise_signer.js
  * ============================================================================

@@ -20,6 +20,10 @@
  * - Anterior: M6 Lab 06: Ecosistema Hashinals
  * - Siguiente: M6 Lab 08: Reconstrucción de NFT
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 07_hcs1_nft.js
  * ============================================================================

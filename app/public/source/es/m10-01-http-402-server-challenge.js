@@ -30,6 +30,10 @@
  * [ SIMULADO ]
  * La solicitud HTTP y el servidor corren en el mismo proceso; no se levanta un servidor web.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

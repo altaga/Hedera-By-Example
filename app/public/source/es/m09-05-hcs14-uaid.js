@@ -25,6 +25,9 @@
  * - Actual:   M9 Lab 05: Identidad Única Agéntica (HCS-14)
  * - Siguiente: M9 Lab 06: Interacción Humano-a-Agente (HCS-10)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_hcs14_uaid.js
  * ============================================================================

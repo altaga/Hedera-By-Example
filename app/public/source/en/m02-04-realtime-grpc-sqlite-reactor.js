@@ -26,6 +26,10 @@
  * - Previous: M2 Lab 03: Recursive Pagination
  * - Next:     M2 Lab 05: Circuit Breaker & Rate Limiter
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M2_State_Interrogation_CQRS/04_realtime_grpc_sqlite_reactor.js
  * ============================================================================

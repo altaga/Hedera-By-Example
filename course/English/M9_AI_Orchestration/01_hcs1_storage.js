@@ -22,6 +22,10 @@
  * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool
  * - Next:     M9 Lab 02: HCS-2 Registries
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 01_hcs1_storage.js
  * ============================================================================

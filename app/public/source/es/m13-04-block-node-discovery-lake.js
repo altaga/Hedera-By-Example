@@ -24,6 +24,10 @@
  * [ SIMULADO ]
  * El descubrimiento de Block Nodes (HIP-1137) se simula con un registro local.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/04_block_node_discovery_lake.js
  * ============================================================================

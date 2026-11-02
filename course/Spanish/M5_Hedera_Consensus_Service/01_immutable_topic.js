@@ -25,6 +25,10 @@
  * - Actual:   M5 Lab 01: Mensajería Inmutable
  * - Siguiente: M5 Lab 02: Estándares de Datos
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_immutable_topic.js
  * ============================================================================

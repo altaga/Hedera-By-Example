@@ -22,6 +22,12 @@
  * - Previous: M7 Lab 05: Decentralized Identity
  * - Next:     M7 Lab 07: Autonomous Treasury DAO
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Run first: M7 Lab 05 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 06_did_login.js
  * ============================================================================

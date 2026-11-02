@@ -22,6 +22,10 @@
  * - Actual:   M12 Lab 02: JSON-RPC Relay con Ethers.js
  * - Siguiente: M12 Lab 03: Flujos con Foundry y Hardhat
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/02_json_rpc_relay_ethers.js
  * ============================================================================

@@ -22,6 +22,10 @@
  * - Previous: M10 Lab 07: Live AI Streaming Proxy Gateway
  * - Next:     M11 Lab 02: ERC-1400 Security Bonds
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/01_erc3643_identity_registry.js
  * ============================================================================

@@ -22,6 +22,10 @@
  * - Anterior:  M8 Lab 07: Asociación USDC
  * - Siguiente: M8 Lab 09: Fondo de Privacidad Zero-Knowledge
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~30 ℏ la primera vez (crea un token y un contrato, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 08_hts_precompiles_advanced.js
  * ============================================================================

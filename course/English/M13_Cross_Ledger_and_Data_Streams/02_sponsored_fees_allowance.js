@@ -26,6 +26,11 @@
  * - Previous: M13 Lab 01: CLPR State Proof Verification (HIP-1535)
  * - Next:     M13 Lab 03: Block Stream & TSS Signature Verification (HIP-1056)
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/02_sponsored_fees_allowance.js
  * ============================================================================

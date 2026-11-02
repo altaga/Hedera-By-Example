@@ -24,6 +24,11 @@
  * - Actual:   M4 Lab 01: Transferencias de HBAR
  * - Siguiente: M4 Lab 02: Transferencias de Tokens
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_hbar_transfers.js
  * ============================================================================

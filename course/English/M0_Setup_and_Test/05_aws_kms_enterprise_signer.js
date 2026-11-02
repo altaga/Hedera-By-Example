@@ -28,6 +28,10 @@
  * [ SIMULATED ]
  * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M0_Setup_and_Test/05_aws_kms_enterprise_signer.js
  * ============================================================================

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Icon } from './Icon'
 import { highlightLines } from '../lib/highlight'
 import {
-  INDEX, REPO_URL, coursePath, githubUrl, moduleLabel, sourceUrl,
+  FLAT_LABS, INDEX, REPO_URL, coursePath, githubUrl, moduleLabel, sourceUrl,
   type Lang, type LabBody, type LabEntry
 } from '../lib/content'
 import type { Strings } from '../lib/i18n'
@@ -151,6 +151,24 @@ function CommandBlock ({ label, command, copyLabel, copiedLabel }: { label: stri
   )
 }
 
+/** Turns "M3 Lab 01" / "Lab 01 de M3" in a sentence into links to those labs. */
+function LabRefs ({ text, onSelect }: { text: string; onSelect: (slug: string) => void }) {
+  const re = /M(\d+) Lab (\d+)|Lab (\d+) de M(\d+)/g
+  const out: React.ReactNode[] = []
+  let last = 0
+  for (const m of text.matchAll(re)) {
+    const mod = Number(m[1] ?? m[4]); const lab = Number(m[2] ?? m[3])
+    const entry = FLAT_LABS.find((e) => e.mod.n === mod && Number(e.lab.n) === lab)
+    out.push(text.slice(last, m.index))
+    out.push(entry
+      ? <button key={m.index} type='button' className='link-btn' onClick={() => onSelect(entry.lab.slug)}>{m[0]}</button>
+      : m[0])
+    last = (m.index ?? 0) + m[0].length
+  }
+  out.push(text.slice(last))
+  return <>{out}</>
+}
+
 // ---------- page ----------
 
 export function LabPage (props: Props) {
@@ -207,6 +225,20 @@ export function LabPage (props: Props) {
           </div>
         )}
       </dl>
+
+      {body.before && body.before.length > 0 && (
+        <aside className='before-run' aria-labelledby='before-title' data-testid='before-run'>
+          <h2 id='before-title' className='before-run-title'>{t.beforeTitle}</h2>
+          <dl>
+            {body.before.map((item, i) => (
+              <div key={i}>
+                {item.label && <dt>{item.label}</dt>}
+                <dd><LabRefs text={item.text} onSelect={onSelect} /></dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
+      )}
 
       {body.simulated && (
         <aside className='simulated' aria-label={t.simulatedTitle} data-testid='simulated-note'>

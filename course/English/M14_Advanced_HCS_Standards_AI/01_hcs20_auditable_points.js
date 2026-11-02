@@ -22,6 +22,10 @@
  * - Previous: M13 Lab 05: Intent Settlement Engine
  * - Next:     M14 Lab 02: HCS-25 Portable AI Trust Score
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/01_hcs20_auditable_points.js
  * ============================================================================

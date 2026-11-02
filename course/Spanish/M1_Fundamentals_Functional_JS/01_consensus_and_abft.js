@@ -27,6 +27,9 @@
  * [ SIMULADO ]
  * El gossip entre nodos corre localmente como modelo del hashgraph; no se hacen llamadas a la red.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_consensus_and_abft.js
  * ============================================================================

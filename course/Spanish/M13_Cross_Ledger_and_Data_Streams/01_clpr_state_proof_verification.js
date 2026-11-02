@@ -25,6 +25,10 @@
  * [ SIMULADO ]
  * Las firmas del consejo TSS y la prueba de estado HIP-1535 son simuladas (el protocolo aún no está activo). El anclaje en HCS es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js
  * ============================================================================

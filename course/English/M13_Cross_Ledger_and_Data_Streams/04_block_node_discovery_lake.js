@@ -23,6 +23,10 @@
  * [ SIMULATED ]
  * Block Node discovery (HIP-1137) is simulated with a local registry.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/04_block_node_discovery_lake.js
  * ============================================================================

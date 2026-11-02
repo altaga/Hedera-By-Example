@@ -27,6 +27,11 @@
  * Hedera -> Collector: Royalty 0.1 ℏ enforced by the network
  * Note Hedera: No marketplace contract can skip the royalty
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 06_base_layer_royalties.js
  * ============================================================================

@@ -24,6 +24,11 @@
  * - Previous: M8 Lab 04: System Contracts
  * - Next:     M8 Lab 06: ERC20 USDC Interaction
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M8 Lab 01 (this lab reads what it saved).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_authorization_protocols.js
  * ============================================================================

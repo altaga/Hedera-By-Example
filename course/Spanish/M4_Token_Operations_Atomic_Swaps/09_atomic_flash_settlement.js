@@ -40,6 +40,10 @@
  * Nota Hedera: Cada parte se valida contra los saldos al llegar a consenso
  * Hedera -> Prestatario: Solo se liquida si el préstamo se paga en la misma transacción
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js
  * ============================================================================

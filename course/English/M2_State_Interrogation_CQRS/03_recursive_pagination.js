@@ -20,6 +20,10 @@
  * - Previous: M2 Lab 02: Secure Async REST
  * - Next:     M2 Lab 04: Real-Time Event Sourcing Reactor (SQLite CQRS)
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 03_recursive_pagination.js
  * ============================================================================

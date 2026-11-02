@@ -53,7 +53,9 @@ const SECTION_ALIASES = {
   SIMULATED: 'simulated',
   SIMULADO: 'simulated',
   SECUENCIA: 'sequence',
-  'COMO EJECUTAR': 'run'
+  'COMO EJECUTAR': 'run',
+  'BEFORE YOU RUN': 'before',
+  'ANTES DE EJECUTAR': 'before'
 }
 
 const normalizeKey = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim()
@@ -146,6 +148,12 @@ function parseHeader (lines) {
   out.run = (sections.run || []).map((l) => l.trim()).filter(Boolean)[0] || ''
   out.sequence = parseSequence(sections.sequence || [])
   out.simulated = toParagraphs(sections.simulated || []).join(' ')
+  // '- Label: text' items (wallets, labs to run first, cost)
+  out.before = (sections.before || []).map((l) => l.trim()).filter((l) => l.startsWith('- ')).map((l) => {
+    const m = l.slice(2).match(/^([^:]{1,40}):\s*(.+)$/)
+    const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1)
+    return m ? { label: m[1].trim(), text: cap(m[2].trim()) } : { label: '', text: cap(l.slice(2).trim()) }
+  })
   return out
 }
 
@@ -308,6 +316,7 @@ function build () {
           lines: lab.lines,
           sequence: lab.sequence,
           simulated: lab.simulated || '',
+          before: lab.before || [],
           nodeOnly: nodeOnlyImports(fs.readFileSync(abs, 'utf8')),
           files: files.map((rel) => ({ name: path.basename(rel), url: `/source/files/${lang}/${dir}/${rel}` }))
         }

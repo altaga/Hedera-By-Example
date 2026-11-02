@@ -25,6 +25,11 @@
  * - Actual:   M9 Lab 03: Búsqueda y Resolución HCS-2
  * - Siguiente: M9 Lab 04: Perfiles de Usuario (HCS-11)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 02 de M9 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_hcs2_search.js
  * ============================================================================

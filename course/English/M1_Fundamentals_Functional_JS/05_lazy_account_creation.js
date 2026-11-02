@@ -21,6 +21,10 @@
  * - Previous: M1 Lab 04: Key Rotation
  * - Next:     M1 Lab 06: Native Staking
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_lazy_account_creation.js
  * ============================================================================

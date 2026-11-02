@@ -27,6 +27,10 @@
  * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool
  * - Next:     M8 Lab 11: Solidity Autonomous HSS Cron Precompile (0x16b)
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a contract, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M8_Smart_Contracts_EVM/10_system_contracts_exchange_and_has.js
  * ============================================================================

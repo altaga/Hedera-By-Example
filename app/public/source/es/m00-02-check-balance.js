@@ -23,6 +23,10 @@
  * - Actual:   M0 Lab 02: Consulta de Saldo
  * - Siguiente: M0 Lab 03: Asociación Ilimitada
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_check_balance.js
  * ============================================================================

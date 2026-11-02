@@ -34,6 +34,10 @@
  * [ SIMULADO ]
  * Los tres proveedores y sus cotizaciones son simulados. El pago es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

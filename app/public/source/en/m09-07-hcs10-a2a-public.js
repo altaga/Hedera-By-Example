@@ -29,6 +29,10 @@
  * Agent B -> Agent A Inbox: Reply
  * Note Agent B: Messages are public and unsigned
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 07_hcs10_a2a_public.js
  * ============================================================================

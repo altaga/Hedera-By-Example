@@ -32,6 +32,10 @@
  * Nota Agente B: Sin firmas no puede distinguirlos
  * Agente B -> Buzón del agente A: Responde a ambos
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 08_hcs10_impersonation_attack.js
  * ============================================================================

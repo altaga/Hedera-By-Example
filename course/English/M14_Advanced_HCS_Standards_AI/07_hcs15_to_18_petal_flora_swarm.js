@@ -28,6 +28,10 @@
  * - Previous: M14 Lab 06: Encrypted AI Agent Swarm Chat
  * - Next:     M14 Lab 08: HCS-12 HashLinks & HCS-21 Adapter Registry
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~5 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/07_hcs15_to_18_petal_flora_swarm.js
  * ============================================================================

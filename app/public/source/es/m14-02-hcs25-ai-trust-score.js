@@ -22,6 +22,10 @@
  * - Anterior:  M14 Lab 01: Puntos Auditables HCS-20
  * - Siguiente: M14 Lab 03: Registro de Habilidades de Agentes HCS-26
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/02_hcs25_ai_trust_score.js
  * ============================================================================

@@ -39,6 +39,10 @@
  * [ SIMULATED ]
  * The prompt-injection attack is simulated to show how the guard blocks it.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
  * ============================================================================

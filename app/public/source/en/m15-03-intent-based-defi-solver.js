@@ -38,6 +38,11 @@
  * [ SIMULATED ]
  * Alice, Bob and the solver run in one process, and their intents are matched locally. The settlement transfer and HCS record are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

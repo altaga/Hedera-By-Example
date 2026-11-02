@@ -21,6 +21,10 @@
  * - Previous: M12 Lab 03: Foundry & Hardhat Workflows
  * - Next:     M12 Lab 05: EIP-7702 Pectra Account Delegation
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/04_scaffold_hbar_integration.js
  * ============================================================================

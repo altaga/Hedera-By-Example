@@ -35,6 +35,10 @@
  * Solver -> Hedera: One 6-leg TransferTransaction signed by all three
  * Hedera -> Solver: Ring settled atomically
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~35 ℏ the first time (it creates 2 tokens, about 2 USD); ~6 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/08_orderbook_triangular_settlement.js
  * ============================================================================

@@ -25,6 +25,10 @@
  * - Actual:   M6 Lab 04: Almacenamiento Económico HCS-1
  * - Siguiente: M6 Lab 05: Reconstrucción de Datos
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 04_economic_hcs1.js
  * ============================================================================

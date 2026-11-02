@@ -32,6 +32,10 @@
  * Agente B -> Buzón del agente A: Respuesta firmada
  * Nota Agente A: Verifica antes de confiar en la respuesta
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 09_hcs10_a2a_secure.js
  * ============================================================================

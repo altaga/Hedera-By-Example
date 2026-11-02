@@ -28,6 +28,10 @@
  * - Previous: M8 Lab 10: System Contracts Deep-Dive (0x168 & 0x16a)
  * - Next:     M9 Lab 01: AI Orchestration (HCS-1 Policy Storage)
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a contract, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M8_Smart_Contracts_EVM/11_solidity_autonomous_hss_cron.js
  * ============================================================================

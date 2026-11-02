@@ -27,6 +27,10 @@
  * - Previous: M14 Lab 07: HCS-15..18 Botanical Agent Swarms
  * - Next:     M14 Lab 09: HIP-1334 Decentralized Encrypted Mailbox
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/08_hcs12_hashlinks_and_hcs21_adapters.js
  * ============================================================================

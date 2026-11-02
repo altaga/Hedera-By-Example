@@ -20,6 +20,10 @@
  * - Anterior: M3 Lab 07: NFTs Dinámicos
  * - Siguiente: M3 Lab 09: HIP-850 Bloqueo de NFTs en Tesorería
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 08_hip412_metadata.js
  * ============================================================================

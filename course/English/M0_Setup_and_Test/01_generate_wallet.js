@@ -19,6 +19,9 @@
  * - Previous: N/A (Course Start)
  * - Next:     Lab 02: Account Verification
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: none. This lab runs entirely on your machine (no network calls).
+ *
  * [ HOW TO RUN ]
  * node 01_generate_wallet.js
  * ============================================================================

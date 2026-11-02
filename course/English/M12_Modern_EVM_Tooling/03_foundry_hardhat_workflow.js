@@ -21,6 +21,10 @@
  * - Previous: M12 Lab 02: JSON-RPC Relay via Ethers.js
  * - Next:     M12 Lab 04: Scaffold-HBAR Architecture
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/03_foundry_hardhat_workflow.js
  * ============================================================================

@@ -22,6 +22,9 @@
  * - Previous: M9 Lab 04: HCS-11 Profiles
  * - Next:     M9 Lab 06: HCS-10 U2A Public
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: none. This lab runs entirely on your machine (no network calls).
+ *
  * [ HOW TO RUN ]
  * node 05_hcs14_uaid.js
  * ============================================================================

@@ -25,6 +25,11 @@
  * - Actual:   M7 Lab 02: Ejecución de Transferencia Multisig
  * - Siguiente: M7 Lab 03: Automatización Nativa (Cron)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M7 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_multisig_transfer.js
  * ============================================================================

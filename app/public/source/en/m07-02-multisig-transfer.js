@@ -21,6 +21,11 @@
  * - Previous: M7 Lab 01: Multisig KeyList
  * - Next:     M7 Lab 03: Native Cron
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M7 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 02_multisig_transfer.js
  * ============================================================================

@@ -20,6 +20,10 @@
  * - Anterior: M1 Lab 05: Creación Perezosa de Cuentas
  * - Siguiente: M1 Lab 07: Motor de Tarifas Simples HIP-1261
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_native_staking.js
  * ============================================================================

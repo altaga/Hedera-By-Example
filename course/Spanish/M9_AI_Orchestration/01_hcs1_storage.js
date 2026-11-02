@@ -26,6 +26,10 @@
  * - Actual:   M9 Lab 01: Persistencia IA (HCS-1)
  * - Siguiente: M9 Lab 02: Registros de Identidad IA (HCS-2)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_hcs1_storage.js
  * ============================================================================

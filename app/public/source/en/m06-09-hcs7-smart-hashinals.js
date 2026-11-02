@@ -22,6 +22,10 @@
  * - Previous: M6 Lab 08: HCS-1 NFT Reconstruction
  * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M6_Mass_Storage_Hashinals/09_hcs7_smart_hashinals.js
  * ============================================================================

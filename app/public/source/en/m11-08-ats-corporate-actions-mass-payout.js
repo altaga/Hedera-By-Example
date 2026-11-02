@@ -34,6 +34,12 @@
  * - Previous: M11 Lab 07: Institutional ERP Invoicing Bridge
  * - Next:     M12 Lab 01: Modern EVM Tooling with Viem & Foundry
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Run first: M11 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/08_ats_corporate_actions_mass_payout.js
  * ============================================================================

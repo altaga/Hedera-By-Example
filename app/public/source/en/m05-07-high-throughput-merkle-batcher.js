@@ -27,6 +27,10 @@
  * - Previous: M5 Lab 06: HIP-991 Paid Topics
  * - Next:     M5 Lab 08: Enterprise Kafka Streaming Bridge
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M5_Hedera_Consensus_Service/07_high_throughput_merkle_batcher.js
  * ============================================================================

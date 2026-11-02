@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit stream on HCS is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/05_hcs28_agent_audit_stream.js
  * ============================================================================

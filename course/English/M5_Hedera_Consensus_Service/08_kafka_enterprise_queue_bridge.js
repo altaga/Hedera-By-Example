@@ -32,6 +32,10 @@
  * - Previous: M5 Lab 07: Merkle Batch Ingestion Engine
  * - Next:     M6 Lab 01: Native HFS
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M5_Hedera_Consensus_Service/08_kafka_enterprise_queue_bridge.js
  * ============================================================================

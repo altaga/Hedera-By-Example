@@ -22,6 +22,10 @@
  * - Anterior: M1 Lab 04: Rotación de Claves
  * - Siguiente: M1 Lab 06: Staking Nativo
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_lazy_account_creation.js
  * ============================================================================

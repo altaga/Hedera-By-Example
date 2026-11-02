@@ -24,6 +24,12 @@
  * - Actual:   M4 Lab 03: Transferencias de NFTs
  * - Siguiente: M4 Lab 04: Swaps Atómicos
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Ejecuta antes: Lab 03 de M3 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_nft_transfers.js
  * ============================================================================

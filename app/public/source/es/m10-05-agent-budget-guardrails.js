@@ -32,6 +32,10 @@
  * Nota Agente: Rechazada: no está en la lista permitida
  * Agente -> Hedera: Auditar el pago aprobado en HCS
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================

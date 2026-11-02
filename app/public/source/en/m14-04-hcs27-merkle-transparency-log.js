@@ -25,6 +25,10 @@
  * [ SIMULATED ]
  * The 64 inference logs are synthetic. The Merkle tree, the proof and the HCS checkpoint are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/04_hcs27_merkle_transparency_log.js
  * ============================================================================

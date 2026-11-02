@@ -27,6 +27,10 @@
  * - Anterior:  M5 Lab 06: Tópicos Monetizados HIP-991
  * - Siguiente: M5 Lab 08: Puente Empresarial de Eventos Kafka a HCS
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M5_Hedera_Consensus_Service/07_high_throughput_merkle_batcher.js
  * ============================================================================

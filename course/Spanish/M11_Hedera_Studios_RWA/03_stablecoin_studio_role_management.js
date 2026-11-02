@@ -22,6 +22,10 @@
  * - Actual:   M11 Lab 03: Roles en Stablecoin Studio
  * - Siguiente: M11 Lab 04: Oráculo Proof-of-Reserve
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/03_stablecoin_studio_role_management.js
  * ============================================================================

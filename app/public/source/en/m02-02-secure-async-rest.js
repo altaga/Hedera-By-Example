@@ -20,6 +20,10 @@
  * - Previous: M2 Lab 01: Sync Deprecation
  * - Next:     M2 Lab 03: Recursive Pagination
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 02_secure_async_rest.js
  * ============================================================================

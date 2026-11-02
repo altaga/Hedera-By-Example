@@ -24,6 +24,10 @@
  * - Actual:   M7 Lab 05: Identidad Descentralizada (DID)
  * - Siguiente: M7 Lab 06: Verificación de Login Criptográfico
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_decentralized_identity.js
  * ============================================================================

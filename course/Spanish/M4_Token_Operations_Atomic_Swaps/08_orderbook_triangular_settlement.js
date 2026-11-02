@@ -35,6 +35,10 @@
  * Solver -> Hedera: Una TransferTransaction de 6 partes firmada por los tres
  * Hedera -> Solver: Anillo liquidado de forma atómica
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~35 ℏ la primera vez (crea 2 tokens, cerca de 2 USD); ~6 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/08_orderbook_triangular_settlement.js
  * ============================================================================

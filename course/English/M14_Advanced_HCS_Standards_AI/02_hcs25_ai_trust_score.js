@@ -21,6 +21,10 @@
  * - Previous: M14 Lab 01: HCS-20 Auditable Points
  * - Next:     M14 Lab 03: HCS-26 Agent Skills Registry
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/02_hcs25_ai_trust_score.js
  * ============================================================================

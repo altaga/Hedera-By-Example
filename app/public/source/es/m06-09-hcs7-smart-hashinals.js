@@ -22,6 +22,10 @@
  * - Anterior:  M6 Lab 08: Reconstrucción de NFT HCS-1
  * - Siguiente: M6 Lab 10: Bóveda Cifrada Zero-Trust
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M6_Mass_Storage_Hashinals/09_hcs7_smart_hashinals.js
  * ============================================================================

@@ -25,6 +25,11 @@
  * - Actual:   M8 Lab 03: Cambios Estructurales de la EVM
  * - Siguiente: M8 Lab 04: Contratos de Sistema (System Contracts)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M8 (este lab lee lo que guardó).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_evm_structural_changes.js
  * ============================================================================

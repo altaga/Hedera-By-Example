@@ -28,6 +28,10 @@
  * - Anterior:  M14 Lab 07: Enjambres Botánicos HCS-15..18
  * - Siguiente: M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/08_hcs12_hashlinks_and_hcs21_adapters.js
  * ============================================================================

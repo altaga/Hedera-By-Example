@@ -22,6 +22,11 @@
  * - Previous: M9 Lab 02: HCS-2 Registries
  * - Next:     M9 Lab 04: HCS-11 Profiles
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 02 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 03_hcs2_search.js
  * ============================================================================

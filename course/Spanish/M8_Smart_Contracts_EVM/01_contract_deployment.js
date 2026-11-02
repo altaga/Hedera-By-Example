@@ -24,6 +24,10 @@
  * - Actual:   M8 Lab 01: Contratos Inteligentes Natos
  * - Siguiente: M8 Lab 02: Ejecución de Lógica Híbrida
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_contract_deployment.js
  * ============================================================================

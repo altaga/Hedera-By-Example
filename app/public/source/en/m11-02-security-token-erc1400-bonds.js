@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * Coupon periods are simulated instead of waiting for real dates. Tokens and payments are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/02_security_token_erc1400_bonds.js
  * ============================================================================

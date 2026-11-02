@@ -24,6 +24,10 @@
  * [ SIMULADO ]
  * El prompt, el razonamiento y las reglas del agente son texto predefinido, no un modelo en vivo. El flujo de auditoría en HCS es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/05_hcs28_agent_audit_stream.js
  * ============================================================================

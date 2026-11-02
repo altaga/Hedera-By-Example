@@ -24,6 +24,10 @@
  * - Anterior:  M11 Lab 05: Factoraje de Facturas RWA
  * - Siguiente: M11 Lab 07: Puente de Integración ERP Institucional
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~60 ℏ la primera vez (crea 4 tokens, cerca de 4 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/06_rwa_multi_asset_pool_tokens.js
  * ============================================================================

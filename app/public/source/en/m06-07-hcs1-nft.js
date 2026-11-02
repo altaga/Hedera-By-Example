@@ -20,6 +20,10 @@
  * - Previous: M6 Lab 06: Hashinals Ecosystem
  * - Next:     M6 Lab 08: HCS-1 NFT Reconstruction
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 07_hcs1_nft.js
  * ============================================================================

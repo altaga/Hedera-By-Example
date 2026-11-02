@@ -21,6 +21,10 @@
  * - Previous: M6 Lab 01: Native HFS
  * - Next:     M6 Lab 03: Batch Uploading
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ each run (it uploads a file, about 1.2 USD).
+ *
  * [ HOW TO RUN ]
  * node 02_large_file_hfs.js
  * ============================================================================

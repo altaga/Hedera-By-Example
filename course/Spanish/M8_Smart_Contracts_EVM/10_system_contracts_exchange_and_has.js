@@ -27,6 +27,10 @@
  * - Anterior:  M8 Lab 09: Piscina de Privacidad con Pruebas de Conocimiento Cero
  * - Siguiente: M8 Lab 11: Precompilación HSS Cron Autónomo en Solidity (0x16b)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/10_system_contracts_exchange_and_has.js
  * ============================================================================

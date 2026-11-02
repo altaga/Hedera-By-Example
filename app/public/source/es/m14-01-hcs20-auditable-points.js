@@ -22,6 +22,10 @@
  * - Anterior:  M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
  * - Siguiente: M14 Lab 02: Puntuación de Confianza de IA HCS-25
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/01_hcs20_auditable_points.js
  * ============================================================================

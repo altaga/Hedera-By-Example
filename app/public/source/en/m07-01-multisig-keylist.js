@@ -21,6 +21,10 @@
  * - Previous: M6 Lab 10: Zero-Trust Encrypted Vault
  * - Next:     M7 Lab 02: Multisig Transfer
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~1 ℏ (network fees and the accounts it creates).
+ *
  * [ HOW TO RUN ]
  * node 01_multisig_keylist.js
  * ============================================================================

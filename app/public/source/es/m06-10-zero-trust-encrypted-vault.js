@@ -28,6 +28,10 @@
  * - Anterior:  M6 Lab 09: Smart Hashinals HCS-7
  * - Siguiente: M7 Lab 01: Umbrales Multifirma Nativos
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M6_Mass_Storage_Hashinals/10_zero_trust_encrypted_vault.js
  * ============================================================================

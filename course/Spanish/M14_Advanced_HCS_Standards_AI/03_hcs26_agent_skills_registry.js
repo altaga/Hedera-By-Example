@@ -26,6 +26,10 @@
  * [ SIMULADO ]
  * El agente que descubre las habilidades es simulado. El registro en HCS es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/03_hcs26_agent_skills_registry.js
  * ============================================================================

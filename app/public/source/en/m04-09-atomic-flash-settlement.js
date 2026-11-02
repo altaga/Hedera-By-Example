@@ -38,6 +38,10 @@
  * Note Hedera: Every leg checked against balances at consensus
  * Hedera -> Borrower: Settles only if the loan is repaid in the same transaction
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js
  * ============================================================================

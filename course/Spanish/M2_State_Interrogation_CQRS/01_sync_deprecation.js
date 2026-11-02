@@ -23,6 +23,10 @@
  * - Actual:   M2 Lab 01: Depreciación Sync
  * - Siguiente: M2 Lab 02: Consulta REST Segura
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_sync_deprecation.js
  * ============================================================================

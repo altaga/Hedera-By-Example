@@ -22,6 +22,10 @@
  * - Actual:   M12 Lab 03: Flujos con Foundry y Hardhat
  * - Siguiente: M12 Lab 04: Arquitectura Scaffold-HBAR
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/03_foundry_hardhat_workflow.js
  * ============================================================================

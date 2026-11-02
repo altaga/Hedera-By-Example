@@ -29,6 +29,10 @@
  * [ SIMULATED ]
  * The HTTP request and server run in the same process; no web server is started.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/01_http_402_server_challenge.js
  * ============================================================================

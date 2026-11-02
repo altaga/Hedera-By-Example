@@ -34,6 +34,11 @@
  * Trustee 2 -> Hedera: ScheduleSign
  * Hedera -> Treasury: Threshold met: payout executes automatically
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~2 ℏ (network fees and the accounts it creates).
+ *
  * [ HOW TO RUN ]
  * node English/M7_Governance_Cron/07_webhook_slack_treasury_dao.js
  * ============================================================================

@@ -38,6 +38,10 @@
  * [ SIMULATED ]
  * The TLS session with the bank and the notary are emulated. The signatures and the HCS proof are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/05_zktls_cryptographic_web_proofs.js
  * ============================================================================

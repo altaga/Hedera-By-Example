@@ -20,6 +20,11 @@
  * - Previous: M3 Lab 01: Immutable Issuance
  * - Next:     M3 Lab 03: NFT HIP-412
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 02_financial_identity.js
  * ============================================================================

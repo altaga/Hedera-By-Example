@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * The TSS council signatures and the HIP-1535 state proof are simulated (the protocol is not live yet). The HCS anchoring is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js
  * ============================================================================

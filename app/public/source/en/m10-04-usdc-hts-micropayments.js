@@ -30,6 +30,10 @@
  * [ SIMULATED ]
  * "USDC" is a test token the lab mints, and the payment is a transfer to yourself. Both are real on testnet.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================

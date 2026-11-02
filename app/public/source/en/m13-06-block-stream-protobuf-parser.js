@@ -30,6 +30,10 @@
  * - Previous: M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  * - Next:     M14 Lab 01: HCS-20 Auditable Points & Inscriptions
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/06_block_stream_protobuf_parser.js
  * ============================================================================

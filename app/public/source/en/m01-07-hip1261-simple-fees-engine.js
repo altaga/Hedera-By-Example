@@ -27,6 +27,10 @@
  * - Previous: M1 Lab 06: Native Staking
  * - Next:     M1 Lab 08: HIP-1068 Gasless Fee Allowance
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M1_Fundamentals_Functional_JS/07_hip1261_simple_fees_engine.js
  * ============================================================================

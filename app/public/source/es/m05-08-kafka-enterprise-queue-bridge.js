@@ -32,6 +32,10 @@
  * - Anterior:  M5 Lab 07: Motor de Ingesta por Lotes Merkle
  * - Siguiente: M6 Lab 01: HFS Nativo
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M5_Hedera_Consensus_Service/08_kafka_enterprise_queue_bridge.js
  * ============================================================================

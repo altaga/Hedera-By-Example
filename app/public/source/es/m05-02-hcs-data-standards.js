@@ -23,6 +23,11 @@
  * - Actual:   M5 Lab 02: Estándares de Datos
  * - Siguiente: M5 Lab 03: Paginación y Fragmentación
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M5 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_hcs_data_standards.js
  * ============================================================================

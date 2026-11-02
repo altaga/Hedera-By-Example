@@ -29,6 +29,10 @@
  * Agent B -> Agent A Inbox: Reply encrypted with Agent A public key
  * Note HCS: Everyone sees the ciphertext, nobody else reads it
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 11_hcs10_a2a_encrypted.js
  * ============================================================================

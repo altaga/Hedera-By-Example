@@ -29,6 +29,10 @@
  * - Anterior:  M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain
  * - Siguiente: M14 Lab 01: Puntos Inscriptos y Auditables HCS-20
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/06_block_stream_protobuf_parser.js
  * ============================================================================

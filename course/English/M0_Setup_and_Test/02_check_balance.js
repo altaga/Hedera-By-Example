@@ -18,6 +18,10 @@
  * - Previous: Lab 01: Key Generation
  * - Next:     Lab 03: Unlimited Association
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 02_check_balance.js
  * ============================================================================

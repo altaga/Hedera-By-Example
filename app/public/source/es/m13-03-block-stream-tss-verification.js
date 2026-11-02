@@ -25,6 +25,10 @@
  * [ SIMULADO ]
  * La verificación del quórum TSS es simulada (HIP-1056 aún no está activo).
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/03_block_stream_tss_verification.js
  * ============================================================================

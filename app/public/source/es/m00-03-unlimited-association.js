@@ -23,6 +23,10 @@
  * - Actual:   M0 Lab 03: Asociación Ilimitada
  * - Siguiente: M0 Lab 04: Creación de Billetera Hija
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_unlimited_association.js
  * ============================================================================

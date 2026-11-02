@@ -24,6 +24,10 @@
  * - Previous: M4 Lab 06: Native Airdrops (HIP-904)
  * - Next:     M4 Lab 08: Orderbook & Triangular L1 Settlement
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/07_airdrop_cancel_and_reject.js
  * ============================================================================

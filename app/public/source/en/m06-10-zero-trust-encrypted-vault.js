@@ -28,6 +28,10 @@
  * - Previous: M6 Lab 09: HCS-7 Smart Hashinals
  * - Next:     M7 Lab 01: Native Threshold Authority
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M6_Mass_Storage_Hashinals/10_zero_trust_encrypted_vault.js
  * ============================================================================

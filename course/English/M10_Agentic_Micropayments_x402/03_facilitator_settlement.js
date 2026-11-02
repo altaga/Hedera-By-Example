@@ -31,6 +31,11 @@
  * [ SIMULATED ]
  * Payer and payee are the same account, so the settlement is a real transfer to yourself.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M10 Lab 02 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================

@@ -25,6 +25,10 @@
  * [ SIMULADO ]
  * Los 64 registros de inferencia son sintéticos. El árbol de Merkle, la prueba y el checkpoint en HCS son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/04_hcs27_merkle_transparency_log.js
  * ============================================================================

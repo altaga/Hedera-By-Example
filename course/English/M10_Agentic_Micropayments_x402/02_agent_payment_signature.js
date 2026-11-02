@@ -27,6 +27,11 @@
  * Note Agent: Signs the payment authorization with its key
  * Agent -> Server: Retry with PAYMENT-SIGNATURE header
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M10 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/02_agent_payment_signature.js
  * ============================================================================

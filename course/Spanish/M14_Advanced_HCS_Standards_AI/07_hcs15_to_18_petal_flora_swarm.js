@@ -28,6 +28,10 @@
  * - Anterior:  M14 Lab 06: Chat Encriptado de Enjambre de Agentes de IA
  * - Siguiente: M14 Lab 08: HashLinks HCS-12 y Registro de Adaptadores HCS-21
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~5 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/07_hcs15_to_18_petal_flora_swarm.js
  * ============================================================================

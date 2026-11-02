@@ -22,6 +22,11 @@
  * - Previous: M8 Lab 01: Contract Deployment
  * - Next:     M8 Lab 03: Structural Changes
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M8 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 02_hybrid_environment.js
  * ============================================================================

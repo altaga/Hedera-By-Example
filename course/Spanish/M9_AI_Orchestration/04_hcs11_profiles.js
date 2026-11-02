@@ -25,6 +25,11 @@
  * - Actual:   M9 Lab 04: Perfiles de Usuario (HCS-11)
  * - Siguiente: M9 Lab 05: Identidad Única Agéntica (HCS-14)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~8 ℏ (comisiones de red y las cuentas que crea).
+ *
  * [ CÓMO EJECUTAR ]
  * node 04_hcs11_profiles.js
  * ============================================================================

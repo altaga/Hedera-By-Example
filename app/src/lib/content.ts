@@ -43,6 +43,8 @@ export interface LabBody {
   sequence: { actors: string[]; steps: any[] } | null
   /** What this lab simulates and what is real on testnet. */
   simulated: string
+  /** Wallets, labs to run first and approximate cost, from [ BEFORE YOU RUN ]. */
+  before?: { label: string; text: string }[]
   /** Imported modules the web runner cannot provide; the lab runs in Node.js only. */
   nodeOnly: string[]
 }

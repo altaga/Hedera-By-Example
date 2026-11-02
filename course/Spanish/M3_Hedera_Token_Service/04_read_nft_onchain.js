@@ -23,6 +23,11 @@
  * - Actual:   M3 Lab 04: Lectura de NFTs
  * - Siguiente: M3 Lab 05: Tarifas Personalizadas
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 03 de M3 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 04_read_nft_onchain.js
  * ============================================================================

@@ -38,6 +38,11 @@
  * - Anterior:  M3 Lab 09: Bloqueo de Tesorería NFT HIP-850
  * - Siguiente: M4 Lab 01: Transferencias Atómicas de HBAR y Tokens
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M3_Hedera_Token_Service/10_nft_studio_rarity_and_airdrop_verifier.js
  * ============================================================================

@@ -24,6 +24,10 @@
  * - Previous: Lab 05: AWS KMS Enterprise Signer
  * - Next:     M1 Lab 01: Consensus & aBFT
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M0_Setup_and_Test/06_opentelemetry_consensus_telemetry.js
  * ============================================================================

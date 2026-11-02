@@ -28,6 +28,10 @@
  * - Anterior:  M1 Lab 06: Staking Nativo
  * - Siguiente: M1 Lab 08: Asignación de Tarifas Sin Gas HIP-1068
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M1_Fundamentals_Functional_JS/07_hip1261_simple_fees_engine.js
  * ============================================================================

@@ -27,6 +27,10 @@
  * - Anterior:  M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real
  * - Siguiente: M3 Lab 01: Emisión Inmutable
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/07_graphql_subgraph_indexer.js
  * ============================================================================

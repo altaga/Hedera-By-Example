@@ -33,6 +33,10 @@
  * [ SIMULATED ]
  * The ERC-4337 bundler and UserOperation flow are simulated. The final settlement on Hedera is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/06_erc4337_paymaster_gasless.js
  * ============================================================================

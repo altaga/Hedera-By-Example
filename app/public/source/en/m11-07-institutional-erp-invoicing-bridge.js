@@ -42,6 +42,11 @@
  * [ SIMULATED ]
  * The SAP/Oracle invoice and the ERC-3643 compliance check are simulated. The HCS anchor, the tranche token and the transfers are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~15 ℏ each run (it creates a token, about 1 USD).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/07_institutional_erp_invoicing_bridge.js
  * ============================================================================

@@ -36,6 +36,10 @@
  * Vendedor -> Hedera: Verificar recibo, beneficiario, monto y memo
  * Vendedor -> Comprador: 200 OK + prueba de liquidación
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
  * ============================================================================

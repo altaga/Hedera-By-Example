@@ -25,6 +25,11 @@
  * - Actual:   M6 Lab 06: Ecosistema de Hashinals
  * - Siguiente: M6 Lab 07: NFT Nativo HCS-1
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M6 (este lab lee lo que guardó).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_hashinals_ecosystem.js
  * ============================================================================

@@ -21,6 +21,10 @@
  * - Previous: M7 Lab 07: Autonomous Treasury DAO
  * - Next:     M8 Lab 02: Hybrid Environment
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a contract, about 1 USD); ~3 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 01_contract_deployment.js
  * ============================================================================

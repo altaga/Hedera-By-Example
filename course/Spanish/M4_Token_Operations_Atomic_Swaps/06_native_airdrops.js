@@ -21,6 +21,10 @@
  * - Anterior: M4 Lab 05: Transferencias Paralelas
  * - Siguiente: M4 Lab 07: Cancelación de Airdrop y Rechazo de Tokens (HIP-904)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~2 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_native_airdrops.js
  * ============================================================================

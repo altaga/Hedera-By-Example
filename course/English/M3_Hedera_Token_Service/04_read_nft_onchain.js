@@ -20,6 +20,11 @@
  * - Previous: M3 Lab 03: NFT HIP-412
  * - Next:     M3 Lab 05: Custom Fees
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M3 Lab 03 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 04_read_nft_onchain.js
  * ============================================================================

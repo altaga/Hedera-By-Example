@@ -24,6 +24,10 @@
  * - Actual:   M3 Lab 01: Emisión de Token
  * - Siguiente: M3 Lab 02: Identidad Financiera
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_immutable_issuance.js
  * ============================================================================

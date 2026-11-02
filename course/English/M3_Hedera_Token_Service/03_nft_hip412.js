@@ -20,6 +20,10 @@
  * - Previous: M3 Lab 02: Financial Identity
  * - Next:     M3 Lab 04: Read NFT On-Chain
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~25 ℏ the first time (it creates a token and uploads a file, about 1.4 USD); ~9 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 03_nft_hip412.js
  * ============================================================================

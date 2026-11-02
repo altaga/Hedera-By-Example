@@ -31,6 +31,10 @@
  * Note Agent: Rejected: not on the allowlist
  * Agent -> Hedera: Audit the approved payment on HCS
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================

@@ -28,6 +28,10 @@
  * Note Agent B: Without signatures it cannot tell them apart
  * Agent B -> Agent A Inbox: Replies to both
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 08_hcs10_impersonation_attack.js
  * ============================================================================

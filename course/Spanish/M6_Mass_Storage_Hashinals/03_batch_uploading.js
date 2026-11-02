@@ -24,6 +24,11 @@
  * - Actual:   M6 Lab 03: Carga Masiva (Bucket)
  * - Siguiente: M6 Lab 04: Almacenamiento Económico HCS-1
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M6 (este lab lee lo que guardó).
+ * - Costo: ~9 ℏ en cada ejecución (sube un archivo, cerca de 0.5 USD).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_batch_uploading.js
  * ============================================================================

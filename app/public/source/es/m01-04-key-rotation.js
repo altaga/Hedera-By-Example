@@ -24,6 +24,11 @@
  * - Actual:   M1 Lab 04: Rotación de Llaves
  * - Siguiente: M2 Lab 01: Depreciación Sync
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 04_key_rotation.js
  * ============================================================================

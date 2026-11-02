@@ -33,6 +33,10 @@
  * [ SIMULATED ]
  * The three providers and their quotes are simulated. The payment is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================

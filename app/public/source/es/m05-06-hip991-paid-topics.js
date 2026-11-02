@@ -22,6 +22,10 @@
  * - Anterior:  M5 Lab 05: Registro HCS-6
  * - Siguiente: M5 Lab 07: Ingesta Masiva de Lotes con Árboles Merkle en HCS
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~45 ℏ la primera vez (crea un token y un tópico de pago HIP-991, cerca de 3 USD); ~2 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M5_Hedera_Consensus_Service/06_hip991_paid_topics.js
  * ============================================================================

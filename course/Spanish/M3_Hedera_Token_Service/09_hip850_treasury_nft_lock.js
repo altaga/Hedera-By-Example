@@ -23,6 +23,10 @@
  * - Anterior:  M3 Lab 08: Esquema de Metadatos HIP-412
  * - Siguiente: M4 Lab 01: Transferencias HBAR
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ en cada ejecución (crea un token, cerca de 1 USD).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M3_Hedera_Token_Service/09_hip850_treasury_nft_lock.js
  * ============================================================================

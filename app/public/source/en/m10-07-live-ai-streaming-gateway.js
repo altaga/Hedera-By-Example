@@ -39,6 +39,10 @@
  * [ SIMULATED ]
  * The AI tokens come from a synthetic generator, not a real model. The payment and its verification are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
  * ============================================================================

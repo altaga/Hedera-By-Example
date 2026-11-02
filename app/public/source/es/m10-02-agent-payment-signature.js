@@ -28,6 +28,11 @@
  * Nota Agente: Firma la autorización de pago con su llave
  * Agente -> Servidor: Reintenta con el encabezado PAYMENT-SIGNATURE
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M10 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/02_agent_payment_signature.js
  * ============================================================================

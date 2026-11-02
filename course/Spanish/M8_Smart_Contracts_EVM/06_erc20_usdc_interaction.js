@@ -24,6 +24,11 @@
  * - Actual:   M8 Lab 06: Interacción ERC-20 (USDC)
  * - Siguiente: M8 Lab 07: Asociación de Tokens (Bridge HTS)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~2 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_erc20_usdc_interaction.js
  * ============================================================================

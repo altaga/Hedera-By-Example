@@ -24,6 +24,10 @@
  * - Actual:   M6 Lab 02: Gestión de Archivos Grandes
  * - Siguiente: M6 Lab 03: Carga Masiva (Bucket)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ en cada ejecución (sube un archivo, cerca de 1.2 USD).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_large_file_hfs.js
  * ============================================================================

@@ -25,6 +25,11 @@
  * - Actual:   M7 Lab 03: Automatización Nativa (Cron)
  * - Siguiente: M7 Lab 04: Orquestación Desacoplada
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_native_cron.js
  * ============================================================================

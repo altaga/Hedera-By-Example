@@ -22,6 +22,10 @@
  * - Previous: M8 Lab 06: ERC20 USDC Interaction
  * - Next:     M9 Lab 01: Client Initialization
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 07_usdc_association.js
  * ============================================================================

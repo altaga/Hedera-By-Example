@@ -25,6 +25,11 @@
  * - Actual:   M8 Lab 05: Protocolos de Autorización
  * - Siguiente: M8 Lab 06: Interacción ERC-20 (USDC)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M8 (este lab lee lo que guardó).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_authorization_protocols.js
  * ============================================================================

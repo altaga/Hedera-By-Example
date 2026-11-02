@@ -22,6 +22,10 @@
  * - Anterior: M3 Lab 06: Regalías de Capa Base
  * - Siguiente: M4 (Swaps Atómicos)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 07_dynamic_nfts.js
  * ============================================================================

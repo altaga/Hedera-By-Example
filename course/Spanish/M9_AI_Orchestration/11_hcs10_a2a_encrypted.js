@@ -32,6 +32,10 @@
  * Agente B -> Buzón del agente A: Respuesta cifrada con la llave pública del agente A
  * Nota HCS: Todos ven el texto cifrado, nadie más puede leerlo
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 11_hcs10_a2a_encrypted.js
  * ============================================================================

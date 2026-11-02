@@ -39,6 +39,10 @@
  * [ SIMULADO ]
  * El ataque de inyección de prompt se simula para mostrar cómo lo bloquea la protección.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
  * ============================================================================

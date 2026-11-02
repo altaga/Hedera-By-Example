@@ -27,6 +27,10 @@
  * - Actual:   M2 Lab 04: Reactor de Event Sourcing en Tiempo Real (SQLite CQRS)
  * - Siguiente: M2 Lab 05: Circuit Breaker y Limitador de Tasa
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/04_realtime_grpc_sqlite_reactor.js
  * ============================================================================

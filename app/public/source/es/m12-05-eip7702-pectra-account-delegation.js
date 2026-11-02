@@ -32,6 +32,10 @@
  * [ SIMULADO ]
  * La ejecución por lotes de EIP-7702 es simulada (estado SIMULATED_CONFIRMED); aquí el relay no ejecuta transacciones Type 4.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/05_eip7702_pectra_account_delegation.js
  * ============================================================================

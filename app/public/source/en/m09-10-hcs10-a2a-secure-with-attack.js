@@ -28,6 +28,11 @@
  * Note Agent B: Signature check rejects the forgery
  * Agent B -> Agent A Inbox: Replies only to the trusted message
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M9 Lab 09 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 10_hcs10_a2a_secure_with_attack.js
  * ============================================================================

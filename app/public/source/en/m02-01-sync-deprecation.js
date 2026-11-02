@@ -20,6 +20,10 @@
  * - Previous: M1 Lab 04: Key Rotation
  * - Next:     M2 Lab 02: Secure Async REST
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 01_sync_deprecation.js
  * ============================================================================

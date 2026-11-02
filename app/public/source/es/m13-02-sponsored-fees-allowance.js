@@ -27,6 +27,11 @@
  * - Actual:    M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
  * - Siguiente: M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/02_sponsored_fees_allowance.js
  * ============================================================================

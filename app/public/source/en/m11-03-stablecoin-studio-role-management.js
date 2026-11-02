@@ -21,6 +21,10 @@
  * - Previous: M11 Lab 02: ERC-1400 Security Bonds
  * - Next:     M11 Lab 04: Proof-of-Reserve Oracle
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/03_stablecoin_studio_role_management.js
  * ============================================================================

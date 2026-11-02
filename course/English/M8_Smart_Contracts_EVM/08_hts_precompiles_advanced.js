@@ -20,6 +20,10 @@
  * - Previous: M8 Lab 07: USDC Association
  * - Next:     M8 Lab 09: Zero-Knowledge Privacy Pool
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~30 ℏ the first time (it creates a token and a contract, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 08_hts_precompiles_advanced.js
  * ============================================================================

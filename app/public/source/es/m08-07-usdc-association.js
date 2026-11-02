@@ -24,6 +24,10 @@
  * - Actual:   M8 Lab 07: Asociación de Tokens (USDC)
  * - Siguiente: M9 Lab 01: Persistencia IA (HCS-1)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 07_usdc_association.js
  * ============================================================================

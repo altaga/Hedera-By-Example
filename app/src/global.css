@@ -925,3 +925,13 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .format-row code { font-size: 12px; word-break: break-all; }
 .format-note { margin: 3px 0 0; font-size: 12.5px; color: var(--text-3); line-height: 1.45; }
 @media (max-width: 640px) { .format-row { grid-template-columns: 1fr; } }
+
+/* ---------- before you run ---------- */
+.before-run { margin: 20px 0; padding: 14px 16px; border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: var(--radius); background: var(--bg-subtle); }
+.before-run-title { margin: 0 0 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-2); }
+.before-run dl { margin: 0; display: grid; gap: 6px; }
+.before-run dl > div { display: grid; grid-template-columns: minmax(110px, 160px) minmax(0, 1fr); gap: 2px 12px; font-size: 14px; }
+.before-run dt { color: var(--text-3); }
+.before-run dd { margin: 0; color: var(--text); min-width: 0; }
+.before-run .link-btn { font-size: inherit; }
+@media (max-width: 640px) { .before-run dl > div { grid-template-columns: 1fr; } }

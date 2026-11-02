@@ -21,6 +21,11 @@
  * - Previous: M6 Lab 05: Reconstruct HCS-1
  * - Next:     M6 Lab 07: HCS-1 Native NFT
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M6 Lab 01 (this lab reads what it saved).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 06_hashinals_ecosystem.js
  * ============================================================================

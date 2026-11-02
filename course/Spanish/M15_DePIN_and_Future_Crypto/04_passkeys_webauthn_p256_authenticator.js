@@ -32,6 +32,11 @@
  * [ SIMULADO ]
  * El autenticador biométrico se emula por software (en el sitio puedes probar una passkey real). Las firmas P-256 y la auditoría en HCS son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/04_passkeys_webauthn_p256_authenticator.js
  * ============================================================================

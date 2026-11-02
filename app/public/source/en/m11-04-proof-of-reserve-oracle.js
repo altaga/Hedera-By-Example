@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * The custodian reserve figures are simulated. The on-chain reactions to them are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/04_proof_of_reserve_oracle.js
  * ============================================================================

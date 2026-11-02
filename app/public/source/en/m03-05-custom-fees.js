@@ -20,6 +20,11 @@
  * - Previous: M3 Lab 04: Read NFT On-Chain
  * - Next:     M3 Lab 06: Base Layer Royalties
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 05_custom_fees.js
  * ============================================================================

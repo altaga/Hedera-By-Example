@@ -32,6 +32,10 @@
  * [ SIMULADO ]
  * Las respuestas HTTP 429 se inyectan a propósito para activar el circuit breaker. La consulta de respaldo al Mirror Node es real.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/05_circuit_breaker_rate_limiter.js
  * ============================================================================

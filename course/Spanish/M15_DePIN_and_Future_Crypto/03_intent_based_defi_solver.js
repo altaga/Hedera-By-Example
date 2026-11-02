@@ -40,6 +40,11 @@
  * [ SIMULADO ]
  * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. La transferencia de liquidación y el registro en HCS son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js
  * ============================================================================

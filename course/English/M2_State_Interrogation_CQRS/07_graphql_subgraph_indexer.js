@@ -27,6 +27,10 @@
  * - Previous: M2 Lab 06: Real-Time WebSocket Event Bus
  * - Next:     M3 Lab 01: Immutable Issuance
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M2_State_Interrogation_CQRS/07_graphql_subgraph_indexer.js
  * ============================================================================

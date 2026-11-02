@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * The TSS quorum verification is simulated (HIP-1056 is not live yet).
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/03_block_stream_tss_verification.js
  * ============================================================================

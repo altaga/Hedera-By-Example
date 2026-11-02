@@ -21,6 +21,10 @@
  * - Previous: M5 Lab 04: HCS Ping-Pong
  * - Next:     M5 Lab 06: HIP-991 Paid Topics
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_hcs6_registry.js
  * ============================================================================

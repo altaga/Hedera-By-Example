@@ -34,6 +34,12 @@
  * - Anterior:  M11 Lab 07: Puente de Facturación ERP Institucional
  * - Siguiente: M12 Lab 01: Herramientas EVM Modernas con Viem y Foundry
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Ejecuta antes: Lab 01 de M11 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/08_ats_corporate_actions_mass_payout.js
  * ============================================================================

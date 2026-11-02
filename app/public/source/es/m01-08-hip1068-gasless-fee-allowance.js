@@ -28,6 +28,11 @@
  * - Anterior:  M1 Lab 07: Motor de Tarifas Simples HIP-1261
  * - Siguiente: M2 Lab 01: Depreciación de Consultas Síncronas
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M1_Fundamentals_Functional_JS/08_hip1068_gasless_fee_allowance.js
  * ============================================================================

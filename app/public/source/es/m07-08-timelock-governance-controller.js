@@ -30,6 +30,10 @@
  * - Anterior:  M7 Lab 07: DAO de Tesorería Autónoma Guiada por Webhooks
  * - Siguiente: M8 Lab 01: Despliegue de Contratos Inteligentes
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M7_Governance_Cron/08_timelock_governance_controller.js
  * ============================================================================

@@ -21,6 +21,11 @@
  * - Previous: M6 Lab 04: Economic HCS-1
  * - Next:     M6 Lab 06: Hashinals Ecosystem
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M5 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_reconstruct_hcs1.js
  * ============================================================================

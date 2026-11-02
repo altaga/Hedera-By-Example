@@ -25,6 +25,10 @@
  * [ SIMULADO ]
  * Las cifras de reservas del custodio son simuladas. Las reacciones en la red a esas cifras son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/04_proof_of_reserve_oracle.js
  * ============================================================================

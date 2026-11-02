@@ -26,6 +26,9 @@
  * [ SIMULADO ]
  * El HSM / bóveda es un mock en memoria. Las firmas son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_cryptography_kms.js
  * ============================================================================

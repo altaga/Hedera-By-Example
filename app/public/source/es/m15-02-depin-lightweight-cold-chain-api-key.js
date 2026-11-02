@@ -33,6 +33,10 @@
  * [ SIMULADO ]
  * El rastreador IoT y sus solicitudes HTTP son emulados. Las verificaciones HMAC y los registros en HCS son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js
  * ============================================================================

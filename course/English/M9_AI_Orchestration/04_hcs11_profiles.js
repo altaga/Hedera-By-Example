@@ -23,6 +23,11 @@
  * - Previous: M9 Lab 03: HCS-2 Search and Resolution
  * - Next:     M9 Lab 05: Universal Agent Identifier (HCS-14)
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~8 ℏ (network fees and the accounts it creates).
+ *
  * [ HOW TO RUN ]
  * node 04_hcs11_profiles.js
  * ============================================================================

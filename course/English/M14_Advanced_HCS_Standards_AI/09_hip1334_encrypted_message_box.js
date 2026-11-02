@@ -39,6 +39,10 @@
  * Sender -> Hedera: Encrypted envelope to the inbox
  * Recipient -> Hedera: Read and decrypt with its private key
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
  * ============================================================================

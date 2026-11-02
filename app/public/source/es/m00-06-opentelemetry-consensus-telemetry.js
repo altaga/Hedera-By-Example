@@ -25,6 +25,10 @@
  * - Anterior:  Lab 05: Firmador Enterprise con AWS KMS
  * - Siguiente: M1 Lab 01: Consenso & aBFT
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M0_Setup_and_Test/06_opentelemetry_consensus_telemetry.js
  * ============================================================================

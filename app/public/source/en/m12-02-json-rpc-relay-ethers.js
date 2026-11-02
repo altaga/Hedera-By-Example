@@ -21,6 +21,10 @@
  * - Previous: M12 Lab 01: Direct HTS ERC-20 Facade
  * - Next:     M12 Lab 03: Foundry & Hardhat Workflows
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/02_json_rpc_relay_ethers.js
  * ============================================================================

@@ -33,6 +33,10 @@
  * Alpha -> Hedera: Mensaje cifrado con AES-256-GCM
  * Beta -> Hedera: Leer y descifrar
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/06_encrypted_ai_agent_swarm_chat.js
  * ============================================================================

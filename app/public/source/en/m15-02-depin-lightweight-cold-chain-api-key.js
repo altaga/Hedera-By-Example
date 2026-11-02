@@ -31,6 +31,10 @@
  * [ SIMULATED ]
  * The IoT tracker and its HTTP requests are emulated. The HMAC checks and the HCS records are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js
  * ============================================================================

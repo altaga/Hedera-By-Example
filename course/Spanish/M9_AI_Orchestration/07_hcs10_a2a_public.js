@@ -32,6 +32,10 @@
  * Agente B -> Buzón del agente A: Respuesta
  * Nota Agente B: Los mensajes son públicos y sin firma
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 07_hcs10_a2a_public.js
  * ============================================================================

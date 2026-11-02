@@ -25,6 +25,10 @@
  * [ SIMULADO ]
  * Las suscripciones de inversionistas y el pago del deudor se modelan con transferencias simples. Los tokens son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
  * ============================================================================

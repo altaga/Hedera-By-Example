@@ -20,6 +20,11 @@
  * - Previous: M1 Lab 03: Cryptography & KMS
  * - Next:     M2 Lab 01: Sync Deprecation
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 04_key_rotation.js
  * ============================================================================

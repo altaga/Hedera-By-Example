@@ -20,6 +20,10 @@
  * - Previous: M4 Lab 05: Parallel Transfers
  * - Next:     M5 Lab 02: HCS Data Standards
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 01_immutable_topic.js
  * ============================================================================

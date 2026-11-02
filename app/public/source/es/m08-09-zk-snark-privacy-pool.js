@@ -31,6 +31,11 @@
  * - Anterior:  M8 Lab 08: Precompilados HTS Avanzados
  * - Siguiente: M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/09_zk_snark_privacy_pool.js
  * ============================================================================

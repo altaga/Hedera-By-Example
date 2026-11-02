@@ -20,6 +20,11 @@
  * - Previous: M6 Lab 07: HCS-1 Native NFT
  * - Next:     M6 Lab 09: HCS-7 Smart Hashinals
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M3 Lab 03, M6 Lab 07 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 08_reconstruct_hcs1_nft.js
  * ============================================================================

@@ -30,6 +30,10 @@
  * Agent B -> Agent A Inbox: Signed reply
  * Note Agent A: Verifies before trusting the reply
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 09_hcs10_a2a_secure.js
  * ============================================================================

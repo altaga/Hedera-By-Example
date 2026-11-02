@@ -23,6 +23,10 @@
  * - Actual:   M5 Lab 05: Registro Descentralizado HCS-6
  * - Siguiente: M5 Lab 06: Tópicos Pagados HIP-991
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_hcs6_registry.js
  * ============================================================================

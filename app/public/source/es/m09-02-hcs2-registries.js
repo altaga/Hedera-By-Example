@@ -25,6 +25,11 @@
  * - Actual:   M9 Lab 02: Registros de Identidad IA (HCS-2)
  * - Siguiente: M9 Lab 03: Búsqueda y Resolución HCS-2
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M9 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_hcs2_registries.js
  * ============================================================================

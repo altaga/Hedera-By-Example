@@ -22,6 +22,10 @@
  * - Actual:   M12 Lab 01: Fachada Directa HTS ERC-20
  * - Siguiente: M12 Lab 02: JSON-RPC Relay con Ethers.js
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~30 ℏ la primera vez (crea un token y un contrato, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/01_hts_direct_erc20_facade.js
  * ============================================================================

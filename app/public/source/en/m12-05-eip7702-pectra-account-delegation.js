@@ -32,6 +32,10 @@
  * [ SIMULATED ]
  * The EIP-7702 batch execution is simulated (status SIMULATED_CONFIRMED); the relay does not run Type 4 transactions here.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/05_eip7702_pectra_account_delegation.js
  * ============================================================================

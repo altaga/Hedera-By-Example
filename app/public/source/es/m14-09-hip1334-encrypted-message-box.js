@@ -39,6 +39,10 @@
  * Remitente -> Hedera: Sobre cifrado al buzón
  * Destinatario -> Hedera: Leer y descifrar con su llave privada
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
  * ============================================================================

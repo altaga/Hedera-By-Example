@@ -23,6 +23,10 @@
  * - Actual:   M3 Lab 03: NFTs con HIP-412
  * - Siguiente: M3 Lab 04: Lectura de NFTs
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~25 ℏ la primera vez (crea un token y sube un archivo, cerca de 1.4 USD); ~9 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_nft_hip412.js
  * ============================================================================

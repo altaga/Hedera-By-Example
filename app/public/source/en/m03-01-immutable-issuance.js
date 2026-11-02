@@ -21,6 +21,10 @@
  * - Previous: M2 Lab 03: Recursive Pagination
  * - Next:     M3 Lab 02: Financial Identity
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 01_immutable_issuance.js
  * ============================================================================

@@ -24,6 +24,10 @@
  * - Previous: M3 Lab 08: HIP-412 Metadata Schema
  * - Next:     M4 Lab 01: HBAR Transfers
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~15 ℏ each run (it creates a token, about 1 USD).
+ *
  * [ HOW TO RUN ]
  * node English/M3_Hedera_Token_Service/09_hip850_treasury_nft_lock.js
  * ============================================================================

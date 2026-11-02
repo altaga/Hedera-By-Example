@@ -36,6 +36,10 @@
  * Seller -> Hedera: Verify receipt, payee, amount and memo
  * Seller -> Buyer: 200 OK + settlement proof
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
  * ============================================================================

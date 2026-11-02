@@ -23,6 +23,9 @@
  * - Actual:   M0 Lab 01: Generación de Billetera
  * - Siguiente: M0 Lab 02: Consulta de Saldo
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_generate_wallet.js
  * ============================================================================

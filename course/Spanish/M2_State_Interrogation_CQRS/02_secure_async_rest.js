@@ -23,6 +23,10 @@
  * - Actual:   M2 Lab 02: Consulta REST Segura
  * - Siguiente: M2 Lab 03: Paginación Recursiva
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 02_secure_async_rest.js
  * ============================================================================

@@ -22,6 +22,10 @@
  * - Previous: M5 Lab 05: HCS-6 Registry
  * - Next:     M5 Lab 07: High-Throughput Merkle Batch Ingestion
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: ~45 ℏ the first time (it creates a token and a paid HIP-991 topic, about 3 USD); ~2 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M5_Hedera_Consensus_Service/06_hip991_paid_topics.js
  * ============================================================================

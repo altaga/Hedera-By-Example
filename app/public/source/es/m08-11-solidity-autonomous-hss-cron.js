@@ -28,6 +28,10 @@
  * - Anterior:  M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)
  * - Siguiente: M9 Lab 01: Persistencia IA (HCS-1)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/11_solidity_autonomous_hss_cron.js
  * ============================================================================

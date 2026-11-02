@@ -22,6 +22,11 @@
  * - Previous: M8 Lab 05: Authorization Protocols
  * - Next:     M8 Lab 07: USDC Association
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~2 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 06_erc20_usdc_interaction.js
  * ============================================================================

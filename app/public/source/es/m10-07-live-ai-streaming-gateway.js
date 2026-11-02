@@ -40,6 +40,10 @@
  * [ SIMULADO ]
  * Los tokens de IA vienen de un generador sintético, no de un modelo real. El pago y su verificación son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
  * ============================================================================

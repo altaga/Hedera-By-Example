@@ -22,6 +22,10 @@
  * - Previous: M7 Lab 04: Decoupled Orchestration
  * - Next:     M7 Lab 06: DID Login
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_decentralized_identity.js
  * ============================================================================

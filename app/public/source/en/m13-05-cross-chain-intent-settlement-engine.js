@@ -31,6 +31,11 @@
  * [ SIMULATED ]
  * The Arbitrum fill and the CLPR proof are simulated. The allowance, the HCS intent and the Hedera settlement are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~1 ℏ (network fees and the accounts it creates).
+ *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/05_cross_chain_intent_settlement_engine.js
  * ============================================================================

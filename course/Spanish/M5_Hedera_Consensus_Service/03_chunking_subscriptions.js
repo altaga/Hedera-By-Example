@@ -24,6 +24,11 @@
  * - Actual:   M5 Lab 03: Paginación y Fragmentación
  * - Siguiente: M5 Lab 04: Comunicaciones Seguras (Ping-Pong)
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M5 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 03_chunking_subscriptions.js
  * ============================================================================

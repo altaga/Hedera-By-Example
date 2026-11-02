@@ -35,6 +35,11 @@
  * Fideicomisario 2 -> Hedera: ScheduleSign
  * Hedera -> Tesorería: Umbral cumplido: el pago se ejecuta solo
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Costo: ~2 ℏ (comisiones de red y las cuentas que crea).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M7_Governance_Cron/07_webhook_slack_treasury_dao.js
  * ============================================================================

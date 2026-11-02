@@ -32,6 +32,10 @@
  * Agente -> Buzón del usuario: Mensaje de respuesta
  * Usuario -> Buzón del usuario: Leer la respuesta
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 06_hcs10_u2a_public.js
  * ============================================================================

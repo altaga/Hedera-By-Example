@@ -23,6 +23,9 @@
  * [ SIMULATED ]
  * The HSM / vault is an in-memory mock. The signatures are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: none. This lab runs entirely on your machine (no network calls).
+ *
  * [ HOW TO RUN ]
  * node 03_cryptography_kms.js
  * ============================================================================

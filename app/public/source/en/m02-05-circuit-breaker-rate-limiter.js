@@ -31,6 +31,10 @@
  * [ SIMULATED ]
  * The HTTP 429 responses are injected on purpose to trip the circuit breaker. The fallback Mirror Node query is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M2_State_Interrogation_CQRS/05_circuit_breaker_rate_limiter.js
  * ============================================================================

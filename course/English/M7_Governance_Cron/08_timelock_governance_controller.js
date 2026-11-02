@@ -30,6 +30,10 @@
  * - Previous: M7 Lab 07: Webhook-Driven Autonomous Treasury DAO
  * - Next:     M8 Lab 01: Smart Contract Deployment
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M7_Governance_Cron/08_timelock_governance_controller.js
  * ============================================================================

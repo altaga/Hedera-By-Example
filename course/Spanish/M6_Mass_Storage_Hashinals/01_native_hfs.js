@@ -24,6 +24,10 @@
  * - Actual:   M6 Lab 01: Almacenamiento Nativo HFS
  * - Siguiente: M6 Lab 02: Gestión de Archivos Grandes
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: ~5 ℏ en cada ejecución (sube un archivo, cerca de 0.3 USD).
+ *
  * [ CÓMO EJECUTAR ]
  * node 01_native_hfs.js
  * ============================================================================

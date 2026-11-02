@@ -19,6 +19,11 @@
  * - Previous: Lab 03: Unlimited Association
  * - Next:     Lab 05: AWS KMS Enterprise Signer
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 04_create_child_wallet.js
  * ============================================================================

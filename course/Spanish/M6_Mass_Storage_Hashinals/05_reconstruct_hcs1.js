@@ -24,6 +24,11 @@
  * - Actual:   M6 Lab 05: Reconstrucción de Datos
  * - Siguiente: M6 Lab 06: Ecosistema de Hashinals
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 01 de M5 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 05_reconstruct_hcs1.js
  * ============================================================================

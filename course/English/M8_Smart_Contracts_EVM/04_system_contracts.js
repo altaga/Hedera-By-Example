@@ -23,6 +23,11 @@
  * - Previous: M8 Lab 03: Structural Changes
  * - Next:     M8 Lab 05: Authorization Protocols
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Run first: M3 Lab 01 (this lab reads what it saved).
+ * - Cost: ~15 ℏ the first time (it creates a contract, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node 04_system_contracts.js
  * ============================================================================

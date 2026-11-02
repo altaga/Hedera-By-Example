@@ -35,6 +35,11 @@
  * - Previous: M3 Lab 09: HIP-850 Treasury NFT Lock
  * - Next:     M4 Lab 01: HBAR & Token Atomic Transfers
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
+ *
  * [ HOW TO RUN ]
  * node English/M3_Hedera_Token_Service/10_nft_studio_rarity_and_airdrop_verifier.js
  * ============================================================================

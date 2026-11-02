@@ -20,6 +20,11 @@
  * - Previous: M4 Lab 04: Atomic Swaps
  * - Next:     M5 Lab 01: Immutable Topic
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 05_parallel_transfers.js
  * ============================================================================

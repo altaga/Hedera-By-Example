@@ -32,6 +32,10 @@
  * [ SIMULADO ]
  * El marcapasos y su flujo MQTTS son emulados. Las firmas del dispositivo, el lote de Merkle y los mensajes en HCS son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M15_DePIN_and_Future_Crypto/01_depin_mqtts_pacemaker_telemetry.js
  * ============================================================================

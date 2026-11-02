@@ -20,6 +20,12 @@
  * - Previous: M4 Lab 01: HBAR Transfers
  * - Next:     M4 Lab 03: NFT Transfers
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Run first: M3 Lab 01 (this lab reads what it saved).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 02_token_transfers.js
  * ============================================================================

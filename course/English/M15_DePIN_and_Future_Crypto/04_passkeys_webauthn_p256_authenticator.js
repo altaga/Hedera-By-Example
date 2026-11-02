@@ -32,6 +32,11 @@
  * [ SIMULATED ]
  * The biometric authenticator is emulated in software (the website lets you try a real passkey). The P-256 signatures and the HCS audit are real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M15_DePIN_and_Future_Crypto/04_passkeys_webauthn_p256_authenticator.js
  * ============================================================================

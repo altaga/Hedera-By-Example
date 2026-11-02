@@ -22,6 +22,10 @@
  * - Actual:   M12 Lab 04: Arquitectura Scaffold-HBAR
  * - Siguiente: M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/04_scaffold_hbar_integration.js
  * ============================================================================

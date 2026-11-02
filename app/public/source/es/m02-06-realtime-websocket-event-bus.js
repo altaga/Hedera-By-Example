@@ -31,6 +31,10 @@
  * [ SIMULADO ]
  * El cliente suscriptor corre en el mismo proceso que el servidor. Los eventos del ledger que retransmite son reales.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M2_State_Interrogation_CQRS/06_realtime_websocket_event_bus.js
  * ============================================================================

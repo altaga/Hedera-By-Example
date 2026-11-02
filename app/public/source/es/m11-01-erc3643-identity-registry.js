@@ -23,6 +23,10 @@
  * - Actual:   M11 Lab 01: Registro de Identidad ERC-3643
  * - Siguiente: M11 Lab 02: Bonos de Deuda ERC-1400
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/01_erc3643_identity_registry.js
  * ============================================================================

@@ -20,6 +20,10 @@
  * - Previous: M1 Lab 05: Lazy Account Creation
  * - Next:     M1 Lab 07: HIP-1261 Simple Fees Engine
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <0.1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node 06_native_staking.js
  * ============================================================================

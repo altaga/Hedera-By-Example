@@ -31,6 +31,11 @@
  * Nota Agente B: La verificación de firma rechaza la falsificación
  * Agente B -> Buzón del agente A: Solo responde al mensaje confiable
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 09 de M9 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node 10_hcs10_a2a_secure_with_attack.js
  * ============================================================================

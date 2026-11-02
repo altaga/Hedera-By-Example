@@ -24,6 +24,10 @@
  * [ SIMULATED ]
  * The peer agent that discovers the skills is simulated. The registry on HCS is real.
  *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account (it signs and pays the fees).
+ * - Cost: <1 ℏ (network fees only).
+ *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/03_hcs26_agent_skills_registry.js
  * ============================================================================

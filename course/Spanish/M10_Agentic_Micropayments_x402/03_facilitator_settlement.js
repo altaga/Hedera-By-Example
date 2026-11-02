@@ -33,6 +33,11 @@
  * [ SIMULADO ]
  * Pagador y beneficiario son la misma cuenta, así que la liquidación es una transferencia real a ti mismo.
  *
+ * [ ANTES DE EJECUTAR ]
+ * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
+ * - Ejecuta antes: Lab 02 de M10 (este lab lee lo que guardó).
+ * - Costo: <0.1 ℏ (solo comisiones de red).
+ *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================
