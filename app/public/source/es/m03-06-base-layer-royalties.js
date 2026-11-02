@@ -113,12 +113,12 @@ const main = async () => {
       .setMetadata([Buffer.from('Asset #1')])
       .execute(client)).getReceipt(client)
 
-    await (await new TokenAssociateTransaction()
+    const associate2Tx = await new TokenAssociateTransaction()
       .setAccountId(account2Id)
       .setTokenIds([tokenId])
       .freezeWith(client)
       .sign(account2PrivateKey)
-      .execute(client)).getReceipt(client)
+    await (await associate2Tx.execute(client)).getReceipt(client)
 
     // --- ESCENARIO A: VENTA SECUNDARIA CON REGALÍA ---
     console.log('\n--- 📊 [REGISTRO] Escenario A: Venta Secundaria (Intercambio Atómico) ---')

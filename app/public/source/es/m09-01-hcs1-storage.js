@@ -82,7 +82,7 @@ const main = async () => {
       .freezeWith(client)
 
     const submitResponse = await submitTx.execute(client)
-    const submitReceipt = await submitReceipt.getReceipt(client)
+    const submitReceipt = await submitResponse.getReceipt(client)
 
     console.log(`\n[✅ ÉXITO] Carga útil anclada con éxito. Estado: ${submitReceipt.status.toString()}`)
     console.log(`[📊 REGISTRO] Auditoría del anclaje: ${getHashscanUrl(submitResponse)}`)
