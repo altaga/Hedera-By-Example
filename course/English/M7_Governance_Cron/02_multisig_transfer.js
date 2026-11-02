@@ -58,8 +58,8 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Proposing transfer with only 1 signature (Alice)...')
 
     const failTx = await new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-1))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(1))
+      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
       .freezeWith(client)
       .sign(aliceKey)
 
@@ -77,8 +77,8 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Proposing transfer with 2 required signatures (Alice + Bob)...')
 
     const successTx = await new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-1))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(1))
+      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
       .freezeWith(client)
       .sign(aliceKey)
 

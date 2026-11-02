@@ -57,6 +57,7 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Creando contenedor de archivos persistente en Hedera...')
 
     const transaction = await new FileCreateTransaction()
+      .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // El almacenamiento se cobra por tamaño x vigencia: en testnet, corta
       .setKeys([adminKey.publicKey]) // Solo el admin puede modificarlo
       .setContents(imageBuffer)
       .freezeWith(client)

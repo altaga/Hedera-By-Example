@@ -127,7 +127,7 @@ const main = async () => {
     const makeTrader = async (key, name) => {
       const res = await new AccountCreateTransaction()
         .setKeyWithoutAlias(key.publicKey)
-        .setInitialBalance(new Hbar(2))
+        .setInitialBalance(new Hbar(0))
         .setMaxAutomaticTokenAssociations(5)
         .execute(client)
       const id = (await res.getReceipt(client)).accountId
@@ -140,26 +140,26 @@ const main = async () => {
     const gammaId = await makeTrader(gammaKey, 'Trader Gamma')
 
     // Fund Trader Alpha with 100 USD
-    // Fund Trader Beta with 20 HBAR
+    // Fund Trader Beta with 1 HBAR
     // Fund Trader Gamma with 5 GOLD
     console.log('\n[⚙️ PROCESS] Distributing Initial Asset Inventories to Traders...')
     const seedInventoryTx = new TransferTransaction()
       .addTokenTransfer(usdId, operatorId, -100)
       .addTokenTransfer(usdId, alphaId, 100)
-      .addHbarTransfer(operatorId, new Hbar(-20))
-      .addHbarTransfer(betaId, new Hbar(20))
+      .addHbarTransfer(operatorId, new Hbar(-1))
+      .addHbarTransfer(betaId, new Hbar(1))
       .addTokenTransfer(goldId, operatorId, -5)
       .addTokenTransfer(goldId, gammaId, 5)
       .freezeWith(client)
 
     await (await seedInventoryTx.execute(client)).getReceipt(client)
-    console.log('[✅ SUCCESS] Inventories Funded: Alpha(100 USD), Beta(20 HBAR), Gamma(5 GOLD)')
+    console.log('[✅ SUCCESS] Inventories Funded: Alpha(100 USD), Beta(1 HBAR), Gamma(5 GOLD)')
 
     // 3. Off-Chain Orderbook: Submit 3 Non-Overlapping Limit Orders
     console.log('\n[⚙️ PROCESS] Step 3: Submitting Off-Chain Cryptographic Limit Orders...')
     const engine = new TriangularMatchingEngine()
 
-    // Trader Alpha: Sells 100 USD ➔ Wants 20 HBAR
+    // Trader Alpha: Sells 100 USD ➔ Wants 1 HBAR
     engine.submitOrder({
       traderName: 'Trader Alpha',
       traderId: alphaId,
@@ -169,17 +169,17 @@ const main = async () => {
       sellAmount: 100,
       buySymbol: 'HBAR',
       buyTokenId: null,
-      buyAmount: 20
+      buyAmount: 1
     })
 
-    // Trader Beta: Sells 20 HBAR ➔ Wants 5 GOLD
+    // Trader Beta: Sells 1 HBAR ➔ Wants 5 GOLD
     engine.submitOrder({
       traderName: 'Trader Beta',
       traderId: betaId,
       traderKey: betaKey,
       sellSymbol: 'HBAR',
       sellTokenId: null,
-      sellAmount: 20,
+      sellAmount: 1,
       buySymbol: 'GOLD',
       buyTokenId: goldId,
       buyAmount: 5
@@ -218,9 +218,9 @@ const main = async () => {
       // Leg 3 & 4: Gamma delivers 5 GOLD to Beta
       .addTokenTransfer(goldId, gammaId, -5)
       .addTokenTransfer(goldId, betaId, 5)
-      // Leg 5 & 6: Beta delivers 20 HBAR to Alpha
-      .addHbarTransfer(betaId, new Hbar(-20))
-      .addHbarTransfer(alphaId, new Hbar(20))
+      // Leg 5 & 6: Beta delivers 1 HBAR to Alpha
+      .addHbarTransfer(betaId, new Hbar(-1))
+      .addHbarTransfer(alphaId, new Hbar(1))
       .setTransactionMemo('COW:TRIANGULAR:RING_CLEARING')
       .freezeWith(client)
 

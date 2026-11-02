@@ -40,7 +40,7 @@ import {
   TokenCreateTransaction,
   TokenRejectTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Cancelación de Airdrops y Rechazo de Tokens (HIP-904) ---\n')
@@ -50,18 +50,20 @@ const main = async () => {
   try {
     // 1. Crear un Token Fungible para la Prueba del Ciclo de Vida de Airdrops
     console.log('[⚙️ PROCESO] Creando Token Fungible (SPAM / PROMO)...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Token Promo Drop')
-      .setTokenSymbol('PROMO')
-      .setDecimals(0)
-      .setInitialSupply(10000)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(supplyKey)
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M4_07_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Token Promo Drop')
+        .setTokenSymbol('PROMO')
+        .setDecimals(0)
+        .setInitialSupply(10000)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(supplyKey)
+        .freezeWith(client)
 
-    const signedToken = await tokenTx.sign(supplyKey)
-    const tokenRes = await signedToken.execute(client)
-    const tokenId = (await tokenRes.getReceipt(client)).tokenId
+      const signedToken = await tokenTx.sign(supplyKey)
+      const tokenRes = await signedToken.execute(client)
+      return (await tokenRes.getReceipt(client)).tokenId
+    })
     console.log(`[✅ ÉXITO] Token Creado: ${tokenId.toString()} (Suministro Inicial: 10,000 PROMO)`)
 
     // 2. PARTE A: El Emisor Cancela un Airdrop Pendiente No Reclamado (`TokenCancelAirdropTransaction`)
@@ -69,7 +71,7 @@ const main = async () => {
     const dormantKey = PrivateKey.generateED25519()
     const dormantRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(dormantKey.publicKey)
-      .setInitialBalance(new Hbar(1))
+      .setInitialBalance(new Hbar(0))
       .setMaxAutomaticTokenAssociations(0) // Fuerza el airdrop al estado PENDIENTE
       .execute(client)
     const dormantId = (await dormantRes.getReceipt(client)).accountId
@@ -97,7 +99,7 @@ const main = async () => {
     const userKey = PrivateKey.generateED25519()
     const userRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(userKey.publicKey)
-      .setInitialBalance(new Hbar(1))
+      .setInitialBalance(new Hbar(0))
       .setMaxAutomaticTokenAssociations(5) // ¡El airdrop entra directo a la billetera!
       .execute(client)
     const userId = (await userRes.getReceipt(client)).accountId

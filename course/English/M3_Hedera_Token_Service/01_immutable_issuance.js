@@ -30,7 +30,7 @@ import {
   AccountId, PrivateKey,
   TokenCreateTransaction, TokenType, TokenSupplyType
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: HTS Fungible Token Issuance ---\n')
@@ -42,28 +42,30 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Creating Hedera Syllabus Coin (HSC) on the network...')
 
     // 1. Define and Execute Token Creation
-    const transaction = await new TokenCreateTransaction()
-      .setTokenName('Hedera Syllabus Coin')
-      .setTokenSymbol('HSC')
-      .setTokenType(TokenType.FungibleCommon)
-      .setDecimals(2)
-      .setInitialSupply(1000000) // 10,000.00 HSC (since decimals is 2)
-      .setMaxSupply(10000000)
-      .setSupplyType(TokenSupplyType.Finite)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setAdminKey(treasuryKey)
-      .setSupplyKey(treasuryKey) // Allows for future minting/burning
-      .setPauseKey(treasuryKey) // Allows for emergency stopping
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M3_01_TOKEN', async () => {
+      const transaction = await new TokenCreateTransaction()
+        .setTokenName('Hedera Syllabus Coin')
+        .setTokenSymbol('HSC')
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(2)
+        .setInitialSupply(1000000) // 10,000.00 HSC (since decimals is 2)
+        .setMaxSupply(10000000)
+        .setSupplyType(TokenSupplyType.Finite)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setAdminKey(treasuryKey)
+        .setSupplyKey(treasuryKey) // Allows for future minting/burning
+        .setPauseKey(treasuryKey) // Allows for emergency stopping
+        .freezeWith(client)
 
-    const response = await transaction.execute(client)
+      const response = await transaction.execute(client)
 
-    // Log HashScan URL for immediate audit
-    const txId = response.transactionId.toString().replace('@', '-').replace('.', '-')
-    console.log(`[📊 LOG] View on HashScan: https://hashscan.io/testnet/transaction/${txId}`)
+      // Log HashScan URL for immediate audit
+      const txId = response.transactionId.toString().replace('@', '-').replace('.', '-')
+      console.log(`[📊 LOG] View on HashScan: https://hashscan.io/testnet/transaction/${txId}`)
 
-    const receipt = await response.getReceipt(client)
-    const tokenId = receipt.tokenId
+      const receipt = await response.getReceipt(client)
+      return receipt.tokenId
+    })
 
     console.log(`\n[✅ SUCCESS] Token Created Successfully: ${tokenId.toString()}`)
 

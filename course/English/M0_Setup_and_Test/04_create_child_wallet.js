@@ -41,13 +41,13 @@ const main = async () => {
       return
     }
 
-    console.log(`[⚙️ PROCESS] Provisioning ${accountName} with 5 HBAR...`)
+    console.log(`[⚙️ PROCESS] Provisioning ${accountName} with 1 HBAR...`)
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
 
     const tx = new AccountCreateTransaction()
       .setKeyWithoutAlias(newPublicKey)
-      .setInitialBalance(Hbar.from(5))
+      .setInitialBalance(Hbar.from(1))
       .setMaxAutomaticTokenAssociations(-1)
       .freezeWith(client)
 

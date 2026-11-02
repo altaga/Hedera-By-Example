@@ -47,10 +47,10 @@ const main = async () => {
     const aliasAccountId = AccountId.fromString(`0.0.${evmAddress}`)
 
     // 4. Transfer HBAR to the Alias to trigger auto-creation
-    console.log('\n[⚙️ PROCESS] Transferring 2 HBAR to the EVM Alias to trigger auto-creation...')
+    console.log('\n[⚙️ PROCESS] Transferring 0.5 HBAR to the EVM Alias to trigger auto-creation...')
     const tx = await new TransferTransaction()
-      .addHbarTransfer(client.operatorAccountId, new Hbar(-2))
-      .addHbarTransfer(aliasAccountId, new Hbar(2))
+      .addHbarTransfer(client.operatorAccountId, new Hbar(-0.5))
+      .addHbarTransfer(aliasAccountId, new Hbar(0.5))
       .execute(client)
 
     // 5. Get the receipt and the child record to reveal the newly created Account ID

@@ -60,6 +60,7 @@ const main = async () => {
 
     console.log(`[⚙️ PROCESO] Inicializando ancla de identidad HFS con ${initialChunk.length} bytes...`)
     const createTx = await new FileCreateTransaction()
+      .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // El almacenamiento se cobra por tamaño x vigencia: en testnet, corta
       .setKeys([adminKey.publicKey])
       .setContents(initialChunk)
       .freezeWith(client)

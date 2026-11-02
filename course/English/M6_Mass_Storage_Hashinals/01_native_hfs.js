@@ -53,6 +53,7 @@ const main = async () => {
     console.log('[⚙️ PROCESS] Creating a permissioned file on Hedera (Single Transaction)...')
 
     const transaction = await new FileCreateTransaction()
+      .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
       .setKeys([adminKey.publicKey])
       .setContents(imageBuffer)
       .freezeWith(client)

@@ -51,7 +51,7 @@ const main = async () => {
 
     const tx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(newPublicKey)
-      .setInitialBalance(Hbar.from(3)) // Saldo inicial para operaciones de prueba
+      .setInitialBalance(Hbar.from(1)) // Saldo inicial para operaciones de prueba
       .setMaxAutomaticTokenAssociations(-1)
       .freezeWith(client)
 

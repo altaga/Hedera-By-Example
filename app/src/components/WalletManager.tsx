@@ -33,7 +33,7 @@ const TEXT = {
     fundHint: 'Fund this address from another wallet or the Hedera faucet to create its testnet account.',
     edHint: 'Ed25519 keys have no EVM address: create the account from an existing one, or use ECDSA.',
     newEcdsa: 'New ECDSA wallet', newEd: 'New Ed25519 wallet', import: 'Import account',
-    practice: 'Create 2 practice wallets (10 ℏ each)', practiceBusy: 'Creating…',
+    practice: 'Create 2 practice wallets (3 ℏ each)', practiceBusy: 'Creating…',
     practiceHint: 'Funded from the wallet that runs labs and assigned as ACCOUNT_1 and ACCOUNT_2.',
     accountId: 'Account ID', label: 'Name', save: 'Import', cancel: 'Cancel',
     invalidId: 'Enter an account ID like 0.0.1234.', invalidKey: 'This private key could not be read (DER 302e…/3030… or hex).',
@@ -62,7 +62,7 @@ const TEXT = {
     fundHint: 'Fondea esta dirección desde otra wallet o el faucet de Hedera para crear su cuenta de testnet.',
     edHint: 'Las llaves Ed25519 no tienen dirección EVM: crea la cuenta desde una existente o usa ECDSA.',
     newEcdsa: 'Nueva wallet ECDSA', newEd: 'Nueva wallet Ed25519', import: 'Importar cuenta',
-    practice: 'Crear 2 wallets de práctica (10 ℏ c/u)', practiceBusy: 'Creando…',
+    practice: 'Crear 2 wallets de práctica (3 ℏ c/u)', practiceBusy: 'Creando…',
     practiceHint: 'Se fondean desde la wallet que ejecuta los labs y quedan como ACCOUNT_1 y ACCOUNT_2.',
     accountId: 'Account ID', label: 'Nombre', save: 'Importar', cancel: 'Cancelar',
     invalidId: 'Escribe un account ID como 0.0.1234.', invalidKey: 'No se pudo leer la llave privada (DER 302e…/3030… o hex).',
@@ -141,7 +141,7 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
 
   const fund = (w: Wallet) => run(w.id, async () => {
     if (!active) return
-    const accountId = await fundWallet(active, w, Number(amounts[w.id] || 10))
+    const accountId = await fundWallet(active, w, Number(amounts[w.id] || 2))
     const s = patchWallet(w.id, { accountId })
     await refresh(s)
   })
@@ -171,8 +171,8 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
     if (!active) return
     const a = await createWallet('ECDSA', 'ACCOUNT_1')
     const b = await createWallet('ECDSA', 'ACCOUNT_2')
-    a.accountId = await fundWallet(active, a, 10)
-    b.accountId = await fundWallet(active, b, 10)
+    a.accountId = await fundWallet(active, a, 3)
+    b.accountId = await fundWallet(active, b, 3)
     const s = update({ ...store, wallets: [...store.wallets, a, b], roles: { account1: a.id, account2: b.id } })
     await refresh(s)
   })
@@ -247,7 +247,7 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
                     </label>
                     {canFundFromActive && !isActive && (w.accountId || w.evmAddress) && (
                       <span className='wallet-fund'>
-                        <input type='number' min='0.1' step='0.1' value={amounts[w.id] ?? '10'} onChange={(e) => setAmounts({ ...amounts, [w.id]: e.target.value })} aria-label={t.amount} />
+                        <input type='number' min='0.1' step='0.1' value={amounts[w.id] ?? '2'} onChange={(e) => setAmounts({ ...amounts, [w.id]: e.target.value })} aria-label={t.amount} />
                         <button type='button' className='btn btn-secondary btn-sm' onClick={() => fund(w)} disabled={!!busy} data-testid='wallet-fund'>
                           {busy === w.id ? t.funding : `${t.fund} ${t.fundFrom(active!.label)}`}
                         </button>

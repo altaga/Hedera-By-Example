@@ -111,7 +111,7 @@ const main = async () => {
     const collectorKey = PrivateKey.generateED25519()
     const accRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(collectorKey.publicKey)
-      .setInitialBalance(new Hbar(1))
+      .setInitialBalance(new Hbar(0))
       .setMaxAutomaticTokenAssociations(5)
       .execute(client)
     const collectorId = (await accRes.getReceipt(client)).accountId

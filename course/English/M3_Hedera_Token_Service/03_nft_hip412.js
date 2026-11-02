@@ -37,7 +37,7 @@ import {
 } from '@hiero-ledger/sdk'
 import fs from 'fs'
 import path from 'path'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * Generates HIP-412 V2 compliant metadata.
@@ -83,6 +83,7 @@ const main = async () => {
     const initialChunk = imageBuffer.slice(0, CHUNK_SIZE)
 
     const fileTx = await new FileCreateTransaction()
+      .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
       .setKeys([treasuryKey.publicKey])
       .setContents(initialChunk)
       .freezeWith(client)
@@ -112,21 +113,23 @@ const main = async () => {
 
     // 2. Create the NFT Collection
     console.log("\n[⚙️ PROCESS] Initializing the 'Hedera Syllabus NFT' collection...")
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('Hedera Syllabus NFT')
-      .setTokenSymbol('HSNFT')
-      .setTokenType(TokenType.NonFungibleUnique)
-      .setDecimals(0)
-      .setInitialSupply(0)
-      .setTreasuryAccountId(AccountId.fromString(operatorId))
-      .setSupplyType(TokenSupplyType.Finite)
-      .setMaxSupply(100)
-      .setSupplyKey(treasuryKey)
-      .freezeWith(client)
+    const tokenId = await reuseToken('REUSE_M3_03_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('Hedera Syllabus NFT')
+        .setTokenSymbol('HSNFT')
+        .setTokenType(TokenType.NonFungibleUnique)
+        .setDecimals(0)
+        .setInitialSupply(0)
+        .setTreasuryAccountId(AccountId.fromString(operatorId))
+        .setSupplyType(TokenSupplyType.Finite)
+        .setMaxSupply(100)
+        .setSupplyKey(treasuryKey)
+        .freezeWith(client)
 
-    const tokenResponse = await tokenTx.execute(client)
-    const tokenReceipt = await tokenResponse.getReceipt(client)
-    const tokenId = tokenReceipt.tokenId
+      const tokenResponse = await tokenTx.execute(client)
+      const tokenReceipt = await tokenResponse.getReceipt(client)
+      return tokenReceipt.tokenId
+    })
 
     console.log(`[✅ SUCCESS] NFT Collection Created: ${tokenId.toString()}`)
 
@@ -150,6 +153,7 @@ const main = async () => {
     console.log('\n[⚙️ PROCESS] Uploading Metadata JSON to HFS as an immutable file...')
     const metadataStr = JSON.stringify(metadataJSON)
     const metadataFileTx = await new FileCreateTransaction()
+      .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
       .setKeys([treasuryKey.publicKey])
       .setContents(metadataStr)
       .freezeWith(client)

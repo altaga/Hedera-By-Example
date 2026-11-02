@@ -49,7 +49,7 @@ const main = async () => {
     const receiverKey = PrivateKey.generateED25519()
     let tx = await new AccountCreateTransaction()
       .setKey(receiverKey)
-      .setInitialBalance(new Hbar(2))
+      .setInitialBalance(new Hbar(0))
       .execute(client)
 
     let receipt = await tx.getReceipt(client)

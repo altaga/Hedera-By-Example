@@ -64,10 +64,10 @@ const main = async () => {
   const account2PrivateKey = PrivateKey.fromString(process.env.ACCOUNT_2_PRIVATE_KEY)
 
   try {
-    // Account 1 pays for the token creation (~30 ℏ with custom fees) and Account 2
-    // buys an NFT. Top them up from the operator if needed so the lab always runs.
-    await ensureFunded(operatorClient, account1Id, 40)
-    await ensureFunded(operatorClient, account2Id, 5)
+    // The operator pays the token creation (Account 1 only signs as treasury), so the
+    // practice accounts only need a little HBAR for the sale. Top them up if needed.
+    await ensureFunded(operatorClient, account1Id, 2)
+    await ensureFunded(operatorClient, account2Id, 2)
 
     console.log(`[ℹ️ INFO] Using ${account1Id} as Artist. Collector: ${operatorId}`)
     console.log('[⚙️ PROCESS] Defining Artist Royalty (10% + 0.01 HBAR Fallback)...')
@@ -96,9 +96,9 @@ const main = async () => {
       .setMaxSupply(10)
       .setSupplyKey(account1PrivateKey.publicKey)
       .setCustomFees([royaltyFee])
-      .freezeWith(client)
+      .freezeWith(operatorClient)
 
-    const tokenId = (await (await createTx.execute(client)).getReceipt(client)).tokenId
+    const tokenId = (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
     console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
 
     // 4. Mint NFT #1

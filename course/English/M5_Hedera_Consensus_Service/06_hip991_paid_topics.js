@@ -40,7 +40,7 @@ import {
   TopicMessageSubmitTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, createClient } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, reuseToken } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: HIP-991 Revenue-Generating Paid Topics ---\n')
@@ -50,17 +50,19 @@ const main = async () => {
   try {
     // 1. Create an HTS Payment Token ("AI Compute Credit" - AICR)
     console.log('[⚙️ PROCESS] Step 1: Minting HTS Utility Token [AICR] for Topic Monetization...')
-    const tokenTx = await new TokenCreateTransaction()
-      .setTokenName('AI Compute Credit')
-      .setTokenSymbol('AICR')
-      .setDecimals(0)
-      .setInitialSupply(100000)
-      .setTreasuryAccountId(operatorId)
-      .setSupplyKey(adminKey)
-      .freezeWith(client)
+    const paymentTokenId = await reuseToken('REUSE_M5_06_TOKEN', async () => {
+      const tokenTx = await new TokenCreateTransaction()
+        .setTokenName('AI Compute Credit')
+        .setTokenSymbol('AICR')
+        .setDecimals(0)
+        .setInitialSupply(100000)
+        .setTreasuryAccountId(operatorId)
+        .setSupplyKey(adminKey)
+        .freezeWith(client)
 
-    const tokenRes = await (await tokenTx.sign(adminKey)).execute(client)
-    const paymentTokenId = (await tokenRes.getReceipt(client)).tokenId
+      const tokenRes = await (await tokenTx.sign(adminKey)).execute(client)
+      return (await tokenRes.getReceipt(client)).tokenId
+    })
     console.log(`[✅ SUCCESS] HTS Payment Token Created: ${paymentTokenId.toString()} (AICR)`)
 
     // 2. Create a Consumer Agent Account and fund it with HBAR + 500 AICR
@@ -68,7 +70,7 @@ const main = async () => {
     const consumerKey = PrivateKey.generateED25519()
     const consumerRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(consumerKey.publicKey)
-      .setInitialBalance(new Hbar(1))
+      .setInitialBalance(new Hbar(0.5))
       .setMaxAutomaticTokenAssociations(5)
       .execute(client)
     const consumerId = (await consumerRes.getReceipt(client)).accountId

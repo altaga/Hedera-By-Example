@@ -59,11 +59,11 @@ const main = async () => {
   try {
     // --- FASE 1: INTENTO CON FIRMA INSUFICIENTE (1 de 2) ---
     console.log('\n--- 📊 [REGISTRO] Fase 1: Intento de Transferencia Insuficiente ---')
-    console.log('[⚙️ PROCESO] Firmando transferencia de 1 HBAR solo con la llave de Alice...')
+    console.log('[⚙️ PROCESO] Firmando transferencia de 0.1 HBAR solo con la llave de Alice...')
 
     const failTx = await new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-1))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(1))
+      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
       .freezeWith(client)
       .sign(aliceKey)
 
@@ -81,8 +81,8 @@ const main = async () => {
     console.log('[⚙️ PROCESO] Recolectando firmas de Alice y Bob (Umbral 2-de-3 alcanzado)...')
 
     const successTx = await new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-1))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(1))
+      .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
       .freezeWith(client)
       .sign(aliceKey)
 

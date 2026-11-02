@@ -46,12 +46,12 @@ const main = async () => {
   }
 
   try {
-    console.log('[⚙️ PROCESS] Proposing a Scheduled Transfer of 2 HBAR from Child Wallet...')
+    console.log('[⚙️ PROCESS] Proposing a Scheduled Transfer of 0.1 HBAR from Child Wallet...')
 
     // 1. Define the INNER transaction (Child -> Operator)
     const innerTx = new TransferTransaction()
-      .addHbarTransfer(AccountId.fromString(targetId), new Hbar(-2))
-      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(2))
+      .addHbarTransfer(AccountId.fromString(targetId), new Hbar(-0.1))
+      .addHbarTransfer(AccountId.fromString(operatorId), new Hbar(0.1))
 
     // 2. Wrap it inside the OUTER Scheduled transaction
     const expiration = new Date()

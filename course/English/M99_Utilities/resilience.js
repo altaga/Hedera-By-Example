@@ -1,5 +1,5 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
-import { AccountId, Hbar, PrivateKey, TransferTransaction } from '@hiero-ledger/sdk'
+import { AccountId, Hbar, PrivateKey, TokenId, TransferTransaction } from '@hiero-ledger/sdk'
 import { getMirrorNodeBaseUrl } from './config.js'
 import { getState, updateState } from './storage.js'
 
@@ -102,7 +102,7 @@ export const ensureFunded = async (client, accountId, minHbar) => {
   })
   const current = (account?.balance?.balance ?? 0) / 1e8
   if (current >= minHbar) return
-  const topUp = Math.ceil(minHbar - current + 1)
+  const topUp = Math.ceil(minHbar - current)
   console.log(`[ℹ️ INFO] ${accountId} has ${current.toFixed(2)} ℏ; topping up ${topUp} ℏ from the operator...`)
   const tx = await new TransferTransaction()
     .addHbarTransfer(client.operatorAccountId, new Hbar(-topUp))
@@ -123,7 +123,7 @@ export const ensureFunded = async (client, accountId, minHbar) => {
  * @param {{ minHbar?: number }} [options]
  * @returns {Promise<{ privateKey: PrivateKey, accountId: string, evmAddress: string }>}
  */
-export const getJsonRpcSigner = async (client, operatorKey, { minHbar = 10 } = {}) => {
+export const getJsonRpcSigner = async (client, operatorKey, { minHbar = 5 } = {}) => {
   const operatorId = client.operatorAccountId.toString()
   const opKey = PrivateKey.fromStringDer(operatorKey)
   if (opKey.type === 'secp256k1') {
@@ -170,4 +170,32 @@ export const exitIfStuck = (ms, reason = 'the expected network events') => {
     console.error(`[❌ FAILED] Timed out after ${Math.round(ms / 1000)} s waiting for ${reason}.`)
     process.exit(1)
   }, ms).unref()
+}
+
+/**
+ * Creating a token costs about 1 USD in HBAR, the most expensive step in
+ * most labs. When a lab already created its token on an earlier run, reuse
+ * it if it still exists, is not paused and the current operator is still its
+ * treasury (and a capped supply is less than half used). Set FRESH_TOKENS=1 to always create a new one.
+ *
+ * @param {string} stateKey - Where the token ID is remembered (state.json).
+ * @param {() => Promise<import('@hiero-ledger/sdk').TokenId|string>} create - Creates the token and returns its ID.
+ * @param {{ check?: (token: any) => boolean }} [options] - Extra condition on the Mirror Node token record.
+ * @returns {Promise<TokenId>}
+ */
+export const reuseToken = async (stateKey, create, { check = () => true } = {}) => {
+  const operator = process.env.OPERATOR_ID
+  const [savedId, owner] = String(getState(stateKey) || '').split('@')
+  if (process.env.FRESH_TOKENS !== '1' && savedId && owner === operator) {
+    const token = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${savedId}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null)
+    if (token && !token.deleted && token.treasury_account_id === operator && token.pause_status !== 'PAUSED' && !(token.supply_type === 'FINITE' && Number(token.total_supply) * 2 > Number(token.max_supply)) && check(token)) {
+      console.log(`[ℹ️ INFO] Reusing token ${savedId} from an earlier run (creating one costs about 1 USD). Set FRESH_TOKENS=1 to create a new one.`)
+      return TokenId.fromString(savedId)
+    }
+  }
+  const tokenId = TokenId.fromString(String(await create()))
+  updateState(stateKey, `${tokenId}@${operator}`)
+  return tokenId
 }

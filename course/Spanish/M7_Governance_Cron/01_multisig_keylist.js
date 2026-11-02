@@ -57,7 +57,7 @@ const main = async () => {
     console.log('\n[⚙️ PROCESO] Desplegando Cuenta Institucional con control multifirma...')
     const transaction = await new AccountCreateTransaction()
       .setKeyWithoutAlias(thresholdList)
-      .setInitialBalance(new Hbar(2)) // Fondos iniciales para la tesorería corporativa
+      .setInitialBalance(new Hbar(0.5)) // Fondos iniciales para la tesorería corporativa
       .execute(client)
 
     const receipt = await transaction.getReceipt(client)
