@@ -70,7 +70,7 @@ const main = async () => {
     const consumerKey = PrivateKey.generateED25519()
     const consumerRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(consumerKey.publicKey)
-      .setInitialBalance(new Hbar(0.5))
+      .setInitialBalance(new Hbar(1))
       .setMaxAutomaticTokenAssociations(5)
       .execute(client)
     const consumerId = (await consumerRes.getReceipt(client)).accountId

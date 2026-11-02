@@ -260,6 +260,84 @@ const jsonSafe = (v: any) => {
 }
 
 /** Run a lab's code in this browser, streaming its output to onLog. */
+/**
+ * gRPC-web cannot hold the Mirror Node's server stream open in the browser,
+ * so TopicMessageQuery.subscribe() polls the Mirror Node REST API instead
+ * and hands the listener the same TopicMessage objects (chunks reassembled).
+ */
+function useRestTopicSubscriptions (hedera: any): void {
+  const proto = hedera.TopicMessageQuery.prototype
+  if (proto.__restPolling) return
+  proto.__restPolling = true
+  const b64 = (v: string | null) => (v ? Uint8Array.from(atob(v), (c) => c.charCodeAt(0)) : new Uint8Array())
+  const ts = (v: string) => { const [sec, ns = '0'] = v.split('.'); return { seconds: Number(sec), nanos: Number(ns.padEnd(9, '0')) } }
+  const tsString = (t: any) => `${t.seconds.toString()}.${t.nanos.toString().padStart(9, '0')}`
+  proto._makeServerStreamRequest = function (this: any) {
+    let stopped = false
+    this._handle?._setCall(() => { stopped = true })
+    const groups = new Map<string, any[]>()
+    let cursor: string | null = null
+    const start = this._startTime ? tsString(this._startTime) : null
+    const end = this._endTime ? tsString(this._endTime) : null
+    let remaining = this._limit && Number(this._limit.toString()) > 0 ? Number(this._limit.toString()) : Infinity
+    const done = () => { stopped = true; try { this._completionHandler?.() } catch (_) {} }
+    const poll = async () => {
+      while (!stopped && !this._handle?._unsubscribed) {
+        let url = `${MIRROR}/topics/${this._topicId.toString()}/messages?order=asc&limit=100`
+        if (cursor) url += `&timestamp=gt:${cursor}`
+        else if (start) url += `&timestamp=gte:${start}`
+        if (end) url += `&timestamp=lte:${end}`
+        let data: any = null
+        try {
+          const res = await fetch(url)
+          if (res.ok) data = await res.json()
+        } catch (_) {}
+        const messages: any[] = data?.messages || []
+        for (const m of messages) {
+          if (stopped || this._handle?._unsubscribed) return
+          cursor = m.consensus_timestamp
+          const ci = m.chunk_info
+          const raw: any = {
+            consensusTimestamp: ts(m.consensus_timestamp),
+            message: b64(m.message),
+            runningHash: b64(m.running_hash),
+            sequenceNumber: m.sequence_number,
+            chunkInfo: ci
+              ? {
+                  number: ci.number,
+                  total: ci.total,
+                  initialTransactionID: ci.initial_transaction_id
+                    ? {
+                        accountID: { shardNum: 0, realmNum: 0, accountNum: Number(String(ci.initial_transaction_id.account_id).split('.')[2]) },
+                        transactionValidStart: ts(ci.initial_transaction_id.transaction_valid_start),
+                        scheduled: !!ci.initial_transaction_id.scheduled,
+                        nonce: ci.initial_transaction_id.nonce || 0
+                      }
+                    : null
+                }
+              : null
+          }
+          if (!ci || ci.total === 1) {
+            this._passTopicMessage(hedera.TopicMessage._ofSingle(raw))
+          } else {
+            const key = JSON.stringify(ci.initial_transaction_id)
+            const list = groups.get(key) || []
+            list.push(raw)
+            groups.set(key, list)
+            if (list.length < ci.total) continue
+            groups.delete(key)
+            this._passTopicMessage(hedera.TopicMessage._ofMany(list))
+          }
+          if (--remaining <= 0) return done()
+        }
+        if (end && messages.length === 0 && Date.now() / 1000 > Number(end.split('.')[0])) return done()
+        if (messages.length < 100) await new Promise((resolve) => setTimeout(resolve, 1500))
+      }
+    }
+    poll()
+  }
+}
+
 export async function executeInBrowser (
   sourceCode: string,
   wallet: BrowserWallet,
@@ -294,6 +372,7 @@ export async function executeInBrowser (
   let failedWithExitCode = false
   try {
     const hedera = await import('@hiero-ledger/sdk')
+    useRestTopicSubscriptions(hedera)
     // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
     // (only the real fee is charged) so labs survive fee-schedule changes.
     const createClient = (accountId?: string, privateKey?: any) => {
