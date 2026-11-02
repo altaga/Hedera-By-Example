@@ -130,6 +130,28 @@ export async function runE2ELiveBrowserTest() {
     }
     console.log(`  ✓ Output has ${logs.length} lines. Last line: "${logs[logs.length - 1]}"`)
 
+    // 5. Teaching features render on the pages that need them (no network spend)
+    const base = TARGET_URL.replace(/\/$/, '')
+    const expectOn = async (slug, selector, what) => {
+      await page.goto(`${base}/#${slug}`, { waitUntil: 'networkidle2', timeout: 45000 })
+      await page.waitForSelector(selector, { timeout: 15000 }).catch(() => { throw new Error(`${what} missing on ${slug}`) })
+      console.log(`  ✓ ${what} on ${slug}`)
+    }
+    console.log('  [STEP 5] Checking teaching features...')
+    await expectOn('m10-03-facilitator-settlement', '[data-testid=sequence-diagram]', 'Sequence diagram')
+    await expectOn('m15-04-passkeys-webauthn-p256-authenticator', '[data-testid=simulated-note]', 'Simulated note')
+    await expectOn('m15-04-passkeys-webauthn-p256-authenticator', '[data-testid=passkey-demo]', 'Passkey demo')
+    await expectOn('m06-04-economic-hcs1', '[data-testid=lab-files]', 'Lab files')
+    await expectOn('m09-06-hcs10-u2a-public', '[data-testid=node-only-notice]', 'Node-only notice')
+
+    // 6. A visual renders from a local-only lab (no transactions)
+    console.log('  [STEP 6] Running m01-01-consensus-and-abft (hashgraph DAG)...')
+    await page.goto(`${base}/#m01-01-consensus-and-abft`, { waitUntil: 'networkidle2', timeout: 45000 })
+    await page.waitForSelector('[data-testid=run-button]', { timeout: 15000 })
+    await page.click('[data-testid=run-button]')
+    await page.waitForSelector('[data-testid=run-output][data-status=success] [data-testid=visual]', { timeout: 30000 })
+    console.log('  ✓ Hashgraph DAG visual rendered')
+
     if (pageErrors.length) throw new Error(`Uncaught page errors: ${pageErrors.join(' | ')}`)
     console.log('✅ TEST 04 PASSED: Live E2E Browser execution verified end-to-end!')
     return { passed: true }
