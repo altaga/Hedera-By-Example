@@ -773,3 +773,23 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .spine-node.on-path { background: var(--series-1); }
 .spine-node.proof { background: var(--series-2); }
 .spine-hash { color: var(--text-2); }
+
+/* ---------- wallet manager ---------- */
+.dialog-wide { max-width: 720px; }
+.wallet-actions { margin: 14px 0 6px; }
+.wallet-import { margin: 12px 0; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-subtle); }
+.wallet-list { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+.wallet-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; background: var(--bg); }
+.wallet-card.is-active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.wallet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.wallet-pick { display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.wallet-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { display: inline-block; padding: 1px 7px; border: 1px solid var(--border-strong); border-radius: 999px; font-size: 11.5px; font-family: var(--font-mono); color: var(--text-2); }
+.tag-accent { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.wallet-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 13px; }
+.wallet-role select, .run-wallet select { font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); }
+.wallet-fund { display: inline-flex; align-items: center; gap: 6px; }
+.wallet-fund input { width: 72px; font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg); color: var(--text); }
+.run-wallet select { max-width: 220px; }
+@media (max-width: 640px) { .run-wallet select { max-width: 140px; } .kv > div { grid-template-columns: 1fr; gap: 2px; } }
+.wallet-role { display: inline-flex; align-items: center; gap: 6px; }

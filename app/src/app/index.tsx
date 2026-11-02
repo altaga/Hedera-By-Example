@@ -3,16 +3,15 @@ import { TopBar } from '../components/TopBar'
 import { Sidebar } from '../components/Sidebar'
 import { CourseIndex } from '../components/CourseIndex'
 import { LabPage, type RunStatus } from '../components/LabPage'
-import { AccountDialog } from '../components/AccountDialog'
+import { WalletManager } from '../components/WalletManager'
 import { STRINGS } from '../lib/i18n'
 import {
   FLAT_LABS, LAB_BY_SLUG, getBody, runnableCode, searchModules, type Lang
 } from '../lib/content'
+import { executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
 import {
-  EMPTY_WALLET, clearActiveWallet, executeInBrowser, fetchLiveBalance, getActiveWallet, saveActiveWallet,
-  getPracticeAccounts, createPracticeAccounts, clearPracticeAccounts, labUsesPracticeAccounts, type PracticeAccounts,
-  type BrowserWallet, type TerminalLogLine
-} from '../lib/hederaBrowser'
+  EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
+} from '../lib/wallets'
 
 type Theme = 'light' | 'dark'
 type Route = { view: 'index' } | { view: 'lab'; slug: string }
@@ -42,11 +41,12 @@ export default function HederaByExample () {
   const [openMods, setOpenMods] = useState<Record<string, boolean>>({})
   const [menuOpen, setMenuOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
-  const [wallet, setWallet] = useState<BrowserWallet>(EMPTY_WALLET)
+  // All of the learner's wallets live in this browser; the active one runs the labs.
+  const [walletStore, setWalletStore] = useState<WalletStore>(EMPTY_STORE)
+  const [balances, setBalances] = useState<Record<string, number | null>>({})
   const [edits, setEdits] = useState<Record<string, string>>({})
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
-  const [practice, setPractice] = useState<PracticeAccounts>({})
   // Files the learner chose to use instead of the course assets, per lab.
   const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -61,14 +61,9 @@ export default function HederaByExample () {
     setTheme(prefs.theme || 'dark')
     setRoute(routeFromHash())
 
-    const stored = getActiveWallet()
-    setWallet(stored)
-    setPractice(getPracticeAccounts())
-    if (stored.accountId) {
-      fetchLiveBalance(stored.accountId).then((balance) => {
-        if (balance != null) setWallet((w) => ({ ...w, balanceHbar: balance }))
-      })
-    }
+    const stored = loadWallets()
+    setWalletStore(stored)
+    fetchBalances(stored).then(setBalances)
 
     // Back/forward or an edited URL: leave the current run behind like go() does.
     const onHash = () => {
@@ -92,6 +87,10 @@ export default function HederaByExample () {
     if (next.lang) setLang(next.lang)
     if (next.theme) setTheme(next.theme)
   }
+
+  const wallet = useMemo(() => activeBrowserWallet(walletStore, balances), [walletStore, balances])
+  const practice = useMemo(() => practiceFromStore(walletStore), [walletStore])
+  const updateStore = useCallback((s: WalletStore) => { setWalletStore(s); saveWallets(s) }, [])
 
   const entry = route.view === 'lab' ? LAB_BY_SLUG.get(route.slug)! : null
   const body = entry ? getBody(lang, entry.lab.slug) : null
@@ -144,17 +143,9 @@ export default function HederaByExample () {
     const result = await executeInBrowser(code, wallet, onLine, { practice, files })
     if (!live()) return
     setRunStatus(result.success ? 'success' : 'error')
-    if (wallet.accountId) {
-      const balance = await fetchLiveBalance(wallet.accountId)
-      if (balance != null) {
-        setWallet((w) => {
-          const updated = { ...w, balanceHbar: balance }
-          saveActiveWallet(updated)
-          return updated
-        })
-      }
-    }
-  }, [entry, body, runStatus, code, wallet, practice, fileOverrides])
+    // Labs move HBAR between the learner's wallets: refresh every balance.
+    setBalances(await fetchBalances(walletStore))
+  }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore])
 
   // Keyboard: "/" search, ←/→ previous/next lab, Ctrl/Cmd+Enter run.
   useEffect(() => {
@@ -182,11 +173,6 @@ export default function HederaByExample () {
   }, [accountOpen, run, prev, next, selectLab])
 
   const modules = useMemo(() => searchModules(query, lang), [query, lang])
-
-  const updateWallet = (w: BrowserWallet) => {
-    setWallet(w)
-    saveActiveWallet(w)
-  }
 
   return (
     <div className='app'>
@@ -243,6 +229,8 @@ export default function HederaByExample () {
                 onRun={run}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
                 wallet={wallet}
+                walletStore={walletStore}
+                onSelectWallet={(id) => updateStore({ ...walletStore, activeId: id })}
                 needsPractice={labUsesPracticeAccounts(code) && !(practice.account1 && practice.account2)}
                 onOpenAccount={() => setAccountOpen(true)}
                 fileOverrides={fileOverrides[entry.lab.slug] || {}}
@@ -259,14 +247,12 @@ export default function HederaByExample () {
       </div>
 
       {accountOpen && (
-        <AccountDialog
-          t={t}
-          wallet={wallet}
-          onChange={updateWallet}
-          onForget={() => { clearActiveWallet(); setWallet(EMPTY_WALLET) }}
-          practice={practice}
-          onCreatePractice={async () => setPractice(await createPracticeAccounts(wallet))}
-          onClearPractice={() => { clearPracticeAccounts(); setPractice({}) }}
+        <WalletManager
+          lang={lang}
+          store={walletStore}
+          balances={balances}
+          onChange={updateStore}
+          onBalances={setBalances}
           onClose={() => setAccountOpen(false)}
         />
       )}

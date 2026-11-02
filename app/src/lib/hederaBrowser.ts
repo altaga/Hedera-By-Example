@@ -52,35 +52,11 @@ export const EMPTY_WALLET: BrowserWallet = {
   balanceHbar: null
 }
 
-const WALLET_STORAGE_KEY = 'hbe_playground_wallet_v2'
 const STATE_STORAGE_KEY = 'hbe_playground_state'
 const MIRROR = 'https://testnet.mirrornode.hedera.com/api/v1'
 const ACCOUNT_ID_RE = /^\d+\.\d+\.\d+$/
 
 export const isAccountId = (id: string) => ACCOUNT_ID_RE.test(id.trim())
-
-export function getActiveWallet (): BrowserWallet {
-  if (typeof window === 'undefined') return EMPTY_WALLET
-  try {
-    const raw = localStorage.getItem(WALLET_STORAGE_KEY)
-    if (raw) return { ...EMPTY_WALLET, ...JSON.parse(raw) }
-  } catch (_) {}
-  return EMPTY_WALLET
-}
-
-export function saveActiveWallet (wallet: BrowserWallet): void {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify(wallet))
-  } catch (_) {}
-}
-
-export function clearActiveWallet (): void {
-  if (typeof window === 'undefined') return
-  try {
-    localStorage.removeItem(WALLET_STORAGE_KEY)
-  } catch (_) {}
-}
 
 /** HBAR balance of a testnet account from the Mirror Node, or null if unknown. */
 export async function fetchLiveBalance (accountId: string): Promise<number | null> {
@@ -147,58 +123,6 @@ function parsePrivateKey (hedera: any, raw: string) {
 
 /** Labs that read ACCOUNT_1_* / ACCOUNT_2_* need practice accounts. */
 export const labUsesPracticeAccounts = (code: string) => /ACCOUNT_[12]_/.test(code)
-
-const PRACTICE_STORAGE_KEY = 'hbe_practice_accounts_v1'
-
-export function getPracticeAccounts (): PracticeAccounts {
-  if (typeof window === 'undefined') return {}
-  try { return JSON.parse(localStorage.getItem(PRACTICE_STORAGE_KEY) || '{}') } catch (_) { return {} }
-}
-
-export function savePracticeAccounts (accounts: PracticeAccounts): void {
-  try { localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(accounts)) } catch (_) {}
-}
-
-export function clearPracticeAccounts (): void {
-  try { localStorage.removeItem(PRACTICE_STORAGE_KEY) } catch (_) {}
-}
-
-const waitForAccountId = async (evmAddress: string, timeoutMs = 60_000) => {
-  const deadline = Date.now() + timeoutMs
-  for (;;) {
-    const id = await findAccountByEvmAddress(evmAddress)
-    if (id) return id
-    if (Date.now() > deadline) throw new Error(`The Mirror Node does not list ${evmAddress} yet. Try again in a minute.`)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-  }
-}
-
-/**
- * Create two ECDSA practice accounts funded from the learner's account: one
- * transfer to each new key's EVM address makes the network create the account.
- */
-export async function createPracticeAccounts (wallet: BrowserWallet, hbarEach = 10): Promise<PracticeAccounts> {
-  if (!isAccountId(wallet.accountId) || !wallet.privateKey) throw new Error('Set up your testnet account first.')
-  const hedera = await import('@hiero-ledger/sdk')
-  const client = hedera.Client.forTestnet()
-  client.setOperator(hedera.AccountId.fromString(wallet.accountId), parsePrivateKey(hedera, wallet.privateKey))
-  const keys = [hedera.PrivateKey.generateECDSA(), hedera.PrivateKey.generateECDSA()]
-  const evms = keys.map((k) => '0x' + k.publicKey.toEvmAddress())
-  const tx = new hedera.TransferTransaction().addHbarTransfer(wallet.accountId, new hedera.Hbar(-hbarEach * 2))
-  for (const evm of evms) tx.addHbarTransfer(hedera.AccountId.fromEvmAddress(0, 0, evm), new hedera.Hbar(hbarEach))
-  try {
-    await (await tx.execute(client)).getReceipt(client)
-  } finally {
-    client.close()
-  }
-  const ids = await Promise.all(evms.map((evm) => waitForAccountId(evm)))
-  const accounts: PracticeAccounts = {
-    account1: { accountId: ids[0], privateKey: keys[0].toStringDer(), evmAddress: evms[0] },
-    account2: { accountId: ids[1], privateKey: keys[1].toStringDer(), evmAddress: evms[1] }
-  }
-  savePracticeAccounts(accounts)
-  return accounts
-}
 
 /** Name of the function the lab's entry block calls (usually main). */
 function entryFunctionName (code: string): string {

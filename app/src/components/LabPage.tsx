@@ -7,6 +7,7 @@ import {
 } from '../lib/content'
 import type { Strings } from '../lib/i18n'
 import type { BrowserWallet, TerminalLogLine } from '../lib/hederaBrowser'
+import type { WalletStore } from '../lib/wallets'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
@@ -35,6 +36,8 @@ interface Props {
   fileOverrides: Record<string, File>
   onReplaceFile: (name: string, file: File | null) => void
   wallet: BrowserWallet
+  walletStore: WalletStore
+  onSelectWallet: (id: string) => void
 }
 
 const isImage = (name: string) => /\.(png|jpe?g|gif|webp|svg)$/i.test(name)
@@ -154,7 +157,7 @@ export function LabPage (props: Props) {
   const {
     t, lang, entry, body, prev, next, onSelect,
     code, isEdited, onEditCode, onResetCode, runStatus, logs, onRun, onClearLogs,
-    needsPractice, onOpenAccount, fileOverrides, onReplaceFile, wallet
+    needsPractice, onOpenAccount, fileOverrides, onReplaceFile, wallet, walletStore, onSelectWallet
   } = props
   const { mod, lab } = entry
   const [tab, setTab] = useState<Tab>('walkthrough')
@@ -251,6 +254,21 @@ export function LabPage (props: Props) {
             ))}
           </div>
           <div className='code-panel-actions'>
+            {walletStore.wallets.length > 0 && (
+              <label className='run-wallet'>
+                <span className='sr-only'>{lang === 'es' ? 'Ejecutar con' : 'Run as'}</span>
+                <select
+                  data-testid='run-wallet'
+                  value={walletStore.activeId || ''}
+                  onChange={(e) => onSelectWallet(e.target.value)}
+                  title={lang === 'es' ? 'Wallet que firma y paga' : 'Wallet that signs and pays'}
+                >
+                  {walletStore.wallets.map((w) => (
+                    <option key={w.id} value={w.id}>{w.label}{w.accountId ? ` · ${w.accountId}` : lang === 'es' ? ' · sin cuenta' : ' · no account'}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <button
               type='button'
               className='btn btn-primary btn-sm'
