@@ -14,9 +14,11 @@ interface Props {
   onLang: (lang: Lang) => void
   onTheme: () => void
   onAccount: () => void
+  onResources: () => void
+  isResources: boolean
 }
 
-export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onTheme, onAccount }: Props) {
+export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onTheme, onAccount, onResources, isResources }: Props) {
   const hasAccount = !!wallet.accountId
   return (
     <header className='topbar'>
@@ -34,6 +36,16 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
       </a>
 
       <div className='topbar-actions'>
+        <a
+          href='#resources'
+          className={`topbar-link ${isResources ? 'is-active' : ''}`}
+          data-testid='resources-button'
+          aria-current={isResources ? 'page' : undefined}
+          onClick={(e) => { e.preventDefault(); onResources() }}
+        >
+          <Icon name='grid' size={16} />
+          <span className='topbar-link-label'>{lang === 'es' ? 'Recursos' : 'Resources'}</span>
+        </a>
         <button
           type='button'
           className='account-btn'

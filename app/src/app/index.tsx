@@ -4,6 +4,8 @@ import { Sidebar } from '../components/Sidebar'
 import { CourseIndex } from '../components/CourseIndex'
 import { LabPage, type RunStatus } from '../components/LabPage'
 import { WalletManager } from '../components/WalletManager'
+import { ResourcesPanel } from '../components/ResourcesPanel'
+import { recordRun } from '../lib/resources'
 import { STRINGS } from '../lib/i18n'
 import {
   FLAT_LABS, LAB_BY_SLUG, getBody, runnableCode, searchModules, type Lang
@@ -14,7 +16,7 @@ import {
 } from '../lib/wallets'
 
 type Theme = 'light' | 'dark'
-type Route = { view: 'index' } | { view: 'lab'; slug: string }
+type Route = { view: 'index' } | { view: 'resources' } | { view: 'lab'; slug: string }
 
 const PREFS_KEY = 'hbe_prefs_v1'
 
@@ -30,6 +32,7 @@ function routeFromHash (): Route {
   if (typeof window === 'undefined') return { view: 'index' }
   const h = decodeURIComponent(window.location.hash.replace(/^#\/?/, '').trim())
   if (LAB_BY_SLUG.has(h)) return { view: 'lab', slug: h }
+  if (h === 'resources') return { view: 'resources' }
   return { view: 'index' }
 }
 
@@ -98,7 +101,7 @@ export default function HederaByExample () {
   const next = entry && entry.idx < FLAT_LABS.length - 1 ? FLAT_LABS[entry.idx + 1] : null
 
   const go = useCallback((target: Route) => {
-    const hash = target.view === 'lab' ? `#${target.slug}` : '#index'
+    const hash = target.view === 'lab' ? `#${target.slug}` : `#${target.view}`
     if (window.location.hash !== hash) window.history.pushState(null, '', hash)
     runIdRef.current++
     setRoute(target)
@@ -140,7 +143,9 @@ export default function HederaByExample () {
         return next
       })
     }
+    const started = Date.now() / 1000
     const result = await executeInBrowser(code, wallet, onLine, { practice, files })
+    recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId })
     if (!live()) return
     setRunStatus(result.success ? 'success' : 'error')
     // Labs move HBAR between the learner's wallets: refresh every balance.
@@ -187,6 +192,8 @@ export default function HederaByExample () {
         onLang={(l) => savePrefs({ lang: l })}
         onTheme={() => savePrefs({ theme: theme === 'dark' ? 'light' : 'dark' })}
         onAccount={() => setAccountOpen(true)}
+        onResources={() => go({ view: 'resources' })}
+        isResources={route.view === 'resources'}
       />
 
       <div className='layout'>
@@ -242,7 +249,9 @@ export default function HederaByExample () {
                 })}
               />
               )
-            : <CourseIndex t={t} lang={lang} modules={modules} onSelect={selectLab} />}
+            : route.view === 'resources'
+              ? <ResourcesPanel lang={lang} store={walletStore} onOpenWallets={() => setAccountOpen(true)} onSelectLab={selectLab} />
+              : <CourseIndex t={t} lang={lang} modules={modules} onSelect={selectLab} />}
         </main>
       </div>
 

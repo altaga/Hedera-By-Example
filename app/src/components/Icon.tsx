@@ -14,6 +14,7 @@ const PATHS = {
   arrowLeft: <><line x1='19' y1='12' x2='5' y2='12' /><polyline points='11 6 5 12 11 18' /></>,
   arrowRight: <><line x1='5' y1='12' x2='19' y2='12' /><polyline points='13 6 19 12 13 18' /></>,
   chevron: <polyline points='9 6 15 12 9 18' />,
+  grid: <><rect x='4' y='4' width='6.5' height='6.5' rx='1' /><rect x='13.5' y='4' width='6.5' height='6.5' rx='1' /><rect x='4' y='13.5' width='6.5' height='6.5' rx='1' /><rect x='13.5' y='13.5' width='6.5' height='6.5' rx='1' /></>,
   key: <><circle cx='8' cy='15' r='4' /><path d='M11 12l9-9M16 7l3 3' /></>,
   github: (
     <path

@@ -45,7 +45,7 @@ import {
   PrivateKey,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, executeWithGas } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, executeWithGas, getAccountEvmAddress } from '../M99_Utilities/index.js'
 import solc from 'solc'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
@@ -170,7 +170,7 @@ const main = async () => {
     // 4. Confidential Withdrawal to Stealth / Unlinked Recipient
     console.log('\n[⚙️ PROCESS] Step 4: Initiating Private Redemption to Stealth Recipient Address...')
     const stealthRecipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
-    const stealthRecipientAddress = `0x${AccountId.fromString(stealthRecipientId).toEvmAddress()}`
+    const stealthRecipientAddress = await getAccountEvmAddress(stealthRecipientId) // alias accounts are paid at their EVM alias
 
     const initialStealthBalance = await getAccountHbarBalance(stealthRecipientId)
     console.log(`[📊 LOG] Stealth Destination: ${stealthRecipientId} (${stealthRecipientAddress})`)
