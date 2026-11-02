@@ -258,7 +258,15 @@ const forward = (pick: (ctx: ModuleContext) => any) => new Proxy({}, {
     const value = target?.[prop as any]
     return typeof value === 'function' && !/^[A-Z]/.test(String(prop)) ? value.bind(target) : value
   },
-  has (_t, prop) { return vendorCtx ? prop in (pick(vendorCtx) || {}) : false }
+  has (_t, prop) { return vendorCtx ? prop in (pick(vendorCtx) || {}) : false },
+  // esbuild's interop copies a module's keys (import * as crypto): list and describe them too.
+  ownKeys () { return vendorCtx ? Reflect.ownKeys(pick(vendorCtx) || {}) : [] },
+  getOwnPropertyDescriptor (_t, prop) {
+    const target = vendorCtx ? pick(vendorCtx) : undefined
+    if (!target || !(prop in target)) return undefined
+    const value = target[prop as any]
+    return { configurable: true, enumerable: true, writable: false, value: typeof value === 'function' && !/^[A-Z]/.test(String(prop)) ? value.bind(target) : value }
+  }
 })
 
 /**
