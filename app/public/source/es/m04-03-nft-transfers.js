@@ -30,7 +30,7 @@
  */
 
 import { AccountId, NftId, TransferTransaction, TokenId } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, findOwnedSerial } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Transferencia de Activos Únicos ---\n')
@@ -46,7 +46,13 @@ const main = async () => {
   }
 
   try {
-    const serial = 1
+    // El menor serial que el operador todavía tiene (el #1 puede haberse enviado en una ejecución anterior).
+    const serial = await findOwnedSerial(tokenId, operatorId)
+    if (!serial) {
+      console.error(`[❌ FALLO] ${operatorId} no tiene ningún serial de ${tokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
+      process.exitCode = 1
+      return
+    }
     console.log(`[⚙️ PROCESO] Transfiriendo NFT ${tokenId} Serial #${serial} a ${targetId}...`)
 
     const transaction = await new TransferTransaction()

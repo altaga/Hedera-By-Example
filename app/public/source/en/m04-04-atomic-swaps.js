@@ -32,7 +32,7 @@
  */
 
 import { AccountId, PrivateKey, TransferTransaction, TokenId, NftId, Hbar } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, findOwnedSerial } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: Atomic Swap Simulation ---\n')
@@ -51,7 +51,13 @@ const main = async () => {
   const userPrivKey = PrivateKey.fromString(userKey)
 
   try {
-    const serial = 2
+    // The lowest serial the operator still holds (serial #1 may be gone after earlier runs).
+    const serial = await findOwnedSerial(nftTokenId, operatorId)
+    if (!serial) {
+      console.error(`[❌ FAILED] ${operatorId} holds no serial of ${nftTokenId}. Run M3 Lab 03 to mint more.`)
+      process.exitCode = 1
+      return
+    }
     console.log('[⚙️ PROCESS] Initiating Atomic Swap (Primary Sale Simulation):')
     console.log(` └─ Operator (Seller) sends NFT Serial #${serial} -> User (Buyer)`)
     console.log(' └─ User (Buyer) sends 1 HBAR -> Operator (Seller)')

@@ -26,7 +26,7 @@
  */
 
 import { AccountId, NftId, TransferTransaction, TokenId } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, findOwnedSerial } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: HTS NFT Transfers ---\n')
@@ -43,7 +43,13 @@ const main = async () => {
   }
 
   try {
-    const serial = 1
+    // The lowest serial the operator still holds (serial #1 may be gone after earlier runs).
+    const serial = await findOwnedSerial(tokenId, operatorId)
+    if (!serial) {
+      console.error(`[❌ FAILED] ${operatorId} holds no serial of ${tokenId}. Run M3 Lab 03 to mint more.`)
+      process.exitCode = 1
+      return
+    }
     console.log(`[⚙️ PROCESS] Transferring NFT ${tokenId} Serial #${serial} to ${targetId}...`)
 
     const transaction = await new TransferTransaction()
