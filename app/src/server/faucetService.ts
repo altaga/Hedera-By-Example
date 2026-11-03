@@ -257,16 +257,18 @@ export async function disburseHbar({
           log(`Transaction broadcast confirmed: ${tx.hash}. 10 HBAR delivered.`);
           const durationMs = Date.now() - startMs;
 
-          // Track metric asynchronously in PostHog
-          recordFaucetClaim({
-            evmAddress,
-            accountId,
-            amount: finalAmount,
-            txHash: tx.hash,
-            network: NETWORK,
-          }).catch((err) => {
+          // Track metric in PostHog
+          try {
+            await recordFaucetClaim({
+              evmAddress,
+              accountId,
+              amount: finalAmount,
+              txHash: tx.hash,
+              network: NETWORK,
+            });
+          } catch (err: any) {
             console.warn('[ANALYTICS] PostHog recordFaucetClaim error:', err?.message || err);
-          });
+          }
 
           return {
             success: true,
