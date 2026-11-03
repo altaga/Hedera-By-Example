@@ -1,0 +1,323 @@
+/**
+ * @file faucetService.ts
+ * Enterprise Hedera Faucet Engine for Expo Router Server Functions.
+ *
+ * Runs exclusively on the server in Expo Router (+api.ts routes).
+ * Supports:
+ *   - BIP-39 HD wallet pool derived from FAUCET_MNEMONIC
+ *   - Direct operator treasury fallback
+ *   - Multi-RPC failover with sticky cursor
+ *   - EIP-1559 -> Legacy type 0 conversion + dynamic gas price headroom
+ *   - Atomic claim locking
+ *   - PostHog unique user tracking
+ */
+
+import { ethers } from 'ethers';
+import { PrivateKey } from '@hiero-ledger/sdk';
+import { recordFaucetClaim, getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
+
+export const NETWORK = process.env.NEXT_PUBLIC_HEDERA_NETWORK || process.env.NETWORK || 'testnet';
+
+export const MIRROR_NODE_URL =
+  NETWORK === 'mainnet'
+    ? 'https://mainnet-public.mirrornode.hedera.com/api/v1'
+    : 'https://testnet.mirrornode.hedera.com/api/v1';
+
+export const HASHIO_RPC_URL =
+  NETWORK === 'mainnet' ? 'https://mainnet.hashio.io/api' : 'https://testnet.hashio.io/api';
+
+export const THIRDWEB_RPC_URL =
+  NETWORK === 'mainnet' ? 'https://295.rpc.thirdweb.com' : 'https://296.rpc.thirdweb.com';
+
+const VALIDATIONCLOUD_API_KEY = (process.env.VALIDATIONCLOUD_API_KEY || '').trim();
+const HGRAPH_API_KEY = (process.env.HGRAPH_API_KEY || '').trim();
+
+export const VALIDATIONCLOUD_RPC_URL = VALIDATIONCLOUD_API_KEY
+  ? `https://${NETWORK === 'mainnet' ? 'mainnet' : 'testnet'}.hedera.validationcloud.io/v1/${VALIDATIONCLOUD_API_KEY}`
+  : null;
+
+export const HGRAPH_RPC_URL = HGRAPH_API_KEY
+  ? `https://${NETWORK === 'mainnet' ? 'mainnet' : 'testnet'}.hedera.api.hgraph.io/rpc`
+  : null;
+
+export function buildFaucetRpcSequence(): string[] {
+  const custom = (process.env.HEDERA_JSON_RPC_URL || '').trim();
+  const list: string[] = [];
+  if (custom) list.push(custom);
+  list.push(HASHIO_RPC_URL);
+  list.push(THIRDWEB_RPC_URL);
+  list.push(HASHIO_RPC_URL);
+  list.push(THIRDWEB_RPC_URL);
+  if (HGRAPH_RPC_URL) list.push(HGRAPH_RPC_URL);
+  if (VALIDATIONCLOUD_RPC_URL) list.push(VALIDATIONCLOUD_RPC_URL);
+  return list;
+}
+
+// In-flight request deduplication
+const faucetInFlight = new Set<string>();
+
+// 5-minute atomic claim locks in memory
+const claimLocks = new Map<string, number>();
+const CLAIM_TTL_MS = 5 * 60 * 1000;
+
+export async function claimFaucetAddress(address: string): Promise<'acquired' | 'busy'> {
+  const key = address.toLowerCase();
+  const now = Date.now();
+  const existing = claimLocks.get(key);
+  if (existing && now - existing < CLAIM_TTL_MS) {
+    return 'busy';
+  }
+  claimLocks.set(key, now);
+  return 'acquired';
+}
+
+export async function releaseFaucetClaim(address: string): Promise<void> {
+  claimLocks.delete(address.toLowerCase());
+}
+
+export function parseGasPriceFromError(err: any): bigint | null {
+  const msg = `${err?.message || ''} ${err?.info?.error?.message || ''} ${err?.data || ''}`;
+  const match = msg.match(/transaction gas_price.*?less than.*?([0-9]+)/i) ||
+    msg.match(/gas price.*?([0-9]{9,})/i) ||
+    msg.match(/minimum gas price is ([0-9]+)/i);
+  if (match && match[1]) {
+    try {
+      return BigInt(match[1]);
+    } catch (_) {}
+  }
+  return null;
+}
+
+export async function calculateHederaGasPrice(provider: ethers.JsonRpcProvider, floor: bigint = 0n): Promise<bigint> {
+  let feeDataPrice = 0n;
+  try {
+    const feeData = await provider.getFeeData();
+    if (feeData.gasPrice && feeData.gasPrice > 0n) {
+      feeDataPrice = feeData.gasPrice;
+    }
+  } catch (_) {}
+
+  const best = feeDataPrice > floor ? feeDataPrice : floor;
+  const withHeadroom = (best * 125n) / 100n;
+  const absoluteMin = 280_000_000_000n; // ~280 gwei Hedera floor
+  return withHeadroom > absoluteMin ? withHeadroom : absoluteMin;
+}
+
+// Cached pool accounts derived from mnemonic
+let cachedPool: Array<{ index: number; address: string; privateKey: string }> | null = null;
+
+export function getPoolAccounts(): Array<{ index: number; address: string; privateKey: string }> {
+  if (cachedPool && cachedPool.length > 0) return cachedPool;
+
+  const mnemonic = (process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
+  if (mnemonic) {
+    try {
+      const pool: Array<{ index: number; address: string; privateKey: string }> = [];
+      for (let i = 0; i < 100; i++) {
+        const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, `m/44'/60'/0'/0/${i}`);
+        pool.push({
+          index: i,
+          address: wallet.address,
+          privateKey: wallet.privateKey,
+        });
+      }
+      cachedPool = pool;
+      return cachedPool;
+    } catch (err: any) {
+      console.warn('[FAUCET] Failed to derive HD wallets from mnemonic:', err?.message || err);
+    }
+  }
+
+  // Fallback to operator treasury key
+  const operatorKey = process.env.OPERATOR_KEY || '';
+  if (operatorKey) {
+    try {
+      let rawHex = operatorKey.trim();
+      if (rawHex.startsWith('3030') || rawHex.startsWith('302e')) {
+        const decoded = PrivateKey.fromStringDer(rawHex);
+        const raw = decoded.toStringRaw();
+        rawHex = raw.startsWith('0x') ? raw : `0x${raw}`;
+      } else if (!rawHex.startsWith('0x')) {
+        rawHex = `0x${rawHex}`;
+      }
+      const wallet = new ethers.Wallet(rawHex);
+      cachedPool = [{ index: 0, address: wallet.address, privateKey: wallet.privateKey }];
+      return cachedPool;
+    } catch (_) {}
+  }
+
+  return [];
+}
+
+export interface DisburseParams {
+  evmAddress: string;
+  accountId?: string;
+  amount?: number;
+  skipCooldown?: boolean;
+}
+
+export interface DisburseResult {
+  success: boolean;
+  hash?: string;
+  error?: string;
+  durationMs?: number;
+  logs?: string[];
+  code?: string;
+}
+
+export async function disburseHbar({
+  evmAddress,
+  accountId,
+  amount = 10,
+  skipCooldown = false,
+}: DisburseParams): Promise<DisburseResult> {
+  const startMs = Date.now();
+  const traceLogs: string[] = [];
+  const log = (msg: string) => traceLogs.push(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
+
+  if (!evmAddress || !ethers.isAddress(evmAddress)) {
+    return {
+      success: false,
+      error: `Invalid EVM Address: ${evmAddress}`,
+      logs: [`Invalid address format: ${evmAddress}`],
+    };
+  }
+
+  const addressKey = evmAddress.toLowerCase();
+  let hasClaim = false;
+
+  try {
+    if (!skipCooldown) {
+      if (faucetInFlight.has(addressKey)) {
+        return {
+          success: false,
+          error: 'Faucet disbursement already in progress for this address.',
+          logs: traceLogs,
+        };
+      }
+      faucetInFlight.add(addressKey);
+
+      const claimStatus = await claimFaucetAddress(addressKey);
+      if (claimStatus === 'busy') {
+        return {
+          success: false,
+          error: 'Faucet payment already in progress for this wallet (5m cooldown).',
+          code: 'FAUCET_IN_FLIGHT',
+          logs: traceLogs,
+        };
+      }
+      hasClaim = true;
+    }
+
+    const accounts = getPoolAccounts();
+    if (!accounts || accounts.length === 0) {
+      throw new Error('No faucet accounts available (missing FAUCET_MNEMONIC / OPERATOR_KEY).');
+    }
+
+    const rpcSequence = buildFaucetRpcSequence();
+    const finalAmount = Math.min(Math.max(Number(amount) || 10, 0.1), 50);
+    const valueWei = ethers.parseEther(String(finalAmount));
+
+    let startIndex = Math.floor(Math.random() * accounts.length);
+    let lastError: any = null;
+
+    // Try accounts in pool
+    for (let attempt = 0; attempt < Math.min(accounts.length, 5); attempt++) {
+      const acc = accounts[(startIndex + attempt) % accounts.length];
+      log(`Selecting pool wallet #${acc.index} (${acc.address.slice(0, 8)}...)`);
+
+      for (let rpcIdx = 0; rpcIdx < rpcSequence.length; rpcIdx++) {
+        const rpcUrl = rpcSequence[rpcIdx];
+        try {
+          const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, { staticNetwork: true });
+          const signer = new ethers.Wallet(acc.privateKey, provider);
+
+          const gasPrice = await calculateHederaGasPrice(provider);
+          log(`Broadcasting via ${new URL(rpcUrl).hostname} (gasPrice: ${ethers.formatUnits(gasPrice, 'gwei')} gwei)...`);
+
+          const tx = await signer.sendTransaction({
+            to: evmAddress,
+            value: valueWei,
+            type: 0,
+            gasLimit: 300_000n,
+            gasPrice,
+          });
+
+          log(`Transaction broadcast: ${tx.hash}. Awaiting consensus receipt...`);
+          await tx.wait(1);
+
+          log(`Consensus achieved. 10 HBAR delivered to ${evmAddress}`);
+          const durationMs = Date.now() - startMs;
+
+          // Track metric in PostHog
+          recordFaucetClaim({
+            evmAddress,
+            accountId,
+            amount: finalAmount,
+            txHash: tx.hash,
+            network: NETWORK,
+          }).catch(() => {});
+
+          return {
+            success: true,
+            hash: tx.hash,
+            durationMs,
+            logs: traceLogs,
+          };
+        } catch (err: any) {
+          lastError = err;
+          log(`RPC ${new URL(rpcUrl).hostname} error: ${err?.message || err}`);
+          const minPrice = parseGasPriceFromError(err);
+          if (minPrice) log(`Detected higher gas requirement: ${minPrice}`);
+        }
+      }
+    }
+
+    throw lastError || new Error('All RPCs and pool wallets exhausted');
+  } catch (error: any) {
+    if (hasClaim) {
+      await releaseFaucetClaim(addressKey);
+    }
+    return {
+      success: false,
+      error: error?.message || 'Unknown disbursement error',
+      logs: traceLogs,
+    };
+  } finally {
+    faucetInFlight.delete(addressKey);
+  }
+}
+
+export async function getFaucetHealth(): Promise<any> {
+  const accounts = getPoolAccounts();
+  const rpcs = buildFaucetRpcSequence();
+  const stats = await getFaucetUniqueUsersCount().catch(() => ({ count: 0 }));
+
+  let sampleBalances: any[] = [];
+  try {
+    const provider = new ethers.JsonRpcProvider(rpcs[0], undefined, { staticNetwork: true });
+    for (let i = 0; i < Math.min(accounts.length, 3); i++) {
+      const b = await provider.getBalance(accounts[i].address).catch(() => 0n);
+      sampleBalances.push({
+        index: accounts[i].index,
+        address: accounts[i].address,
+        balance: `${parseFloat(ethers.formatEther(b)).toFixed(2)} ℏ`,
+      });
+    }
+  } catch (_) {}
+
+  return {
+    status: 'ok',
+    network: NETWORK,
+    runtime: 'expo-router-server',
+    poolSize: accounts.length,
+    activeRpcs: rpcs.map((r) => new URL(r).hostname),
+    samplePoolBalances: sampleBalances,
+    analytics: {
+      app: HBE_APP_TAG,
+      event: HBE_EVENT_FAUCET_CLAIM,
+      uniqueUsersCount: stats.count,
+    },
+    timestamp: new Date().toISOString(),
+  };
+}

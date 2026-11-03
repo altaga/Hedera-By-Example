@@ -305,9 +305,9 @@ export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean;
     return { success: false, error: 'Welcome drop of 10 ℏ already claimed (limit 1 per learner).' }
   }
   
-  const endpoints: string[] = []
+  const endpoints: string[] = ['/api/welcome-drop']
   if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_FAUCET_URL) {
-    endpoints.push(process.env.EXPO_PUBLIC_FAUCET_URL)
+    endpoints.unshift(process.env.EXPO_PUBLIC_FAUCET_URL)
   }
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     endpoints.push('http://localhost:3005/api/welcome-drop')
