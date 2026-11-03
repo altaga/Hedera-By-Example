@@ -38,6 +38,7 @@ export interface Resource {
 export interface LabRun { slug: string; start: number; end: number; accountId: string }
 
 export function loadRuns (): LabRun[] {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return []
   try { return JSON.parse(localStorage.getItem(RUNS_KEY) || '[]') } catch (_) { return [] }
 }
 
@@ -46,6 +47,7 @@ export function recordRun (run: LabRun): void {
   try {
     const runs = loadRuns()
     runs.push(run)
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
     localStorage.setItem(RUNS_KEY, JSON.stringify(runs.slice(-MAX_RUNS)))
   } catch (_) {}
 }

@@ -21,10 +21,12 @@ type Route = { view: 'index' } | { view: 'resources' } | { view: 'lab'; slug: st
 const PREFS_KEY = 'hbe_prefs_v1'
 
 function readPrefs (): { lang?: Lang; theme?: Theme } {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return {}
   try { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}') } catch (_) { return {} }
 }
 
 function writePrefs (prefs: { lang: Lang; theme: Theme }) {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
   try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)) } catch (_) {}
 }
 
