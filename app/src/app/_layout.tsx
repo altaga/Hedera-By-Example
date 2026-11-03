@@ -6,7 +6,7 @@ export default function RootLayout () {
   return (
     <>
       <Head>
-        <title>Hedera by Example</title>
+        <title>Hedera by Example by Effisend</title>
         <meta
           name='description'
           content='Learn Hedera by reading and running 131 small, complete @hiero-ledger/sdk programs: annotated walkthroughs, exact source files and a browser runner for testnet.'

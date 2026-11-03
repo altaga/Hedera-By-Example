@@ -26,14 +26,27 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
         <Icon name='menu' size={20} />
       </button>
 
-      <a
-        href='#index'
-        className='wordmark'
-        onClick={(e) => { e.preventDefault(); onHome() }}
-      >
-        <span className='wordmark-mark' aria-hidden='true'>ℏ</span>
-        <span>{t.siteName}</span>
-      </a>
+      <div className='brand-cluster'>
+        <a
+          href='#index'
+          className='wordmark'
+          onClick={(e) => { e.preventDefault(); onHome() }}
+        >
+          <span className='wordmark-mark' aria-hidden='true'>ℏ</span>
+          <span>{t.siteName}</span>
+        </a>
+        <a
+          href='https://effisend.xyz'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='brand-byline'
+          aria-label={lang === 'es' ? 'Hedera by Example, por Effisend' : 'Hedera by Example, by Effisend'}
+          title={lang === 'es' ? 'Desarrollado por Effisend' : 'Built by Effisend'}
+        >
+          <span className='brand-byline-credit'>{lang === 'es' ? 'por' : 'by'}</span>
+          <span className='brand-byline-name'>Effisend</span>
+        </a>
+      </div>
 
       <div className='topbar-actions'>
         <a

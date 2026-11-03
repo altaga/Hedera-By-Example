@@ -11,6 +11,7 @@ import type { WalletStore } from '../lib/wallets'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
+import { buildLabFileTabs, recombineCode, type LabCodeFile } from '../lib/labTabs'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source' | 'playground'
@@ -179,13 +180,104 @@ export function LabPage (props: Props) {
   } = props
   const { mod, lab } = entry
   const [tab, setTab] = useState<Tab>('walkthrough')
+  const [activeFileId, setActiveFileId] = useState<string>('main')
+  const [auxiliaryTexts, setAuxiliaryTexts] = useState<Record<string, string>>({})
+  const [classEdits, setClassEdits] = useState<Record<string, string>>({})
+
   const sdk = useMemo(() => new Set(body.sdk), [body])
   const source = useSource(lang, lab.slug)
   const { copied, copy } = useCopy()
   const path = coursePath(lang, entry)
   const fileUrl = githubUrl(lang, entry)
 
-  useEffect(() => { setTab('walkthrough') }, [lab.slug])
+  useEffect(() => {
+    setTab('walkthrough')
+    setActiveFileId('main')
+    setClassEdits({})
+  }, [lab.slug])
+
+  // Fetch auxiliary file texts (.sol, .csv, .json, .md)
+  useEffect(() => {
+    if (!body.files || body.files.length === 0) return
+    let cancelled = false
+    for (const f of body.files) {
+      if (f.name.match(/\.(png|jpe?g|gif|webp|svg)$/i)) continue
+      if (fileOverrides[f.name]) {
+        fileOverrides[f.name]
+          .text()
+          .then((txt) => {
+            if (!cancelled) setAuxiliaryTexts((prev) => ({ ...prev, [f.name]: txt }))
+          })
+          .catch(() => {})
+      } else {
+        fetch(f.url)
+          .then((r) => (r.ok ? r.text() : ''))
+          .then((txt) => {
+            if (!cancelled && txt) setAuxiliaryTexts((prev) => ({ ...prev, [f.name]: txt }))
+          })
+          .catch(() => {})
+      }
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [body.files, fileOverrides])
+
+  // Build multi-file tabs
+  const { tabs: fileTabs, classes } = useMemo(() => {
+    return buildLabFileTabs({
+      code,
+      entry,
+      body,
+      lang,
+      auxiliaryTexts,
+    })
+  }, [code, entry, body, lang, auxiliaryTexts])
+
+  // Fallback to main if activeFileId not found
+  const currentActiveTab: LabCodeFile = fileTabs.find((ft) => ft.id === activeFileId) || fileTabs[0]
+
+  // Handle editing within active tab
+  const handleEditActiveTab = (newText: string) => {
+    if (currentActiveTab.id === 'main') {
+      onEditCode(newText)
+    } else if (currentActiveTab.id.startsWith('class:')) {
+      const cName = currentActiveTab.name.replace(/\.js$/, '')
+      const newClassEdits = { ...classEdits, [cName]: newText }
+      setClassEdits(newClassEdits)
+      const classMap: Record<string, string> = {}
+      for (const c of classes) {
+        classMap[c.name] = newClassEdits[c.name] ?? c.code
+      }
+      const recombined = recombineCode(fileTabs[0].code, classMap, classes.map((c) => c.name))
+      onEditCode(recombined)
+    } else if (currentActiveTab.id.startsWith('file:')) {
+      const fileName = currentActiveTab.name
+      setAuxiliaryTexts((prev) => ({ ...prev, [fileName]: newText }))
+      const blob = new Blob([newText], { type: 'text/plain' })
+      const file = new File([blob], fileName, { type: 'text/plain' })
+      onReplaceFile(fileName, file)
+    }
+  }
+
+  // W3C WAI-ARIA keyboard navigation for file tabs
+  const handleFileTabKey = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      const nextIdx = (index + 1) % fileTabs.length
+      setActiveFileId(fileTabs[nextIdx].id)
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      const prevIdx = (index - 1 + fileTabs.length) % fileTabs.length
+      setActiveFileId(fileTabs[prevIdx].id)
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      setActiveFileId(fileTabs[0].id)
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      setActiveFileId(fileTabs[fileTabs.length - 1].id)
+    }
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'walkthrough', label: t.walkthrough },
@@ -315,68 +407,142 @@ export function LabPage (props: Props) {
           </div>
         </div>
 
+        {fileTabs.length > 1 && (
+          <nav
+            className='file-tabs-strip'
+            role='tablist'
+            aria-label={lang === 'es' ? 'Archivos del laboratorio' : 'Lab files'}
+          >
+            {fileTabs.map((f, i) => (
+              <button
+                key={f.id}
+                type='button'
+                role='tab'
+                id={`file-tab-${f.id}`}
+                aria-selected={activeFileId === f.id}
+                aria-controls={`file-panel-${f.id}`}
+                tabIndex={activeFileId === f.id ? 0 : -1}
+                className={`file-tab-btn ${activeFileId === f.id ? 'is-active' : ''}`}
+                onClick={() => setActiveFileId(f.id)}
+                onKeyDown={(e) => handleFileTabKey(e, i)}
+                title={f.description}
+              >
+                <span className={`file-badge file-badge-${f.kind}`}>{f.badge}</span>
+                <span className='file-name'>{f.name}</span>
+              </button>
+            ))}
+          </nav>
+        )}
+
         {tab === 'walkthrough' && (
           <div className='walk' role='tabpanel' id='panel-walkthrough' aria-labelledby='tab-walkthrough'>
-            {body.segments.map((seg, i) => (
-              <div key={i} className={`walk-row ${seg.doc.length ? '' : 'walk-row-bare'}`}>
-                <div className='walk-doc'>
-                  {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
+            {currentActiveTab.id === 'main' ? (
+              body.segments.map((seg, i) => (
+                <div key={i} className={`walk-row ${seg.doc.length ? '' : 'walk-row-bare'}`}>
+                  <div className='walk-doc'>
+                    {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
+                  </div>
+                  <div className='walk-code'>
+                    {seg.code ? <CodeLines text={seg.code} start={seg.start} sdk={sdk} /> : null}
+                  </div>
                 </div>
-                <div className='walk-code'>
-                  {seg.code ? <CodeLines text={seg.code} start={seg.start} sdk={sdk} /> : null}
-                </div>
+              ))
+            ) : (
+              <div className='walk-companion'>
+                {currentActiveTab.description && (
+                  <div className='file-context-banner'>
+                    <span className={`file-badge file-badge-${currentActiveTab.kind}`}>{currentActiveTab.badge}</span>
+                    <span className='file-context-desc'>{currentActiveTab.description}</span>
+                  </div>
+                )}
+                <CodeLines text={currentActiveTab.code} start={1} sdk={sdk} />
               </div>
-            ))}
+            )}
           </div>
         )}
 
         {tab === 'source' && (
           <div className='source' role='tabpanel' id='panel-source' aria-labelledby='tab-source'>
             <div className='source-bar'>
-              <code className='source-path'>course/{path}</code>
+              <div className='file-context-banner-inline'>
+                <span className={`file-badge file-badge-${currentActiveTab.kind}`}>{currentActiveTab.badge}</span>
+                <code className='source-path'>{currentActiveTab.id === 'main' ? `course/${path}` : currentActiveTab.name}</code>
+              </div>
               <div className='source-actions'>
                 <button
                   type='button'
                   className='btn btn-ghost btn-sm'
-                  disabled={!source.text}
-                  onClick={() => source.text && copy(source.text, 'src')}
+                  disabled={!currentActiveTab.code}
+                  onClick={() => currentActiveTab.code && copy(currentActiveTab.code, currentActiveTab.id)}
                 >
-                  <Icon name={copied === 'src' ? 'check' : 'copy'} size={14} />
-                  <span>{copied === 'src' ? t.copied : t.copy}</span>
+                  <Icon name={copied === currentActiveTab.id ? 'check' : 'copy'} size={14} />
+                  <span>{copied === currentActiveTab.id ? t.copied : t.copy}</span>
                 </button>
-                <a className='btn btn-ghost btn-sm' href={sourceUrl(lang, lab.slug)} download={lab.file}>
-                  <Icon name='download' size={14} />
-                  <span>{t.download}</span>
-                </a>
-                <a className='btn btn-ghost btn-sm' href={fileUrl} target='_blank' rel='noopener noreferrer'>
-                  <Icon name='github' size={14} />
-                  <span>GitHub</span>
-                </a>
+                {currentActiveTab.id === 'main' ? (
+                  <>
+                    <a className='btn btn-ghost btn-sm' href={sourceUrl(lang, lab.slug)} download={lab.file}>
+                      <Icon name='download' size={14} />
+                      <span>{t.download}</span>
+                    </a>
+                    <a className='btn btn-ghost btn-sm' href={fileUrl} target='_blank' rel='noopener noreferrer'>
+                      <Icon name='github' size={14} />
+                      <span>GitHub</span>
+                    </a>
+                  </>
+                ) : (
+                  <button
+                    type='button'
+                    className='btn btn-ghost btn-sm'
+                    onClick={() => {
+                      const blob = new Blob([currentActiveTab.code], { type: 'text/plain' })
+                      const url = URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = currentActiveTab.name
+                      a.click()
+                      URL.revokeObjectURL(url)
+                    }}
+                  >
+                    <Icon name='download' size={14} />
+                    <span>{t.download}</span>
+                  </button>
+                )}
               </div>
             </div>
-            {source.text != null
-              ? <CodeLines text={source.text.replace(/\n$/, '')} start={1} sdk={sdk} />
-              : <p className='source-status'>{source.failed ? t.sourceUnavailable : t.loadingSource}</p>}
+            {currentActiveTab.code != null ? (
+              <CodeLines text={currentActiveTab.code.replace(/\n$/, '')} start={1} sdk={sdk} />
+            ) : (
+              <p className='source-status'>{source.failed ? t.sourceUnavailable : t.loadingSource}</p>
+            )}
           </div>
         )}
 
         {tab === 'playground' && (
           <div className='playground' role='tabpanel' id='panel-playground' aria-labelledby='tab-playground'>
             <div className='source-bar'>
-              <p className='playground-note'>{t.playgroundNote}</p>
-              {isEdited && (
+              <div className='file-context-banner-inline'>
+                <span className={`file-badge file-badge-${currentActiveTab.kind}`}>{currentActiveTab.badge}</span>
+                <p className='playground-note'>{currentActiveTab.description || t.playgroundNote}</p>
+              </div>
+              {currentActiveTab.readOnly ? (
+                <span className='tab-badge'>{lang === 'es' ? 'Sólo lectura' : 'Read-only'}</span>
+              ) : isEdited ? (
                 <button type='button' className='btn btn-ghost btn-sm' onClick={onResetCode}>{t.resetCode}</button>
-              )}
+              ) : null}
             </div>
-            <textarea
-              className='editor'
-              value={code}
-              onChange={(e) => onEditCode(e.target.value)}
-              spellCheck={false}
-              autoCapitalize='off'
-              autoCorrect='off'
-              aria-label={t.playground}
-            />
+            {currentActiveTab.readOnly ? (
+              <CodeLines text={currentActiveTab.code} start={1} sdk={sdk} />
+            ) : (
+              <textarea
+                className='editor'
+                value={currentActiveTab.code}
+                onChange={(e) => handleEditActiveTab(e.target.value)}
+                spellCheck={false}
+                autoCapitalize='off'
+                autoCorrect='off'
+                aria-label={currentActiveTab.name}
+              />
+            )}
           </div>
         )}
 

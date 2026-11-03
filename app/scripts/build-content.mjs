@@ -249,6 +249,7 @@ const titleFromFile = (f) => f.replace(/^\d+\w*?_/, '').replace(/\.js$/, '').spl
   .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
 function build () {
+  const warnings = []
   if (!fs.existsSync(path.join(SOURCE, LANGS.en))) {
     throw new Error(`Curriculum not found at ${SOURCE}`)
   }
@@ -270,8 +271,6 @@ function build () {
 
   const index = { modules: [] }
   const bodies = { en: {}, es: {} }
-  const warnings = []
-
   for (const dir of moduleDirs) {
     const n = parseInt(dir.slice(1))
     const id = `m${String(n).padStart(2, '0')}`

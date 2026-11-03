@@ -278,3 +278,64 @@ export async function fetchBalances (store: WalletStore): Promise<Record<string,
   const entries = await Promise.all(store.wallets.map(async (w) => [w.id, isAccountId(w.accountId) ? await fetchLiveBalance(w.accountId) : null] as const))
   return Object.fromEntries(entries)
 }
+
+export const WELCOME_DROP_STORAGE_KEY = 'hbe_welcome_drop_v1'
+
+export function isWelcomeDropClaimed(): boolean {
+  if (typeof window === 'undefined') return false
+  try {
+    return !!localStorage.getItem(WELCOME_DROP_STORAGE_KEY)
+  } catch (_) {
+    return false
+  }
+}
+
+export function markWelcomeDropClaimed(walletId: string, txHash?: string): void {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(WELCOME_DROP_STORAGE_KEY, JSON.stringify({ walletId, txHash, claimedAt: Date.now() }))
+  } catch (_) {}
+}
+
+export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean; hash?: string; error?: string }> {
+  if (!w.evmAddress) {
+    return { success: false, error: 'Only ECDSA wallets with EVM addresses qualify for the welcome drop.' }
+  }
+  if (isWelcomeDropClaimed()) {
+    return { success: false, error: 'Welcome drop of 10 ℏ already claimed (limit 1 per learner).' }
+  }
+  
+  const endpoints: string[] = []
+  if (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_FAUCET_URL) {
+    endpoints.push(process.env.EXPO_PUBLIC_FAUCET_URL)
+  }
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    endpoints.push('http://localhost:3005/api/welcome-drop')
+  }
+  endpoints.push('https://hfd-wallet.vercel.app/api/welcome-drop')
+
+  let lastError = 'Failed to claim welcome drop'
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ evmAddress: w.evmAddress, amount: 10 }),
+        signal: typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(12000) : undefined
+      })
+      const data = await res.json().catch(() => ({}))
+      if (data.success) {
+        markWelcomeDropClaimed(w.id, data.hash)
+        return { success: true, hash: data.hash }
+      }
+      if (data.error) {
+        lastError = data.error
+      }
+    } catch (err: any) {
+      lastError = err.message || 'Network error reaching faucet server'
+    }
+  }
+
+  return { success: false, error: lastError }
+}
+

@@ -14,6 +14,7 @@ import { utf8ToBytes } from '@noble/hashes/utils.js'
 import { Buffer, NodeOnlyError, adaptSolcCalls, loadVendor, prefetchKeyTypes, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
 import { RSA_CONSTANTS, createCipher, createECDH, generateKeyPairSync, privateDecrypt, publicEncrypt, sign, verify } from './nodeCrypto'
 import { isMirrorUrl, mirrorFetch } from './mirror'
+import { resilientContractCall, readContract } from './contractReads'
 
 export interface BrowserWallet {
   accountId: string
@@ -848,6 +849,8 @@ export async function executeInBrowser (
       MAX_GAS,
       show,
       getJsonRpcSigner,
+      resilientContractCall,
+      readContract,
     }
 
     // Labs' own Mirror Node reads share the site's rate limit (fresh data, no cache).

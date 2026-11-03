@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import type { Lang } from '../lib/content'
 import { isAccountId } from '../lib/hederaBrowser'
 import {
-  createWallet, fetchBalances, findWallet, fundWallet, importMnemonic, importWallet, keyFormats, lookUpAccount, waitForFunding,
+  createWallet, fetchBalances, findWallet, fundWallet, importMnemonic, importWallet, keyFormats, lookUpAccount, waitForFunding, isWelcomeDropClaimed, requestWelcomeDrop,
   type Curve, type KeyFormat, type Role, type Wallet, type WalletStore
 } from '../lib/wallets'
 
@@ -230,18 +230,82 @@ function CurvePicker ({ t, value, onChange }: { t: T; value: Curve; onChange: (c
 }
 
 /** Steps to fund an ECDSA wallet from the faucet; the account is detected by polling. */
-function FaucetSteps ({ w, t, onFound }: { w: Wallet; t: T; onFound: (accountId: string) => void }) {
+function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; onFound: (accountId: string) => void }) {
+  const [dropState, setDropState] = useState<'idle' | 'claiming' | 'success' | 'error'>('idle')
+  const [dropMsg, setDropMsg] = useState('')
+  const [claimed, setClaimed] = useState(() => isWelcomeDropClaimed())
+
   useEffect(() => {
     const ctrl = new AbortController()
     waitForFunding(w, { signal: ctrl.signal }).then((id) => { if (id && !ctrl.signal.aborted) onFound(id) })
     return () => ctrl.abort()
   }, [w.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleClaimDrop = async () => {
+    setDropState('claiming')
+    setDropMsg('')
+    const res = await requestWelcomeDrop(w)
+    if (res.success) {
+      setDropState('success')
+      setClaimed(true)
+      setDropMsg(lang === 'es' ? '¡Drop de 10 ℏ enviado! Esperando confirmación en consenso...' : '10 ℏ drop dispatched! Awaiting consensus confirmation...')
+      const id = await waitForFunding(w, { timeoutMs: 30000 })
+      if (id) onFound(id)
+    } else {
+      setDropState('error')
+      setDropMsg(res.error || (lang === 'es' ? 'Error al solicitar el drop' : 'Failed to request drop'))
+    }
+  }
+
   return (
     <div className='faucet-steps' data-testid='faucet-steps'>
-      <ol>{t.faucetSteps.map((s) => <li key={s}>{s}</li>)}</ol>
-      <p className='kv-value'><code>{w.evmAddress}</code><CopyButton value={w.evmAddress} t={t} /></p>
-      <a className='btn btn-primary btn-sm' href={FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
-      <p className='form-msg waiting'><span className='spinner' aria-hidden='true' />{t.waiting}</p>
+      {!claimed ? (
+        <div className='welcome-drop-card' data-testid='welcome-drop-card'>
+          <div className='welcome-drop-head'>
+            <span className='welcome-drop-title'>{lang === 'es' ? '🎁 Drop Inicial de 10 ℏ' : '🎁 Initial 10 ℏ Drop'}</span>
+            <span className='welcome-drop-badge'>{lang === 'es' ? '1 sola vez' : '1 per learner'}</span>
+          </div>
+          <p className='welcome-drop-desc'>
+            {lang === 'es'
+              ? 'Fondea tu primera wallet automáticamente con 10 ℏ en Hedera Testnet con 1 solo clic para comenzar a ejecutar los labs.'
+              : 'Fund your first wallet automatically with 10 ℏ on Hedera Testnet in 1-click to start running labs.'}
+          </p>
+          <button
+            type='button'
+            className='btn-drop'
+            data-testid='claim-welcome-drop'
+            onClick={handleClaimDrop}
+            disabled={dropState === 'claiming'}
+          >
+            {dropState === 'claiming' ? <span className='spinner' aria-hidden='true' /> : <Icon name='play' size={14} />}
+            <span>
+              {dropState === 'claiming'
+                ? (lang === 'es' ? 'Enviando 10 ℏ…' : 'Sending 10 ℏ…')
+                : (lang === 'es' ? 'Reclamar 10 ℏ Gratis' : 'Claim Free 10 ℏ')}
+            </span>
+          </button>
+          {dropMsg && <p className={`form-msg ${dropState === 'error' ? 'err' : 'waiting'}`} style={{ marginTop: 8 }}>{dropMsg}</p>}
+        </div>
+      ) : (
+        <div className='welcome-drop-card is-claimed'>
+          <p className='muted' style={{ margin: 0, fontSize: 12 }}>
+            {lang === 'es'
+              ? 'ℹ️ El drop de bienvenida de 10 ℏ ya fue otorgado a tu primera wallet (límite de 1 por usuario). Para cuentas adicionales usa el faucet oficial:'
+              : 'ℹ️ The 10 ℏ welcome drop was already claimed for your first wallet (limit 1 per learner). For additional accounts use the official faucet:'}
+          </p>
+        </div>
+      )}
+
+      <details className='manual-faucet-details' style={{ marginTop: 8 }}>
+        <summary style={{ fontSize: 12, cursor: 'pointer', color: 'var(--text-3)' }}>
+          {lang === 'es' ? 'Opciones manuales (Portal de Hedera)' : 'Manual options (Hedera Portal)'}
+        </summary>
+        <ol style={{ marginTop: 8 }}>{t.faucetSteps.map((s) => <li key={s}>{s}</li>)}</ol>
+        <p className='kv-value'><code>{w.evmAddress}</code><CopyButton value={w.evmAddress} t={t} /></p>
+        <a className='btn btn-ghost btn-sm' href={FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
+      </details>
+
+      <p className='form-msg waiting' style={{ marginTop: 8 }}><span className='spinner' aria-hidden='true' />{t.waiting}</p>
     </div>
   )
 }
@@ -449,7 +513,7 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
                     <div><dt>{t.key}</dt><dd><Secret value={w.privateKey} t={t} masked /></dd></div>
                   </dl>
                   {!hasAccount && (w.evmAddress
-                    ? <FaucetSteps w={w} t={t} onFound={(id) => refresh(patchWallet(w.id, { accountId: id }))} />
+                    ? <FaucetSteps w={w} t={t} lang={lang} onFound={(id) => refresh(patchWallet(w.id, { accountId: id }))} />
                     : <p className='form-msg'>{t.edHint}</p>)}
                   <details className='wallet-more'>
                     <summary data-testid='all-formats'>{t.allData}</summary>

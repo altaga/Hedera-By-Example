@@ -1,0 +1,88 @@
+name: Daily Faucet Recovery
+
+on:
+  workflow_call:
+    inputs:
+      min_hbar:
+        required: false
+        type: string
+        default: '100'
+      count:
+        required: false
+        type: string
+        default: '100'
+
+  # Manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      min_hbar:
+        description: 'Target HBAR per wallet'
+        required: false
+        default: '100'
+        type: string
+      count:
+        description: 'Number of faucets to check (pool size)'
+        required: false
+        default: '100'
+        type: string
+
+  # Scheduled daily run at 04:00 UTC
+  schedule:
+    - cron: '0 4 * * *'
+
+concurrency:
+  # Prevent concurrent executions from racing on operator nonce
+  group: hedera-operator
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  recover-hbar:
+    name: Recover HBAR faucet pool
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: faucet/package-lock.json
+
+      - name: Install faucet dependencies
+        working-directory: faucet
+        run: npm ci
+
+      - name: Run faucet recovery
+        id: recover
+        env:
+          ACTION_OPERATOR_ID: ${{ secrets.ACTION_OPERATOR_ID }}
+          ACTION_OPERATOR_KEY: ${{ secrets.ACTION_OPERATOR_KEY }}
+          ACTION_FAUCET_MNEMONIC: ${{ secrets.ACTION_FAUCET_MNEMONIC }}
+          ACTION_HEDERA_NETWORK: ${{ secrets.ACTION_HEDERA_NETWORK || 'testnet' }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.min_hbar || '' }}" ]; then
+            ARGS="$ARGS --min=${{ inputs.min_hbar }}"
+          fi
+          if [ -n "${{ inputs.count || '' }}" ]; then
+            ARGS="$ARGS --count=${{ inputs.count }}"
+          fi
+          echo "Running: node faucet/scripts/recover-faucets-action.mjs $ARGS"
+          node faucet/scripts/recover-faucets-action.mjs $ARGS
+
+      - name: Upload recovery log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: faucet-recovery-log-${{ github.run_id }}
+          path: faucet/logs/
+          if-no-files-found: warn
+          retention-days: 30

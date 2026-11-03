@@ -1,0 +1,18 @@
+{
+  "name": "hbe-faucet",
+  "version": "1.0.0",
+  "description": "Hedera by Example Enterprise Faucet Service with multi-RPC failover and pool rotation",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "setup": "node scripts/setup-faucets.mjs",
+    "recover": "node scripts/recover-faucets.mjs"
+  },
+  "dependencies": {
+    "@hiero-ledger/sdk": "^2.64.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.14.0"
+  }
+}

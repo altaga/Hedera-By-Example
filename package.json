@@ -9,12 +9,15 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "install:all": "npm install && npm --prefix course ci && npm --prefix app ci",
+    "install:all": "npm install && npm --prefix course ci && npm --prefix app ci && npm --prefix faucet install",
     "compile:course": "npm --prefix app run compile:course",
     "test": "node tests/master_test_runner.mjs",
     "test:ci": "node tests/master_test_runner.mjs --skip-e2e",
     "test:e2e": "node tests/04_e2e_live_browser.test.mjs",
-    "mcp": "node mcp/index.js"
+    "mcp": "node mcp/index.js",
+    "faucet": "node faucet/server.mjs",
+    "faucet:setup": "node faucet/scripts/setup-faucets.mjs",
+    "faucet:recover": "node faucet/scripts/recover-faucets.mjs"
   },
   "devDependencies": {
     "puppeteer-core": "^25.16.0"

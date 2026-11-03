@@ -15,6 +15,17 @@ export function CourseIndex ({ t, lang, modules, onSelect }: Props) {
     <div className='page index-page'>
       <header className='index-hero'>
         <h1>{t.indexTitle}</h1>
+        <a
+          href='https://effisend.xyz'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='hero-brand-byline'
+          aria-label={lang === 'es' ? 'Desarrollado por Effisend' : 'Built by Effisend'}
+          title={lang === 'es' ? 'Desarrollado por Effisend' : 'Built by Effisend'}
+        >
+          <span className='hero-byline-credit'>{lang === 'es' ? 'por' : 'by'}</span>
+          <span className='hero-byline-name'>Effisend</span>
+        </a>
         <p className='lead'>{t.indexLead(INDEX.labCount, INDEX.modules.length, INDEX.sdk)}</p>
         <a
           className='btn btn-primary'
