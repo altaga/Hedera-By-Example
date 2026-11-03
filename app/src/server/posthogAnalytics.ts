@@ -84,7 +84,10 @@ export async function getFaucetUniqueUsersCount(): Promise<{ ok: boolean; count:
     const res = await fetch(`${POSTHOG_QUERY_HOST}/api/projects/${projectId}/query/`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: { kind: 'HogQLQuery', query: hogql } }),
+      body: JSON.stringify({
+        refresh: 'force_blocking',
+        query: { kind: 'HogQLQuery', query: hogql },
+      }),
     });
     const data = (await res.json()) as any;
     const count = data?.results?.[0]?.[0] ?? 0;

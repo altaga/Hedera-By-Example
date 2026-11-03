@@ -148,7 +148,10 @@ export async function getFaucetUniqueUsersCount() {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ query: { kind: 'HogQLQuery', query: hogql } }),
+      body: JSON.stringify({
+        refresh: 'force_blocking',
+        query: { kind: 'HogQLQuery', query: hogql },
+      }),
     });
 
     if (!res.ok) {
