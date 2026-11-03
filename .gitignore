@@ -37,3 +37,4 @@ state.json.*.tmp
 # Faucet local data and claims
 faucet/data/
 faucet/logs/
+faucet/faucet-accounts.json
