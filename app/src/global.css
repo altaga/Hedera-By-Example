@@ -1114,3 +1114,11 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .mcp-prompts { margin: 8px 0 14px; padding-left: 1.2em; display: grid; gap: 4px; color: var(--text-2); font-size: 14px; }
 .mcp-more { font-size: 14px; }
 @media (max-width: 640px) { .mcp-card { padding: 16px; } .mcp-clients button { flex: 1 1 auto; } }
+
+.mcp-header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.mcp-mode-switcher { margin: 16px 0 14px; }
+.mcp-mode-btn { display: inline-flex; align-items: center; gap: 8px; }
+.mcp-mode-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; background: var(--accent); color: var(--on-accent); line-height: 1; }
+.mcp-desc-lead { font-size: 13.5px; color: var(--text-2); margin: 0 0 4px; line-height: 1.45; }
+.mcp-direct-url-box { margin: 4px 0 10px; padding: 12px 14px; border-radius: var(--radius); background: var(--bg); border: 1px solid var(--border); display: grid; gap: 6px; }
+.mcp-direct-url-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-3); font-family: var(--font-mono); }
