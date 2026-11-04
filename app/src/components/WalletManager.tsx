@@ -13,7 +13,7 @@ const TEXT = {
   en: {
     title: 'Wallets',
     close: 'Close',
-    intro: 'Create as many wallets as you like and choose which one runs the labs. Labs with more than one party use the wallets you assign as ACCOUNT_1 and ACCOUNT_2.',
+    intro: 'Pick which wallet runs the labs (radio on each card). Multi-party labs also need two practice parties below — or create them in one click.',
     storage: 'Keys are stored unencrypted in this browser\'s localStorage and never leave it. Use testnet keys only.',
     firstTitle: 'Create your first wallet',
     firstIntro: 'Three steps, all in this browser: make a key, get free testnet HBAR from the faucet, and the network creates your account.',
@@ -22,8 +22,14 @@ const TEXT = {
     step3: 'Your account appears here',
     active: 'Runs labs',
     useForRuns: 'Run labs with this wallet',
-    role: 'Role',
-    none: 'None',
+    partiesTitle: 'Practice parties (multi-party labs)',
+    partiesIntro: 'Some labs need a sender and a receiver. Assign any funded wallet to each slot, or create both below.',
+    party1: 'Party A · ACCOUNT_1',
+    party2: 'Party B · ACCOUNT_2',
+    partyUnassigned: 'Not assigned',
+    partiesReady: 'Ready for multi-party labs',
+    partiesMissing: 'Assign both parties (or create them) before those labs will run.',
+    done: 'Done — close wallets',
     noAccount: 'No testnet account yet',
     balance: 'Balance',
     evm: 'EVM address',
@@ -65,8 +71,8 @@ const TEXT = {
     ambiguousKey: 'A raw 64-character key can be ECDSA or Ed25519: choose the curve.',
     invalidMnemonic: 'That is not a valid BIP-39 phrase.',
     defaultLabel: (n: number) => `Wallet ${n}`,
-    practice: 'Create 2 practice wallets (3 ℏ each)', practiceBusy: 'Creating…',
-    practiceHint: 'Funded from the wallet that runs labs and assigned as ACCOUNT_1 and ACCOUNT_2.',
+    practice: 'Create Party A + Party B (3 ℏ each)', practiceBusy: 'Creating…',
+    practiceHint: 'Creates two ECDSA wallets, funds them from the wallet that runs labs, and fills both slots above.',
     allData: 'All data and formats',
     loadingFormats: 'Deriving…',
     groups: { private: 'Private key — never share it', public: 'Public key — safe to share', address: 'Addresses', recovery: 'Recovery phrase — never share it' },
@@ -87,7 +93,7 @@ const TEXT = {
   es: {
     title: 'Wallets',
     close: 'Cerrar',
-    intro: 'Crea todas las wallets que quieras y elige cuál ejecuta los labs. Los labs con más de una parte usan las wallets que asignes como ACCOUNT_1 y ACCOUNT_2.',
+    intro: 'Elige qué wallet ejecuta los labs (radio en cada tarjeta). Los labs multiparte también necesitan las dos partes de práctica abajo — o créalas en un clic.',
     storage: 'Las llaves se guardan sin cifrar en el localStorage de este navegador y nunca salen de él. Usa solo llaves de testnet.',
     firstTitle: 'Crea tu primera wallet',
     firstIntro: 'Tres pasos, todo en este navegador: genera una llave, pide HBAR gratis de testnet en el faucet y la red crea tu cuenta.',
@@ -96,8 +102,14 @@ const TEXT = {
     step3: 'Tu cuenta aparece aquí',
     active: 'Ejecuta los labs',
     useForRuns: 'Ejecutar los labs con esta wallet',
-    role: 'Rol',
-    none: 'Ninguno',
+    partiesTitle: 'Partes de práctica (labs multiparte)',
+    partiesIntro: 'Algunos labs necesitan un emisor y un receptor. Asigna cualquier wallet fondeada a cada ranura, o créalas abajo.',
+    party1: 'Parte A · ACCOUNT_1',
+    party2: 'Parte B · ACCOUNT_2',
+    partyUnassigned: 'Sin asignar',
+    partiesReady: 'Listo para labs multiparte',
+    partiesMissing: 'Asigna ambas partes (o créalas) antes de correr esos labs.',
+    done: 'Listo — cerrar wallets',
     noAccount: 'Aún sin cuenta de testnet',
     balance: 'Saldo',
     evm: 'Dirección EVM',
@@ -139,8 +151,8 @@ const TEXT = {
     ambiguousKey: 'Una llave cruda de 64 caracteres puede ser ECDSA o Ed25519: elige la curva.',
     invalidMnemonic: 'No es una frase BIP-39 válida.',
     defaultLabel: (n: number) => `Wallet ${n}`,
-    practice: 'Crear 2 wallets de práctica (3 ℏ c/u)', practiceBusy: 'Creando…',
-    practiceHint: 'Se fondean desde la wallet que ejecuta los labs y quedan como ACCOUNT_1 y ACCOUNT_2.',
+    practice: 'Crear Parte A + Parte B (3 ℏ c/u)', practiceBusy: 'Creando…',
+    practiceHint: 'Crea dos wallets ECDSA, las fondea desde la wallet que ejecuta los labs y llena ambas ranuras de arriba.',
     allData: 'Todos los datos y formatos',
     loadingFormats: 'Derivando…',
     groups: { private: 'Llave privada — nunca la compartas', public: 'Llave pública — se puede compartir', address: 'Direcciones', recovery: 'Frase de recuperación — nunca la compartas' },
@@ -399,17 +411,21 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
     update({ wallets, roles, activeId: store.activeId === w.id ? (wallets[0]?.id ?? null) : store.activeId })
   }
 
-  const setRole = (w: Wallet, role: Role | '') => {
+  const assignParty = (role: Role, walletId: string) => {
     const roles = { ...store.roles }
-    for (const r of ['account1', 'account2'] as Role[]) if (roles[r] === w.id) delete roles[r]
-    if (role) roles[role] = w.id
+    if (!walletId) {
+      delete roles[role]
+    } else {
+      for (const r of ['account1', 'account2'] as Role[]) if (roles[r] === walletId) delete roles[r]
+      roles[role] = walletId
+    }
     update({ ...store, roles })
   }
 
   const practice = () => run('practice', async () => {
     if (!active) return
-    const a = await createWallet('ECDSA', 'ACCOUNT_1')
-    const b = await createWallet('ECDSA', 'ACCOUNT_2')
+    const a = await createWallet('ECDSA', 'Party A')
+    const b = await createWallet('ECDSA', 'Party B')
     a.accountId = await fundWallet(active, a, 3)
     b.accountId = await fundWallet(active, b, 3)
     const s = storeRef.current
@@ -418,6 +434,10 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
 
   const roleOf = (w: Wallet): Role | '' => (store.roles.account1 === w.id ? 'account1' : store.roles.account2 === w.id ? 'account2' : '')
   const canFundFromActive = !!active && isAccountId(active.accountId)
+  const fundedWallets = store.wallets.filter((w) => isAccountId(w.accountId))
+  const party1 = findWallet(store, store.roles.account1)
+  const party2 = findWallet(store, store.roles.account2)
+  const partiesReady = !!(party1 && party2 && isAccountId(party1.accountId) && isAccountId(party2.accountId))
 
   const newWalletForm = (
     <div className='wallet-new' data-testid='new-wallet'>
@@ -520,14 +540,6 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
                     <KeyFormats w={w} t={t} />
                   </details>
                   <div className='wallet-controls'>
-                    <label className='wallet-role'>
-                      <span>{t.role}</span>
-                      <select value={roleOf(w)} onChange={(e) => setRole(w, e.target.value as Role | '')} data-testid='wallet-role'>
-                        <option value=''>{t.none}</option>
-                        <option value='account1'>ACCOUNT_1</option>
-                        <option value='account2'>ACCOUNT_2</option>
-                      </select>
-                    </label>
                     {canFundFromActive && !isActive && (w.accountId || w.evmAddress) && (
                       <span className='wallet-fund'>
                         <input type='number' min='0.1' step='0.1' value={amounts[w.id] ?? '2'} onChange={(e) => setAmounts({ ...amounts, [w.id]: e.target.value })} aria-label={t.amount} />
@@ -546,18 +558,56 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
             })}
           </ul>
 
-          {canFundFromActive && (
-            <section className='dialog-section'>
-              <button type='button' className='btn btn-secondary btn-sm' data-testid='create-practice' onClick={practice} disabled={!!busy}>
-                {busy === 'practice' ? t.practiceBusy : t.practice}
-              </button>
-              <p className='muted'>{t.practiceHint}</p>
-              {msg?.id === 'practice' && <p className='form-msg is-error' role='alert'>{msg.text}</p>}
+          {!first && (
+            <section className='dialog-section practice-parties' data-testid='practice-parties'>
+              <h3>{t.partiesTitle}</h3>
+              <p className='muted'>{t.partiesIntro}</p>
+              <div className='party-slots'>
+                {([
+                  ['account1', t.party1] as const,
+                  ['account2', t.party2] as const,
+                ]).map(([role, label]) => (
+                  <label key={role} className='party-slot'>
+                    <span className='party-slot-label'>{label}</span>
+                    <select
+                      value={store.roles[role] || ''}
+                      onChange={(e) => assignParty(role, e.target.value)}
+                      data-testid={`party-${role}`}
+                    >
+                      <option value=''>{t.partyUnassigned}</option>
+                      {fundedWallets.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.label} · {w.accountId}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+              <p className={`party-status ${partiesReady ? 'is-ready' : ''}`} role='status'>
+                {partiesReady ? t.partiesReady : t.partiesMissing}
+              </p>
+              {canFundFromActive && (
+                <>
+                  <button type='button' className='btn btn-secondary btn-sm' data-testid='create-practice' onClick={practice} disabled={!!busy}>
+                    {busy === 'practice' ? t.practiceBusy : t.practice}
+                  </button>
+                  <p className='muted practice-hint'>{t.practiceHint}</p>
+                  {msg?.id === 'practice' && <p className='form-msg is-error' role='alert'>{msg.text}</p>}
+                </>
+              )}
             </section>
           )}
 
           <p className='fine-print'>{t.storage}</p>
         </div>
+        {!first && (
+          <footer className='dialog-foot'>
+            <button type='button' className='btn btn-primary' onClick={onClose} data-testid='wallets-done'>
+              {t.done}
+            </button>
+          </footer>
+        )}
       </div>
     </div>
   )
