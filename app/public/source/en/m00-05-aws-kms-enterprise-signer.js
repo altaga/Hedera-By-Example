@@ -161,6 +161,7 @@ class EnterpriseKmsAdapter {
   }
 }
 
+// Entry point: Initialize AWS KMS client and execute custody workflow
 const main = async () => {
   console.log('--- SESSION START: AWS KMS Enterprise Signer ---\n')
 

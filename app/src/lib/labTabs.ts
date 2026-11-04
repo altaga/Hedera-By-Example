@@ -235,9 +235,11 @@ export function buildLabFileTabs({
 
     for (const mod of modules) {
       const trimmedCode = seg.code ? seg.code.trim() : ''
+      if (!trimmedCode) continue
+      const firstLine = trimmedCode.split('\n')[0].trim()
       if (
-        (trimmedCode && mod.code.includes(trimmedCode)) ||
-        (seg.start != null && seg.start >= mod.startLine && seg.start <= mod.endLine)
+        mod.code.includes(trimmedCode) ||
+        (firstLine.length > 5 && mod.code.includes(firstLine))
       ) {
         matchedModule = mod
         break
@@ -245,25 +247,61 @@ export function buildLabFileTabs({
     }
 
     if (matchedModule) {
-      // Add segment to companion module walkthrough
-      matchedModule.segments.push(seg)
+      const mainRegex = /(?:\n|^)(?:const|async\s+function|function)\s+main\b/
+      const mainMatch = mainRegex.exec(seg.code || '')
 
-      // Add a single companion callout row in main walkthrough at the insertion point
-      if (!insertedCallouts.has(matchedModule.id)) {
-        insertedCallouts.add(matchedModule.id)
-        mainSegments.push({
-          doc: [
-            lang === 'es'
-              ? `**Módulo: ${matchedModule.name}.js**`
-              : `**Module: ${matchedModule.name}.js**`,
-            lang === 'es'
-              ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
-              : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
-          ],
-          code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
-          start: matchedModule.startLine,
-          companionModule: matchedModule,
-        })
+      if (mainMatch) {
+        // Straddling segment: cleanly split between module and main to prevent any code bleed
+        const modPartCode = seg.code.slice(0, mainMatch.index).trim()
+        const mainPartCode = seg.code.slice(mainMatch.index).trim()
+
+        if (modPartCode) {
+          matchedModule.segments.push({ ...seg, code: modPartCode })
+        }
+        if (!insertedCallouts.has(matchedModule.id)) {
+          insertedCallouts.add(matchedModule.id)
+          mainSegments.push({
+            doc: [
+              lang === 'es'
+                ? `**Módulo: ${matchedModule.name}.js**`
+                : `**Module: ${matchedModule.name}.js**`,
+              lang === 'es'
+                ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
+                : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
+            ],
+            code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
+            start: matchedModule.startLine,
+            companionModule: matchedModule,
+          })
+        }
+        if (mainPartCode) {
+          mainSegments.push({
+            doc: lang === 'es' ? ['Flujo principal de ejecución'] : ['Main execution flow'],
+            code: mainPartCode,
+            start: seg.start,
+          })
+        }
+      } else {
+        // Add segment to companion module walkthrough
+        matchedModule.segments.push(seg)
+
+        // Add a single companion callout row in main walkthrough at the insertion point
+        if (!insertedCallouts.has(matchedModule.id)) {
+          insertedCallouts.add(matchedModule.id)
+          mainSegments.push({
+            doc: [
+              lang === 'es'
+                ? `**Módulo: ${matchedModule.name}.js**`
+                : `**Module: ${matchedModule.name}.js**`,
+              lang === 'es'
+                ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
+                : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
+            ],
+            code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
+            start: matchedModule.startLine,
+            companionModule: matchedModule,
+          })
+        }
       }
     } else {
       mainSegments.push(seg)

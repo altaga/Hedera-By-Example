@@ -160,6 +160,7 @@ class EnterpriseKmsAdapter {
   }
 }
 
+// Punto de entrada: Inicializar cliente AWS KMS y ejecutar flujo de custodia
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Firmador Enterprise con AWS KMS ---\n')
 
