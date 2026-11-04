@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laboratorio 07: NFTs Dinámicos (HIP-765)
- * [ CONCEPTO ] Metadatos Mutables en HTS
+ * [CONCEPTO] Metadatos Mutables en HTS
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Históricamente, los NFTs en Hedera eran estrictamente inmutables una vez
@@ -53,7 +53,7 @@ const main = async () => {
 
   try {
     // 1. Crear una Colección NFT CON una Metadata Key
-    console.log('[⚙️ PROCESO] Creando Colección de NFT Dinámicos...')
+    console.log('[PROCESO] Creando Colección de NFT Dinámicos...')
     const tokenId = await reuseToken('REUSE_M3_07_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
         .setTokenName('Espadas Dinamicas')
@@ -71,10 +71,10 @@ const main = async () => {
     }, { check: (t) => !!t.metadata_key })
     let tx, signTx, submitTx, receipt // los reutilizan los pasos siguientes
 
-    console.log(`[✅ ÉXITO] ¡Colección creada! ID del Token: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] ¡Colección creada! ID del Token: ${tokenId.toString()}`)
 
     // 2. Mintear un NFT estático de Nivel 1
-    console.log('\n[⚙️ PROCESO] Minteando una Espada de Nivel 1...')
+    console.log('\n[PROCESO] Minteando una Espada de Nivel 1...')
     const metadataLevel1 = Buffer.from('ipfs://bafkreihq.../nivel1.json')
 
     tx = await new TokenMintTransaction()
@@ -87,16 +87,16 @@ const main = async () => {
     receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
 
-    console.log(`[✅ ÉXITO] Minteado el Serie #${serialNum}`)
+    console.log(`[ÉXITO] Minteado el Serie #${serialNum}`)
 
     // 3. Consultar los metadatos actuales
     let nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log(`[📊 REGISTRO] Metadatos Iniciales: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`[REGISTRO] Metadatos Iniciales: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
     // 4. Actualizar los metadatos del NFT (¡Subir de nivel!)
-    console.log('\n[⚙️ PROCESO] El jugador derrotó al jefe. Subiendo la Espada a Nivel 2...')
+    console.log('\n[PROCESO] El jugador derrotó al jefe. Subiendo la Espada a Nivel 2...')
     const metadataLevel2 = Buffer.from('ipfs://bafybeig.../nivel2.json')
 
     tx = await new TokenUpdateNftsTransaction()
@@ -110,15 +110,15 @@ const main = async () => {
     submitTx = await signTx.execute(client)
     await submitTx.getReceipt(client)
 
-    console.log('[✅ ÉXITO] ¡Metadatos del NFT mutados on-chain!')
+    console.log('[ÉXITO] ¡Metadatos del NFT mutados on-chain!')
 
     // 5. Consultar para demostrar que los metadatos cambiaron
     nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log(`[📊 REGISTRO] Nuevos Metadatos: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`[REGISTRO] Nuevos Metadatos: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los NFTs Dinámicos abren nuevos paradigmas para videojuegos, cadenas de')
     console.log('suministro y boletaje. Hedera logra esto de forma segura en la capa base')
     console.log('sin depender de contratos inteligentes externos y hackeables.')
@@ -126,7 +126,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    console.error('\n[FALLO] Error de Ejecución:', error.message)
     process.exitCode = 1
   }
 }
@@ -135,7 +135,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

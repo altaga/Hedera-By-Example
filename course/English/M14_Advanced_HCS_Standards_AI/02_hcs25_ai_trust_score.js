@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: HCS-25 Portable AI Trust Score & Attestation Methodology
- * [ CONCEPT ] Decentralized Reputation & Trust Vector for Autonomous Agents
+ * [CONCEPT] Decentralized Reputation & Trust Vector for Autonomous Agents
  * ============================================================================
  * [ KEY CONCEPT ]
  * Portable AI Reputation: As autonomous agents manage capital, execute trades,
@@ -104,14 +104,14 @@ const main = async () => {
 
   try {
     // 1. Create HCS-25 Registry Topic
-    console.log('[⚙️ PROCESS] Initializing on-chain HCS-25 Agent Reputation Topic...')
+    console.log('[PROCESS] Initializing on-chain HCS-25 Agent Reputation Topic...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-25:AI:TRUST:REGISTRY')
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] HCS-25 Trust Registry Topic Created: ${topicId}`)
+    console.log(`[SUCCESS] HCS-25 Trust Registry Topic Created: ${topicId}`)
 
     // 2. Define Autonomous Agent & Performance Metrics
     const targetAgentId = '0.0.8707881'
@@ -121,10 +121,10 @@ const main = async () => {
       humanFeedbackScore: 0.940 // 94.0% positive customer satisfaction / review rating
     }
 
-    console.log(`\n[⚙️ PROCESS] Evaluating metrics for Target Agent (${targetAgentId}):`)
-    console.log(`[📊 LOG] Uptime Ratio:         ${(agentMetrics.uptimeRatio * 100).toFixed(2)}%`)
-    console.log(`[📊 LOG] Consensus Accuracy:   ${(agentMetrics.consensusAccuracy * 100).toFixed(2)}%`)
-    console.log(`[📊 LOG] Human Feedback Score: ${(agentMetrics.humanFeedbackScore * 100).toFixed(2)}%`)
+    console.log(`\n[PROCESS] Evaluating metrics for Target Agent (${targetAgentId}):`)
+    console.log(`[LOG] Uptime Ratio:         ${(agentMetrics.uptimeRatio * 100).toFixed(2)}%`)
+    console.log(`[LOG] Consensus Accuracy:   ${(agentMetrics.consensusAccuracy * 100).toFixed(2)}%`)
+    console.log(`[LOG] Human Feedback Score: ${(agentMetrics.humanFeedbackScore * 100).toFixed(2)}%`)
 
     // 3. Evaluator Quorum Signs Attestation
     const evaluators = [
@@ -132,7 +132,7 @@ const main = async () => {
       { evaluatorId: 'auditor-hashgraph-dao', privateKey: '0x2222222222222222222222222222222222222222222222222222222222222222' }
     ]
 
-    console.log('\n[⚙️ PROCESS] Compiling multi-signature HCS-25 attestation document...')
+    console.log('\n[PROCESS] Compiling multi-signature HCS-25 attestation document...')
     const attestation = createHCS25Attestation({
       agentAccountId: targetAgentId,
       epochNumber: 42,
@@ -140,13 +140,13 @@ const main = async () => {
       evaluators
     })
 
-    console.log(`[✅ SUCCESS] Composite Score Calculated: ${attestation.compositeScore} / 100`)
-    console.log(`[📊 LOG] Assigned Trust Tier: ${attestation.trustTier}`)
-    console.log(`[📊 LOG] Document Hash:       ${attestation.documentHash}`)
-    console.log(`[📊 LOG] Endorsement Count:   ${attestation.endorsements.length} independent signatures`)
+    console.log(`[SUCCESS] Composite Score Calculated: ${attestation.compositeScore} / 100`)
+    console.log(`[LOG] Assigned Trust Tier: ${attestation.trustTier}`)
+    console.log(`[LOG] Document Hash:       ${attestation.documentHash}`)
+    console.log(`[LOG] Endorsement Count:   ${attestation.endorsements.length} independent signatures`)
 
     // 4. Anchor Attestation to Hedera Consensus Stream
-    console.log('\n[⚙️ PROCESS] Committing HCS-25 Attestation to Hedera Consensus...')
+    console.log('\n[PROCESS] Committing HCS-25 Attestation to Hedera Consensus...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(attestation))
@@ -154,7 +154,7 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seqNum = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ SUCCESS] Attestation Anchored! Consensus Sequence #${seqNum}`)
+    console.log(`[SUCCESS] Attestation Anchored! Consensus Sequence #${seqNum}`)
 
     // 5. Verification Check against Authorized Evaluator Roster
     const authorizedRoster = new Set(
@@ -168,7 +168,7 @@ const main = async () => {
       }
     }
 
-    console.log(`\n[📊 AUDIT] Cryptographic Verification: ${validSigs}/${attestation.endorsements.length} Signatures VALID`)
+    console.log(`\n[AUDIT] Cryptographic Verification: ${validSigs}/${attestation.endorsements.length} Signatures VALID`)
 
     // Persist state
     updateState('HCS25_TOPIC_ID', topicId)
@@ -176,18 +176,18 @@ const main = async () => {
     updateState('HCS25_COMPOSITE_SCORE', attestation.compositeScore)
     updateState('HCS25_TRUST_TIER', attestation.trustTier)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Under HCS-25, an agent\'s creditworthiness is a verifiable on-chain fact.')
     console.log('Lending protocols, automated markets, and other agents can query Topic')
     console.log(`${topicId} to set dynamic collateral ratios and rate limits automatically.`)
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Without a cryptographic reputation layer, the autonomous AI agent economy would')
     console.log('collapse under Sybil attacks. HCS acts as the impartial credit bureau of Web3.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-25 Execution Failure:', error.message)
+    console.error('\n[ERROR] HCS-25 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -198,7 +198,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

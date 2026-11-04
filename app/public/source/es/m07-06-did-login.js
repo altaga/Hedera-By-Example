@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Login Criptográfico con DID
- * [ CONCEPTO ] Autenticación sin Contraseñas y Pruebas de Posesión
+ * [CONCEPTO] Autenticación sin Contraseñas y Pruebas de Posesión
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Adiós a las Contraseñas: El flujo de login basado en DID sustituye las
@@ -46,14 +46,14 @@ const main = async () => {
   const topicId = getState('DID_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FALLO] No se encontró DID_TOPIC_ID en el estado local. Ejecuta Lab 05 primero.')
+    console.error('[FALLO] No se encontró DID_TOPIC_ID en el estado local. Ejecuta Lab 05 primero.')
     process.exitCode = 1
     return
   }
 
   try {
     // --- FASE 1: RESOLUCIÓN DEL DID DESDE EL LEDGER ---
-    console.log(`[⚙️ PROCESO] Resolviendo DID Document para el Tema: ${topicId}...`)
+    console.log(`[PROCESO] Resolviendo DID Document para el Tema: ${topicId}...`)
 
     // Consulta al Mirror Node para obtener el estado actual de la identidad
     // El Mirror Node muestra el mensaje unos segundos después del consenso; esperamos.
@@ -71,15 +71,15 @@ const main = async () => {
     const messageJson = Buffer.from(data.messages[0].message, 'base64').toString()
     const didDocument = JSON.parse(messageJson)
 
-    console.log(`[✅ ÉXITO] Identidad Resuelta para: ${didDocument.nickname}`)
-    console.log(`[📊 REGISTRO] Biografía Declarada: ${didDocument.bio}`)
+    console.log(`[ÉXITO] Identidad Resuelta para: ${didDocument.nickname}`)
+    console.log(`[REGISTRO] Biografía Declarada: ${didDocument.bio}`)
 
     // --- FASE 2: GENERACIÓN DEL DESAFÍO (EL "CHALLENGE") ---
     const desafio = `CHALLENGE_HE_ES_${Math.random().toString(36).substring(7)}_${Date.now()}`
-    console.log(`\n[ℹ️ INFO] Desafío del Servidor generado: ${desafio}`)
+    console.log(`\n[INFO] Desafío del Servidor generado: ${desafio}`)
 
     // --- FASE 3: AUDITORÍA DE FIRMAS ---
-    console.log('\n--- 📊 [REGISTRO] Ejecutando Pruebas de Verificación ---')
+    console.log('\n---  [REGISTRO] Ejecutando Pruebas de Verificación ---')
     const bytes = new TextEncoder().encode(desafio)
 
     // Recuperamos la llave pública del DID Document para la verificación
@@ -89,31 +89,31 @@ const main = async () => {
       : PublicKey.fromString(pubKeyStr)
 
     // A. PRUEBA DE FALLO: Firma con cuenta no autorizada
-    console.log('[⚙️ PROCESO] PRUEBA A: Intentando login con Cuenta No Autorizada...')
+    console.log('[PROCESO] PRUEBA A: Intentando login con Cuenta No Autorizada...')
     const account1Key = PrivateKey.fromString(process.env.ACCOUNT_1_PRIVATE_KEY)
     const firmaFallida = account1Key.sign(bytes)
 
     if (publicKey.verify(bytes, firmaFallida)) {
-      console.log('   └─ [ERROR] Fallo de Seguridad: Una firma no autorizada fue aceptada.')
+      console.log('└─ [ERROR] Fallo de Seguridad: Una firma no autorizada fue aceptada.')
     } else {
-      console.log('   └─ [✅ ÉXITO] Acceso Denegado: La firma no coincide con el dueño del DID.')
+      console.log('└─ [ÉXITO] Acceso Denegado: La firma no coincide con el dueño del DID.')
     }
 
     // B. PRUEBA DE ÉXITO: Firma con el titular del DID
-    console.log('\n[⚙️ PROCESO] PRUEBA B: Intentando login con el Dueño Autorizado (Operador)...')
+    console.log('\n[PROCESO] PRUEBA B: Intentando login con el Dueño Autorizado (Operador)...')
     const operatorKeyObj = PrivateKey.fromString(operatorKey)
     const firmaCorrecta = operatorKeyObj.sign(bytes)
 
     if (publicKey.verify(bytes, firmaCorrecta)) {
-      console.log('\n🎉 --- [✅ ÉXITO] ¡AUTENTICACIÓN EXITOSA! ---')
-      console.log(`   [ℹ️ INFO] Sesión iniciada como: ${didDocument.nickname}`)
-      console.log(`   [📊 REGISTRO]  ${didDocument.id}`)
+      console.log('\n --- [ÉXITO] ¡AUTENTICACIÓN EXITOSA! ---')
+      console.log(`[INFO] Sesión iniciada como: ${didDocument.nickname}`)
+      console.log(`[REGISTRO]  ${didDocument.id}`)
       console.log('--------------------------------------------------')
     } else {
       console.log('\n   └─ [ERROR] Error Crítico: La firma legítima fue rechazada por el verificador.')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El login criptográfico elimina los puntos únicos de fallo')
     console.log('(como bases de datos de contraseñas filtradas). El riesgo se')
     console.log('traslada al borde (edge): el usuario es responsable de su')
@@ -121,7 +121,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El flujo de autenticación DID falló:', error.message)
+    console.error('\n[FALLO] El flujo de autenticación DID falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -130,7 +130,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

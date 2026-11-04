@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Registro Descentralizado HCS-6
- * [ CONCEPTO ] Descubrimiento de Servicios On-Chain
+ * [CONCEPTO] Descubrimiento de Servicios On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * HCS-6 es un estándar de la comunidad para crear registros descentralizados
@@ -49,14 +49,14 @@ const main = async () => {
 
   try {
     // 1. Crear un Tópico para que actúe como nuestro Registro descentralizado
-    console.log('[⚙️ PROCESO] Creando un Tópico HCS para el Registro...')
+    console.log('[PROCESO] Creando un Tópico HCS para el Registro...')
     let tx = await new TopicCreateTransaction()
       .setTopicMemo('Registro Global de Apps HCS-6')
       .execute(client)
 
     let receipt = await tx.getReceipt(client)
     const topicId = receipt.topicId
-    console.log(`[✅ ÉXITO] Tópico del Registro creado: ${topicId.toString()}`)
+    console.log(`[ÉXITO] Tópico del Registro creado: ${topicId.toString()}`)
 
     // 2. Definir la Carga Útil Compatible con HCS-6
     // El estándar HCS-6 dicta una estructura JSON específica para registrar un servicio.
@@ -73,7 +73,7 @@ const main = async () => {
       }
     }
 
-    console.log('\n[⚙️ PROCESO] Enviando Carga Útil de Registro HCS-6...')
+    console.log('\n[PROCESO] Enviando Carga Útil de Registro HCS-6...')
     console.log(JSON.stringify(hcs6Payload, null, 2))
 
     tx = await new TopicMessageSubmitTransaction()
@@ -82,10 +82,10 @@ const main = async () => {
       .execute(client)
 
     receipt = await tx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡App registrada on-chain! Número de Secuencia: ${receipt.topicSequenceNumber.toString()}`)
+    console.log(`[ÉXITO] ¡App registrada on-chain! Número de Secuencia: ${receipt.topicSequenceNumber.toString()}`)
 
     // 3. Suscribirse al Registro para descubrir aplicaciones
-    console.log('\n[⚙️ PROCESO] Suscribiéndose al Registro para descubrir nuevos servicios...')
+    console.log('\n[PROCESO] Suscribiéndose al Registro para descubrir nuevos servicios...')
 
     // Usamos una Promesa para esperar a que el mensaje se propague por el mirror node
     await new Promise((resolve) => {
@@ -94,13 +94,13 @@ const main = async () => {
         .setStartTime(0)
         .subscribe(
           client,
-          (error) => { console.error('[❌ FALLO] Error de Suscripción:', error); process.exit(1) },
+          (error) => { console.error('[FALLO] Error de Suscripción:', error); process.exit(1) },
           (message) => {
             const content = Buffer.from(message.contents).toString('utf8')
             try {
               const parsed = JSON.parse(content)
               if (parsed.p === 'hcs-6' && parsed.op === 'register') {
-                console.log('\n[🔍 DESCUBIERTO] ¡Nueva dApp Registrada!')
+                console.log('\n[DESCUBIERTO] ¡Nueva dApp Registrada!')
                 console.log(`- Nombre: ${parsed.name}`)
                 console.log(`- Desc:   ${parsed.description}`)
                 console.log(`- URL:    ${parsed.url}`)
@@ -110,13 +110,13 @@ const main = async () => {
                 resolve()
               }
             } catch (e) {
-              console.log('[ℹ️ INFO] Mensaje no JSON ignorado.')
+              console.log('[INFO] Mensaje no JSON ignorado.')
             }
           }
         )
     })
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-6 permite al ecosistema construir App Stores descentralizadas donde')
     console.log('ninguna entidad individual puede bloquear a un desarrollador. Actúa como')
     console.log('una sección amarilla global y resistente a la censura para servicios Web3.')
@@ -124,7 +124,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    console.error('\n[FALLO] Error de Ejecución:', error.message)
     process.exitCode = 1
   }
 }
@@ -133,7 +133,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

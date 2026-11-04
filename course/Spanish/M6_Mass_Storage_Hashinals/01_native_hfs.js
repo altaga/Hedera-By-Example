@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Almacenamiento Nativo en HFS
- * [ CONCEPTO ] Persistencia de Capa 1 y Anclas de Veracidad
+ * [CONCEPTO] Persistencia de Capa 1 y Anclas de Veracidad
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Inmutabilidad Nativa: El Hedera File Service (HFS) es la capa de
@@ -56,9 +56,9 @@ const main = async () => {
     }
 
     const imageBuffer = fs.readFileSync(imagePath)
-    console.log(`[ℹ️ INFO] Recurso detectado: ${imagePath} (${imageBuffer.length} bytes)`)
+    console.log(`[INFO] Recurso detectado: ${imagePath} (${imageBuffer.length} bytes)`)
 
-    console.log('[⚙️ PROCESO] Creando contenedor de archivos persistente en Hedera...')
+    console.log('[PROCESO] Creando contenedor de archivos persistente en Hedera...')
 
     // Crea el archivo en HFS: hasta ~4 KB por transacción; el resto se agrega con appends.
     const transaction = await new FileCreateTransaction()
@@ -72,13 +72,13 @@ const main = async () => {
     const receipt = await response.getReceipt(client)
     const fileId = receipt.fileId
 
-    console.log(`[✅ ÉXITO] Archivo creado con éxito: ${fileId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[ÉXITO] Archivo creado con éxito: ${fileId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     // Sincronizar para uso en laboratorios posteriores (HCS-1)
     updateState('HFS_FILE_ID', fileId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Acabas de anclar un activo binario directamente al ledger.')
     console.log('Este File ID es ahora una dirección permanente. Cualquier')
     console.log('aplicación puede consultar su contenido vía REST API del')
@@ -88,7 +88,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La creación del archivo nativo HFS falló:', error.message)
+    console.error('\n[FALLO] La creación del archivo nativo HFS falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -97,7 +97,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

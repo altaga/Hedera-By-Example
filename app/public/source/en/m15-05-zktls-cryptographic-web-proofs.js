@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: zk-TLS & Cryptographic Web Proofs (TLSNotary / Reclaim Model)
- * [ CONCEPT ] Zero-Knowledge Web2 Attestation Anchored to Hedera Consensus
+ * [CONCEPT] Zero-Knowledge Web2 Attestation Anchored to Hedera Consensus
  * ============================================================================
  * [ KEY CONCEPT ]
  * Modern RWA tokenization and institutional DeFi require off-chain Web2 data verification
@@ -28,14 +28,14 @@
  * - Reclaim Protocol Whitepaper: https://docs.reclaimprotocol.org/
  * - Hedera Consensus Service: https://docs.hedera.com/hedera/services/consensus-service
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Prover -> Bank: TLS 1.3 session (simulated)
  * Notary -> Prover: Signs a commitment to the response (Ed25519)
  * Note Prover: Reveals only the claim, not the private data
  * Prover -> Hedera: Proof on HCS
  * Verifier -> Hedera: Check the notary signature and commitment
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The TLS session with the bank and the notary are emulated. The signatures and the HCS proof are real.
  *
  * [ BEFORE YOU RUN ]
@@ -130,13 +130,13 @@ class ZkWebProver {
 
 async function main () {
   console.log('====================================================================')
-  console.log('🛡️ ZK-TLS LAB 05: CRYPTOGRAPHIC WEB PROOFS & SELECTIVE DISCLOSURE')
+  console.log('ZK-TLS LAB 05: CRYPTOGRAPHIC WEB PROOFS & SELECTIVE DISCLOSURE')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
 
     // 1. Provision HCS Topic for zk-TLS Compliance Attestation Stream
     console.log('\n[1/5] Creating Dedicated zk-TLS Compliance HCS Topic...')
@@ -146,16 +146,16 @@ async function main () {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TOPIC CREATED] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TOPIC CREATED] ID: ${topicId}`)
+    console.log(`[EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Initialize MPC Notary Node and Client Prover
     console.log('\n[2/5] Initializing Decentralized Notary & Client Prover...')
     const notary = new ZkNotaryNode()
     const prover = new ZkWebProver(operatorId.toString())
 
-    console.log(`[🏛️ NOTARY NODE] ${notary.notaryId}`)
-    console.log('[🔑 NOTARY KEY] Ed25519 Attestation Key initialized.')
+    console.log(`[ NOTARY NODE] ${notary.notaryId}`)
+    console.log('[ NOTARY KEY] Ed25519 Attestation Key initialized.')
 
     // 3. Emulate HTTPS TLS 1.3 Session with Institutional Financial Endpoint
     console.log('\n[3/5] Emulating Verifiable TLS 1.3 Session with Bank Endpoint...')
@@ -173,16 +173,16 @@ async function main () {
       }
     }
 
-    console.log(`[🔒 TLS 1.3 SESSION] Connected to: https://${serverDomain}/v1/accredited-status`)
-    console.log('   • Confidential PII: Account Number, SSN, Legal Name (REDACTED & BLINDED)')
-    console.log('   • Certified Metric: Net Worth = $2,500,000 USD (Meets $1M+ Accredited Threshold)')
+    console.log(`[ TLS 1.3 SESSION] Connected to: https://${serverDomain}/v1/accredited-status`)
+    console.log('• Confidential PII: Account Number, SSN, Legal Name (REDACTED & BLINDED)')
+    console.log('• Certified Metric: Net Worth = $2,500,000 USD (Meets $1M+ Accredited Threshold)')
 
     // 4. Client Generates Zero-Knowledge Blinding Commitment
     console.log('\n[4/5] Client Generating Zero-Knowledge Commitment & Notary Attestation...')
     const { publicClaim, blindedCommitmentHash } = prover.preparePrivateProof(rawBankTlsResponse)
 
-    console.log(`[👁️ PUBLIC CLAIM] Type: ${publicClaim.claimType} | Accredited: ${publicClaim.isAccredited}`)
-    console.log(`[🔒 BLINDED HASH] SHA-256 Commitment: ${blindedCommitmentHash}`)
+    console.log(`[ PUBLIC CLAIM] Type: ${publicClaim.claimType} | Accredited: ${publicClaim.isAccredited}`)
+    console.log(`[ BLINDED HASH] SHA-256 Commitment: ${blindedCommitmentHash}`)
 
     // Notary validates TLS session transcript and issues cryptographic attestation
     const webProof = notary.notarizeClaim(serverDomain, publicClaim, blindedCommitmentHash)
@@ -199,7 +199,7 @@ async function main () {
     if (!isNotarySigValid) {
       throw new Error('Notary attestation cryptographic signature validation failed')
     }
-    console.log(`[✅ NOTARY ATTESTATION] Signature verified: ${webProof.notarySignatureHex.substring(0, 32)}...`)
+    console.log(`[ NOTARY ATTESTATION] Signature verified: ${webProof.notarySignatureHex.substring(0, 32)}...`)
 
     // 5. Anchor zk-TLS Web Proof Attestation to Hedera Consensus
     console.log('\n[5/5] Anchoring zk-TLS Web Proof Attestation to Hedera Consensus...')
@@ -217,26 +217,26 @@ async function main () {
       .execute(client)
 
     const attestationReceipt = await attestationSubmitTx.getReceipt(client)
-    console.log(`[✅ PROOF ANCHORED] Sequence #${attestationReceipt.topicSequenceNumber} on HCS`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(attestationSubmitTx.transactionId.toString())}`)
+    console.log(`[ PROOF ANCHORED] Sequence #${attestationReceipt.topicSequenceNumber} on HCS`)
+    console.log(`[EXPLORER] ${getHashscanUrl(attestationSubmitTx.transactionId.toString())}`)
 
     // Persist State
     updateState('ZKTLS_TOPIC_ID', topicId)
     updateState('ZKTLS_BLINDED_COMMITMENT', blindedCommitmentHash)
     updateState('ZKTLS_NOTARY_ID', notary.notaryId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('zk-TLS proves off-chain Web2 data without exposing credentials or confidential PII.')
     console.log('Users selective disclose claims, blind private fields via cryptographic commitments,')
     console.log('and anchor the notary attestation to Hedera Consensus Service for verifiable compliance.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Never post confidential banking statements or personal identity data directly on-chain.')
     console.log('Zero-knowledge commitments allow instant mathematical verification while preserving 100% privacy.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] zk-TLS Web Proof Execution Failure:', error.message)
+    console.error('\n[ERROR] zk-TLS Web Proof Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -247,7 +247,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

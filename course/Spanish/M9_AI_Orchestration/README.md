@@ -1,4 +1,4 @@
-# 🤖 Módulo 9: La Economía de la IA Agéntica
+# Módulo 9: La Economía de la IA Agéntica
 ## Orquestación de Protocolos Atómicos y Comercio Autónomo
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Currículo Atómico
+## Mapa del Currículo Atómico
 Este módulo se enfoca en la comunicación y soberanía de los agentes de IA.
 
 | Lab | Tema | Descripción |
@@ -25,7 +25,7 @@ Este módulo se enfoca en la comunicación y soberanía de los agentes de IA.
 
 ---
 
-## 🔐 Handshake de Agentes (HCS-10)
+## Handshake de Agentes (HCS-10)
 
 Antes de que dos agentes intercambien datos sensibles, deben realizar un "Apretón de Manos" (Handshake) para verificar sus identidades y acordar una clave de sesión.
 
@@ -71,7 +71,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. UAID (Universal Agent ID)
 En la economía agéntica, la identidad es la primera capa de confianza. El estándar **HCS-14** proporciona un identificador único global que persiste a través de diferentes redes y entornos, permitiendo que un agente mantenga su reputación.
@@ -84,11 +84,11 @@ A diferencia de los bots tradicionales, los agentes de Hedera pueden tomar decis
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [HCS-10: OpenConvAI Standard](https://github.com/hashgraphonline/standards)
 - [HCS-14: Universal Agent ID (UAID)](https://github.com/hashgraphonline/standards)
 - [Hybrid Encryption Best Practices (NIST)](https://csrc.nist.gov/publications/detail/sp/800-56b/rev-2/final)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. INDEPENDENCIA AGÉNTICA.
+ 2026 **HEDERA PARA DUMMIES**. INDEPENDENCIA AGÉNTICA.

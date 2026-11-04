@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 04: Reactor de Event Sourcing en Tiempo Real (Mirror Stream + SQLite CQRS en Memoria)
- * [ CONCEPTO ] Modelo de Lectura Relacional de Sub-Milisegundo sobre Eventos de Hedera
+ * [CONCEPTO] Modelo de Lectura Relacional de Sub-Milisegundo sobre Eventos de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En arquitecturas fintech y exchanges descentralizados (DEX) de producción, depender
@@ -86,12 +86,12 @@ const main = async () => {
 
   try {
     // 1. Inicializar el Motor Relacional en Memoria Embebido `node:sqlite`
-    console.log('[⚙️ PROCESO] Inicializando Motor Relacional en Memoria `node:sqlite` Embebido...')
+    console.log('[PROCESO] Inicializando Motor Relacional en Memoria `node:sqlite` Embebido...')
     const db = setupInMemoryDatabase()
-    console.log('[✅ ÉXITO] Esquema CQRS SQLite Materializado (Tablas: `transactions`, `account_aggregates`)')
+    console.log('[ÉXITO] Esquema CQRS SQLite Materializado (Tablas: `transactions`, `account_aggregates`)')
 
     // 2. Lado de Comandos: Generar un Evento de Consenso en Vivo en Hedera Testnet
-    console.log('\n[⚙️ PROCESO] [LADO DE COMANDOS] Generando Evento de Consenso en Vivo en Hedera Testnet...')
+    console.log('\n[PROCESO] [LADO DE COMANDOS] Generando Evento de Consenso en Vivo en Hedera Testnet...')
     const dummyRecipient = AccountId.fromString('0.0.8707881')
     const microTransferTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.01))
@@ -100,15 +100,15 @@ const main = async () => {
       .execute(client)
 
     const receipt = await microTransferTx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Comando de Consenso Liquidado! Estado: ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${microTransferTx.transactionId.toString()}`)
+    console.log(`[ÉXITO] ¡Comando de Consenso Liquidado! Estado: ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${microTransferTx.transactionId.toString()}`)
 
     // Permitir una breve ventana para la propagación del evento hacia el Mirror Node
-    console.log('\n[⚙️ PROCESO] Esperando 3.5s para la propagación del evento en el Mirror Node...')
+    console.log('\n[PROCESO] Esperando 3.5s para la propagación del evento en el Mirror Node...')
     await sleep(3500)
 
     // 3. Reactor de Ingesta: Ingestar y materializar eventos del Mirror Node en SQLite
-    console.log('[⚙️ PROCESO] [REACTOR DE INGESTA] Obteniendo eventos de transacción del Mirror Node...')
+    console.log('[PROCESO] [REACTOR DE INGESTA] Obteniendo eventos de transacción del Mirror Node...')
     const baseUrl = getMirrorNodeBaseUrl()
     const mirrorResponse = await fetch(`${baseUrl}/api/v1/transactions?account.id=${operatorId.toString()}&limit=25&order=desc`)
 
@@ -118,7 +118,7 @@ const main = async () => {
 
     const mirrorData = await mirrorResponse.json()
     const transactions = mirrorData.transactions || []
-    console.log(`[📊 REGISTRO] Obtenidos ${transactions.length} eventos históricos del Mirror Node.`)
+    console.log(`[REGISTRO] Obtenidos ${transactions.length} eventos históricos del Mirror Node.`)
 
     // Sentencias preparadas para inserción de alto rendimiento en lote
     const insertTxStmt = db.prepare(`
@@ -169,10 +169,10 @@ const main = async () => {
       ingestedCount++
     }
     db.exec('COMMIT')
-    console.log(`[✅ ÉXITO] Se materializaron ${ingestedCount} eventos en el Modelo de Lectura SQLite Local.`)
+    console.log(`[ÉXITO] Se materializaron ${ingestedCount} eventos en el Modelo de Lectura SQLite Local.`)
 
     // 4. Lado de Consultas: Ejecutar analíticas relacionales directamente desde memoria CPU
-    console.log('\n[⚡ MODELO CQRS] Ejecutando Agregaciones Analíticas sobre la Base de Datos SQLite en Memoria:')
+    console.log('\n[ MODELO CQRS] Ejecutando Agregaciones Analíticas sobre la Base de Datos SQLite en Memoria:')
     const aggregateQuery = db.prepare(`
       SELECT 
         account_id, 
@@ -187,7 +187,7 @@ const main = async () => {
     console.table(aggResult)
 
     // 5. Benchmark de Rendimiento CQRS (SQLite Local vs. Red REST)
-    console.log('\n[⚡ BENCHMARK CQRS] Comparativa de Latencia: SQLite Local vs. API REST de Mirror Node:')
+    console.log('\n[ BENCHMARK CQRS] Comparativa de Latencia: SQLite Local vs. API REST de Mirror Node:')
 
     // Benchmark de Consulta Local en Memoria
     const localStart = performance.now()
@@ -204,26 +204,26 @@ const main = async () => {
     const restEnd = performance.now()
     const restMs = restEnd - restStart
 
-    console.log(`[📊 MÉTRICA] Latencia de Lectura SQLite Local:  ${avgLocalMs.toFixed(4)} ms por consulta`)
-    console.log(`[📊 MÉTRICA] Latencia de Petición REST Remota:      ${restMs.toFixed(2)} ms por petición`)
-    console.log(`[🚀 ACELERACIÓN] ¡El Modelo de Lectura CQRS Local es ~${Math.round(restMs / avgLocalMs)}x MÁS RÁPIDO!`)
+    console.log(`[MÉTRICA] Latencia de Lectura SQLite Local:  ${avgLocalMs.toFixed(4)} ms por consulta`)
+    console.log(`[MÉTRICA] Latencia de Petición REST Remota:      ${restMs.toFixed(2)} ms por petición`)
+    console.log(`[ACELERACIÓN] ¡El Modelo de Lectura CQRS Local es ~${Math.round(restMs / avgLocalMs)}x MÁS RÁPIDO!`)
 
     updateState('CQRS_REACTOR_INGESTED_TXS', ingestedCount.toString())
     updateState('CQRS_SQLITE_LATENCY_MS', avgLocalMs.toFixed(4))
     updateState('CQRS_REST_LATENCY_MS', restMs.toFixed(2))
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('CQRS aísla la mutación de estado de la lectura de estado. Al materializar eventos')
     console.log('de consenso de Hedera en un motor SQLite embebido (`node:sqlite`), la aplicación')
     console.log('obtiene consultas analíticas en microsegundos e inmunidad ante límites de peticiones HTTP.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Nunca realices peticiones de red REST dentro de bucles de trading de alta frecuencia')
     console.log('o APIs de backend. Ingesta de forma reactiva, materializa localmente y consulta a velocidad de CPU.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución del Reactor CQRS:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución del Reactor CQRS:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -234,7 +234,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

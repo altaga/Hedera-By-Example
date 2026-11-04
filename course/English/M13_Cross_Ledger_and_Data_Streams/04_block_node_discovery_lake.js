@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Block Node Discovery & Decentralized Data Lake (HIP-1081 / HIP-1137)
- * [ CONCEPT ] Dynamic Network Discovery & Distributed Block Lake Querying
+ * [CONCEPT] Dynamic Network Discovery & Distributed Block Lake Querying
  * ============================================================================
  * [ KEY CONCEPT ]
  * Decentralized Data Lake: In Hedera's modular architecture, consensus nodes
@@ -24,7 +24,7 @@
  * - Previous: M13 Lab 03: Block Stream & TSS Verification (HIP-1056)
  * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * Block Node discovery (HIP-1137) is simulated with a local registry.
  *
  * [ BEFORE YOU RUN ]
@@ -101,52 +101,52 @@ const main = async () => {
 
   try {
     // 1. Live Consensus Address Book + HIP-1137 Block Node Discovery
-    console.log('[⚙️ PROCESS] Querying live Hedera Address Book (/api/v1/network/nodes)...')
+    console.log('[PROCESS] Querying live Hedera Address Book (/api/v1/network/nodes)...')
     const liveNodes = await queryLiveNetworkNodes(network, 3)
-    console.log(`[✅ SUCCESS] Retrieved ${liveNodes.length} live consensus node descriptors from Mirror Node.`)
+    console.log(`[SUCCESS] Retrieved ${liveNodes.length} live consensus node descriptors from Mirror Node.`)
 
-    console.log('\n[⚙️ PROCESS] [ARCHITECTURAL SIMULATION] Mapping HIP-1137 Block Node gRPC descriptors...')
+    console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Mapping HIP-1137 Block Node gRPC descriptors...')
     const discoveredNodes = discoverBlockNodes(network, liveNodes)
 
-    console.log(`[✅ SUCCESS] Discovered ${discoveredNodes.length} active Block Lake Nodes:`)
+    console.log(`[SUCCESS] Discovered ${discoveredNodes.length} active Block Lake Nodes:`)
     for (const node of discoveredNodes) {
-      console.log(`[📊 LOG] Node ID:  ${node.nodeId.padEnd(22)} | Validator: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
+      console.log(`[LOG] Node ID:  ${node.nodeId.padEnd(22)} | Validator: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
     }
 
     // Select the lowest-latency healthy node
     const optimalNode = [...discoveredNodes].sort((a, b) => a.latencyMs - b.latencyMs)[0]
-    console.log(`\n[ℹ️ INFO] Selected optimal storage peer: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
+    console.log(`\n[INFO] Selected optimal storage peer: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
 
     // 2. Ingest Live Block Stream Range
     const targetBlockCount = 3
-    console.log(`\n[⚙️ PROCESS] Requesting ${targetBlockCount} consecutive live blocks from Hedera Mirror Node...`)
+    console.log(`\n[PROCESS] Requesting ${targetBlockCount} consecutive live blocks from Hedera Mirror Node...`)
     const blocks = await queryBlockRange(network, targetBlockCount)
 
     if (blocks.length < 2) {
       throw new Error('Insufficient block history returned from Block Node Lake.')
     }
 
-    console.log(`[✅ SUCCESS] Retrieved ${blocks.length} sequential blocks from live network:`)
+    console.log(`[SUCCESS] Retrieved ${blocks.length} sequential blocks from live network:`)
     for (const b of blocks) {
-      console.log(`[📊 LOG] Block #${b.number} | Txs: ${b.count} | Hash: ${b.hash.slice(0, 24)}... | Prev: ${b.previous_hash.slice(0, 24)}...`)
+      console.log(`[LOG] Block #${b.number} | Txs: ${b.count} | Hash: ${b.hash.slice(0, 24)}... | Prev: ${b.previous_hash.slice(0, 24)}...`)
     }
 
     // 3. Verify Cryptographic Continuity (Hash Chain Invariance)
-    console.log('\n[⚙️ PROCESS] Performing trustless hash-chain continuity verification...')
+    console.log('\n[PROCESS] Performing trustless hash-chain continuity verification...')
     // Note: Blocks are ordered desc: block[0] is latest, block[1] is prior
     for (let i = 0; i < blocks.length - 1; i++) {
       const current = blocks[i]
       const previous = blocks[i + 1]
 
       const isContinuous = current.previous_hash.toLowerCase() === previous.hash.toLowerCase()
-      console.log(`[📊 LOG] Block #${current.number} -> Block #${previous.number} link check: ${isContinuous ? 'VALID (MATCH)' : 'CORRUPTED'}`)
+      console.log(`[LOG] Block #${current.number} -> Block #${previous.number} link check: ${isContinuous ? 'VALID (MATCH)' : 'CORRUPTED'}`)
 
       if (!isContinuous) {
         throw new Error(`Hash chain discontinuity between #${current.number} and #${previous.number}`)
       }
     }
 
-    console.log('[✅ SUCCESS] Block Lake cryptographic continuity audit passed 100%!')
+    console.log('[SUCCESS] Block Lake cryptographic continuity audit passed 100%!')
 
     // Persist state
     updateState('BLOCK_NODE_OPTIMAL_ID', optimalNode.nodeId)
@@ -154,18 +154,18 @@ const main = async () => {
     updateState('BLOCK_LAKE_RANGE_START', blocks[blocks.length - 1].number)
     updateState('BLOCK_LAKE_RANGE_END', blocks[0].number)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Decoupling execution from long-term storage is the architectural foundation')
     console.log('of Hedera 2.0. Block Nodes (HIP-1081) allow indexers, audit tools, and light')
     console.log('clients to stream petabytes of history without degrading consensus performance.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('By querying dynamically discovered storage endpoints and verifying hash-chain')
     console.log('continuity locally, dApps remain resilient against single-RPC outages or tampering.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Block Node Lake Retrieval Failure:', error.message)
+    console.error('\n[ERROR] Block Node Lake Retrieval Failure:', error.message)
     process.exit(1)
   }
 }
@@ -174,7 +174,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

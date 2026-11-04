@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Flujo de Bloques en Hedera y Verificación TSS Agregada (HIP-1056)
- * [ CONCEPTO ] Ingesta Unificada de Bloques con Pruebas Criptográficas Umbral
+ * [CONCEPTO] Ingesta Unificada de Bloques con Pruebas Criptográficas Umbral
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Flujo de Bloques Unificado: Históricamente Hedera transmitía archivos de registro
@@ -26,7 +26,7 @@
  * - Actual:    M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
  * - Siguiente: M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * La verificación del quórum TSS es simulada (HIP-1056 aún no está activo).
  *
  * [ ANTES DE EJECUTAR ]
@@ -147,18 +147,18 @@ const main = async () => {
   const { network } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESO] Ingiriendo EN VIVO el bloque más reciente del Mirror Node de Hedera ${network}...`)
+    console.log(`[PROCESO] Ingiriendo EN VIVO el bloque más reciente del Mirror Node de Hedera ${network}...`)
     const { block: liveBlock, transactions: liveTxs } = await fetchLatestBlockAndTxs(network)
 
-    console.log('[✅ ÉXITO] Marco del Block Stream Ingerido en Vivo:')
-    console.log(`[📊 REGISTRO] Número de Bloque:        #${liveBlock.number}`)
-    console.log(`[📊 REGISTRO] Ventana de Consenso:     ${liveBlock.timestamp.from} -> ${liveBlock.timestamp.to}`)
-    console.log(`[📊 REGISTRO] Registros del Bloque:    ${liveBlock.count} (Muestreadas ${liveTxs.length} txs reales)`)
-    console.log(`[📊 REGISTRO] Hash Anterior:           ${liveBlock.previous_hash.slice(0, 32)}...`)
-    console.log(`[📊 REGISTRO] Hash Oficial:            ${liveBlock.hash.slice(0, 32)}...`)
+    console.log('[ÉXITO] Marco del Block Stream Ingerido en Vivo:')
+    console.log(`[REGISTRO] Número de Bloque:        #${liveBlock.number}`)
+    console.log(`[REGISTRO] Ventana de Consenso:     ${liveBlock.timestamp.from} -> ${liveBlock.timestamp.to}`)
+    console.log(`[REGISTRO] Registros del Bloque:    ${liveBlock.count} (Muestreadas ${liveTxs.length} txs reales)`)
+    console.log(`[REGISTRO] Hash Anterior:           ${liveBlock.previous_hash.slice(0, 32)}...`)
+    console.log(`[REGISTRO] Hash Oficial:            ${liveBlock.hash.slice(0, 32)}...`)
 
     // 2. Calcular Raíz Merkle sobre transacciones reales y construir encabezado HIP-1056
-    console.log('\n[⚙️ PROCESO] Calculando Raíz Merkle sobre transacciones reales y reconstruyendo encabezado...')
+    console.log('\n[PROCESO] Calculando Raíz Merkle sobre transacciones reales y reconstruyendo encabezado...')
     const txMerkleRoot = computeTransactionsMerkleRoot(liveTxs, liveBlock.hash)
     show.merkle({ title: 'Árbol de Merkle de las transacciones del bloque', leafCount: Math.max(liveTxs.length, 1), root: txMerkleRoot })
     const blockHeader = {
@@ -171,11 +171,11 @@ const main = async () => {
     }
 
     const calculatedHash = calculateBlockHash(blockHeader)
-    console.log(`[📊 REGISTRO] Raíz Merkle Transacciones: ${txMerkleRoot}`)
-    console.log(`[📊 REGISTRO] Resumen Canónico Bloque:   ${calculatedHash.slice(0, 48)}...`)
+    console.log(`[REGISTRO] Raíz Merkle Transacciones: ${txMerkleRoot}`)
+    console.log(`[REGISTRO] Resumen Canónico Bloque:   ${calculatedHash.slice(0, 48)}...`)
 
     // 3. [SIMULACIÓN ARQUITECTÓNICA] Ensamblar y verificar consenso agregado TSS
-    console.log('\n[⚙️ PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Verificando Quórum TSS HIP-1056...')
+    console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Verificando Quórum TSS HIP-1056...')
 
     const councilPrivateKeys = [
       '0x1111111111111111111111111111111111111111111111111111111111111111',
@@ -204,27 +204,27 @@ const main = async () => {
       throw new Error('¡El quórum TSS de bloque no logró el umbral de consenso de 2/3!')
     }
 
-    console.log('[✅ ÉXITO] ¡Quórum Criptográfico TSS Verificado Contra el Consejo Autorizado!')
-    console.log(`[📊 REGISTRO] Firmantes Validados:   ${signatures.length}/${tssProof.totalStakeUnits} validadores`)
-    console.log(`[📊 REGISTRO] Consenso de Stake:     ${(signatures.length / tssProof.totalStakeUnits * 100).toFixed(1)}% (Umbral: 66.7%)`)
+    console.log('[ÉXITO] ¡Quórum Criptográfico TSS Verificado Contra el Consejo Autorizado!')
+    console.log(`[REGISTRO] Firmantes Validados:   ${signatures.length}/${tssProof.totalStakeUnits} validadores`)
+    console.log(`[REGISTRO] Consenso de Stake:     ${(signatures.length / tssProof.totalStakeUnits * 100).toFixed(1)}% (Umbral: 66.7%)`)
 
     // Persistir estado
     updateState('BLOCK_STREAM_NUMBER', liveBlock.number)
     updateState('BLOCK_STREAM_HASH', liveBlock.hash)
     updateState('BLOCK_STREAM_TX_COUNT', liveBlock.count)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Bajo HIP-1056, los Block Streams eliminan la fragmentación de los antiguos archivos de registro.')
     console.log('Cada bloque es una unidad criptográficamente completa verificada por una prueba TSS sucinta,')
     console.log('facilitando clientes ligeros seguros, rollups de conocimiento cero y sincronización rápida EVM.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La agregación de firmas reduce el costo computacional de verificación de O(N) a O(1),')
     console.log('haciendo posible auditar el estado global de Hedera en dispositivos de recursos limitados.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Verificación de Block Stream:', error.message)
+    console.error('\n[ERROR] Fallo en Verificación de Block Stream:', error.message)
     process.exit(1)
   }
 }
@@ -233,7 +233,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

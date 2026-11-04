@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
- * [ CONCEPTO ] Descubrimiento Dinámico de Red y Consulta Distribuida del Lago
+ * [CONCEPTO] Descubrimiento Dinámico de Red y Consulta Distribuida del Lago
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Lago de Datos Descentralizado: En la arquitectura modular de Hedera, los nodos
@@ -25,7 +25,7 @@
  * - Anterior:  M13 Lab 03: Flujo de Bloques y Verificación TSS (HIP-1056)
  * - Siguiente: M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El descubrimiento de Block Nodes (HIP-1137) se simula con un registro local.
  *
  * [ ANTES DE EJECUTAR ]
@@ -102,51 +102,51 @@ const main = async () => {
 
   try {
     // 1. Libreta de Direcciones en Vivo + Descubrimiento de Block Nodes (HIP-1137)
-    console.log('[⚙️ PROCESO] Consultando libreta de direcciones activa de Hedera (/api/v1/network/nodes)...')
+    console.log('[PROCESO] Consultando libreta de direcciones activa de Hedera (/api/v1/network/nodes)...')
     const liveNodes = await queryLiveNetworkNodes(network, 3)
-    console.log(`[✅ ÉXITO] Se obtuvieron ${liveNodes.length} descriptores reales de nodos de consenso.`)
+    console.log(`[ÉXITO] Se obtuvieron ${liveNodes.length} descriptores reales de nodos de consenso.`)
 
-    console.log('\n[⚙️ PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Mapeando descriptores gRPC de Block Nodes (HIP-1137)...')
+    console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Mapeando descriptores gRPC de Block Nodes (HIP-1137)...')
     const discoveredNodes = discoverBlockNodes(network, liveNodes)
 
-    console.log(`[✅ ÉXITO] Se descubrieron ${discoveredNodes.length} nodos activos del Block Lake:`)
+    console.log(`[ÉXITO] Se descubrieron ${discoveredNodes.length} nodos activos del Block Lake:`)
     for (const node of discoveredNodes) {
-      console.log(`[📊 REGISTRO] Nodo ID:  ${node.nodeId.padEnd(22)} | Validador: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
+      console.log(`[REGISTRO] Nodo ID:  ${node.nodeId.padEnd(22)} | Validador: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
     }
 
     // Seleccionar el nodo saludable de menor latencia
     const optimalNode = [...discoveredNodes].sort((a, b) => a.latencyMs - b.latencyMs)[0]
-    console.log(`\n[ℹ️ INFO] Nodo de almacenamiento óptimo seleccionado: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
+    console.log(`\n[INFO] Nodo de almacenamiento óptimo seleccionado: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
 
     // 2. Ingerir Rango de Bloques en Vivo
     const targetBlockCount = 3
-    console.log(`\n[⚙️ PROCESO] Solicitando ${targetBlockCount} bloques consecutivos en vivo desde el Mirror Node...`)
+    console.log(`\n[PROCESO] Solicitando ${targetBlockCount} bloques consecutivos en vivo desde el Mirror Node...`)
     const blocks = await queryBlockRange(network, targetBlockCount)
 
     if (blocks.length < 2) {
       throw new Error('Historial de bloques insuficiente retornado por el Block Lake.')
     }
 
-    console.log(`[✅ ÉXITO] Se obtuvieron ${blocks.length} bloques secuenciales desde la red en vivo:`)
+    console.log(`[ÉXITO] Se obtuvieron ${blocks.length} bloques secuenciales desde la red en vivo:`)
     for (const b of blocks) {
-      console.log(`[📊 REGISTRO] Bloque #${b.number} | Txs: ${b.count} | Hash: ${b.hash.slice(0, 24)}... | Anterior: ${b.previous_hash.slice(0, 24)}...`)
+      console.log(`[REGISTRO] Bloque #${b.number} | Txs: ${b.count} | Hash: ${b.hash.slice(0, 24)}... | Anterior: ${b.previous_hash.slice(0, 24)}...`)
     }
 
     // 3. Verificar Continuidad Criptográfica (Invarianza de la Cadena de Hashes)
-    console.log('\n[⚙️ PROCESO] Ejecutando auditoría de continuidad en la cadena de hashes...')
+    console.log('\n[PROCESO] Ejecutando auditoría de continuidad en la cadena de hashes...')
     for (let i = 0; i < blocks.length - 1; i++) {
       const current = blocks[i]
       const previous = blocks[i + 1]
 
       const isContinuous = current.previous_hash.toLowerCase() === previous.hash.toLowerCase()
-      console.log(`[📊 REGISTRO] Enlace Bloque #${current.number} -> Bloque #${previous.number}: ${isContinuous ? 'VÁLIDO (COINCIDENCIA)' : 'CORROMPIDO'}`)
+      console.log(`[REGISTRO] Enlace Bloque #${current.number} -> Bloque #${previous.number}: ${isContinuous ? 'VÁLIDO (COINCIDENCIA)' : 'CORROMPIDO'}`)
 
       if (!isContinuous) {
         throw new Error(`Discontinuidad en la cadena de hashes entre #${current.number} y #${previous.number}`)
       }
     }
 
-    console.log('[✅ ÉXITO] ¡Auditoría de continuidad criptográfica del Block Lake superada al 100%!')
+    console.log('[ÉXITO] ¡Auditoría de continuidad criptográfica del Block Lake superada al 100%!')
 
     // Persistir estado
     updateState('BLOCK_NODE_OPTIMAL_ID', optimalNode.nodeId)
@@ -154,18 +154,18 @@ const main = async () => {
     updateState('BLOCK_LAKE_RANGE_START', blocks[blocks.length - 1].number)
     updateState('BLOCK_LAKE_RANGE_END', blocks[0].number)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El desacoplamiento de la ejecución respecto al almacenamiento a largo plazo es la base')
     console.log('arquitectónica de Hedera 2.0. Los Block Nodes (HIP-1081) permiten a indexadores, herramientas')
     console.log('de auditoría y clientes ligeros transmitir petabytes de historial sin afectar el consenso.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Al consultar endpoints descubiertos dinámicamente y verificar la continuidad de hashes localmente,')
     console.log('las dApps se vuelven inmunes a caídas o manipulaciones de proveedores centralizados de RPC.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo al Consultar el Block Node Lake:', error.message)
+    console.error('\n[ERROR] Fallo al Consultar el Block Node Lake:', error.message)
     process.exit(1)
   }
 }
@@ -174,7 +174,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Reconstrucción de NFT HCS-1
- * [ CONCEPTO ] Resolución Recursiva de Activos
+ * [CONCEPTO] Resolución Recursiva de Activos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Activos de Confianza Cero: Este script demuestra cómo resolver un NFT
@@ -41,14 +41,14 @@ const main = async () => {
   const mirrorNodeUrl = getMirrorNodeBaseUrl()
 
   if (!tokenId) {
-    console.error('[❌ FALLÓ] Falta el ID del Token en el estado. Ejecuta el Lab 07 primero.')
+    console.error('[FALLÓ] Falta el ID del Token en el estado. Ejecuta el Lab 07 primero.')
     process.exitCode = 1
     return
   }
 
   try {
     // 1. Obtener Puntero de Metadatos (Serial #1)
-    console.log(`[⚙️ PROCESO] Obteniendo Puntero de Metadatos para ${tokenId} Serial 1...`)
+    console.log(`[PROCESO] Obteniendo Puntero de Metadatos para ${tokenId} Serial 1...`)
     // Un NFT recién acuñado aparece en el Mirror Node unos segundos después del consenso.
     const nftResponse = await waitForMirror(async () => {
       const res = await fetch(`${mirrorNodeUrl}/api/v1/tokens/${tokenId}/nfts/1`)
@@ -58,7 +58,7 @@ const main = async () => {
 
     const nftData = await nftResponse.json()
     const rawMetadata = Buffer.from(nftData.metadata, 'base64').toString()
-    console.log(`[✅ ÉXITO] Puntero Encontrado: "${rawMetadata}"`)
+    console.log(`[ÉXITO] Puntero Encontrado: "${rawMetadata}"`)
 
     if (!rawMetadata.startsWith('hcs://')) {
       throw new Error('Este NFT no parece ser un NFT Nativo HCS-1.')
@@ -70,11 +70,11 @@ const main = async () => {
     const query = new URLSearchParams(queryPart || '')
     const metaFid = query.get('fid')
 
-    console.log(`[📊 LOG] Topic Destino: ${topicId}`)
-    console.log(`[📊 LOG] FID de Metadatos: ${metaFid}`)
+    console.log(`[LOG] Topic Destino: ${topicId}`)
+    console.log(`[LOG] FID de Metadatos: ${metaFid}`)
 
     // 2. Obtener todos los mensajes del Topic HCS
-    console.log(`\n[⚙️ PROCESO] Obteniendo mensajes HCS del Topic ${topicId}...`)
+    console.log(`\n[PROCESO] Obteniendo mensajes HCS del Topic ${topicId}...`)
     let nextLink = `/api/v1/topics/${topicId}/messages`
     const allMessages = []
 
@@ -84,7 +84,7 @@ const main = async () => {
       allMessages.push(...data.messages)
       nextLink = data.links?.next || null
     }
-    console.log(`[✅ ÉXITO] Se recuperaron ${allMessages.length} mensajes HCS totales.`)
+    console.log(`[ÉXITO] Se recuperaron ${allMessages.length} mensajes HCS totales.`)
 
     // Ayudante para reconstruir archivo desde shards
     const reconstructFile = (messages, targetFid) => {
@@ -110,10 +110,10 @@ const main = async () => {
     }
 
     // 3. Reconstruir JSON de Metadatos
-    console.log('\n[⚙️ PROCESO] Reconstruyendo JSON de Metadatos...')
+    console.log('\n[PROCESO] Reconstruyendo JSON de Metadatos...')
     const metaBuffer = reconstructFile(allMessages, metaFid)
     const metadata = JSON.parse(metaBuffer.toString())
-    console.log('[✅ ÉXITO] Metadatos Reconstruidos:')
+    console.log('[ÉXITO] Metadatos Reconstruidos:')
     console.log(JSON.stringify(metadata, null, 2))
 
     // 4. Extraer y Reconstruir Imagen
@@ -126,7 +126,7 @@ const main = async () => {
     const imageQuery = new URLSearchParams(imageQueryPart || '')
     const imageFid = imageQuery.get('fid')
 
-    console.log(`\n[⚙️ PROCESO] Reconstruyendo Imagen (FID: ${imageFid})...`)
+    console.log(`\n[PROCESO] Reconstruyendo Imagen (FID: ${imageFid})...`)
     const imageBuffer = reconstructFile(allMessages, imageFid)
 
     // 5. Guardar en Disco
@@ -138,10 +138,10 @@ const main = async () => {
     }
     fs.writeFileSync(outputPath, imageBuffer)
 
-    console.log('\n[🎉 ÉXITO] ¡Activo del NFT Reconstruido Completamente!')
-    console.log(`[ℹ️ INFO] Guardado en: ${outputPath}`)
+    console.log('\n[ÉXITO] ¡Activo del NFT Reconstruido Completamente!')
+    console.log(`[INFO] Guardado en: ${outputPath}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Activos de Confianza Cero: Nota cómo nunca usamos una base de datos')
     console.log('central o IPFS. Cada byte de los metadatos y la imagen vino directamente')
     console.log('del Hedera Consensus Service a través de un Mirror Node. Esto es')
@@ -149,7 +149,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLÓ] Reconstrucción Fallida:', error.message)
+    console.error('\n[FALLÓ] Reconstrucción Fallida:', error.message)
     process.exitCode = 1
   }
 }
@@ -158,7 +158,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

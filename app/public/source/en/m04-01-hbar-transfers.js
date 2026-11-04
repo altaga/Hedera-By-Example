@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Native HBAR Transfers
- * [ CONCEPT ] Peer-to-Peer Atomic Value Exchange
+ * [CONCEPT] Peer-to-Peer Atomic Value Exchange
  * ============================================================================
  * [ KEY CONCEPT ]
  * Finality: Unlike a blockchain where you wait for "confirmations", a
@@ -40,13 +40,13 @@ const main = async () => {
   const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID in .env.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID in .env.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[⚙️ PROCESS] Transferring 1 HBAR from ${operatorId} to ${targetId}...`)
+    console.log(`[PROCESS] Transferring 1 HBAR from ${operatorId} to ${targetId}...`)
 
     // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transaction = await new TransferTransaction()
@@ -56,13 +56,13 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ SUCCESS] Success! Transfer Status: ${receipt.status.toString()}`)
+    console.log(`\n[SUCCESS] Success! Transfer Status: ${receipt.status.toString()}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Finality: Unlike a blockchain where you wait for "confirmations", a')
     console.log('Hedera transfer is final in ~3-5 seconds. Once the nodes reach')
     console.log('consensus, the money has moved and cannot be reversed.')
@@ -70,7 +70,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Transfer Failed:', error.message)
+    console.error('\n[FAILED] Transfer Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -79,7 +79,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

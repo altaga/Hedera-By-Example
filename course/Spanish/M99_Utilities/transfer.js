@@ -21,7 +21,7 @@ const main = async () => {
   const senderKeyStr = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!senderId || !senderKeyStr) {
-    console.error('❌ Falta ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en el .env')
+    console.error('Falta ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en el .env')
     process.exit(1)
   }
 
@@ -42,10 +42,10 @@ const main = async () => {
     const response = await transaction.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`✅ ¡Éxito! Estado de Transferencia: ${receipt.status.toString()}`)
+    console.log(`¡Éxito! Estado de Transferencia: ${receipt.status.toString()}`)
     client.close()
   } catch (error) {
-    console.error('\n❌ La transferencia falló:', error.message)
+    console.error('\n La transferencia falló:', error.message)
     process.exit(1)
   }
 }

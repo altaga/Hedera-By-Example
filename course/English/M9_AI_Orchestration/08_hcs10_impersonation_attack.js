@@ -2,12 +2,12 @@
 /**
  * ============================================================================
  * Lab 08: The Impersonation Attack (Security Gap)
- * [ CONCEPT ] Vulnerability of Public Streams
+ * [CONCEPT] Vulnerability of Public Streams
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Identity Gap: In previous labs, we processed messages based purely on
  * content. Because HCS topics are public, anyone with the Topic ID can
- * publish "Spam" or "Forgeries." This lab introduces an Adversary (Agent C)
+ * publish "Spam" or "Forgeries."This lab introduces an Adversary (Agent C)
  * who attempts to hijack the conversation by spoofing the logic. You will
  * see that without cryptographic session validation, our agents are
  * defenseless against malicious actors who know the protocol format.
@@ -22,7 +22,7 @@
  * - Previous: M9 Lab 07: HCS-10 A2A Public
  * - Next:     M9 Lab 09: HCS-10 A2A Secure
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent A -> Agent B Inbox: Legitimate message
  * Attacker -> Agent B Inbox: Message claiming to be Agent A
  * Note Agent B: Without signatures it cannot tell them apart
@@ -62,7 +62,7 @@ const main = async () => {
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
   if (!agentA_Id || !agentB_Id || !agentC_Id) {
-    console.error('[❌ FAILED] Missing Agent IDs in configuration.')
+    console.error('[FAILED] Missing Agent IDs in configuration.')
     process.exitCode = 1
     return
   }
@@ -72,7 +72,7 @@ const main = async () => {
     const client = createClient().setOperator(agentB_Id, agentB_Key)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
-    console.log(`🛡️  [ℹ️ INFO] Agent B Listening on ${inbox} (Vulnerable Mode)`)
+    console.log(`[INFO] Agent B Listening on ${inbox} (Vulnerable Mode)`)
 
     // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
@@ -85,19 +85,19 @@ const main = async () => {
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
           if (data?.text?.includes('Hello')) {
-            console.log('\n--- 📥 [📊 LOG] AGENT B: RECEIVED REQUEST ---')
-            console.log(`[ℹ️ INFO] Content: "${data.text}"`)
+            console.log('\n---  [LOG] AGENT B: RECEIVED REQUEST ---')
+            console.log(`[INFO] Content: "${data.text}"`)
 
             const roundMatch = data.text.match(/\d+/)
             const round = roundMatch ? roundMatch[0] : '99'
 
-            console.log(`[⚙️ PROCESS] Agent B processing logic for Round ${round}...`)
+            console.log(`[PROCESS] Agent B processing logic for Round ${round}...`)
             await sleep(4000)
 
             await hcs10.sendMessage(outbox, { text: `World ${round}!`, target: agentA_Id })
-            console.log('[✅ SUCCESS] Response dispatched.')
+            console.log('[SUCCESS] Response dispatched.')
           }
-        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
+        } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
       })
   }
 
@@ -107,10 +107,10 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
-    console.log(`🤖 [ℹ️ INFO] Agent A Monitoring Outbox [${outbox}]`)
+    console.log(`[INFO] Agent A Monitoring Outbox [${outbox}]`)
 
     const sendPing = async (round) => {
-      console.log(`\n--- 🤖 [⚙️ PROCESS] AGENT A: SENDING ROUND ${round} ---`)
+      console.log(`\n---  [PROCESS] AGENT A: SENDING ROUND ${round} ---`)
       await hcs10.sendMessage(inbox, {
         operator_id: agentA_Id,
         text: `Hello ${round}`
@@ -122,14 +122,14 @@ const main = async () => {
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
-          console.log(`\n[✅ SUCCESS] AGENT A: SUCCESS for Round ${currentRound}.`)
+          console.log(`\n[SUCCESS] AGENT A: SUCCESS for Round ${currentRound}.`)
           if (currentRound < 3) {
             currentRound++
             await sleep(5000)
             await sendPing(currentRound)
           } else {
-            console.log('\n🏁 [✅ SUCCESS] Interaction complete.')
-            console.log('\n💡 KEY CONCEPT:')
+            console.log('\n [SUCCESS] Interaction complete.')
+            console.log('\n KEY CONCEPT:')
             console.log('The Identity Gap: In this lab, you saw how easily Agent C spoofed')
             console.log('the conversation. Without cryptographic session validation,')
             console.log('our agents are defenseless against malicious actors who know')
@@ -149,12 +149,12 @@ const main = async () => {
 
     for (let i = 0; i < 3; i++) {
       await sleep(Math.floor(Math.random() * 8000) + 5000)
-      console.log('\n--- 😈 [⚙️ PROCESS] ADVERSARY: INJECTING SPOOFED PACKET ---')
+      console.log('\n---  [PROCESS] ADVERSARY: INJECTING SPOOFED PACKET ---')
       await hcs10.sendMessage(inbox, {
         operator_id: agentA_Id,
         text: 'Hello 99 (MALICIOUS SPOOF)'
       })
-      console.log('[ℹ️ INFO] Spoofed packet published to target topic.')
+      console.log('[INFO] Spoofed packet published to target topic.')
     }
   }
 
@@ -167,7 +167,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

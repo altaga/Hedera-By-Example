@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
- * [ CONCEPT ] Composable On-Chain UI Assemblies & Supply-Chain Verified Adapters
+ * [CONCEPT] Composable On-Chain UI Assemblies & Supply-Chain Verified Adapters
  * ============================================================================
  * [ KEY CONCEPT ]
  * Hashgraph Online (hol.org) introduces two critical infrastructure standards
@@ -59,7 +59,7 @@ const main = async () => {
 
   try {
     // 1. HCS-21: Deploy an Official Adapter Registry Topic (`hcs-21:0:86400:0`)
-    console.log('[⚙️ PROCESS] Step 1 [HCS-21]: Deploying Verified Adapter Registry Topic...')
+    console.log('[PROCESS] Step 1 [HCS-21]: Deploying Verified Adapter Registry Topic...')
     const adapterRegistryTx = buildHcs21CreateRegistryTx({
       ttl: 86400,
       indexed: 0,
@@ -68,10 +68,10 @@ const main = async () => {
     }).setAutoRenewAccountId(operatorId.toString())
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const adapterTopicId = (await (await adapterRegistryTx.execute(client)).getReceipt(client)).topicId.toString()
-    console.log(`[✅ HCS-21] Adapter Registry Topic Created: ${adapterTopicId}`)
+    console.log(`[HCS-21] Adapter Registry Topic Created: ${adapterTopicId}`)
 
     // 2. HCS-21: Publish a Cryptographically Fingerprinted Adapter Declaration
-    console.log('\n[⚙️ PROCESS] Step 2 [HCS-21]: Registering Supply-Chain Verified Oracle Adapter...')
+    console.log('\n[PROCESS] Step 2 [HCS-21]: Registering Supply-Chain Verified Oracle Adapter...')
     // Hash the content: anyone can recompute this digest to verify the data.
     const artifactDigest = crypto.createHash('sha256')
       .update('@hol-org/pyth-saucer-adapter@1.4.0:dist/index.mjs')
@@ -102,20 +102,20 @@ const main = async () => {
       transactionMemo: 'hcs-21:op:register'
     })
     const hcs21Receipt = await (await hcs21MsgTx.execute(client)).getReceipt(client)
-    console.log(`[🛡️ HCS-21] Adapter Registered at Sequence #${hcs21Receipt.topicSequenceNumber}!`)
-    console.log(`[📊 DIGEST] Package Integrity: sha256-${artifactDigest.slice(0, 32)}...`)
+    console.log(`[HCS-21] Adapter Registered at Sequence #${hcs21Receipt.topicSequenceNumber}!`)
+    console.log(`[DIGEST] Package Integrity: sha256-${artifactDigest.slice(0, 32)}...`)
 
     // 3. HCS-12: Create a HashLinks Assembly Topic & Compose an Actionable Micro-App
-    console.log('\n[⚙️ PROCESS] Step 3 [HCS-12]: Creating HashLinks Assembly Topic (`hcs-12:0:86400:2`)...')
+    console.log('\n[PROCESS] Step 3 [HCS-12]: Creating HashLinks Assembly Topic (`hcs-12:0:86400:2`)...')
     const assemblyTopicTx = buildHcs12CreateRegistryTopicTx({
       registry: 'assembly',
       ttl: 86400
     }).setAutoRenewAccountId(operatorId.toString())
     const assemblyTopicId = (await (await assemblyTopicTx.execute(client)).getReceipt(client)).topicId.toString()
-    console.log(`[✅ HCS-12] HashLinks Assembly Topic Created: ${assemblyTopicId}`)
+    console.log(`[HCS-12] HashLinks Assembly Topic Created: ${assemblyTopicId}`)
 
     // Register the Assembly root metadata
-    console.log('[⚙️ PROCESS] Step 4 [HCS-12]: Composing HashLink Assembly (Register ➔ Add Action ➔ Add UI Block)...')
+    console.log('[PROCESS] Step 4 [HCS-12]: Composing HashLink Assembly (Register ➔ Add Action ➔ Add UI Block)...')
     const registerAssemblyTx = buildHcs12RegisterAssemblyTx({
       assemblyTopicId,
       registration: {
@@ -157,7 +157,7 @@ const main = async () => {
           onSwapClick: 'execute_atomic_swap'
         },
         data: {
-          title: '⚡ Instant HBAR ➔ USDC Swap',
+          title: 'Instant HBAR ➔ USDC Swap',
           buttonLabel: 'Swap 100 HBAR Now',
           theme: 'swiss-dark'
         }
@@ -166,27 +166,27 @@ const main = async () => {
     const blockReceipt = await (await addBlockTx.execute(client)).getReceipt(client)
 
     const hashLinkUri = `hcs://12/${assemblyTopicId}`
-    console.log(`[✅ HCS-12] HashLink Micro-App Assembled at Sequence #${blockReceipt.topicSequenceNumber}!`)
-    console.log(`[🔗 HASHLINK] Shareable Interactive URI: ${hashLinkUri}`)
+    console.log(`[HCS-12] HashLink Micro-App Assembled at Sequence #${blockReceipt.topicSequenceNumber}!`)
+    console.log(`[HASHLINK] Shareable Interactive URI: ${hashLinkUri}`)
 
     updateState('HCS21_ADAPTER_REGISTRY_TOPIC_ID', adapterTopicId)
     updateState('HCS21_PACKAGE_INTEGRITY', `sha256-${artifactDigest}`)
     updateState('HCS12_ASSEMBLY_TOPIC_ID', assemblyTopicId)
     updateState('HCS12_HASHLINK_URI', hashLinkUri)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-12 HashLinks package UI blocks and executable Hedera actions into a single')
     console.log('on-chain URI (`hcs://12/<topicId>`), while HCS-21 guarantees that the underlying')
     console.log('adapter code matches its immutable SHA-256 consensus fingerprint.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('When an AI agent presents an interactive transaction card to a user via HCS-12,')
     console.log('verifying the backing adapter via HCS-21 eliminates both frontend spoofing and')
     console.log('backend supply-chain poisoning in one unified flow.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-12 / HCS-21 Execution Failure:', error.message)
+    console.error('\n[ERROR] HCS-12 / HCS-21 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -197,7 +197,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

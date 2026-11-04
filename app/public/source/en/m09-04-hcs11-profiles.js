@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: HCS-11 AI Profiles (Spoofer Agent Provisioning)
- * [ CONCEPT ] Scaling Structured Identities and Audit
+ * [CONCEPT] Scaling Structured Identities and Audit
  * ============================================================================
  * [ KEY CONCEPT ]
  * Specialized Agents: Provisioning agents with HCS-11 profiles allows for
@@ -53,7 +53,7 @@ const main = async () => {
   const privateKeyDer = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!accountId || !privateKeyDer) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID or its private key. Check Lab 00.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID or its private key. Check Lab 00.')
     process.exitCode = 1
     return
   }
@@ -93,7 +93,7 @@ const main = async () => {
     })
 
     for (const config of agentsToCreate) {
-      console.log(`\n[⚙️ PROCESS] Starting provisioning for: ${config.name}...`)
+      console.log(`\n[PROCESS] Starting provisioning for: ${config.name}...`)
 
       const agentBuilder = new AgentBuilder()
         .setName(config.name)
@@ -109,13 +109,13 @@ const main = async () => {
 
       const agent = await client.createAndRegisterAgent(agentBuilder, {
         initialBalance: 2, // 2 HBAR is plenty for the HCS-10 messages in Labs 06-11
-        progressCallback: (event) => console.log(`   ⏳ [ℹ️ INFO] ${config.alias}: ${event.message}`)
+        progressCallback: (event) => console.log(`[INFO] ${config.alias}: ${event.message}`)
       })
 
       if (agent.success) {
-        console.log(`\n[✅ SUCCESS] ${config.name.toUpperCase()} PROVISIONED`)
-        console.log(`[📊 LOG] Account ID: ${agent.metadata.accountId}`)
-        console.log(`[📊 LOG] Inbox ID:   ${agent.metadata.inboundTopicId}`)
+        console.log(`\n[SUCCESS] ${config.name.toUpperCase()} PROVISIONED`)
+        console.log(`[LOG] Account ID: ${agent.metadata.accountId}`)
+        console.log(`[LOG] Inbox ID:   ${agent.metadata.inboundTopicId}`)
 
         // Dynamic state persistence
         updateState(`HCS11_${config.prefix}_ID`, agent.metadata.accountId)
@@ -123,7 +123,7 @@ const main = async () => {
         updateState(`HCS11_${config.prefix}_INBOUND`, agent.metadata.inboundTopicId)
         updateState(`HCS11_${config.prefix}_OUTBOUND`, agent.metadata.outboundTopicId)
       } else {
-        console.error(`[❌ FAILED] Could not provision ${config.name}: ${agent.error || 'unknown error'}`)
+        console.error(`[FAILED] Could not provision ${config.name}: ${agent.error || 'unknown error'}`)
         process.exitCode = 1
         break
       }
@@ -132,7 +132,7 @@ const main = async () => {
       await new Promise(r => setTimeout(r, 2000))
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('You have provisioned a specialized agent for security testing.')
     console.log('In future labs, this "Agent C" will attempt to perform')
     console.log('impersonation attacks, allowing you to verify the robustness of')
@@ -140,7 +140,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HCS-11 agent provisioning failed:', error.message)
+    console.error('\n[FAILED] HCS-11 agent provisioning failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -149,7 +149,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

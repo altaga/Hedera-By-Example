@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Generate Local Wallet
- * [ CONCEPT ] Cryptographic Identity Generation
+ * [CONCEPT] Cryptographic Identity Generation
  * ============================================================================
  * [ KEY CONCEPT ]
  * Security starts offline. By generating your keys locally, you ensure the
@@ -34,28 +34,28 @@ const main = async () => {
   console.log('--- SESSION START: Hedera ECDSA Wallet Generation ---\n')
 
   // 1. Generate an ECDSA private key deterministically
-  console.log('[⚙️ PROCESS] Generating secure ECDSA private key pair...')
+  console.log('[PROCESS] Generating secure ECDSA private key pair...')
   const privateKey = PrivateKey.generateECDSA()
   const publicKey = privateKey.publicKey
 
   // 2. Derive the standard Ethereum alias (0x...) from the public key
   const evmAddress = publicKey.toEvmAddress()
 
-  console.log('[✅ SUCCESS] Generated New Private Key.')
-  console.log(`[📊 LOG] Private Key: ${privateKey.toStringDer()}`)
-  console.log(`[📊 LOG] Public Key:  ${publicKey.toStringDer()}`)
-  console.log(`[📊 LOG] EVM Address: 0x${evmAddress}`)
+  console.log('[SUCCESS] Generated New Private Key.')
+  console.log(`[LOG] Private Key: ${privateKey.toStringDer()}`)
+  console.log(`[LOG] Public Key:  ${publicKey.toStringDer()}`)
+  console.log(`[LOG] EVM Address: 0x${evmAddress}`)
 
   // 3. Save to .env as OPERATOR keys, unless an operator is already configured:
   //    overwriting only the key would leave OPERATOR_ID pointing at an account
   //    this new key does not control, and every later lab would fail.
   loadEnv()
   if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
-    console.log(`\n[ℹ️ INFO] An operator is already configured (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
-    console.log('[ℹ️ INFO] The new key was NOT saved, so your current credentials keep working.')
-    console.log('[ℹ️ INFO] To use this key as your operator, remove OPERATOR_ID and OPERATOR_PRIVATE_KEY from .env and run this lab again.')
+    console.log(`\n[INFO] An operator is already configured (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
+    console.log('[INFO] The new key was NOT saved, so your current credentials keep working.')
+    console.log('[INFO] To use this key as your operator, remove OPERATOR_ID and OPERATOR_PRIVATE_KEY from .env and run this lab again.')
   } else {
-    console.log('\n[ℹ️ INFO] Synchronizing .env file...')
+    console.log('\n[INFO] Synchronizing .env file...')
     updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
     updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
   }
@@ -70,7 +70,7 @@ const main = async () => {
   console.log('5. Once you see your Account ID (0.0.X), run Lab 02.')
   console.log('=======================================================\n')
 
-  console.log('💡 KEY CONCEPT:')
+  console.log('KEY CONCEPT:')
   console.log('Security starts offline. By generating your keys locally, you ensure')
   console.log('the network never sees your private key—only the public cryptographic')
   console.log('proofs you sign.')
@@ -82,7 +82,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

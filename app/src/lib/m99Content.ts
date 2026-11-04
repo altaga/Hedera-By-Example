@@ -59,7 +59,7 @@ export async function withGasRetry(run, { gas = 300_000, maxGas = MAX_GAS } = {}
       const isInsufficient = /INSUFFICIENT_GAS/.test(String(error?.message || error?.status || ''))
       if (!isInsufficient || limit >= maxGas) throw error
       limit = Math.min(limit * 2, maxGas)
-      console.log(\`[ℹ️ INFO] Gas limit insufficient; retrying with \${limit.toLocaleString()} gas...\`)
+      console.log(\`[INFO] Gas limit insufficient; retrying with \${limit.toLocaleString()} gas...\`)
     }
   }
 }

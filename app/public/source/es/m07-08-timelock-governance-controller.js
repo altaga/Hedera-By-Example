@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad
- * [ CONCEPTO ] Ventanas de Ejecución con Bloqueo Temporal y Autoridad de Veto Criptográfico
+ * [CONCEPTO] Ventanas de Ejecución con Bloqueo Temporal y Autoridad de Veto Criptográfico
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En tesorerías institucionales de alto valor y gobernanza descentralizada (DAOs),
@@ -64,7 +64,7 @@ class GovernanceRiskMonitor {
   }
 
   auditProposal (targetAccountId, transferAmount) {
-    console.log(`[🔍 MONITOR DE SEGURIDAD] Auditando propuesta pendiente: Destinatario=${targetAccountId}, Monto=${transferAmount}...`)
+    console.log(`[ MONITOR DE SEGURIDAD] Auditando propuesta pendiente: Destinatario=${targetAccountId}, Monto=${transferAmount}...`)
     if (this.prohibitedAccounts.has(targetAccountId)) {
       return { approved: false, reason: 'CRÍTICO: ¡Destinatario marcado en lista de sanciones!' }
     }
@@ -78,17 +78,17 @@ const main = async () => {
 
   try {
     // 1. Generar Clave Guardiana del Consejo de Seguridad y Clave de Fideicomisario
-    console.log('[⚙️ PROCESO] Paso 1: Configurando Identidades del Consejo de Seguridad y Fideicomisarios...')
+    console.log('[PROCESO] Paso 1: Configurando Identidades del Consejo de Seguridad y Fideicomisarios...')
     const securityCouncilKey = PrivateKey.generateED25519()
     const trusteeKey = PrivateKey.generateED25519()
     const maliciousRecipient = '0.0.9999999' // Cuenta en lista negra para la simulación
 
-    console.log(`[📊 LOG] Operador / Tesorería:        ${operatorId.toString()}`)
-    console.log(`[📊 LOG] Clave Guardiana de Consejo:  ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
-    console.log(`[📊 LOG] Clave Multifirma Fideicomiso: ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[LOG] Operador / Tesorería:        ${operatorId.toString()}`)
+    console.log(`[LOG] Clave Guardiana de Consejo:  ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[LOG] Clave Multifirma Fideicomiso: ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
 
     // 2. Programar una Acción de Tesorería con Bloqueo Temporal (Timelock)
-    console.log('\n[⚙️ PROCESO] Paso 2: Programando Pago de Tesorería con Timelock (Ventana de 48h)...')
+    console.log('\n[PROCESO] Paso 2: Programando Pago de Tesorería con Timelock (Ventana de 48h)...')
 
     // Transacción interna: Transferir 0 HBAR a modo de ping benigno
     const innerTransferTx = new TransferTransaction()
@@ -113,20 +113,20 @@ const main = async () => {
     const scheduleReceipt = await scheduleCreateTx.getReceipt(client)
     const scheduleId = scheduleReceipt.scheduleId
 
-    console.log(`[✅ ÉXITO] ¡Propuesta Bloqueada en Capa 1! ID de Programación: ${scheduleId.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción:  ${scheduleCreateTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(scheduleCreateTx)}`)
+    console.log(`[ÉXITO] ¡Propuesta Bloqueada en Capa 1! ID de Programación: ${scheduleId.toString()}`)
+    console.log(`[LOG] ID de Transacción:  ${scheduleCreateTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(scheduleCreateTx)}`)
 
     // 3. El Monitor de Seguridad detecta una infracción durante la Ventana Timelock
-    console.log('\n[⚙️ PROCESO] Paso 3: Inspección Automatizada de Riesgos por el Consejo de Seguridad...')
+    console.log('\n[PROCESO] Paso 3: Inspección Automatizada de Riesgos por el Consejo de Seguridad...')
     const monitor = new GovernanceRiskMonitor([maliciousRecipient])
     const auditResult = monitor.auditProposal(maliciousRecipient, '50,000 HBAR')
 
-    console.log(`[⚠️ ALERTA DE RIESGO] Resultado de Auditoría: ${auditResult.reason}`)
-    console.log('[🚨 ACCIÓN] Activando Veto Criptográfico de Emergencia del Consejo de Seguridad...')
+    console.log(`[ ALERTA DE RIESGO] Resultado de Auditoría: ${auditResult.reason}`)
+    console.log('[ACCIÓN] Activando Veto Criptográfico de Emergencia del Consejo de Seguridad...')
 
     // 4. El Consejo de Seguridad ejecuta el VETO de emergencia mediante ScheduleDeleteTransaction
-    console.log('\n[⚙️ PROCESO] Paso 4: Firmando y Transmitiendo ScheduleDeleteTransaction...')
+    console.log('\n[PROCESO] Paso 4: Firmando y Transmitiendo ScheduleDeleteTransaction...')
     const deleteTx = await (await new ScheduleDeleteTransaction()
       .setScheduleId(scheduleId)
       .freezeWith(client)
@@ -134,27 +134,27 @@ const main = async () => {
       .execute(client)
 
     const deleteReceipt = await deleteTx.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] ¡Veto de Emergencia Ejecutado! Estado de Consenso: ${deleteReceipt.status.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción de Eliminación: ${deleteTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(deleteTx)}`)
+    console.log(`\n[ÉXITO] ¡Veto de Emergencia Ejecutado! Estado de Consenso: ${deleteReceipt.status.toString()}`)
+    console.log(`[LOG] ID de Transacción de Eliminación: ${deleteTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(deleteTx)}`)
 
     updateState('TIMELOCK_SCHEDULE_ID', scheduleId.toString())
     updateState('TIMELOCK_VETO_STATUS', deleteReceipt.status.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Seguridad Timelock Nativa: El Servicio de Programación de Hedera permite a las')
     console.log('organizaciones definir una clave de administración (adminKey) en cualquier transacción programada.')
     console.log('Si los monitores de riesgo detectan parámetros fraudulentos, la adminKey puede borrar')
     console.log('la transacción antes de que madure el timelock, impidiendo cualquier movimiento no autorizado.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Dado que la programación nativa de Hedera es aplicada directamente por los nodos de consenso,')
     console.log('no existe código de smart contract que pueda sufrir ataques de reentrada, congelamiento')
     console.log('o préstamos flash. La gobernanza corporativa está integrada en el protocolo Byzantine Fault Tolerant.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en el Controlador Timelock:', error.message)
+    console.error('\n[ERROR] Fallo en el Controlador Timelock:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -165,7 +165,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

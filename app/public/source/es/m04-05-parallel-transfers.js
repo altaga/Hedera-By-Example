@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Transferencias Paralelas y Escalabilidad Horizontal
- * [ CONCEPTO ] Concurrencia en el Consenso y Throughput Real
+ * [CONCEPTO] Concurrencia en el Consenso y Throughput Real
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Escalabilidad Horizontal: En una blockchain tradicional, más transacciones
@@ -43,7 +43,7 @@ import { getClient, show } from '../M99_Utilities/index.js'
  * Ejecuta un lote de transferencias de HBAR en paralelo y mide la duración.
  */
 const runParallelBatch = async (client, operatorId, targetId, batchSize) => {
-  console.log(`[⚙️ PROCESO] Iniciando Lote Experimental: ${batchSize} transacciones concurrentes...`)
+  console.log(`[PROCESO] Iniciando Lote Experimental: ${batchSize} transacciones concurrentes...`)
 
   const tasks = []
   const amount = 0.01 // Monto mínimo para el benchmark
@@ -65,7 +65,7 @@ const runParallelBatch = async (client, operatorId, targetId, batchSize) => {
   await Promise.all(tasks)
   const duration = Date.now() - startTime
 
-  console.log(`[✅ ÉXITO] Lote completado en ${duration}ms. Promedio: ${Math.round(duration / batchSize)}ms por TX.`)
+  console.log(`[ÉXITO] Lote completado en ${duration}ms. Promedio: ${Math.round(duration / batchSize)}ms por TX.`)
   return {
     batchSize,
     totalTime: duration,
@@ -80,7 +80,7 @@ const main = async () => {
   const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[❌ FALLO] Falta ACCOUNT_1_ID en el archivo .env.')
+    console.error('[FALLO] Falta ACCOUNT_1_ID en el archivo .env.')
     process.exitCode = 1
     return
   }
@@ -99,20 +99,20 @@ const main = async () => {
 
     // --- INFORME FINAL DE RENDIMIENTO ---
     console.log('\n' + '='.repeat(60))
-    console.log('       📊 RESUMEN DEL BENCHMARK DE RENDIMIENTO HTS')
+    console.log('RESUMEN DEL BENCHMARK DE RENDIMIENTO HTS')
     console.log('='.repeat(60))
-    console.log(' Lote Size  | Tiempo Total (ms) | Tiempo Prom/Tx (ms)')
+    console.log('Lote Size  | Tiempo Total (ms) | Tiempo Prom/Tx (ms)')
     console.log('-'.repeat(60))
 
     benchmarkResults.forEach(res => {
       const sizeStr = res.batchSize.toString().padEnd(11)
       const totalStr = res.totalTime.toString().padEnd(17)
       const avgStr = res.avgTimePerTx.toString()
-      console.log(` ${sizeStr}| ${totalStr}| ${avgStr}`)
+      console.log(`${sizeStr}| ${totalStr}| ${avgStr}`)
     })
     console.log('='.repeat(60))
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Observa cómo el tiempo promedio por transacción no escala')
     console.log('linealmente con el tamaño del lote. Esto prueba que Hedera')
     console.log('puede absorber ráfagas de tráfico masivo sin degradar la')
@@ -121,7 +121,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El Benchmark paralelizable falló:', error.message)
+    console.error('\n[FALLO] El Benchmark paralelizable falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -130,7 +130,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

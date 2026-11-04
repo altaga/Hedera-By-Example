@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: The Hedera System Oracle
- * [ CONCEPT ] Native Precompiles & System Interop
+ * [CONCEPT] Native Precompiles & System Interop
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Native Bridge: Usually, a smart contract is isolated in the EVM.
@@ -78,7 +78,7 @@ contract SystemOracle {
 `
 
 const compile = (contractName, source) => {
-  console.log(`[⚙️ PROCESS] Compiling ${contractName}.sol live...`)
+  console.log(`[PROCESS] Compiling ${contractName}.sol live...`)
   const input = {
     language: 'Solidity',
     sources: { [`${contractName}.sol`]: { content: source } },
@@ -101,20 +101,20 @@ const main = async () => {
 
     // Step 1: Provisioning / Persistence Check
     if (existingId) {
-      console.log(`[ℹ️ INFO] Checking persisted Oracle: ${existingId}`)
+      console.log(`[INFO] Checking persisted Oracle: ${existingId}`)
       try {
         await new ContractInfoQuery().setContractId(existingId).execute(client)
         oracleId = existingId
-        console.log('[✅ SUCCESS] Reusing active Oracle (HBAR optimization).')
+        console.log('[SUCCESS] Reusing active Oracle (HBAR optimization).')
       } catch (e) {
-        console.log('[ℹ️ INFO] Persisted Oracle inactive. Redeploying...')
+        console.log('[INFO] Persisted Oracle inactive. Redeploying...')
       }
     }
 
     if (!oracleId) {
       const adminKey = PrivateKey.fromString(operatorKey)
       const bytecode = compile('SystemOracle', SOURCE_CODE)
-      console.log('[⚙️ PROCESS] Deploying Native Oracle to EVM runtime...')
+      console.log('[PROCESS] Deploying Native Oracle to EVM runtime...')
       // Deploy the contract: the bytecode goes on-chain and the network returns its contract ID and EVM address.
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -124,33 +124,33 @@ const main = async () => {
       // Wait for consensus: the receipt says whether the network accepted the transaction.
       const receipt = await contractTx.getReceipt(client)
       oracleId = receipt.contractId.toString()
-      console.log(`[✅ SUCCESS] Oracle ID: ${oracleId}`)
+      console.log(`[SUCCESS] Oracle ID: ${oracleId}`)
       updateState('ORACLE_CONTRACT_ID', oracleId)
     }
 
     console.log('')
 
     // Step 2: Market Telemetry (0x168)
-    console.log('[⚙️ PROCESS] Querying Market Rate (0x168 precompile)...')
+    console.log('[PROCESS] Querying Market Rate (0x168 precompile)...')
     // Call the contract: a state-changing call is a transaction and pays gas.
     const rateTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100)), client, { gas: 1000000 })
     const rateRec = await rateTx.getRecord(client)
-    console.log(`[📊 LOG] EXCHANGE: 100 tinycents = ${rateRec.contractFunctionResult.getUint256(0)} tinybars`)
+    console.log(`[LOG] EXCHANGE: 100 tinycents = ${rateRec.contractFunctionResult.getUint256(0)} tinybars`)
 
     // Step 3: Network Entropy (0x169)
-    console.log('[⚙️ PROCESS] Querying Network Entropy (0x169 precompile)...')
+    console.log('[PROCESS] Querying Network Entropy (0x169 precompile)...')
     const prngTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('fetchNetworkEntropy'), client, { gas: 1000000 })
     const prngRec = await prngTx.getRecord(client)
     const seed = Buffer.from(prngRec.contractFunctionResult.bytes).toString('hex')
-    console.log(`[📊 LOG] ENTROPY: Seed 0x${seed.substring(0, 16)}...`)
+    console.log(`[LOG] ENTROPY: Seed 0x${seed.substring(0, 16)}...`)
 
     // Step 4: Asset Bridging (0x167)
     if (tokenIdStr) {
-      console.log(`\n[⚙️ PROCESS] Bridging Asset ${tokenIdStr} via HTS Precompile (0x167)...`)
+      console.log(`\n[PROCESS] Bridging Asset ${tokenIdStr} via HTS Precompile (0x167)...`)
       const htsId = ContractId.fromString(oracleId)
       const htsTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(oracleId).setGas(gas)
@@ -159,10 +159,10 @@ const main = async () => {
           .addAddress(TokenId.fromString(tokenIdStr).toEvmAddress())
         ), client, { gas: 1000000 })
       await htsTx.getReceipt(client)
-      console.log('[✅ SUCCESS] Asset associated successfully with the contract.')
+      console.log('[SUCCESS] Asset associated successfully with the contract.')
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Native Bridge: By using a system contract instead of a third-party')
     console.log("oracle, you save on gas and gain the security of the network's own")
     console.log('consensus mechanism. This is the "Secret Sauce" of a high-performance')
@@ -171,7 +171,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] Oracle Lifecycle Failed: ${error.message}`)
+    console.error(`\n[FAILED] Oracle Lifecycle Failed: ${error.message}`)
     process.exitCode = 1
   }
 }
@@ -180,7 +180,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

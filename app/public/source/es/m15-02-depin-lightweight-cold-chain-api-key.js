@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
- * [ CONCEPTO ] Monitoreo Logístico de Bajo Consumo y Penalización Automática de SLA
+ * [CONCEPTO] Monitoreo Logístico de Bajo Consumo y Penalización Automática de SLA
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Los dispositivos IoT de bajo consumo (rastreadores celulares de activos, contenedores
@@ -30,7 +30,7 @@
  * - RFC 2104: HMAC: Hashing con Clave para Autenticación de Mensajes
  * - Reporte Técnico OMS 961: Monitoreo de Temperatura y Humedad en Cadenas de Frío
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El rastreador IoT y sus solicitudes HTTP son emulados. Las verificaciones HMAC y los registros en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -141,13 +141,13 @@ class LogisticsSLAGateway {
 
 async function main () {
   console.log('====================================================================')
-  console.log('❄️ DEPIN LAB 02: TELEMETRÍA LIGERA DE CADENA DE FRÍO Y PENALIZACIÓN SLA')
+  console.log('DEPIN LAB 02: TELEMETRÍA LIGERA DE CADENA DE FRÍO Y PENALIZACIÓN SLA')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
 
     // 1. Crear Tópico HCS para Monitoreo de SLA de Cadena de Frío
     console.log('\n[1/5] Creando Tópico HCS Dedicado para SLA Logístico...')
@@ -159,8 +159,8 @@ async function main () {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TÓPICO CREADO] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TÓPICO CREADO] ID: ${topicId}`)
+    console.log(`[EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Configurar Credenciales de Dispositivo Zero-Trust y Pasarela
     console.log('\n[2/5] Configurando Credenciales de Dispositivo Zero-Trust y Pasarela...')
@@ -173,10 +173,10 @@ async function main () {
       [deviceId]: { apiKey, sharedHmacSecret }
     }, 2.0, 8.0)
 
-    console.log(`[📦 SENSOR] ID de Dispositivo Asignado: ${deviceId}`)
-    console.log(`[🔑 API KEY] ${apiKey.substring(0, 20)}...`)
-    console.log(`[🔒 SECRETO HMAC] ${sharedHmacSecret.substring(0, 16)}...`)
-    console.log('[📋 OBJETIVO SLA] Rango de Almacenamiento Seguro: +2.0°C a +8.0°C')
+    console.log(`[SENSOR] ID de Dispositivo Asignado: ${deviceId}`)
+    console.log(`[ API KEY] ${apiKey.substring(0, 20)}...`)
+    console.log(`[ SECRETO HMAC] ${sharedHmacSecret.substring(0, 16)}...`)
+    console.log('[ OBJETIVO SLA] Rango de Almacenamiento Seguro: +2.0°C a +8.0°C')
 
     // 3. Emular Ciclo de Vida: 3 Lecturas Conformes + 1 Excursión Crítica
     console.log('\n[3/5] Emulando Despertar del Sensor y Envíos de Telemetría...')
@@ -202,10 +202,10 @@ async function main () {
       }
 
       if (evaluation.isSlaBreached) {
-        console.log(`   🚨 [REPORTE #${i + 1}] Temp: ${r.temp}°C | ¡INFRACCIÓN DE SLA! (Límites: +2°C a +8°C) | Ubicación: ${r.geo}`)
+        console.log(`[REPORTE #${i + 1}] Temp: ${r.temp}°C | ¡INFRACCIÓN DE SLA! (Límites: +2°C a +8°C) | Ubicación: ${r.geo}`)
         slaBreachEvent = { ...evaluation, geo: r.geo }
       } else {
-        console.log(`   ❄️ [REPORTE #${i + 1}] Temp: ${r.temp}°C | SLA Conforme ✅ | HMAC: Verificado | Ubicación: ${r.geo}`)
+        console.log(`[REPORTE #${i + 1}] Temp: ${r.temp}°C | SLA Conforme  | HMAC: Verificado | Ubicación: ${r.geo}`)
       }
     }
 
@@ -228,8 +228,8 @@ async function main () {
       .execute(client)
 
     const auditReceipt = await auditSubmitTx.getReceipt(client)
-    console.log(`[✅ AUDITORÍA ANCLADA] Secuencia #${auditReceipt.topicSequenceNumber} en HCS`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(auditSubmitTx.transactionId.toString())}`)
+    console.log(`[ AUDITORÍA ANCLADA] Secuencia #${auditReceipt.topicSequenceNumber} en HCS`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(auditSubmitTx.transactionId.toString())}`)
 
     // 5. Notarizar Evento Inmutable de Infracción de SLA y Aviso de Penalización
     console.log('\n[5/5] Notarizando Infracción de SLA y Penalización de Fianza a HCS...')
@@ -251,26 +251,26 @@ async function main () {
       .execute(client)
 
     const breachReceipt = await breachSubmitTx.getReceipt(client)
-    console.log(`[🚨 INFRACCIÓN ANCLADA] Secuencia #${breachReceipt.topicSequenceNumber} en HCS!`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(breachSubmitTx.transactionId.toString())}`)
+    console.log(`[ INFRACCIÓN ANCLADA] Secuencia #${breachReceipt.topicSequenceNumber} en HCS!`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(breachSubmitTx.transactionId.toString())}`)
 
     // Persistir Estado
     updateState('DEPIN_COLDCHAIN_TOPIC_ID', topicId)
     updateState('DEPIN_COLDCHAIN_DEVICE_ID', deviceId)
     updateState('DEPIN_COLDCHAIN_BREACH_TEMP', `${slaBreachEvent.temperatureCelsius}°C`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los nodos IoT de bajo consumo ahorran energía con HTTP ligero y firmas HMAC-SHA256.')
     console.log('Cuando una pasarela empresarial detecta una ruptura de SLA, anclar el evento a HCS')
     console.log('proporciona evidencia verificable que automatiza la confiscación de depósitos y fianza.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Autentica siempre tanto la identidad del dispositivo (API Key) como la integridad del dato (HMAC).')
     console.log('Un mensaje firmado previene ataques de retransmisión y demuestra la cadena de custodia física.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución de DePIN Cadena de Frío:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución de DePIN Cadena de Frío:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -281,7 +281,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

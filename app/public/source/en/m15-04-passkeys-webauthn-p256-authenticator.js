@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Passkeys & WebAuthn P-256 Biometric Authenticator
- * [ CONCEPT ] Seedless Hardware Cryptography (NIST P-256 / secp256r1) over Hedera
+ * [CONCEPT] Seedless Hardware Cryptography (NIST P-256 / secp256r1) over Hedera
  * ============================================================================
  * [ KEY CONCEPT ]
  * Seed phrases and plaintext private keys are the largest attack vectors in Web3.
@@ -29,7 +29,7 @@
  * - FIDO Alliance Specifications: https://fidoalliance.org/specs/
  * - EIP-7212: Precompiled Contract for secp256r1 Curve Support: https://eips.ethereum.org/EIPS/eip-7212
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The biometric authenticator is emulated in software (the website lets you try a real passkey). The P-256 signatures and the HCS audit are real.
  *
  * [ BEFORE YOU RUN ]
@@ -189,13 +189,13 @@ class HederaWebAuthnGateway {
 
 async function main () {
   console.log('====================================================================')
-  console.log('🔐 PASSEKEYS LAB 04: WEBAUTHN P-256 BIOMETRIC AUTHENTICATOR')
+  console.log('PASSEKEYS LAB 04: WEBAUTHN P-256 BIOMETRIC AUTHENTICATOR')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
 
     // 1. Provision HCS Topic for WebAuthn Biometric Audit Stream
     console.log('\n[1/5] Creating Dedicated WebAuthn Audit HCS Topic...')
@@ -205,8 +205,8 @@ async function main () {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TOPIC CREATED] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TOPIC CREATED] ID: ${topicId}`)
+    console.log(`[EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Initialize Hardware Biometric Authenticator & Gateway
     console.log('\n[2/5] Initializing Hardware Secure Enclave & Gateway...')
@@ -215,17 +215,17 @@ async function main () {
 
     // Register Passkey
     gateway.registerPasskey(authenticator.credentialId, authenticator.publicKeyPem)
-    console.log(`[🪪 PASSKEY REGISTERED] Credential ID: ${authenticator.credentialId}`)
-    console.log('[🔑 PUBLIC KEY] NIST P-256 (secp256r1) SPKI Key registered.')
+    console.log(`[ PASSKEY REGISTERED] Credential ID: ${authenticator.credentialId}`)
+    console.log('[ PUBLIC KEY] NIST P-256 (secp256r1) SPKI Key registered.')
 
     // 3. Issue Challenge and Simulate Hardware Biometric Authentication (FaceID / TouchID)
     console.log('\n[3/5] Requesting Biometric Assertion (Simulating Apple FaceID / TouchID)...')
     const challengeHex = gateway.generateChallenge()
-    console.log(`[🎲 GATEWAY CHALLENGE] ${challengeHex}`)
+    console.log(`[ GATEWAY CHALLENGE] ${challengeHex}`)
 
-    console.log('[👆 TOUCH SENSOR] User presents biometric scan: Verified (User Present=1, User Verified=1)')
+    console.log('[ TOUCH SENSOR] User presents biometric scan: Verified (User Present=1, User Verified=1)')
     const assertion = authenticator.generateAssertion(challengeHex)
-    console.log(`[📝 ASSERTION DER] Signature: ${assertion.signatureHex.substring(0, 32)}... (Valid P-256 DER)`)
+    console.log(`[ ASSERTION DER] Signature: ${assertion.signatureHex.substring(0, 32)}... (Valid P-256 DER)`)
 
     // 4. Gateway Cryptographic Verification
     console.log('\n[4/5] Gateway Verifying WebAuthn Biometric Assertion...')
@@ -235,10 +235,10 @@ async function main () {
       throw new Error(`WebAuthn verification rejected: ${result.error}`)
     }
 
-    console.log('[✅ WEBAUTHN VERIFIED] Biometric hardware proof confirmed authentic!')
-    console.log(`   • User Present (UP):  ${result.userPresent}`)
-    console.log(`   • User Verified (UV): ${result.userVerified}`)
-    console.log(`   • Hardware SignCount: ${result.signCount}`)
+    console.log('[ WEBAUTHN VERIFIED] Biometric hardware proof confirmed authentic!')
+    console.log(`• User Present (UP):  ${result.userPresent}`)
+    console.log(`• User Verified (UV): ${result.userVerified}`)
+    console.log(`• Hardware SignCount: ${result.signCount}`)
 
     // 5. Execute Authorized Hedera Transaction upon Biometric Verification
     console.log('\n[5/5] Executing Biometrically Authorized Hedera Transfer...')
@@ -249,8 +249,8 @@ async function main () {
       .execute(client)
 
     const transferReceipt = await authorizedTransferTx.getReceipt(client)
-    console.log(`[✅ TRANSACTION EXECUTED] Status: ${transferReceipt.status.toString()}`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(authorizedTransferTx.transactionId.toString())}`)
+    console.log(`[ TRANSACTION EXECUTED] Status: ${transferReceipt.status.toString()}`)
+    console.log(`[EXPLORER] ${getHashscanUrl(authorizedTransferTx.transactionId.toString())}`)
 
     // Anchor Biometric Proof to HCS
     const auditRecord = {
@@ -269,24 +269,24 @@ async function main () {
       .execute(client)
 
     const auditReceipt = await auditSubmitTx.getReceipt(client)
-    console.log(`[📜 BIOMETRIC AUDIT LOGGED] HCS Sequence #${auditReceipt.topicSequenceNumber}`)
+    console.log(`[ BIOMETRIC AUDIT LOGGED] HCS Sequence #${auditReceipt.topicSequenceNumber}`)
 
     // Persist State
     updateState('WEBAUTHN_TOPIC_ID', topicId)
     updateState('WEBAUTHN_CREDENTIAL_ID', authenticator.credentialId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Passkeys replace vulnerable mnemonic seed phrases with device-bound hardware biometrics.')
     console.log('The NIST P-256 standard (secp256r1) ensures that private keys never leave the Secure Enclave,')
     console.log('while Hedera verifies assertions or anchors compliance proofs on HCS.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('WebAuthn protects against phishing by binding the signature to the domain (Origin) and RP ID.')
     console.log('An attacker on a phishing clone cannot replay assertions to the genuine Hedera Gateway.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Passkeys WebAuthn Execution Failure:', error.message)
+    console.error('\n[ERROR] Passkeys WebAuthn Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -297,7 +297,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

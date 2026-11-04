@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Cryptographic Login with DID
- * [ CONCEPT ] Password-less Authentication
+ * [CONCEPT] Password-less Authentication
  * ============================================================================
  * [ KEY CONCEPT ]
  * Web3 Authentication: This lab demonstrates a "Password-less Login" flow.
@@ -49,14 +49,14 @@ const main = async () => {
   const topicId = getState('DID_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FAILED] DID_TOPIC_ID not found in configuration. Run Lab 05 first.')
+    console.error('[FAILED] DID_TOPIC_ID not found in configuration. Run Lab 05 first.')
     process.exitCode = 1
     return
   }
 
   try {
     // --- PHASE 1: DID RESOLUTION (SIMULATED SERVER) ---
-    console.log(`[⚙️ PROCESS] Resolving DID for Topic: ${topicId}...`)
+    console.log(`[PROCESS] Resolving DID for Topic: ${topicId}...`)
 
     // Fetch the latest message from the HCS Topic using the Mirror Node
     // The Mirror Node lists a message a few seconds after consensus; wait for it.
@@ -74,12 +74,12 @@ const main = async () => {
     const messageJson = Buffer.from(data.messages[0].message, 'base64').toString()
     const didDocument = JSON.parse(messageJson)
 
-    console.log(`[✅ SUCCESS] DID Document Resolved for: ${didDocument.nickname}`)
-    console.log(`[📊 LOG] Profile Bio: ${didDocument.bio}`)
+    console.log(`[SUCCESS] DID Document Resolved for: ${didDocument.nickname}`)
+    console.log(`[LOG] Profile Bio: ${didDocument.bio}`)
 
     // --- PHASE 2: LOGIN CHALLENGE (SIMULATED SERVER) ---
     const challenge = `LOGIN_CHALLENGE_${Math.random().toString(36).substring(7)}_${Date.now()}`
-    console.log(`\n[ℹ️ INFO] Server Challenge Generated: ${challenge}`)
+    console.log(`\n[INFO] Server Challenge Generated: ${challenge}`)
 
     // --- PHASE 3: AUTHENTICATION TESTING ---
     console.log('\n--- ATTEMPTING AUTHENTICATION ---')
@@ -92,30 +92,30 @@ const main = async () => {
       : PublicKey.fromString(pubKeyStr)
 
     // A. TEST FAILURE: Signing with ACCOUNT_1 (Unauthorized)
-    console.log('[⚙️ PROCESS] [TEST A] Signing with Unauthorized ID (Account 1)...')
+    console.log('[PROCESS] [TEST A] Signing with Unauthorized ID (Account 1)...')
     const account1Key = PrivateKey.fromString(process.env.ACCOUNT_1_PRIVATE_KEY)
     const badSignature = account1Key.sign(bytes)
 
     if (publicKey.verify(bytes, badSignature)) {
-      console.log('[❌ FAILED] Security Breach: Untrusted signature was accepted!')
+      console.log('[FAILED] Security Breach: Untrusted signature was accepted!')
     } else {
-      console.log('[✅ SUCCESS] Expected Rejection: Cryptographic mismatch.')
+      console.log('[SUCCESS] Expected Rejection: Cryptographic mismatch.')
     }
 
     // B. TEST SUCCESS: Signing with OPERATOR (Authorized Owner)
-    console.log('\n[⚙️ PROCESS] [TEST B] Signing with Authorized Owner (DID Private Key)...')
+    console.log('\n[PROCESS] [TEST B] Signing with Authorized Owner (DID Private Key)...')
     const operatorKeyObj = PrivateKey.fromString(operatorKey)
     const goodSignature = operatorKeyObj.sign(bytes)
 
     if (publicKey.verify(bytes, goodSignature)) {
-      console.log('[✅ SUCCESS] LOGIN SUCCESSFUL!')
-      console.log(`[ℹ️ INFO] Welcome back, ${didDocument.nickname}!`)
-      console.log(`[📊 LOG] Authenticated Identity: ${didDocument.id}`)
+      console.log('[SUCCESS] LOGIN SUCCESSFUL!')
+      console.log(`[INFO] Welcome back, ${didDocument.nickname}!`)
+      console.log(`[LOG] Authenticated Identity: ${didDocument.id}`)
     } else {
-      console.log('[❌ FAILED] Authorized signature was rejected!')
+      console.log('[FAILED] Authorized signature was rejected!')
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Web3 Authentication: This lab demonstrates a "Password-less Login" flow.')
     console.log('Instead of storing a password in a database, the server generates a')
     console.log('random "challenge" and the user signs it with their private key.')
@@ -124,7 +124,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Login Process Failed:', error.message)
+    console.error('\n[FAILED] Login Process Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -133,7 +133,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

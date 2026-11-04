@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: ERC-3643 Identity Registry & Transfer Rules
- * [ CONCEPT ] Permissioned RWA Transfer Restrictions
+ * [CONCEPT] Permissioned RWA Transfer Restrictions
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Regulatory Gate: Institutional assets cannot move permissionlessly.
@@ -94,7 +94,7 @@ const main = async () => {
     const compliance = new Erc3643ComplianceEngine()
 
     // 1. Provision On-Chain Identity Records
-    console.log('[⚙️ PROCESS] Registering Institutional & Retail Investors into Identity Registry...')
+    console.log('[PROCESS] Registering Institutional & Retail Investors into Identity Registry...')
 
     const investorA = operatorId.toString()
     const investorB = '0.0.700101'
@@ -106,10 +106,10 @@ const main = async () => {
     compliance.registerInvestor(investorC, { isKycVerified: false, countryCode: 'IND', isAccredited: false }) // Missing KYC
     compliance.registerInvestor(investorD, { isKycVerified: true, countryCode: 'PRK', isAccredited: false }) // Sanctioned
 
-    console.log(`[📊 LOG] Investor A (${investorA}): USA | KYC: OK | Accredited: YES`)
-    console.log(`[📊 LOG] Investor B (${investorB}): CHE | KYC: OK | Accredited: YES`)
-    console.log(`[📊 LOG] Investor C (${investorC}): IND | KYC: NO | Accredited: NO`)
-    console.log(`[📊 LOG] Investor D (${investorD}): PRK | KYC: OK | Accredited: NO\n`)
+    console.log(`[LOG] Investor A (${investorA}): USA | KYC: OK | Accredited: YES`)
+    console.log(`[LOG] Investor B (${investorB}): CHE | KYC: OK | Accredited: YES`)
+    console.log(`[LOG] Investor C (${investorC}): IND | KYC: NO | Accredited: NO`)
+    console.log(`[LOG] Investor D (${investorD}): PRK | KYC: OK | Accredited: NO\n`)
 
     // 2. Evaluate Transfer Scenarios
     console.log('--- VALIDATING TRANSFER 1: Investor A -> Investor B ($50,000 Equity) ---')
@@ -125,7 +125,7 @@ const main = async () => {
     console.log(`[RESULT] Transfer Allowed: ${t3.allowed} | Rejection Code: ${t3.error}`)
 
     // 3. Anchor Identity Registry Events to HCS for Compliance Audit
-    console.log('\n[⚙️ PROCESS] Anchoring ERC-3643 Compliance Verification Event to HCS...')
+    console.log('\n[PROCESS] Anchoring ERC-3643 Compliance Verification Event to HCS...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('erc3643:compliance_registry_v1')
@@ -152,17 +152,17 @@ const main = async () => {
       .freezeWith(client)
     await msgTx.execute(client)
 
-    console.log(`[✅ SUCCESS] Audit Event Recorded on HCS Topic: ${complianceTopicId}`)
+    console.log(`[SUCCESS] Audit Event Recorded on HCS Topic: ${complianceTopicId}`)
     updateState('ATS_COMPLIANCE_TOPIC_ID', complianceTopicId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('ERC-3643 turns compliance from an off-chain legal headache into an on-chain')
     console.log('cryptographic guarantee. The token contract never completes an illegal transfer,')
     console.log('protecting token issuers from regulatory enforcement penalties.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] ERC-3643 validation failed:', error.message)
+    console.error('\n[ERROR] ERC-3643 validation failed:', error.message)
     process.exit(1)
   }
 }
@@ -171,7 +171,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

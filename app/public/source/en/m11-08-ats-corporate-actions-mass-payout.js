@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Asset Tokenization Studio — Corporate Actions & Mass Payout Engine
- * [ CONCEPT ] Cap Table Consensus Snapshots, Dividend Engines & Batch Settlement
+ * [CONCEPT] Cap Table Consensus Snapshots, Dividend Engines & Batch Settlement
  * ============================================================================
  * [ KEY CONCEPT ]
  * In the official Hedera Asset Tokenization Studio (ATS) architecture
@@ -158,7 +158,7 @@ class AtsDividendCalculationEngine {
 
 const main = async () => {
   console.log('====================================================================')
-  console.log('🏛️ ASSET TOKENIZATION STUDIO: CORPORATE ACTIONS & MASS PAYOUT ENGINE')
+  console.log('ASSET TOKENIZATION STUDIO: CORPORATE ACTIONS & MASS PAYOUT ENGINE')
   console.log('====================================================================\n')
 
   const { client, operatorId, operatorKey } = getClient()
@@ -167,7 +167,7 @@ const main = async () => {
   const securityTokenSymbol = 'ATS-TREX-BOND-2027'
   const recordTimestamp = Timestamp.fromDate(new Date()).toString()
 
-  console.log('[1/4] 📸 Generating Consensus Cap Table Snapshot for Corporate Action...')
+  console.log('[1/4]  Generating Consensus Cap Table Snapshot for Corporate Action...')
   const snapshotEngine = new AtsCapTableSnapshotEngine(securityTokenSymbol, recordTimestamp)
 
   // Register institutional investor accounts
@@ -178,32 +178,32 @@ const main = async () => {
   snapshotEngine.registerShareholder(investor2, 'Zurich Global Wealth AG', 'Senior Debt Tranche A', 400000, 'CH')
 
   const snapshot = snapshotEngine.generateSnapshot()
-  console.log(`   Security Token:    ${snapshot.securityToken}`)
-  console.log(`   Record Timestamp:  ${snapshot.recordTimestamp}`)
-  console.log(`   Total Shares:      ${snapshot.totalShares}`)
-  console.log(`   Registered Holders:${snapshot.totalHolders}`)
+  console.log(`Security Token:    ${snapshot.securityToken}`)
+  console.log(`Record Timestamp:  ${snapshot.recordTimestamp}`)
+  console.log(`Total Shares:      ${snapshot.totalShares}`)
+  console.log(`Registered Holders:${snapshot.totalHolders}`)
   snapshot.capTable.forEach((h) => {
-    console.log(`     • ${h.name} (${h.accountId}): ${h.sharesHeld} shares (${h.ownershipPercentage}) [${h.jurisdiction}]`)
+    console.log(`• ${h.name} (${h.accountId}): ${h.sharesHeld} shares (${h.ownershipPercentage}) [${h.jurisdiction}]`)
   })
   console.log()
 
   // 2. Compute Prorated Corporate Action Dividend / Coupon Payouts
   // Dividend pool: 2.0 HBAR total mass payout across testnet investors
   const totalDividendPool = Hbar.from(2.0).toTinybars()
-  console.log('[2/4] 🧮 Executing ATS Prorated Dividend Calculation Engine...')
+  console.log('[2/4]  Executing ATS Prorated Dividend Calculation Engine...')
   const calcEngine = new AtsDividendCalculationEngine(totalDividendPool.toString(), 'HBAR')
   const distributionPlan = calcEngine.computePayouts(snapshot)
 
-  console.log(`   Total Dividend Pool:   ${Hbar.fromTinybars(distributionPlan.totalBudgetTinybars).toString()}`)
-  console.log(`   Total Net Dispersal:   ${Hbar.fromTinybars(distributionPlan.totalNetDispersedTinybars).toString()}`)
+  console.log(`Total Dividend Pool:   ${Hbar.fromTinybars(distributionPlan.totalBudgetTinybars).toString()}`)
+  console.log(`Total Net Dispersal:   ${Hbar.fromTinybars(distributionPlan.totalNetDispersedTinybars).toString()}`)
   distributionPlan.payouts.forEach((p) => {
-    console.log(`     → Payout to ${p.name} (${p.accountId}):`)
-    console.log(`        Gross: ${p.grossEntitlementTinybars} tinybars | Tax: ${p.withholdingRate} | Net: ${p.netPayoutHbar} HBAR`)
+    console.log(`→ Payout to ${p.name} (${p.accountId}):`)
+    console.log(`Gross: ${p.grossEntitlementTinybars} tinybars | Tax: ${p.withholdingRate} | Net: ${p.netPayoutHbar} HBAR`)
   })
   console.log()
 
   // 3. Execute Atomic Mass Payout Batch Settlement on Hedera
-  console.log('[3/4] ⚡ Executing Atomic Multi-Party Mass Payout on Hedera Consensus...')
+  console.log('[3/4]  Executing Atomic Multi-Party Mass Payout on Hedera Consensus...')
   const netLegs = distributionPlan.payouts.map((p) => ({
     account: AccountId.fromString(p.accountId),
     tinybars: BigInt(p.netPayoutTinybars),
@@ -226,12 +226,12 @@ const main = async () => {
   const massPayoutSubmit = await massPayoutTx.freezeWith(client).execute(client)
   const massPayoutReceipt = await massPayoutSubmit.getReceipt(client)
 
-  console.log(`   ✅ Atomic Mass Payout Settled: ${massPayoutReceipt.status.toString()}`)
-  console.log(`   🔗 Transaction ID: ${massPayoutSubmit.transactionId.toString()}`)
-  console.log(`   🔗 Hashscan URL:   ${getHashscanUrl(massPayoutSubmit.transactionId.toString())}\n`)
+  console.log(`Atomic Mass Payout Settled: ${massPayoutReceipt.status.toString()}`)
+  console.log(`Transaction ID: ${massPayoutSubmit.transactionId.toString()}`)
+  console.log(`Hashscan URL:   ${getHashscanUrl(massPayoutSubmit.transactionId.toString())}\n`)
 
   // 4. Emit ATS Regulatory Compliance Audit Certificate to HCS
-  console.log('[4/4] 📜 Anchoring ATS Regulatory Audit Certificate to Consensus Service...')
+  console.log('[4/4]  Anchoring ATS Regulatory Audit Certificate to Consensus Service...')
   let complianceTopicId = getState('ATS_COMPLIANCE_TOPIC_ID')
 
   if (!complianceTopicId) {
@@ -262,16 +262,16 @@ const main = async () => {
     .execute(client)
   const hcsReceipt = await hcsSubmit.getReceipt(client)
 
-  console.log(`   ✅ Audit Certificate Anchored to HCS Topic: ${complianceTopicId}`)
-  console.log(`   Consensus Sequence Number: #${hcsReceipt.topicSequenceNumber.toString()}`)
-  console.log(`   Audit Payload Hash:        ${auditPayload.payoutHash}`)
+  console.log(`Audit Certificate Anchored to HCS Topic: ${complianceTopicId}`)
+  console.log(`Consensus Sequence Number: #${hcsReceipt.topicSequenceNumber.toString()}`)
+  console.log(`Audit Payload Hash:        ${auditPayload.payoutHash}`)
 
   // Persist State
   updateState('ATS_LAST_MASS_PAYOUT_TX_ID', massPayoutSubmit.transactionId.toString())
   updateState('ATS_LAST_CORPORATE_ACTION_DATE', auditPayload.timestamp)
 
   console.log('\n====================================================================')
-  console.log('🎉 ASSET TOKENIZATION STUDIO MASS PAYOUT ENGINE: SETTLED & VERIFIED')
+  console.log('ASSET TOKENIZATION STUDIO MASS PAYOUT ENGINE: SETTLED & VERIFIED')
   console.log('====================================================================')
 
   client.close()
@@ -282,7 +282,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

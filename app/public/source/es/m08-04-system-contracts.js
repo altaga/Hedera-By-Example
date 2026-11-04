@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Contratos de Sistema (Precompiles Nativos)
- * [ CONCEPTO ] El Puente Nativo y Oráculos de Capa 1
+ * [CONCEPTO] El Puente Nativo y Oráculos de Capa 1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Puente Nativo: Hedera permite que los Smart Contracts accedan a datos
@@ -82,7 +82,7 @@ contract SystemOracle {
  * Ayudante de Compilación On-the-fly
  */
 const compile = (contractName, source) => {
-  console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol...`)
+  console.log(`[PROCESO] Compilando ${contractName}.sol...`)
   const input = {
     language: 'Solidity',
     sources: { [`${contractName}.sol`]: { content: source } },
@@ -93,7 +93,7 @@ const compile = (contractName, source) => {
   if (compiled.errors) {
     compiled.errors.forEach(err => {
       if (err.severity === 'error') throw new Error(err.message)
-      console.warn(`[ℹ️ INFO] ${err.message}`)
+      console.warn(`[INFO] ${err.message}`)
     })
   }
 
@@ -113,13 +113,13 @@ const main = async () => {
 
     // 1. Verificación de Persistencia del Oráculo
     if (existingId) {
-      console.log(`[ℹ️ INFO] Reanudando Oráculo persistido: ${existingId}`)
+      console.log(`[INFO] Reanudando Oráculo persistido: ${existingId}`)
       try {
         await new ContractInfoQuery().setContractId(existingId).execute(client)
         oracleId = existingId
-        console.log('[ℹ️ INFO] Oráculo activo y reutilizable.')
+        console.log('[INFO] Oráculo activo y reutilizable.')
       } catch (e) {
-        console.log('[ℹ️ INFO] El Oráculo persistido no respondió. Redesplegando...')
+        console.log('[INFO] El Oráculo persistido no respondió. Redesplegando...')
       }
     }
 
@@ -127,7 +127,7 @@ const main = async () => {
       const adminKey = PrivateKey.fromString(operatorKey)
       const bytecode = compile('SystemOracle', SOURCE_CODE)
 
-      console.log('[⚙️ PROCESO] Desplegando Oráculo de Sistema en el ledger...')
+      console.log('[PROCESO] Desplegando Oráculo de Sistema en el ledger...')
       // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -137,31 +137,31 @@ const main = async () => {
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const receipt = await contractTx.getReceipt(client)
       oracleId = receipt.contractId.toString()
-      console.log(`[✅ ÉXITO] Oráculo desplegado: ${oracleId}`)
+      console.log(`[ÉXITO] Oráculo desplegado: ${oracleId}`)
       updateState('ORACLE_CONTRACT_ID', oracleId)
     }
 
     // 2. Consulta de Tasa de Cambio (0x168)
-    console.log('\n[⚙️ PROCESO] Consultando Telemetría de Mercado (HBAR/USD)...')
+    console.log('\n[PROCESO] Consultando Telemetría de Mercado (HBAR/USD)...')
     // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
     const rateTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('getLiveHbarRate', new ContractFunctionParameters().addUint256(100)), client, { gas: 1000000 })
     const rateRec = await rateTx.getRecord(client)
-    console.log(`   └─ [📊 REGISTRO] 100 tinycents = ${rateRec.contractFunctionResult.getUint256(0)} tinybars`)
+    console.log(`└─ [REGISTRO] 100 tinycents = ${rateRec.contractFunctionResult.getUint256(0)} tinybars`)
 
     // 3. Consulta de Entropía (0x169)
-    console.log('[⚙️ PROCESO] Solicitando Semilla de Entropía de Red...')
+    console.log('[PROCESO] Solicitando Semilla de Entropía de Red...')
     const prngTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(oracleId).setGas(gas)
       .setFunction('fetchNetworkEntropy'), client, { gas: 1000000 })
     const prngRec = await prngTx.getRecord(client)
     const seed = Buffer.from(prngRec.contractFunctionResult.bytes).toString('hex')
-    console.log(`   └─ [📊 REGISTRO] Entropía: 0x${seed.substring(0, 32)}...`)
+    console.log(`└─ [REGISTRO] Entropía: 0x${seed.substring(0, 32)}...`)
 
     // 4. Puente HTS vía Solidity (0x167)
     if (tokenIdStr) {
-      console.log(`\n[⚙️ PROCESO] Probando Puente HTS: Asociando token ${tokenIdStr}...`)
+      console.log(`\n[PROCESO] Probando Puente HTS: Asociando token ${tokenIdStr}...`)
       const htsTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(oracleId).setGas(gas)
         .setFunction('associateAsset', new ContractFunctionParameters()
@@ -169,10 +169,10 @@ const main = async () => {
           .addAddress(TokenId.fromString(tokenIdStr).toEvmAddress())
         ), client, { gas: 1000000 })
       await htsTx.getReceipt(client)
-      console.log('[✅ ÉXITO] Asociación de activo completada vía Smart Contract.')
+      console.log('[ÉXITO] Asociación de activo completada vía Smart Contract.')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al usar Precompiles nativos, tu contrato tiene acceso a')
     console.log('información del "mundo real" sin salir del ledger. Esto')
     console.log('reduce costos de oráculos externos y garantiza que la')
@@ -181,7 +181,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El acceso a los contratos de sistema falló:', error.message)
+    console.error('\n[FALLO] El acceso a los contratos de sistema falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -190,7 +190,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Resiliencia Enterprise — Circuit Breaker y Limitador de Tasa
- * [ CONCEPTO ] Conmutación por Error en Mirror Node y CQRS Tolerante a Fallos
+ * [CONCEPTO] Conmutación por Error en Mirror Node y CQRS Tolerante a Fallos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En arquitecturas empresariales de producción, los endpoints REST públicos
@@ -29,7 +29,7 @@
  * - Anterior:  M2 Lab 04: Reactor de Event Sourcing en Tiempo Real
  * - Siguiente: M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Las respuestas HTTP 429 se inyectan a propósito para activar el circuit breaker. La consulta de respaldo al Mirror Node es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -66,7 +66,7 @@ class MirrorNodeCircuitBreaker {
     if (this.state === 'OPEN') {
       if (now >= this.nextAttempt) {
         this.state = 'HALF_OPEN'
-        console.log('\n[🟡 CIRCUITO HALF-OPEN] Ventana de enfriamiento cumplida. Despachando sonda canario...')
+        console.log('\n[ CIRCUITO HALF-OPEN] Ventana de enfriamiento cumplida. Despachando sonda canario...')
       } else {
         const cached = this.cache.get(cacheKey)
         const duration = Number((performance.now() - startTime).toFixed(3))
@@ -90,7 +90,7 @@ class MirrorNodeCircuitBreaker {
       this.failureCount = 0
       if (this.state === 'HALF_OPEN') {
         this.state = 'CLOSED'
-        console.log('[🟢 CIRCUITO CLOSED] ¡Sonda canario exitosa! Disyuntor restablecido a operación normal.')
+        console.log('[ CIRCUITO CLOSED] ¡Sonda canario exitosa! Disyuntor restablecido a operación normal.')
       }
 
       const duration = Number((performance.now() - startTime).toFixed(3))
@@ -110,7 +110,7 @@ class MirrorNodeCircuitBreaker {
       if (this.failureCount >= this.failureThreshold || this.state === 'HALF_OPEN') {
         this.state = 'OPEN'
         this.nextAttempt = Date.now() + this.cooldownMs
-        console.log(`\n[🔴 CIRCUITO ABIERTO - OPEN] Umbral alcanzado (${this.failureCount} fallos). Disyuntor abierto por ${this.cooldownMs}ms.`)
+        console.log(`\n[ CIRCUITO ABIERTO - OPEN] Umbral alcanzado (${this.failureCount} fallos). Disyuntor abierto por ${this.cooldownMs}ms.`)
       }
 
       const cached = this.cache.get(cacheKey)
@@ -130,7 +130,7 @@ class MirrorNodeCircuitBreaker {
   }
 
   printTelemetry () {
-    console.log('\n--- 📊 REGISTRO DE AUDITORÍA DE RESILIENCIA DEL DISYUNTOR ---')
+    console.log('\n---  REGISTRO DE AUDITORÍA DE RESILIENCIA DEL DISYUNTOR ---')
     console.table(this.telemetry.map((t, idx) => ({
       Petición: idx + 1,
       Estado: t.state,
@@ -154,7 +154,7 @@ const main = async () => {
   })
 
   try {
-    console.log('[⚙️ PROCESO] Paso 1: Realizando interrogación base en estado saludable...')
+    console.log('[PROCESO] Paso 1: Realizando interrogación base en estado saludable...')
 
     // Petición inicial para calentar la caché
     const res1 = await breaker.execute(`account:${targetAccount}`, async () => {
@@ -164,32 +164,32 @@ const main = async () => {
       return await res.json()
     })
 
-    console.log(`[✅ ÉXITO] Consulta Remota Inicial: Cuenta ${res1.data.account} Saldo: ${(res1.data.balance.balance / 1e8).toFixed(4)} ℏ (Disyuntor: ${res1.breakerState})`)
+    console.log(`[ÉXITO] Consulta Remota Inicial: Cuenta ${res1.data.account} Saldo: ${(res1.data.balance.balance / 1e8).toFixed(4)} ℏ (Disyuntor: ${res1.breakerState})`)
 
-    console.log('\n[⚙️ PROCESO] Paso 2: Simulando tormenta de límites de tasa en Mirror Node (HTTP 429)...')
+    console.log('\n[PROCESO] Paso 2: Simulando tormenta de límites de tasa en Mirror Node (HTTP 429)...')
 
     // Simular 3 peticiones rápidas donde el Mirror Node responde con HTTP 429
     for (let i = 1; i <= 3; i++) {
-      console.log(`[⚡ RÁFAGA DE TRÁFICO] Despachando Petición #${i}...`)
+      console.log(`[ RÁFAGA DE TRÁFICO] Despachando Petición #${i}...`)
       const burstRes = await breaker.execute(`account:${targetAccount}`, async () => {
         // Simular intencionalmente un 429 transitorio / sobrecarga
         throw new Error('HTTP 429: Too Many Requests (Mirror Node Rate Limit)')
       })
 
-      console.log(`[🛡️ RESILIENCIA ACTIVA] Resultado: Saldo entregado desde caché ${(burstRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Desde Caché: ${burstRes.fromCache}, Disyuntor: ${burstRes.breakerState})`)
+      console.log(`[ RESILIENCIA ACTIVA] Resultado: Saldo entregado desde caché ${(burstRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Desde Caché: ${burstRes.fromCache}, Disyuntor: ${burstRes.breakerState})`)
     }
 
-    console.log('\n[⚙️ PROCESO] Paso 3: Esperando ventana de enfriamiento del circuito (2,000ms)...')
+    console.log('\n[PROCESO] Paso 3: Esperando ventana de enfriamiento del circuito (2,000ms)...')
     await new Promise(r => setTimeout(r, 2200))
 
-    console.log('[⚙️ PROCESO] Paso 4: Despachando sonda canario para restablecer la operación normal...')
+    console.log('[PROCESO] Paso 4: Despachando sonda canario para restablecer la operación normal...')
     const recoveryRes = await breaker.execute(`account:${targetAccount}`, async () => {
       const res = await fetch(`${mirrorBase}/api/v1/accounts/${targetAccount}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()
     })
 
-    console.log(`[✅ RECUPERACIÓN COMPLETA] Cuenta ${recoveryRes.data.account} Saldo: ${(recoveryRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Disyuntor: ${recoveryRes.breakerState})`)
+    console.log(`[ RECUPERACIÓN COMPLETA] Cuenta ${recoveryRes.data.account} Saldo: ${(recoveryRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Disyuntor: ${recoveryRes.breakerState})`)
 
     // Imprimir telemetría de resiliencia
     breaker.printTelemetry()
@@ -197,7 +197,7 @@ const main = async () => {
     updateState('CIRCUIT_BREAKER_STATE', breaker.state)
     updateState('CIRCUIT_BREAKER_FAILURES_BLOCKED', 3)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('CQRS con Cero Caídas: Al acoplar caché en memoria con un Circuit Breaker,')
     console.log('tu dApp se mantiene disponible durante límites de tasa o caídas de red,')
     console.log('entregando datos verificados sin degradar la experiencia del usuario final.')
@@ -205,7 +205,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Falló el Gateway con Circuit Breaker: ${error.message}`)
+    console.error(`\n[ERROR] Falló el Gateway con Circuit Breaker: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -216,7 +216,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

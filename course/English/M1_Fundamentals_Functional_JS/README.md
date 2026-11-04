@@ -1,4 +1,4 @@
-# 🧱 Module 1: Fundamentals and Cryptography
+# Module 1: Fundamentals and Cryptography
 ## Consensus Architecture and Digital Sovereignty
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 This module covers the pillars of the Hedera network: from the Hashgraph algorithm to key management.
 
 | Lab | Topic | Description |
@@ -22,7 +22,7 @@ This module covers the pillars of the Hedera network: from the Hashgraph algorit
 
 ---
 
-## 🌀 The Hashgraph Algorithm (Gossip-about-Gossip)
+## The Hashgraph Algorithm (Gossip-about-Gossip)
 
 Unlike traditional blockchains, Hedera uses a DAG (Directed Acyclic Graph) to reach consensus asynchronously.
 
@@ -63,7 +63,7 @@ graph TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Gossip-about-Gossip
 Nodes share not only transactions but also the history of who they have talked to. This creates an immutable record of information propagation.
@@ -76,11 +76,11 @@ In Hedera, storage is not free forever. Accounts must pay a small rent fee to re
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Hashgraph Whitepaper](https://hedera.com/whitepaper)
 - [Account Documentation (Hedera Docs)](https://docs.hedera.com/hedera/networks/mainnet/account-rent)
 - [Cryptography Standards (HIP-32)](https://hips.hedera.com/hip/hip-32)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. DESIGNED FOR RESILIENCE.
+ 2026 **HEDERA FOR DUMMIES**. DESIGNED FOR RESILIENCE.

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Orquestación Desacoplada y Quórum
- * [ CONCEPTO ] Recolección de Fragmentos de Firma
+ * [CONCEPTO] Recolección de Fragmentos de Firma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Orquestación sin Confianza: Una de las ventajas más potentes de las
@@ -47,14 +47,14 @@ const main = async () => {
   const scheduleId = getState('SCHEDULE_ID')
 
   if (!userKey || !scheduleId) {
-    console.error('[❌ FALLO] Faltan credenciales o el ID de programación. Ejecuta Lab 03 primero.')
+    console.error('[FALLO] Faltan credenciales o el ID de programación. Ejecuta Lab 03 primero.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[ℹ️ INFO] Localizando Schedule en el ledger: ${scheduleId}`)
-    console.log('[⚙️ PROCESO] Proporcionando firma de aprobación de la billetera secundaria...')
+    console.log(`[INFO] Localizando Schedule en el ledger: ${scheduleId}`)
+    console.log('[PROCESO] Proporcionando firma de aprobación de la billetera secundaria...')
 
     // Usamos ScheduleSignTransaction para añadir firmas a una transacción pendiente
     const transaction = await new ScheduleSignTransaction()
@@ -67,12 +67,12 @@ const main = async () => {
     const response = await signedTx.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Firma recolectada y anclada. Estado: ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Ver transacción de firma en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`\n[ÉXITO] Firma recolectada y anclada. Estado: ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] Ver transacción de firma en HashScan: ${getHashscanUrl(response)}`)
 
-    console.log('[ℹ️ INFO] Si el umbral se alcanzó con esta firma, la operación interna ha sido ejecutada.')
+    console.log('[INFO] Si el umbral se alcanzó con esta firma, la operación interna ha sido ejecutada.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Este desacoplamiento permite flujos de trabajo institucionales')
     console.log('complejos donde múltiples departamentos pueden firmar una')
     console.log('operación desde diferentes dispositivos y ubicaciones sin')
@@ -81,7 +81,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La orquestación de firmas falló:', error.message)
+    console.error('\n[FALLO] La orquestación de firmas falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -90,7 +90,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

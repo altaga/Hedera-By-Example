@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 10: Servidor Model Context Protocol (MCP) y Firewall de Seguridad HOL Guard
- * [ CONCEPTO ] Ejecución Segura de Agentes LLM con Cortafuegos de Políticas Activo
+ * [CONCEPTO] Ejecución Segura de Agentes LLM con Cortafuegos de Políticas Activo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Model Context Protocol (MCP) es el estándar universal abierto que permite
@@ -40,7 +40,7 @@
  * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
  * - Siguiente: Curso Completado (Maestría Alcanzada)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El ataque de inyección de prompt se simula para mostrar cómo lo bloquea la protección.
  *
  * [ ANTES DE EJECUTAR ]
@@ -254,7 +254,7 @@ const main = async () => {
 
   try {
     // 1. Inicializar Firewall HOL Guard y Servidor MCP
-    console.log('[⚙️ PROCESO] Paso 1: Inicializando Instancia de Cortafuegos HOL Guard y Servidor MCP...')
+    console.log('[PROCESO] Paso 1: Inicializando Instancia de Cortafuegos HOL Guard y Servidor MCP...')
     const firewall = new HolGuardSecurityFirewall({
       maxHbarPerTransaction: 10,
       allowedDestinations: [operatorId.toString(), '0.0.11226623', '0.0.8707881']
@@ -262,35 +262,35 @@ const main = async () => {
     const mcpServer = new HashnetMcpServer(firewall)
 
     // 2. Descubrir Herramientas MCP Disponibles (Protocolo tools/list)
-    console.log('\n[⚙️ PROCESO] Paso 2: Consultando Catálogo de Herramientas MCP (Protocolo: tools/list)...')
+    console.log('\n[PROCESO] Paso 2: Consultando Catálogo de Herramientas MCP (Protocolo: tools/list)...')
     const toolManifest = mcpServer.listTools()
-    console.log(`[✅ ÉXITO] Descubiertas ${toolManifest.tools.length} Herramientas MCP Gestionadas:`)
-    toolManifest.tools.forEach(t => console.log(`   🛠️ ${t.name}: ${t.description}`))
+    console.log(`[ÉXITO] Descubiertas ${toolManifest.tools.length} Herramientas MCP Gestionadas:`)
+    toolManifest.tools.forEach(t => console.log(`${t.name}: ${t.description}`))
 
     // 3. Prueba 1: Consulta de Saldo de Solo Lectura (Permitida)
-    console.log('\n[⚙️ PROCESO] Paso 3: Invocando Herramienta: hedera_query_account_balance (Lectura Segura)...')
+    console.log('\n[PROCESO] Paso 3: Invocando Herramienta: hedera_query_account_balance (Lectura Segura)...')
     const queryResult = await mcpServer.executeTool(
       'hedera_query_account_balance',
       { accountId: operatorId.toString() },
       client
     )
-    console.log('[✅ ÉXITO] Invocación de Herramienta Permitida:')
-    console.log(`   Resultado:            ${queryResult.content[0].text}`)
-    console.log(`   Prueba de Auditoría:  ${queryResult.auditProof}`)
+    console.log('[ÉXITO] Invocación de Herramienta Permitida:')
+    console.log(`Resultado:            ${queryResult.content[0].text}`)
+    console.log(`Prueba de Auditoría:  ${queryResult.auditProof}`)
 
     // 4. Prueba 2: Publicación de Consenso Autorizada (Permitida)
-    console.log('\n[⚙️ PROCESO] Paso 4: Invocando Herramienta: hedera_submit_consensus_message (Escritura Conforme)...')
+    console.log('\n[PROCESO] Paso 4: Invocando Herramienta: hedera_submit_consensus_message (Escritura Conforme)...')
     const msgResult = await mcpServer.executeTool(
       'hedera_submit_consensus_message',
       { topicId: '0.0.11250984', message: 'AGENT_HEARTBEAT_ACK: OK' },
       client
     )
-    console.log('[✅ ÉXITO] Invocación de Herramienta Permitida:')
-    console.log(`   Resultado:            ${msgResult.content[0].text}`)
-    console.log(`   Prueba de Auditoría:  ${msgResult.auditProof}`)
+    console.log('[ÉXITO] Invocación de Herramienta Permitida:')
+    console.log(`Resultado:            ${msgResult.content[0].text}`)
+    console.log(`Prueba de Auditoría:  ${msgResult.auditProof}`)
 
     // 5. Prueba 3: Intento Malicioso de Transferencia (Bloqueado por HOL Guard)
-    console.log('\n[⚙️ PROCESO] Paso 5: Simulando Ataque de Inyección de Prompts (500 ℏ a Cuenta No Autorizada)...')
+    console.log('\n[PROCESO] Paso 5: Simulando Ataque de Inyección de Prompts (500 ℏ a Cuenta No Autorizada)...')
     const attackCall = await mcpServer.executeTool(
       'hedera_transfer_hbar',
       { recipientId: '0.0.9999999', amountHbar: 500 },
@@ -298,35 +298,35 @@ const main = async () => {
     )
 
     if (attackCall.isError) {
-      console.log('[🛡️ DEFENSA HOL GUARD ACTIVADA] Llamada No Autorizada Interceptada y Bloqueada:')
-      console.log(`   Código de Error:      ${attackCall.error.code}`)
-      console.log(`   Estado:               ${attackCall.error.message}`)
-      console.log(`   Motivo:               ${attackCall.error.details}`)
-      console.log(`   Prueba de Auditoría:  ${attackCall.error.auditProof}`)
+      console.log('[ DEFENSA HOL GUARD ACTIVADA] Llamada No Autorizada Interceptada y Bloqueada:')
+      console.log(`Código de Error:      ${attackCall.error.code}`)
+      console.log(`Estado:               ${attackCall.error.message}`)
+      console.log(`Motivo:               ${attackCall.error.details}`)
+      console.log(`Prueba de Auditoría:  ${attackCall.error.auditProof}`)
     } else {
       throw new Error('¡El cortafuegos falló al interceptar la transferencia no autorizada!')
     }
 
-    console.log(`\n[📊 REGISTRO DE AUDITORÍA] Total de Eventos Interceptados en la Sesión: ${firewall.auditLogs.length}`)
+    console.log(`\n[ REGISTRO DE AUDITORÍA] Total de Eventos Interceptados en la Sesión: ${firewall.auditLogs.length}`)
     firewall.auditLogs.forEach((log, idx) => {
-      console.log(`   Evento #${idx + 1} | Herramienta: ${log.toolName} | Permitido: ${log.allowed} | Motivo: ${log.reason}`)
+      console.log(`Evento #${idx + 1} | Herramienta: ${log.toolName} | Permitido: ${log.allowed} | Motivo: ${log.reason}`)
     })
 
     updateState('MCP_SERVER_INITIALIZED', true)
     updateState('HOL_GUARD_LAST_AUDIT_PROOF', attackCall.error.auditProof)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Cortafuegos Activo en Línea: Los modelos LLM cometen errores y pueden ser víctimas')
     console.log('de inyecciones de prompts. HOL Guard garantiza que incluso si un agente de IA genera')
     console.log('una orden rogue, la transacción jamás llegará a la red sin superar filtros deterministas.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Seguridad de Agentes Empresarial: Desplegar servidores Model Context Protocol (MCP)')
     console.log('con cumplimiento HOL Guard satisface los requisitos fiduciarios, SOC-2 e ISO-27001 para IA autónoma.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución del Servidor MCP:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución del Servidor MCP:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -337,7 +337,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Webhook-Driven Autonomous Treasury DAO (Real-Time Reactive Governance)
- * [ CONCEPT ] Layer-1 Threshold Quorums & Event-Driven Enterprise Orchestration
+ * [CONCEPT] Layer-1 Threshold Quorums & Event-Driven Enterprise Orchestration
  * ============================================================================
  * [ KEY CONCEPT ]
  * In traditional EVM DAOs (like OpenZeppelin Governor or Gnosis Safe), multisig
@@ -31,7 +31,7 @@
  * - Previous: M7 Lab 06: Cryptographic Login with DID
  * - Next:     M7 Lab 08: Timelock Governance Controller & Security Council Veto
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Trustee 1 -> Hedera: ScheduleCreate payout (2-of-3 multisig treasury)
  * Monitor -> Hedera: Poll Mirror Node for pending schedules
  * Monitor -> Trustee 2: Webhook: proposal awaiting signature
@@ -66,7 +66,7 @@ import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep } from '../M99_U
  * (e.g. Dispatches structured events to Slack, Discord, or an internal ERP)
  */
 const dispatchGovernanceWebhook = (channel, eventPayload) => {
-  console.log(`\n[🔔 WEBHOOK DISPATCHED -> ${channel}]`)
+  console.log(`\n[ WEBHOOK DISPATCHED -> ${channel}]`)
   console.log(JSON.stringify(eventPayload, null, 2))
 }
 
@@ -88,7 +88,7 @@ const main = async () => {
 
   try {
     // 1. Establish 3-Trustee Governance Board (2-of-3 Quorum)
-    console.log('[⚙️ PROCESS] Step 1: Setting up 2-of-3 Multi-Sig Governance Board...')
+    console.log('[PROCESS] Step 1: Setting up 2-of-3 Multi-Sig Governance Board...')
 
     const trustee1Key = PrivateKey.fromStringDer(operatorKey) // Trustee 1 (Operator)
     const trustee2Key = PrivateKey.generateED25519() // Trustee 2 (Finance Officer)
@@ -112,12 +112,12 @@ const main = async () => {
     const treasuryReceipt = await treasuryCreateTx.getReceipt(client)
     const treasuryAccountId = treasuryReceipt.accountId.toString()
 
-    console.log(`[✅ SUCCESS] Multi-Sig Treasury Created: ${treasuryAccountId} (2-of-3 Threshold)`)
-    console.log('[📊 LOG] Initial Treasury Balance: 0.5 HBAR')
-    console.log(`[📊 LOG] Recipient Vendor Account: ${recipientId} (Initial: ${initialRecipientBalance} HBAR)`)
+    console.log(`[SUCCESS] Multi-Sig Treasury Created: ${treasuryAccountId} (2-of-3 Threshold)`)
+    console.log('[LOG] Initial Treasury Balance: 0.5 HBAR')
+    console.log(`[LOG] Recipient Vendor Account: ${recipientId} (Initial: ${initialRecipientBalance} HBAR)`)
 
     // 2. Trustee 1 Proposes Outward Grant Payout via ScheduleCreateTransaction
-    console.log('\n[⚙️ PROCESS] Step 2: Trustee 1 Initiates Scheduled Treasury Payout Proposal (0.1 HBAR)...')
+    console.log('\n[PROCESS] Step 2: Trustee 1 Initiates Scheduled Treasury Payout Proposal (0.1 HBAR)...')
 
     const payoutTransfer = new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(treasuryAccountId), new Hbar(-0.1))
@@ -139,12 +139,12 @@ const main = async () => {
     const scheduleReceipt = await scheduleResponse.getReceipt(client)
     const scheduleId = scheduleReceipt.scheduleId.toString()
 
-    console.log(`[✅ SUCCESS] Scheduled Proposal Registered: ${scheduleId}`)
-    console.log(`[📊 LOG] Proposal HashScan: ${getHashscanUrl(scheduleResponse)}`)
+    console.log(`[SUCCESS] Scheduled Proposal Registered: ${scheduleId}`)
+    console.log(`[LOG] Proposal HashScan: ${getHashscanUrl(scheduleResponse)}`)
 
     // 3. Reactive Event Listener & Webhook Dispatch
-    console.log('\n[⚙️ PROCESS] Step 3: Event-Driven Monitor detecting proposal & dispatching Webhook...')
-    console.log('[ℹ️ INFO] Ingesting proposal state from Mirror Node (3 seconds)...')
+    console.log('\n[PROCESS] Step 3: Event-Driven Monitor detecting proposal & dispatching Webhook...')
+    console.log('[INFO] Ingesting proposal state from Mirror Node (3 seconds)...')
     await sleep(3000)
 
     const mirrorScheduleUrl = `${getMirrorNodeBaseUrl()}/api/v1/schedules/${scheduleId}`
@@ -157,8 +157,8 @@ const main = async () => {
     const collectedSignatures = scheduleData.signatures ? scheduleData.signatures.length : 1
     const isExecuted = scheduleData.executed_timestamp !== null
 
-    console.log(`[📊 LOG] Current On-Chain Quorum Status: ${collectedSignatures}/2 signatures collected.`)
-    console.log(`[📊 LOG] Execution Status: ${isExecuted ? 'EXECUTED' : 'PENDING_APPROVAL'}`)
+    console.log(`[LOG] Current On-Chain Quorum Status: ${collectedSignatures}/2 signatures collected.`)
+    console.log(`[LOG] Execution Status: ${isExecuted ? 'EXECUTED' : 'PENDING_APPROVAL'}`)
 
     // Dispatch webhook to corporate channels (Slack / ERP)
     dispatchGovernanceWebhook('#dao-treasury-alerts', {
@@ -179,8 +179,8 @@ const main = async () => {
     })
 
     // 4. Trustee 2 Evaluates and Submits Second Signature
-    console.log('\n[⚙️ PROCESS] Step 4: Trustee 2 (Finance Officer) reviews webhook and authorizes payout...')
-    console.log('[ℹ️ INFO] Generating cryptographic approval via ScheduleSignTransaction...')
+    console.log('\n[PROCESS] Step 4: Trustee 2 (Finance Officer) reviews webhook and authorizes payout...')
+    console.log('[INFO] Generating cryptographic approval via ScheduleSignTransaction...')
 
     const signTx = await new ScheduleSignTransaction()
       .setScheduleId(scheduleId)
@@ -190,48 +190,48 @@ const main = async () => {
     const signResponse = await signTx.execute(client)
     const signReceipt = await signResponse.getReceipt(client)
 
-    console.log(`[✅ SUCCESS] Trustee 2 Signature Ingested: Status ${signReceipt.status.toString()}!`)
-    console.log(`[📊 LOG] Signature Tx on HashScan: ${getHashscanUrl(signResponse)}`)
+    console.log(`[SUCCESS] Trustee 2 Signature Ingested: Status ${signReceipt.status.toString()}!`)
+    console.log(`[LOG] Signature Tx on HashScan: ${getHashscanUrl(signResponse)}`)
 
     // 5. Verify Autonomous Layer-1 Execution
-    console.log('\n[⚙️ PROCESS] Step 5: Verifying Autonomous Consensus Layer-1 Execution...')
-    console.log('[ℹ️ INFO] Awaiting consensus ledger balance settlement (3 seconds)...')
+    console.log('\n[PROCESS] Step 5: Verifying Autonomous Consensus Layer-1 Execution...')
+    console.log('[INFO] Awaiting consensus ledger balance settlement (3 seconds)...')
     await sleep(3000)
 
     const treasuryBalance = await getAccountHbarBalance(treasuryAccountId)
     const recipientBalance = await getAccountHbarBalance(recipientId)
 
-    console.log(`[📊 LOG] Updated Treasury Balance: ${treasuryBalance} HBAR (deducted 0.1 HBAR)`)
-    console.log(`[📊 LOG] Updated Recipient Balance: ${recipientBalance} HBAR (credited 0.1 HBAR)`)
+    console.log(`[LOG] Updated Treasury Balance: ${treasuryBalance} HBAR (deducted 0.1 HBAR)`)
+    console.log(`[LOG] Updated Recipient Balance: ${recipientBalance} HBAR (credited 0.1 HBAR)`)
 
     if (treasuryBalance > 0.45) {
       throw new Error('Treasury funds were not deducted: Quorum execution failed')
     }
 
-    console.log('[✅ SUCCESS] Autonomous Quorum Execution Confirmed! Payout finalized with 0 smart contract gas.')
+    console.log('[SUCCESS] Autonomous Quorum Execution Confirmed! Payout finalized with 0 smart contract gas.')
 
     // 6. Final Mirror Node Audit
     const finalMirrorRes = await fetch(mirrorScheduleUrl)
     if (finalMirrorRes.ok) {
       const finalData = await finalMirrorRes.json()
       if (finalData.executed_timestamp) {
-        console.log(`[📊 LOG] Mirror Node Consensus Executed Timestamp: ${finalData.executed_timestamp}`)
+        console.log(`[LOG] Mirror Node Consensus Executed Timestamp: ${finalData.executed_timestamp}`)
       }
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Hedera Native Scheduling turns the ledger into an autonomous execution engine.')
     console.log('By combining threshold KeyLists with `ScheduleSignTransaction`, governance DAOs')
     console.log('execute multi-party treasury operations at native Layer 1 speeds with zero Solidity risk.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Unlike Ethereum where somebody has to spend gas to trigger `execute()` after voting,')
     console.log('Hedera nodes automatically fire the scheduled transaction within the exact consensus')
     console.log('round where the final signature reaches the threshold.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Autonomous Treasury DAO Failure:', error.message)
+    console.error('\n[ERROR] Autonomous Treasury DAO Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -242,7 +242,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

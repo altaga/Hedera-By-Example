@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Tópicos Monetizados Generadores de Ingresos en HBAR y HTS (HIP-991)
- * [ CONCEPTO ] Monetización de Consenso Sin Permisos ni Contratos Inteligentes
+ * [CONCEPTO] Monetización de Consenso Sin Permisos ni Contratos Inteligentes
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Antes de la HIP-991, monetizar un tópico de HCS exigía desarrollar contratos
@@ -56,7 +56,7 @@ const main = async () => {
 
   try {
     // 1. Crear un Token de Pago HTS ("AI Compute Credit" - AICR)
-    console.log('[⚙️ PROCESO] Paso 1: Minteando Token de Utilidad HTS [AICR] para Monetizar el Tópico...')
+    console.log('[PROCESO] Paso 1: Minteando Token de Utilidad HTS [AICR] para Monetizar el Tópico...')
     const paymentTokenId = await reuseToken('REUSE_M5_06_TOKEN', async () => {
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('AI Compute Credit')
@@ -70,10 +70,10 @@ const main = async () => {
       const tokenRes = await (await tokenTx.sign(adminKey)).execute(client)
       return (await tokenRes.getReceipt(client)).tokenId
     }, { minBalance: 500 })
-    console.log(`[✅ ÉXITO] Token de Pago HTS Creado: ${paymentTokenId.toString()} (AICR)`)
+    console.log(`[ÉXITO] Token de Pago HTS Creado: ${paymentTokenId.toString()} (AICR)`)
 
     // 2. Crear una Cuenta de Agente Consumidor y fondearla con HBAR + 500 AICR
-    console.log('\n[⚙️ PROCESO] Paso 2: Aprovisionando Agente Consumidor Externo de IA...')
+    console.log('\n[PROCESO] Paso 2: Aprovisionando Agente Consumidor Externo de IA...')
     const consumerKey = PrivateKey.generateED25519()
     const consumerRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(consumerKey.publicKey)
@@ -87,10 +87,10 @@ const main = async () => {
       .addTokenTransfer(paymentTokenId, consumerId, 500)
       .execute(client)
     await fundRes.getReceipt(client)
-    console.log(`[🤖 CONSUMIDOR] Cuenta del Agente: ${consumerId.toString()} (Fondeada con 500 AICR)`)
+    console.log(`[CONSUMIDOR] Cuenta del Agente: ${consumerId.toString()} (Fondeada con 500 AICR)`)
 
     // 3. Crear un Tópico HCS Monetizado HIP-991 (Tarifa: 25 AICR por mensaje)
-    console.log('\n[⚙️ PROCESO] Paso 3: Desplegando Tópico HCS Monetizado HIP-991 (Tarifa: 25 AICR / mensaje)...')
+    console.log('\n[PROCESO] Paso 3: Desplegando Tópico HCS Monetizado HIP-991 (Tarifa: 25 AICR / mensaje)...')
     const topicCustomFee = new CustomFixedFee()
       .setAmount(25)
       .setDenominatingTokenId(paymentTokenId)
@@ -107,11 +107,11 @@ const main = async () => {
         .freezeWith(client)
       return (await (await (await topicTx.sign(adminKey)).execute(client)).getReceipt(client)).topicId
     }, { check: (t) => (t.custom_fees?.fixed_fees || []).some((f) => f.denominating_token_id === paymentTokenId.toString()) })
-    console.log(`[✅ ÉXITO] Tópico Monetizado HIP-991 Desplegado: ${topicId.toString()}`)
-    console.log(`[📊 REGISTRO] Peaje Configurado: 25 AICR por mensaje ➔ Recaudador (${operatorId.toString()})`)
+    console.log(`[ÉXITO] Tópico Monetizado HIP-991 Desplegado: ${topicId.toString()}`)
+    console.log(`[REGISTRO] Peaje Configurado: 25 AICR por mensaje ➔ Recaudador (${operatorId.toString()})`)
 
     // 4. El Agente Consumidor Envía un Mensaje Autorizando con `CustomFeeLimit`
-    console.log('\n[⚙️ PROCESO] Paso 4: Agente Consumidor enviando consulta al Tópico Monetizado...')
+    console.log('\n[PROCESO] Paso 4: Agente Consumidor enviando consulta al Tópico Monetizado...')
     const consumerClient = createClient()
     consumerClient.setOperator(consumerId, consumerKey)
 
@@ -135,7 +135,7 @@ const main = async () => {
 
     const paidSubmitReceipt = await paidSubmitRes.getReceipt(consumerClient)
     consumerClient.close()
-    console.log(`[✅ ÉXITO] ¡Mensaje Pagado Aceptado en Secuencia #${paidSubmitReceipt.topicSequenceNumber}!`)
+    console.log(`[ÉXITO] ¡Mensaje Pagado Aceptado en Secuencia #${paidSubmitReceipt.topicSequenceNumber}!`)
 
     // 5. Verificar el Cobro Automático del Token vía Mirror Node
     await sleep(3500)
@@ -143,24 +143,24 @@ const main = async () => {
       .setAccountId(consumerId)
       .setTokenId(paymentTokenId)
       .execute(client)
-    console.log(`\n[📊 AUDITORÍA] Balance AICR del Consumidor: ${consumerBalAfter.balance.toString()} AICR (¡25 AICR Recaudados Automáticamente!)`)
+    console.log(`\n[AUDITORÍA] Balance AICR del Consumidor: ${consumerBalAfter.balance.toString()} AICR (¡25 AICR Recaudados Automáticamente!)`)
 
     updateState('HIP991_PAID_TOPIC_ID', topicId.toString())
     updateState('HIP991_PAYMENT_TOKEN_ID', paymentTokenId.toString())
     updateState('HIP991_CONSUMER_FINAL_BAL', consumerBalAfter.balance.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La HIP-991 convierte cualquier tópico de HCS en una fuente de ingresos sin permisos')
     console.log('denominada en HBAR o cualquier token de HTS (como USDC o créditos de IA), mientras que')
     console.log('`addFeeExemptKey` permite que tu propio servidor publique respuestas gratis.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Adjunta siempre un `CustomFeeLimit` al publicar en tópicos HIP-991 de terceros.')
     console.log('Actúa como un techo de protección para que el administrador no pueda subir el peaje sorpresivamente.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Tópico Monetizado HIP-991:', error.message)
+    console.error('\n[ERROR] Fallo en Tópico Monetizado HIP-991:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -171,7 +171,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

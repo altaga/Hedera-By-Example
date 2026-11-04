@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 07: Pasarela Proxy de Streaming de IA (SSE + Liquidación x402 en Tiempo Real)
- * [ CONCEPTO ] Inferencia de Streaming Pago-por-Token mediante HTTP Server-Sent Events
+ * [CONCEPTO] Inferencia de Streaming Pago-por-Token mediante HTTP Server-Sent Events
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Los modelos modernos de IA (Gemini, Claude, GPT) devuelven su razonamiento en
@@ -33,7 +33,7 @@
  * - Anterior:  M10 Lab 06: Agente de Mercado Autónomo
  * - Siguiente: M11 Lab 01: Registro de Identidad ERC-3643
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Cliente -> Gateway: POST de streaming de inferencia (sin pago)
  * Gateway -> Cliente: 402 + WWW-Authenticate: x402 (0.05 ℏ, nonce)
  * Cliente -> Hedera: Pagar 0.05 ℏ
@@ -41,7 +41,7 @@
  * Gateway -> Hedera: Verificar el pago en el Mirror Node
  * Gateway -> Cliente: Tokens por text/event-stream
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Los tokens de IA vienen de un generador sintético, no de un modelo real. El pago y su verificación son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -67,10 +67,10 @@ import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, exitIfStuck } f
  * Generador Sintético de Tokens de LLM (Simula inferencia en streaming en vivo)
  */
 const INFERENCE_TOKENS = [
-  'Hedera', ' Hashgraph', ' utiliza', ' Tolerancia', ' a',
-  ' Fallas', ' Bizantinas', ' Asíncrona', ' (aBFT)', ' para',
+  'Hedera', 'Hashgraph', ' utiliza', 'Tolerancia', ' a',
+  'Fallas', 'Bizantinas', 'Asíncrona', ' (aBFT)', ' para',
   ' alcanzar', ' finalidad', ' de', ' consenso', ' matemáticamente',
-  ' probada.', ' Las', ' micro-liquidaciones', ' se', ' ejecutan',
+  ' probada.', 'Las', ' micro-liquidaciones', ' se', ' ejecutan',
   ' en', ' menos', ' de', ' 3', ' segundos', ' con', ' costos',
   ' fijos', ' y', ' predecibles.'
 ]
@@ -86,7 +86,7 @@ const main = async () => {
 
   try {
     // 1. Inicializar Servidor HTTP Proxy de Streaming de IA con x402
-    console.log(`[⚙️ PROCESO] Paso 1: Inicializando Pasarela de Inferencia IA x402 en el puerto ${serverPort}...`)
+    console.log(`[PROCESO] Paso 1: Inicializando Pasarela de Inferencia IA x402 en el puerto ${serverPort}...`)
 
     server = http.createServer(async (req, res) => {
       const parsedUrl = new URL(req.url, `http://127.0.0.1:${serverPort}`)
@@ -162,7 +162,7 @@ const main = async () => {
               chunk: tokenIndex + 1,
               totalChunks: INFERENCE_TOKENS.length,
               token,
-              cumulativeDeducted: (0.002 * (tokenIndex + 1)).toFixed(3) + ' HBAR'
+              cumulativeDeducted: (0.002 * (tokenIndex + 1)).toFixed(3) + 'HBAR'
             }
             res.write(`data: ${JSON.stringify(payload)}\n\n`)
             tokenIndex++
@@ -179,24 +179,24 @@ const main = async () => {
     })
 
     await new Promise((resolve) => server.listen(serverPort, resolve))
-    console.log(`[✅ ÉXITO] Pasarela de Inferencia IA escuchando en http://127.0.0.1:${serverPort}`)
+    console.log(`[ÉXITO] Pasarela de Inferencia IA escuchando en http://127.0.0.1:${serverPort}`)
 
     // 2. El Cliente Inicia Petición de Streaming sin Credenciales
-    console.log('\n[⚙️ PROCESO] Paso 2: Cliente solicitando flujo de inferencia sin credenciales de pago...')
+    console.log('\n[PROCESO] Paso 2: Cliente solicitando flujo de inferencia sin credenciales de pago...')
     const rawRes = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`)
 
-    console.log(`[📊 REGISTRO] Estado HTTP de la Respuesta: ${rawRes.status} (Payment Required)`)
+    console.log(`[REGISTRO] Estado HTTP de la Respuesta: ${rawRes.status} (Payment Required)`)
     const challengeData = await rawRes.json()
-    console.log(`[📊 REGISTRO] Cabecera WWW-Authenticate: "${rawRes.headers.get('www-authenticate')}"`)
-    console.log(`[📊 REGISTRO] Costo Cotizado: ${challengeData.challenge.cost}`)
-    console.log(`[📊 REGISTRO] Nonce del Desafío: ${challengeData.challenge.nonce}`)
+    console.log(`[REGISTRO] Cabecera WWW-Authenticate: "${rawRes.headers.get('www-authenticate')}"`)
+    console.log(`[REGISTRO] Costo Cotizado: ${challengeData.challenge.cost}`)
+    console.log(`[REGISTRO] Nonce del Desafío: ${challengeData.challenge.nonce}`)
 
     const payeeId = rawRes.headers.get('x402-payee')
     const costHbar = Number(rawRes.headers.get('x402-amount'))
     const nonce = rawRes.headers.get('x402-nonce')
 
     // 3. Liquidación Autónoma en la Capa de Consenso de Hedera
-    console.log('\n[⚙️ PROCESO] Paso 3: Cliente ejecutando liquidación de micropago x402 en Hedera Testnet...')
+    console.log('\n[PROCESO] Paso 3: Cliente ejecutando liquidación de micropago x402 en Hedera Testnet...')
     const paymentTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-costHbar))
       .addHbarTransfer(AccountId.fromString(payeeId), new Hbar(costHbar))
@@ -206,12 +206,12 @@ const main = async () => {
     const paymentReceipt = await paymentTx.getReceipt(client)
     const txIdString = paymentTx.transactionId.toString()
 
-    console.log(`[✅ ÉXITO] ¡Micropago Liquidado en Cadena! Estado: ${paymentReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción en Consenso: ${txIdString}`)
-    console.log(`[📊 REGISTRO] HashScan del Pago: ${getHashscanUrl(paymentTx)}`)
+    console.log(`[ÉXITO] ¡Micropago Liquidado en Cadena! Estado: ${paymentReceipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción en Consenso: ${txIdString}`)
+    console.log(`[REGISTRO] HashScan del Pago: ${getHashscanUrl(paymentTx)}`)
 
     // 4. Conexión con Prueba de Pago e Ingestión del Flujo SSE
-    console.log('\n[⚙️ PROCESO] Paso 4: Conectando a la pasarela con la prueba de pago y consumiendo flujo SSE...')
+    console.log('\n[PROCESO] Paso 4: Conectando a la pasarela con la prueba de pago y consumiendo flujo SSE...')
     const proofHeader = `${txIdString}:${nonce}`
 
     const sseResponse = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`, {
@@ -220,8 +220,8 @@ const main = async () => {
       }
     })
 
-    console.log(`[✅ ÉXITO] ¡Pasarela Aceptó la Prueba! Estado HTTP: ${sseResponse.status} ${sseResponse.statusText}`)
-    console.log(`[📊 REGISTRO] Content-Type: "${sseResponse.headers.get('content-type')}"`)
+    console.log(`[ÉXITO] ¡Pasarela Aceptó la Prueba! Estado HTTP: ${sseResponse.status} ${sseResponse.statusText}`)
+    console.log(`[REGISTRO] Content-Type: "${sseResponse.headers.get('content-type')}"`)
 
     // Consumir el lector de Server-Sent Events
     const reader = sseResponse.body.getReader()
@@ -229,7 +229,7 @@ const main = async () => {
     let fullText = ''
     let deliveredTokens = 0
 
-    process.stdout.write('[🤖 SALIDA STREAM IA]: "')
+    process.stdout.write('[ SALIDA STREAM IA]: "')
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -252,34 +252,34 @@ const main = async () => {
     }
     process.stdout.write('"\n')
 
-    console.log(`\n[✅ ÉXITO] ¡Flujo completado exitosamente! Total de tokens entregados: ${deliveredTokens}`)
-    console.log(`[📊 REGISTRO] Texto Final Ensamblado: "${fullText.trim()}"`)
+    console.log(`\n[ÉXITO] ¡Flujo completado exitosamente! Total de tokens entregados: ${deliveredTokens}`)
+    console.log(`[REGISTRO] Texto Final Ensamblado: "${fullText.trim()}"`)
 
     // 5. Probar Defensa Contra Replay: Usar la misma prueba debe ser rechazado
-    console.log('\n[⚙️ PROCESO] Paso 5: Probando Defensa de la Pasarela Contra Ataques de Repetición (Replay)...')
+    console.log('\n[PROCESO] Paso 5: Probando Defensa de la Pasarela Contra Ataques de Repetición (Replay)...')
     const replayRes = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`, {
       headers: {
         'x-payment-proof': proofHeader
       }
     })
-    console.log(`[📊 REGISTRO] Estado HTTP de la Petición Duplicada: ${replayRes.status} (Nonce Consumido / Prohibido)`)
+    console.log(`[REGISTRO] Estado HTTP de la Petición Duplicada: ${replayRes.status} (Nonce Consumido / Prohibido)`)
     if (replayRes.status === 403) {
-      console.log('[✅ ÉXITO] La pasarela bloqueó la petición duplicada: ¡Defensa contra repetición verificada!')
+      console.log('[ÉXITO] La pasarela bloqueó la petición duplicada: ¡Defensa contra repetición verificada!')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HTTP 402 transforma las APIs Web2 en micro-economías continuas. En lugar de atar a los')
     console.log('usuarios a suscripciones mensuales, las pasarelas transmiten inferencia de LLM en tiempo real,')
     console.log('sensores o datos financieros bajo un esquema de pago por token y por segundo.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Hedera es la red idónea para pasarelas de streaming porque la finalidad de consenso es inferior')
     console.log('a 3 segundos y cuesta fracciones de centavo ($0.0001). Esto permite a los clientes financiar sesiones')
     console.log('SSE sobre la marcha sin esperar minutos por confirmaciones de bloque tradicionales.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Pasarela de Streaming de IA:', error.message)
+    console.error('\n[ERROR] Fallo en la Pasarela de Streaming de IA:', error.message)
     process.exit(1)
   } finally {
     if (server) {
@@ -293,7 +293,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,4 +1,4 @@
-# 🛠️ Módulo 99: Utilidades y Helpers
+# Módulo 99: Utilidades y Helpers
 ## La Caja de Herramientas del Desarrollador
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Archivo | Propósito | Descripción |
 | :--- | :--- | :--- |
@@ -19,7 +19,7 @@
 
 ---
 
-## 🛡️ Labs que siguen funcionando
+## Labs que siguen funcionando
 
 Las comisiones, el costo del gas y los tiempos del Mirror Node cambian con el tiempo. Los labs se mantienen confiables cuando usan estas utilidades en lugar de números fijos:
 
@@ -33,11 +33,11 @@ Las comisiones, el costo del gas y los tiempos del Mirror Node cambian con el ti
 | ethers / relay JSON-RPC | `getJsonRpcSigner(client, operatorKey)` | El relay solo asocia cuentas ECDSA con alias; crea una la primera vez si hace falta. |
 | Estado de otro módulo | `getState(key)` | Lee el `state.json` del módulo, luego el del curso y por último `.env`. |
 
-Todos los labs terminan igual: una falla impresa con `❌` marca `process.exitCode = 1` y el bloque de entrada termina el proceso, así ningún lab se queda colgado.
+Todos los labs terminan igual: una falla impresa con `` marca `process.exitCode = 1` y el bloque de entrada termina el proceso, así ningún lab se queda colgado.
 
 ---
 
-## 🏗️ Integración de Utilidades
+## Integración de Utilidades
 
 Todas las lecciones del curso dependen de este módulo para interactuar con la red Hedera de forma estandarizada.
 
@@ -79,7 +79,7 @@ graph TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. DRY (Don't Repeat Yourself)
 En lugar de escribir la lógica de conexión a Hedera en cada archivo, la centralizamos aquí. Esto facilita el mantenimiento: si el SDK cambia, solo actualizamos un archivo.
@@ -92,11 +92,11 @@ La clase `AgentCommunicationHandler` en `lib.js` abstrae la complejidad de las s
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Clean Code Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Node.js File System (fs) API](https://nodejs.org/api/fs.html)
 - [Hiero SDK for JavaScript](https://github.com/hashgraph/hedera-sdk-js)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. CÓDIGO LIMPIO, MENTE LIMPIA.
+ 2026 **HEDERA PARA DUMMIES**. CÓDIGO LIMPIO, MENTE LIMPIA.

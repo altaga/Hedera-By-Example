@@ -1,4 +1,4 @@
-# 📡 Módulo 5: Hedera Consensus Service (HCS)
+# Módulo 5: Hedera Consensus Service (HCS)
 ## Confianza Descentralizada para Datos Arbitrarios
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
@@ -21,7 +21,7 @@
 
 ---
 
-## 🚦 Flujo de Mensajería en HCS
+## Flujo de Mensajería en HCS
 
 HCS no almacena el contenido del mensaje permanentemente en los nodos de consenso; solo garantiza el orden y la validez. Los Mirror Nodes se encargan de la persistencia para los suscriptores.
 
@@ -61,7 +61,7 @@ graph LR
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Topics (Temas)
 Un Topic es como un canal de chat criptográfico. Puede ser público (cualquiera puede leer/escribir) o privado (requiere llaves de firma para enviar mensajes).
@@ -74,11 +74,11 @@ El límite de tamaño de un mensaje en Hedera es de 1024 bytes. Para enviar arch
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
 - [Working with Topics and Messages](https://docs.hedera.com/hedera/core-concepts/consensus-service)
 - [HCS Message Chunking Logic](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. LA VERDAD ES DESCENTRALIZADA.
+ 2026 **HEDERA PARA DUMMIES**. LA VERDAD ES DESCENTRALIZADA.

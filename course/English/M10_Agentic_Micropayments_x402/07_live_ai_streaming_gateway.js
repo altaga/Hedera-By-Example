@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Live AI Streaming Proxy Gateway (SSE + x402 Real-Time Settlement)
- * [ CONCEPT ] Pay-Per-Token Streaming Inference via HTTP Server-Sent Events
+ * [CONCEPT] Pay-Per-Token Streaming Inference via HTTP Server-Sent Events
  * ============================================================================
  * [ KEY CONCEPT ]
  * Modern AI LLMs (Gemini, Claude, GPT) output reasoning through streaming tokens
@@ -32,7 +32,7 @@
  * - Previous: M10 Lab 06: Autonomous Market Agent
  * - Next:     M11 Lab 01: Regulated Token ERC-3643
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Client -> Gateway: POST inference stream (no payment)
  * Gateway -> Client: 402 + WWW-Authenticate: x402 (0.05 ℏ, nonce)
  * Client -> Hedera: Pay 0.05 ℏ
@@ -40,7 +40,7 @@
  * Gateway -> Hedera: Verify the payment on the Mirror Node
  * Gateway -> Client: text/event-stream tokens
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The AI tokens come from a synthetic generator, not a real model. The payment and its verification are real.
  *
  * [ BEFORE YOU RUN ]
@@ -66,11 +66,11 @@ import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, exitIfStuck } f
  * Synthetic AI LLM Token Generator (Simulates live LLM inference)
  */
 const INFERENCE_TOKENS = [
-  'Hedera', ' Hashgraph', ' utilizes', ' asynchronous', ' Byzantine',
-  ' Fault', ' Tolerance', ' (aBFT)', ' to', ' achieve',
+  'Hedera', 'Hashgraph', ' utilizes', ' asynchronous', 'Byzantine',
+  'Fault', 'Tolerance', ' (aBFT)', ' to', ' achieve',
   ' mathematically', ' proven', ' consensus', ' finality.',
-  ' Micro-settlements', ' execute', ' in', ' under', ' 3', ' seconds',
-  ' at', ' fixed', ' sub-cent', ' USD', ' predictability.'
+  'Micro-settlements', ' execute', ' in', ' under', ' 3', ' seconds',
+  ' at', ' fixed', ' sub-cent', 'USD', ' predictability.'
 ]
 
 const main = async () => {
@@ -84,7 +84,7 @@ const main = async () => {
 
   try {
     // 1. Initialize HTTP x402 AI Streaming Proxy Server
-    console.log(`[⚙️ PROCESS] Step 1: Bootstrapping Embedded x402 AI Inference Gateway on port ${serverPort}...`)
+    console.log(`[PROCESS] Step 1: Bootstrapping Embedded x402 AI Inference Gateway on port ${serverPort}...`)
 
     server = http.createServer(async (req, res) => {
       const parsedUrl = new URL(req.url, `http://127.0.0.1:${serverPort}`)
@@ -160,7 +160,7 @@ const main = async () => {
               chunk: tokenIndex + 1,
               totalChunks: INFERENCE_TOKENS.length,
               token,
-              cumulativeDeducted: (0.002 * (tokenIndex + 1)).toFixed(3) + ' HBAR'
+              cumulativeDeducted: (0.002 * (tokenIndex + 1)).toFixed(3) + 'HBAR'
             }
             res.write(`data: ${JSON.stringify(payload)}\n\n`)
             tokenIndex++
@@ -177,24 +177,24 @@ const main = async () => {
     })
 
     await new Promise((resolve) => server.listen(serverPort, resolve))
-    console.log(`[✅ SUCCESS] AI Inference Streaming Gateway listening on http://127.0.0.1:${serverPort}`)
+    console.log(`[SUCCESS] AI Inference Streaming Gateway listening on http://127.0.0.1:${serverPort}`)
 
     // 2. Client Initiates Unauthenticated Streaming Request
-    console.log('\n[⚙️ PROCESS] Step 2: Client requesting AI Inference Stream without payment credentials...')
+    console.log('\n[PROCESS] Step 2: Client requesting AI Inference Stream without payment credentials...')
     const rawRes = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`)
 
-    console.log(`[📊 LOG] Gateway HTTP Response Status: ${rawRes.status} (Payment Required)`)
+    console.log(`[LOG] Gateway HTTP Response Status: ${rawRes.status} (Payment Required)`)
     const challengeData = await rawRes.json()
-    console.log(`[📊 LOG] WWW-Authenticate Header: "${rawRes.headers.get('www-authenticate')}"`)
-    console.log(`[📊 LOG] Quoted Cost: ${challengeData.challenge.cost}`)
-    console.log(`[📊 LOG] Server Challenge Nonce: ${challengeData.challenge.nonce}`)
+    console.log(`[LOG] WWW-Authenticate Header: "${rawRes.headers.get('www-authenticate')}"`)
+    console.log(`[LOG] Quoted Cost: ${challengeData.challenge.cost}`)
+    console.log(`[LOG] Server Challenge Nonce: ${challengeData.challenge.nonce}`)
 
     const payeeId = rawRes.headers.get('x402-payee')
     const costHbar = Number(rawRes.headers.get('x402-amount'))
     const nonce = rawRes.headers.get('x402-nonce')
 
     // 3. Autonomous Settlement on Hedera Consensus Layer
-    console.log('\n[⚙️ PROCESS] Step 3: Client executing on-chain x402 micropayment settlement on Hedera Testnet...')
+    console.log('\n[PROCESS] Step 3: Client executing on-chain x402 micropayment settlement on Hedera Testnet...')
     const paymentTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-costHbar))
       .addHbarTransfer(AccountId.fromString(payeeId), new Hbar(costHbar))
@@ -204,12 +204,12 @@ const main = async () => {
     const paymentReceipt = await paymentTx.getReceipt(client)
     const txIdString = paymentTx.transactionId.toString()
 
-    console.log(`[✅ SUCCESS] On-Chain Micropayment Settled! Status: ${paymentReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Consensus Tx ID: ${txIdString}`)
-    console.log(`[📊 LOG] Payment HashScan: ${getHashscanUrl(paymentTx)}`)
+    console.log(`[SUCCESS] On-Chain Micropayment Settled! Status: ${paymentReceipt.status.toString()}`)
+    console.log(`[LOG] Consensus Tx ID: ${txIdString}`)
+    console.log(`[LOG] Payment HashScan: ${getHashscanUrl(paymentTx)}`)
 
     // 4. Client Connects with Payment Proof & Ingests Real-Time SSE Stream
-    console.log('\n[⚙️ PROCESS] Step 4: Connecting to Gateway with Payment Proof & Consuming SSE Stream...')
+    console.log('\n[PROCESS] Step 4: Connecting to Gateway with Payment Proof & Consuming SSE Stream...')
     const proofHeader = `${txIdString}:${nonce}`
 
     const sseResponse = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`, {
@@ -218,8 +218,8 @@ const main = async () => {
       }
     })
 
-    console.log(`[✅ SUCCESS] Gateway Accepted Proof! HTTP Status: ${sseResponse.status} ${sseResponse.statusText}`)
-    console.log(`[📊 LOG] Content-Type: "${sseResponse.headers.get('content-type')}"`)
+    console.log(`[SUCCESS] Gateway Accepted Proof! HTTP Status: ${sseResponse.status} ${sseResponse.statusText}`)
+    console.log(`[LOG] Content-Type: "${sseResponse.headers.get('content-type')}"`)
 
     // Consume the Server-Sent Events reader
     const reader = sseResponse.body.getReader()
@@ -227,7 +227,7 @@ const main = async () => {
     let fullText = ''
     let deliveredTokens = 0
 
-    process.stdout.write('[🤖 AI STREAM OUTPUT]: "')
+    process.stdout.write('[ AI STREAM OUTPUT]: "')
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -250,34 +250,34 @@ const main = async () => {
     }
     process.stdout.write('"\n')
 
-    console.log(`\n[✅ SUCCESS] Stream successfully completed! Total tokens delivered: ${deliveredTokens}`)
-    console.log(`[📊 LOG] Final Assembled Text: "${fullText.trim()}"`)
+    console.log(`\n[SUCCESS] Stream successfully completed! Total tokens delivered: ${deliveredTokens}`)
+    console.log(`[LOG] Final Assembled Text: "${fullText.trim()}"`)
 
     // 5. Test Replay Defense: Attempting to use the same proof again must be rejected
-    console.log('\n[⚙️ PROCESS] Step 5: Testing Gateway Nonce Replay Defense...')
+    console.log('\n[PROCESS] Step 5: Testing Gateway Nonce Replay Defense...')
     const replayRes = await fetch(`http://127.0.0.1:${serverPort}/api/v1/inference/stream`, {
       headers: {
         'x-payment-proof': proofHeader
       }
     })
-    console.log(`[📊 LOG] Replay Request HTTP Status: ${replayRes.status} (Forbidden/Consumed Nonce)`)
+    console.log(`[LOG] Replay Request HTTP Status: ${replayRes.status} (Forbidden/Consumed Nonce)`)
     if (replayRes.status === 403) {
-      console.log('[✅ SUCCESS] Gateway blocked duplicate stream request: Replay defense verified!')
+      console.log('[SUCCESS] Gateway blocked duplicate stream request: Replay defense verified!')
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HTTP 402 transforms Web2 APIs into streaming micro-economies. Instead of locking')
     console.log('users into credit card subscriptions, gateways stream real-time LLM inference,')
     console.log('sensor feeds, or financial data on a pay-per-token, pay-per-second basis.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Hedera is unique for streaming gateways because transaction finality is sub-3 seconds')
     console.log('and costs fractions of a cent ($0.0001). This allows clients to fund ephemeral')
     console.log('SSE sessions on the fly without waiting minutes for Ethereum block confirmations.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] AI Streaming Gateway Failure:', error.message)
+    console.error('\n[ERROR] AI Streaming Gateway Failure:', error.message)
     process.exit(1)
   } finally {
     if (server) {
@@ -291,7 +291,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

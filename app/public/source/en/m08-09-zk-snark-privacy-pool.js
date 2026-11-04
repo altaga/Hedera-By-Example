@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Zero-Knowledge Privacy Pool on Hedera EVM
- * [ CONCEPT ] Cryptographic Commitments & Confidential Layer-1 Settlements
+ * [CONCEPT] Cryptographic Commitments & Confidential Layer-1 Settlements
  * ============================================================================
  * [ KEY CONCEPT ]
  * Public ledgers maintain an open transaction graph where all sender-recipient
@@ -63,7 +63,7 @@ import { ethers } from 'ethers'
  * 1. Live Solidity Compiler via solc with Optimizer Enabled
  */
 const compileZkContract = () => {
-  console.log('[⚙️ PROCESS] Compiling ZkPrivacyPool.sol with solc 0.8.20 (Optimizer enabled)...')
+  console.log('[PROCESS] Compiling ZkPrivacyPool.sol with solc 0.8.20 (Optimizer enabled)...')
   const contractPath = new URL('./09_zk_snark_privacy_pool.sol', import.meta.url)
   const sourceCode = fs.readFileSync(contractPath, 'utf8')
 
@@ -126,13 +126,13 @@ const main = async () => {
 
     if (contractIdStr) {
       contractId = ContractId.fromString(contractIdStr)
-      console.log(`[✅ SUCCESS] Reusing deployed ZkPrivacyPool Contract ID: ${contractIdStr}`)
-      console.log(`[📊 LOG] EVM Contract Address: 0x${contractId.toEvmAddress()}`)
+      console.log(`[SUCCESS] Reusing deployed ZkPrivacyPool Contract ID: ${contractIdStr}`)
+      console.log(`[LOG] EVM Contract Address: 0x${contractId.toEvmAddress()}`)
     } else {
       const { bytecode } = compileZkContract()
-      console.log(`[✅ SUCCESS] Contract Compiled! Bytecode Length: ${bytecode.length} hex chars (${bytecode.length / 2} bytes)`)
+      console.log(`[SUCCESS] Contract Compiled! Bytecode Length: ${bytecode.length} hex chars (${bytecode.length / 2} bytes)`)
 
-      console.log('\n[⚙️ PROCESS] Step 1: Deploying ZkPrivacyPool directly to Hedera EVM (Direct Bytecode)...')
+      console.log('\n[PROCESS] Step 1: Deploying ZkPrivacyPool directly to Hedera EVM (Direct Bytecode)...')
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
@@ -143,13 +143,13 @@ const main = async () => {
       contractIdStr = contractId.toString()
       updateState('ZK_PRIVACY_POOL_ID', contractIdStr)
 
-      console.log(`[✅ SUCCESS] ZkPrivacyPool Deployed at Contract ID: ${contractIdStr}`)
-      console.log(`[📊 LOG] EVM Contract Address: 0x${contractId.toEvmAddress()}`)
-      console.log(`[📊 LOG] HashScan URL: ${getHashscanUrl(deployTx)}`)
+      console.log(`[SUCCESS] ZkPrivacyPool Deployed at Contract ID: ${contractIdStr}`)
+      console.log(`[LOG] EVM Contract Address: 0x${contractId.toEvmAddress()}`)
+      console.log(`[LOG] HashScan URL: ${getHashscanUrl(deployTx)}`)
     }
 
     // 2. Generate Off-Chain Cryptographic Commitment
-    console.log('\n[⚙️ PROCESS] Step 2: Generating Cryptographic Secrets (Nullifier & Preimage)...')
+    console.log('\n[PROCESS] Step 2: Generating Cryptographic Secrets (Nullifier & Preimage)...')
     const nullifier = crypto.randomBytes(32)
     const secret = crypto.randomBytes(32)
 
@@ -158,12 +158,12 @@ const main = async () => {
     const commitmentHashHex = ethers.keccak256(combinedBytes)
     const commitmentBuffer = Buffer.from(commitmentHashHex.slice(2), 'hex')
 
-    console.log(`[📊 LOG] Secret Nullifier: 0x${nullifier.toString('hex')}`)
-    console.log(`[📊 LOG] Secret Preimage:  0x${secret.toString('hex')}`)
-    console.log(`[📊 LOG] Cryptographic Leaf Commitment: ${commitmentHashHex}`)
+    console.log(`[LOG] Secret Nullifier: 0x${nullifier.toString('hex')}`)
+    console.log(`[LOG] Secret Preimage:  0x${secret.toString('hex')}`)
+    console.log(`[LOG] Cryptographic Leaf Commitment: ${commitmentHashHex}`)
 
     // 3. Anonymous Deposit into Privacy Pool (0.01 HBAR)
-    console.log('\n[⚙️ PROCESS] Step 3: Depositing 0.01 HBAR into Pool with Commitment...')
+    console.log('\n[PROCESS] Step 3: Depositing 0.01 HBAR into Pool with Commitment...')
     const depositTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
@@ -171,18 +171,18 @@ const main = async () => {
       .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer)), client, { gas: 250000 })
 
     const depositReceipt = await depositTx.getReceipt(client)
-    console.log(`[✅ SUCCESS] Deposit Confirmed! Consensus Status: ${depositReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Deposit Tx HashScan: ${getHashscanUrl(depositTx)}`)
-    console.log('[ℹ️ INFO] Funds are now shielded inside the pool. Identity of depositor is decoupled.')
+    console.log(`[SUCCESS] Deposit Confirmed! Consensus Status: ${depositReceipt.status.toString()}`)
+    console.log(`[LOG] Deposit Tx HashScan: ${getHashscanUrl(depositTx)}`)
+    console.log('[INFO] Funds are now shielded inside the pool. Identity of depositor is decoupled.')
 
     // 4. Confidential Withdrawal to Stealth / Unlinked Recipient
-    console.log('\n[⚙️ PROCESS] Step 4: Initiating Private Redemption to Stealth Recipient Address...')
+    console.log('\n[PROCESS] Step 4: Initiating Private Redemption to Stealth Recipient Address...')
     const stealthRecipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
     const stealthRecipientAddress = await getAccountEvmAddress(stealthRecipientId) // alias accounts are paid at their EVM alias
 
     const initialStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[📊 LOG] Stealth Destination: ${stealthRecipientId} (${stealthRecipientAddress})`)
-    console.log(`[📊 LOG] Stealth Pre-Withdrawal Balance: ${initialStealthBalance} HBAR`)
+    console.log(`[LOG] Stealth Destination: ${stealthRecipientId} (${stealthRecipientAddress})`)
+    console.log(`[LOG] Stealth Pre-Withdrawal Balance: ${initialStealthBalance} HBAR`)
 
     // Reveal nullifier and secret to the smart contract:
     // The contract computes Keccak256(nullifier, secret) on-chain, validates the commitment,
@@ -197,22 +197,22 @@ const main = async () => {
       ), client, { gas: 300000 })
 
     const withdrawReceipt = await withdrawTx.getReceipt(client)
-    console.log(`[✅ SUCCESS] Confidential Withdrawal Settled! Status: ${withdrawReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Withdrawal Tx HashScan: ${getHashscanUrl(withdrawTx)}`)
+    console.log(`[SUCCESS] Confidential Withdrawal Settled! Status: ${withdrawReceipt.status.toString()}`)
+    console.log(`[LOG] Withdrawal Tx HashScan: ${getHashscanUrl(withdrawTx)}`)
 
     // 5. Verify Settlement and Balance State
-    console.log('\n[⚙️ PROCESS] Step 5: Verifying Balance Settlement & Chain-of-Custody Break...')
+    console.log('\n[PROCESS] Step 5: Verifying Balance Settlement & Chain-of-Custody Break...')
     await sleep(3000)
     const finalStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[📊 LOG] Stealth Post-Withdrawal Balance: ${finalStealthBalance} HBAR (+0.01 HBAR transferred)`)
+    console.log(`[LOG] Stealth Post-Withdrawal Balance: ${finalStealthBalance} HBAR (+0.01 HBAR transferred)`)
 
     if (finalStealthBalance <= initialStealthBalance) {
       throw new Error('Settlement verification failed: Stealth balance did not increase')
     }
-    console.log('[✅ SUCCESS] Stealth Recipient received funds with ZERO on-chain link to depositor!')
+    console.log('[SUCCESS] Stealth Recipient received funds with ZERO on-chain link to depositor!')
 
     // 6. Test Double-Spend & Replay Defense (Adversarial Simulation)
-    console.log('\n[⚙️ PROCESS] Step 6: Testing Double-Spend Replay Defense (Adversarial Simulation)...')
+    console.log('\n[PROCESS] Step 6: Testing Double-Spend Replay Defense (Adversarial Simulation)...')
     try {
       const replayTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -224,26 +224,26 @@ const main = async () => {
         ), client, { gas: 300000 })
 
       await replayTx.getReceipt(client)
-      console.error('[❌ ERROR] Security violation: Replay attack succeeded!')
+      console.error('[ERROR] Security violation: Replay attack succeeded!')
       process.exitCode = 1
     } catch (replayError) {
-      console.log('[✅ SUCCESS] Double-spend attack successfully rejected by EVM nullifier check!')
-      console.log(`[📊 LOG] Expected Revert Reason: "${replayError.message}"`)
+      console.log('[SUCCESS] Double-spend attack successfully rejected by EVM nullifier check!')
+      console.log(`[LOG] Expected Revert Reason: "${replayError.message}"`)
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero-Knowledge pools decouple transaction origins from destinations on-chain.')
     console.log('By verifying cryptographic preimages in Solidity, Hedera EVM provides mathematical')
     console.log('privacy guarantees at sub-cent gas fees without needing specialized private networks.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Nullifiers are the bedrock of ZK double-spending prevention. A commitment shields')
     console.log('the deposit, while a one-way nullifier records the withdrawal without revealing which')
     console.log('deposit it originated from.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] ZK Privacy Pool Failure:', error.message)
+    console.error('\n[ERROR] ZK Privacy Pool Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -254,7 +254,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

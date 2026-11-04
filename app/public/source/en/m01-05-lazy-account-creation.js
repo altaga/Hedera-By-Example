@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Lab 05: Lazy Account Creation (Account Abstraction)
- * [ CONCEPT ] Account Abstraction via ECDSA Aliases
+ * [CONCEPT] Account Abstraction via ECDSA Aliases
  * ============================================================================
  * [ KEY CONCEPT ]
  * Traditionally on Hedera, you must pay a fee upfront to create a new account
@@ -40,18 +40,18 @@ const main = async () => {
 
   try {
     // 1. Generate a standard Ethereum-compatible ECDSA private key
-    console.log('[⚙️ PROCESS] Generating new pristine ECDSA Private Key...')
+    console.log('[PROCESS] Generating new pristine ECDSA Private Key...')
     const lazyKey = PrivateKey.generateECDSA()
 
     // 2. Derive the EVM Address (the "Alias")
     const evmAddress = lazyKey.publicKey.toEvmAddress()
-    console.log(`[📊 LOG] Raw EVM Address (Alias): 0x${evmAddress}`)
+    console.log(`[LOG] Raw EVM Address (Alias): 0x${evmAddress}`)
 
     // 3. Convert EVM Address string to Hedera AccountId object
     const aliasAccountId = AccountId.fromString(`0.0.${evmAddress}`)
 
     // 4. Transfer HBAR to the Alias to trigger auto-creation
-    console.log('\n[⚙️ PROCESS] Transferring 0.5 HBAR to the EVM Alias to trigger auto-creation...')
+    console.log('\n[PROCESS] Transferring 0.5 HBAR to the EVM Alias to trigger auto-creation...')
     const tx = await new TransferTransaction()
       .addHbarTransfer(client.operatorAccountId, new Hbar(-0.5))
       .addHbarTransfer(aliasAccountId, new Hbar(0.5))
@@ -59,7 +59,7 @@ const main = async () => {
 
     // 5. Get the receipt and the child record to reveal the newly created Account ID
     await tx.getReceipt(client)
-    console.log('[✅ SUCCESS] Transfer successful! The account was lazily created.')
+    console.log('[SUCCESS] Transfer successful! The account was lazily created.')
 
     // Fetching the transaction record reveals the auto-created Hedera Account ID
     const record = await new TransactionRecordQuery()
@@ -69,12 +69,12 @@ const main = async () => {
 
     const childRecord = record.children[0]
     if (childRecord && childRecord.receipt.accountId) {
-      console.log(`\n[📊 LOG] Hedera assigned Account ID: ${childRecord.receipt.accountId.toString()}`)
+      console.log(`\n[LOG] Hedera assigned Account ID: ${childRecord.receipt.accountId.toString()}`)
     } else {
-      console.log(`\n[ℹ️ INFO] Check Hashscan for the newly created Account ID mapped to 0x${evmAddress}`)
+      console.log(`\n[INFO] Check Hashscan for the newly created Account ID mapped to 0x${evmAddress}`)
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('You just onboarded an Ethereum wallet directly to Hedera without')
     console.log('paying the account creation fee upfront. The network automatically')
     console.log('handled the account creation during the HBAR transfer.')
@@ -82,7 +82,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

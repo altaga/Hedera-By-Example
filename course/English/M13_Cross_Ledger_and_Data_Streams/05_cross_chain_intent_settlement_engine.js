@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Autonomous Cross-Chain Intent Settlement Engine (CLPR + HIP-1068)
- * [ CONCEPT ] Bridgeless Intent-Based Cross-Ledger Liquidity Router
+ * [CONCEPT] Bridgeless Intent-Based Cross-Ledger Liquidity Router
  * ============================================================================
  * [ KEY CONCEPT ]
  * Intent-Based Cross-Ledger Architecture: Traditional bridging requires locking
@@ -26,14 +26,14 @@
  * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
  * - Next:     M13 Lab 06: Protobuf Block Stream Parser & State Change Indexer
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Trader -> Relayer: Grant an HBAR allowance (HIP-1068)
  * Trader -> Hedera: Signed intent on HCS (fees sponsored)
  * Relayer -> Other Chain: Fill the foreign leg
  * Note Relayer: State proof of the foreign fill (simulated CLPR)
  * Relayer -> Hedera: Settle the Hedera leg via the allowance
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The Arbitrum fill and the CLPR proof are simulated. The allowance, the HCS intent and the Hedera settlement are real.
  *
  * [ BEFORE YOU RUN ]
@@ -99,7 +99,7 @@ const main = async () => {
 
   try {
     // 1. Setup Intent Actor Accounts: Trader (0.0000 HBAR), Solver (Sponsor), and Relayer (Spender)
-    console.log('[⚙️ PROCESS] Initializing Cross-Chain Market Actors...')
+    console.log('[PROCESS] Initializing Cross-Chain Market Actors...')
     const traderKey = PrivateKey.generateED25519()
     const traderCreateTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(traderKey.publicKey)
@@ -112,17 +112,17 @@ const main = async () => {
     await sleep(3000)
     const initialTraderBal = await queryBalanceNumber(traderId.toString(), network)
 
-    console.log(`[👤 ACTOR] Gasless Trader:   ${traderId.toString()} (Initial Balance: ${initialTraderBal.toFixed(8)} HBAR)`)
-    console.log(`[🏦 ACTOR] Liquidity Solver: ${operatorId.toString()} (Sponsor & Liquidity Vault)`)
-    console.log(`[⚡ ACTOR] Settlement Relay: ${relayerAccountId.toString()} (Approved Allowance Spender)`)
+    console.log(`[ACTOR] Gasless Trader:   ${traderId.toString()} (Initial Balance: ${initialTraderBal.toFixed(8)} HBAR)`)
+    console.log(`[ACTOR] Liquidity Solver: ${operatorId.toString()} (Sponsor & Liquidity Vault)`)
+    console.log(`[ACTOR] Settlement Relay: ${relayerAccountId.toString()} (Approved Allowance Spender)`)
 
     // 2. Sponsor Fee & Settlement Allowance Delegation (HIP-1068)
-    console.log('\n[⚙️ PROCESS] Establishing HIP-1068 Delegated Settlement Allowance...')
+    console.log('\n[PROCESS] Establishing HIP-1068 Delegated Settlement Allowance...')
     const settlementAllowance = new Hbar(2)
     await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(solverAccountId, relayerAccountId, settlementAllowance)
       .execute(client)
-    console.log(`[✅ SUCCESS] Solver granted ${settlementAllowance.toString()} allowance to Settlement Relayer (${relayerAccountId.toString()})!`)
+    console.log(`[SUCCESS] Solver granted ${settlementAllowance.toString()} allowance to Settlement Relayer (${relayerAccountId.toString()})!`)
 
     // 3. Define the Cross-Chain Intent (Signed by 0-HBAR Trader)
     const intentNonce = crypto.randomBytes(12).toString('hex')
@@ -139,15 +139,15 @@ const main = async () => {
     }
 
     const intentDigest = hashIntent(crossChainIntent)
-    console.log('\n[📋 INTENT DECLARED]')
-    console.log(`[📊 LOG] Intent ID:       ${crossChainIntent.intentId}`)
-    console.log(`[📊 LOG] Route:           ${crossChainIntent.sourceLedger} ➔ ${crossChainIntent.destinationLedger}`)
-    console.log(`[📊 LOG] Offer:           ${crossChainIntent.sourceCommitment.amount} ${crossChainIntent.sourceCommitment.asset}`)
-    console.log(`[📊 LOG] Expectation:     ${crossChainIntent.targetFill.amount} ${crossChainIntent.targetFill.asset}`)
-    console.log(`[📊 LOG] Commitment Hash: ${intentDigest}`)
+    console.log('\n[ INTENT DECLARED]')
+    console.log(`[LOG] Intent ID:       ${crossChainIntent.intentId}`)
+    console.log(`[LOG] Route:           ${crossChainIntent.sourceLedger} ➔ ${crossChainIntent.destinationLedger}`)
+    console.log(`[LOG] Offer:           ${crossChainIntent.sourceCommitment.amount} ${crossChainIntent.sourceCommitment.asset}`)
+    console.log(`[LOG] Expectation:     ${crossChainIntent.targetFill.amount} ${crossChainIntent.targetFill.asset}`)
+    console.log(`[LOG] Commitment Hash: ${intentDigest}`)
 
     // 4. Anchor Intent into Hedera Consensus Stream via Sponsored TransactionId
-    console.log('\n[⚙️ PROCESS] Creating HCS Orderbook Topic (with Trader SubmitKey)...')
+    console.log('\n[PROCESS] Creating HCS Orderbook Topic (with Trader SubmitKey)...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('INTENT:CLPR:ORDERBOOK')
       .setSubmitKey(traderKey.publicKey)
@@ -155,7 +155,7 @@ const main = async () => {
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
 
-    console.log('[⚙️ PROCESS] Submitting Trader-signed Intent via Sponsored TransactionId (0 HBAR Trader Gas)...')
+    console.log('[PROCESS] Submitting Trader-signed Intent via Sponsored TransactionId (0 HBAR Trader Gas)...')
     const sponsoredIntentTx = await new TopicMessageSubmitTransaction()
       .setTransactionId(TransactionId.generate(solverAccountId))
       .setTopicId(topicId)
@@ -168,14 +168,14 @@ const main = async () => {
     const submitIntentResponse = await fullySignedIntent.execute(client)
     const submitReceipt = await submitIntentResponse.getReceipt(client)
     const consensusSequence = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ SUCCESS] Intent Anchored at Consensus Sequence #${consensusSequence} on Topic ${topicId}`)
+    console.log(`[SUCCESS] Intent Anchored at Consensus Sequence #${consensusSequence} on Topic ${topicId}`)
 
     // 5. [ARCHITECTURAL SIMULATION] Solver Fills Intent on Arbitrum & Generates CLPR Proof (HIP-1535)
-    console.log('\n[⚡ SOLVER EXECUTION] [ARCHITECTURAL SIMULATION] Liquidity solver fills order on Arbitrum...')
+    console.log('\n[ SOLVER EXECUTION] [ARCHITECTURAL SIMULATION] Liquidity solver fills order on Arbitrum...')
     const solverFillTxHash = '0x' + crypto.randomBytes(32).toString('hex')
-    console.log(`[✅ SUCCESS] Simulated Destination Fill on Arbitrum! TxHash: ${solverFillTxHash}`)
+    console.log(`[SUCCESS] Simulated Destination Fill on Arbitrum! TxHash: ${solverFillTxHash}`)
 
-    console.log('\n[⚙️ PROCESS] [ARCHITECTURAL SIMULATION] Generating CLPR State Proof (HIP-1535)...')
+    console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Generating CLPR State Proof (HIP-1535)...')
     const tssValidators = [
       ethers.Wallet.createRandom(),
       ethers.Wallet.createRandom(),
@@ -192,12 +192,12 @@ const main = async () => {
       sig: v.signingKey.sign(settlementPayload).serialized
     }))
 
-    console.log('[✅ SUCCESS] CLPR Settlement Proof Assembled:')
-    console.log(`[📊 LOG] Proof Digest:   ${settlementPayload}`)
-    console.log(`[📊 LOG] TSS Quorum:     ${tssSignatures.length}/3 Council Signatures Verified`)
+    console.log('[SUCCESS] CLPR Settlement Proof Assembled:')
+    console.log(`[LOG] Proof Digest:   ${settlementPayload}`)
+    console.log(`[LOG] TSS Quorum:     ${tssSignatures.length}/3 Council Signatures Verified`)
 
     // 6. Live Delegated Allowance Settlement on Hedera Testnet
-    console.log('\n[⚙️ PROCESS] Relayer settling Hedera leg via Approved Allowance (`addApprovedHbarTransfer`)...')
+    console.log('\n[PROCESS] Relayer settling Hedera leg via Approved Allowance (`addApprovedHbarTransfer`)...')
     // ACCOUNT_1 pays the fees of its own transactions here; keep it funded.
     await ensureFunded(client, relayerAccountId, 1)
     const relayerClient = createClient()
@@ -211,7 +211,7 @@ const main = async () => {
     await settlementTx.getReceipt(relayerClient)
     relayerClient.close()
 
-    console.log(`[✅ SUCCESS] Cross-Chain Settlement Finalized on Hedera! Tx: ${settlementTx.transactionId.toString()}`)
+    console.log(`[SUCCESS] Cross-Chain Settlement Finalized on Hedera! Tx: ${settlementTx.transactionId.toString()}`)
 
     // 7. Post-Execution Telemetry Dashboard (Measured Dynamically from Mirror Node)
     await sleep(3500)
@@ -227,8 +227,8 @@ const main = async () => {
     console.log('│ Fee Mechanism:          Native Delegated Sponsorship (HIP-1068)        │')
     console.log(`│ Destination Fill Tx:    ${solverFillTxHash.slice(0, 32)}...   │`)
     console.log(`│ Trader Spent Gas:       ${traderGasSpent.toFixed(8)} HBAR (100% Sponsored)               │`)
-    console.log(`│ Trader Final Balance:   ${(finalTraderBalNum.toFixed(4) + ' HBAR').padEnd(30)} │`)
-    console.log(`│ Solver Final Balance:   ${(finalSolverBalNum.toFixed(4) + ' HBAR').padEnd(30)} │`)
+    console.log(`│ Trader Final Balance:   ${(finalTraderBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
+    console.log(`│ Solver Final Balance:   ${(finalSolverBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
     console.log('└────────────────────────────────────────────────────────────────────────┘')
 
     // Persist state
@@ -236,19 +236,19 @@ const main = async () => {
     updateState('CLPR_ENGINE_PROOF_DIGEST', settlementPayload)
     updateState('CLPR_ENGINE_SOLVER_TX', solverFillTxHash)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('By fusing CLPR (HIP-1535) state proofs with HIP-1068 native fee sponsorship,')
     console.log('Hedera becomes the highest-throughput, lowest-friction settlement hub in Web3.')
     console.log('Zero bridge honeypots, zero gas barriers, sub-second finality.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Modern cross-chain applications should never force end users to acquire gas')
     console.log('tokens on multiple networks. Hedera abstracts the chain completely via intents')
     console.log('and native co-signed fee sponsorship.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Intent Settlement Engine Failure:', error.message)
+    console.error('\n[ERROR] Intent Settlement Engine Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -259,7 +259,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

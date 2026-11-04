@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Real-Time WebSocket Ledger Event Bus
- * [ CONCEPT ] Push-Based Reactive Event Streaming vs Polling Anti-Patterns
+ * [CONCEPT] Push-Based Reactive Event Streaming vs Polling Anti-Patterns
  * ============================================================================
  * [ KEY CONCEPT ]
  * Constantly polling the Hedera Mirror Node via HTTP REST every 500ms creates
@@ -27,7 +27,7 @@
  * - Previous: M2 Lab 05: Circuit Breaker & Rate Limiter
  * - Next:     M2 Lab 07: GraphQL Subgraph Indexer
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The subscriber client runs in the same process as the server. The ledger events it relays are real.
  *
  * [ BEFORE YOU RUN ]
@@ -126,11 +126,11 @@ const main = async () => {
   const eventBus = new LedgerEventBus(BUS_PORT)
 
   try {
-    console.log(`[⚙️ PROCESS] Step 1: Starting reactive ledger event gateway on port ${BUS_PORT}...`)
+    console.log(`[PROCESS] Step 1: Starting reactive ledger event gateway on port ${BUS_PORT}...`)
     await eventBus.start()
-    console.log(`[✅ SUCCESS] Event Bus Gateway running on http://127.0.0.1:${BUS_PORT}/events/stream`)
+    console.log(`[SUCCESS] Event Bus Gateway running on http://127.0.0.1:${BUS_PORT}/events/stream`)
 
-    console.log('\n[⚙️ PROCESS] Step 2: Simulating downstream subscriber connection (SSE/WebSocket client)...')
+    console.log('\n[PROCESS] Step 2: Simulating downstream subscriber connection (SSE/WebSocket client)...')
 
     const receivedEvents = []
 
@@ -145,7 +145,7 @@ const main = async () => {
             if (rawJson) {
               const parsed = JSON.parse(rawJson)
               receivedEvents.push(parsed)
-              console.log(`[📥 EVENT ARRIVED] Topic: ${parsed.topic} | Seq: #${parsed.sequence} | Tx: ${parsed.payload.txId}`)
+              console.log(`[ EVENT ARRIVED] Topic: ${parsed.topic} | Seq: #${parsed.sequence} | Tx: ${parsed.payload.txId}`)
             }
           }
         }
@@ -156,13 +156,13 @@ const main = async () => {
     // Wait 200ms for subscription handshake
     await new Promise(r => setTimeout(r, 200))
 
-    console.log('\n[⚙️ PROCESS] Step 3: Fetching live consensus events from Mirror Node to ingest into Event Bus...')
+    console.log('\n[PROCESS] Step 3: Fetching live consensus events from Mirror Node to ingest into Event Bus...')
     // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
     const mirrorRes = await fetch(`${mirrorBase}/api/v1/transactions?limit=3&order=desc`)
     if (!mirrorRes.ok) throw new Error(`Mirror Node error: ${mirrorRes.statusText}`)
     const mirrorData = await mirrorRes.json()
 
-    console.log(`[⚙️ PROCESS] Step 4: Broadcasting ${mirrorData.transactions.length} live consensus events to subscribers...`)
+    console.log(`[PROCESS] Step 4: Broadcasting ${mirrorData.transactions.length} live consensus events to subscribers...`)
 
     for (const tx of mirrorData.transactions) {
       const payer = tx.payer_account_id || tx.transaction_id.split('-')[0]
@@ -179,15 +179,15 @@ const main = async () => {
     // Wait for client to process
     await new Promise(r => setTimeout(r, 300))
 
-    console.log('\n--- 📡 REACTIVE STREAMING SUMMARY ---')
-    console.log(`🔹 Total Events Broadcasted: ${eventBus.eventsDispatched}`)
-    console.log(`🔹 Total Events Received:    ${receivedEvents.length}`)
-    console.log(`🔹 Delivery Integrity:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (ZERO PACKET LOSS)' : 'PARTIAL'}`)
+    console.log('\n---  REACTIVE STREAMING SUMMARY ---')
+    console.log(`Total Events Broadcasted: ${eventBus.eventsDispatched}`)
+    console.log(`Total Events Received:    ${receivedEvents.length}`)
+    console.log(`Delivery Integrity:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (ZERO PACKET LOSS)' : 'PARTIAL'}`)
 
     updateState('EVENT_BUS_LAST_PORT', BUS_PORT)
     updateState('EVENT_BUS_EVENTS_PROCESSED', receivedEvents.length)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Push Over Pull: By transforming Mirror Node consensus feeds into push-based')
     console.log('event streams, reactive interfaces (React dashboards, automated trading engines)')
     console.log('update the instant consensus finality occurs, eliminating polling bottlenecks.')
@@ -197,7 +197,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] Event Bus Error: ${error.message}`)
+    console.error(`\n[FAILED] Event Bus Error: ${error.message}`)
     process.exitCode = 1
     await eventBus.close()
     if (client) client.close()
@@ -209,7 +209,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

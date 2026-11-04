@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Protobuf Block Stream Parser & Real-Time State Change Indexer
- * [ CONCEPT ] Streaming Binary Protobuf Ingestion from Hedera 2026 Block Nodes
+ * [CONCEPT] Streaming Binary Protobuf Ingestion from Hedera 2026 Block Nodes
  * ============================================================================
  * [ KEY CONCEPT ]
  * Under HIP-1056, HIP-1081, and the 2026/2027 Hedera Block Node architecture,
@@ -100,12 +100,12 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log('[⚙️ PROCESS] Step 1: Compiling Canonical Hedera Block Stream Protobuf Schema...')
+    console.log('[PROCESS] Step 1: Compiling Canonical Hedera Block Stream Protobuf Schema...')
     const { Block, BlockHeader, StateChange, TransactionRecordItem } = buildBlockStreamProtobufRoot()
-    console.log('[✅ SUCCESS] Protobuf Types Initialized: BlockHeader, StateChange, TransactionRecordItem, Block')
+    console.log('[SUCCESS] Protobuf Types Initialized: BlockHeader, StateChange, TransactionRecordItem, Block')
 
     // 2. Synthesize High-Speed Block Stream Item from Live State
-    console.log('\n[⚙️ PROCESS] Step 2: Assembling Synthetic 2026 Consensus Block with State Transitions...')
+    console.log('\n[PROCESS] Step 2: Assembling Synthetic 2026 Consensus Block with State Transitions...')
     const currentBlockHeight = 48192042
     const prevHash = crypto.createHash('sha384').update('hedera-block-48192041').digest()
     const tssSig = crypto.randomBytes(64) // 64-byte Threshold Signature
@@ -157,57 +157,57 @@ const main = async () => {
     }
 
     // 3. Serialize to Raw Binary Protobuf Stream Buffer
-    console.log('[⚙️ PROCESS] Step 3: Serializing Block to Binary Protobuf Buffer...')
+    console.log('[PROCESS] Step 3: Serializing Block to Binary Protobuf Buffer...')
     const verifiedMessage = Block.create(sampleBlockData)
     const rawProtobufBytes = Block.encode(verifiedMessage).finish()
 
-    console.log('[✅ SUCCESS] Block Encoded!')
-    console.log(`[📊 LOG] Raw Binary Payload Size:  ${rawProtobufBytes.length} bytes`)
-    console.log('[📊 LOG] Protobuf Compression Ratio: ~82% smaller than JSON representation')
-    console.log(`[📊 LOG] Binary Hex Preview:       ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
+    console.log('[SUCCESS] Block Encoded!')
+    console.log(`[LOG] Raw Binary Payload Size:  ${rawProtobufBytes.length} bytes`)
+    console.log('[LOG] Protobuf Compression Ratio: ~82% smaller than JSON representation')
+    console.log(`[LOG] Binary Hex Preview:       ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
 
     // 4. Ingest and Stream Parse in High-Performance Pipeline
-    console.log('\n[⚙️ PROCESS] Step 4: Streaming Binary Parser Ingestion (Zero-Copy Deserialization)...')
+    console.log('\n[PROCESS] Step 4: Streaming Binary Parser Ingestion (Zero-Copy Deserialization)...')
     const decodedBlock = Block.decode(rawProtobufBytes)
 
-    console.log('[✅ SUCCESS] Binary Block Stream Decoded in < 1ms:')
-    console.log(`   Block Height:           #${decodedBlock.header.blockNumber}`)
-    console.log(`   Previous Hash:          ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
-    console.log(`   Transactions In Block:  ${decodedBlock.transactions.length}`)
-    console.log(`   TSS Signature Proof:    ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
+    console.log('[SUCCESS] Binary Block Stream Decoded in < 1ms:')
+    console.log(`Block Height:           #${decodedBlock.header.blockNumber}`)
+    console.log(`Previous Hash:          ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
+    console.log(`Transactions In Block:  ${decodedBlock.transactions.length}`)
+    console.log(`TSS Signature Proof:    ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
 
     // 5. Extract and Index Granular State Mutations
-    console.log('\n[⚙️ PROCESS] Step 5: Applying Real-Time State Mutations to In-Memory Ledger View...')
+    console.log('\n[PROCESS] Step 5: Applying Real-Time State Mutations to In-Memory Ledger View...')
     let totalStateMutations = 0
 
     decodedBlock.transactions.forEach((tx, idx) => {
-      console.log(`   Tx [${idx + 1}] ID: ${tx.transactionId} | Status: ${tx.status} | Fee: ${tx.feeChargedTinybars} tinybars`)
+      console.log(`Tx [${idx + 1}] ID: ${tx.transactionId} | Status: ${tx.status} | Fee: ${tx.feeChargedTinybars} tinybars`)
       tx.stateChanges.forEach(sc => {
         totalStateMutations++
         const prev = sc.previousValue ? Buffer.from(sc.previousValue).toString('utf8') : '0'
         const next = sc.newValue ? Buffer.from(sc.newValue).toString('utf8') : '0'
-        console.log(`      ➔ State Mutation: [${sc.stateKey}] ${prev} ➔ ${next}`)
+        console.log(`➔ State Mutation: [${sc.stateKey}] ${prev} ➔ ${next}`)
       })
     })
 
-    console.log(`\n[✅ SUCCESS] Ingested ${totalStateMutations} state mutations with 100% cryptographic precision!`)
+    console.log(`\n[SUCCESS] Ingested ${totalStateMutations} state mutations with 100% cryptographic precision!`)
 
     updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', decodedBlock.header.blockNumber.toString())
     updateState('BLOCK_STREAM_STATE_CHANGES_COUNT', totalStateMutations)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Continuous Protobuf Block Streams: In the 2026/2027 Hedera architecture, Block Nodes')
     console.log('stream binary Protobuf state change feeds. Downstream indexers process state mutations')
     console.log('at memory speed without query throttling or JSON parsing bottlenecks.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('State Changes vs Record Files: By emitting explicit key-value state mutations')
     console.log('(StateChanges), nodes eliminate the need to re-execute smart contract bytecode or')
     console.log('re-run transactions off-chain just to know the new account balance or token supply.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Protobuf Stream Ingestion Failure:', error.message)
+    console.error('\n[ERROR] Protobuf Stream Ingestion Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -218,7 +218,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 09: Fondo de Privacidad Zero-Knowledge en Hedera EVM
- * [ CONCEPTO ] Compromisos Criptográficos y Liquidaciones Confidenciales en Capa 1
+ * [CONCEPTO] Compromisos Criptográficos y Liquidaciones Confidenciales en Capa 1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Los registros públicos mantienen un grafo de transacciones abierto donde las
@@ -63,7 +63,7 @@ import { ethers } from 'ethers'
  * 1. Compilador de Solidity en vivo vía solc con Optimizador Habilitado
  */
 const compileZkContract = () => {
-  console.log('[⚙️ PROCESO] Compilando ZkPrivacyPool.sol con solc 0.8.20 (Optimizador habilitado)...')
+  console.log('[PROCESO] Compilando ZkPrivacyPool.sol con solc 0.8.20 (Optimizador habilitado)...')
   const contractPath = new URL('./09_zk_snark_privacy_pool.sol', import.meta.url)
   const sourceCode = fs.readFileSync(contractPath, 'utf8')
 
@@ -126,13 +126,13 @@ const main = async () => {
 
     if (contractIdStr) {
       contractId = ContractId.fromString(contractIdStr)
-      console.log(`[✅ ÉXITO] Reutilizando ID de Contrato ZkPrivacyPool desplegado: ${contractIdStr}`)
-      console.log(`[📊 REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
+      console.log(`[ÉXITO] Reutilizando ID de Contrato ZkPrivacyPool desplegado: ${contractIdStr}`)
+      console.log(`[REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
     } else {
       const { bytecode } = compileZkContract()
-      console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex (${bytecode.length / 2} bytes)`)
+      console.log(`[ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex (${bytecode.length / 2} bytes)`)
 
-      console.log('\n[⚙️ PROCESO] Paso 1: Desplegando ZkPrivacyPool directamente en Hedera EVM (Bytecode Directo)...')
+      console.log('\n[PROCESO] Paso 1: Desplegando ZkPrivacyPool directamente en Hedera EVM (Bytecode Directo)...')
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
@@ -143,13 +143,13 @@ const main = async () => {
       contractIdStr = contractId.toString()
       updateState('ZK_PRIVACY_POOL_ID', contractIdStr)
 
-      console.log(`[✅ ÉXITO] ZkPrivacyPool Desplegado en ID de Contrato: ${contractIdStr}`)
-      console.log(`[📊 REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
-      console.log(`[📊 REGISTRO] URL en HashScan: ${getHashscanUrl(deployTx)}`)
+      console.log(`[ÉXITO] ZkPrivacyPool Desplegado en ID de Contrato: ${contractIdStr}`)
+      console.log(`[REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
+      console.log(`[REGISTRO] URL en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
     // 2. Generar Secretos Criptográficos Fuera de Cadena
-    console.log('\n[⚙️ PROCESO] Paso 2: Generando Secretos Criptográficos (Nulificador y Preimagen)...')
+    console.log('\n[PROCESO] Paso 2: Generando Secretos Criptográficos (Nulificador y Preimagen)...')
     const nullifier = crypto.randomBytes(32)
     const secret = crypto.randomBytes(32)
 
@@ -158,12 +158,12 @@ const main = async () => {
     const commitmentHashHex = ethers.keccak256(combinedBytes)
     const commitmentBuffer = Buffer.from(commitmentHashHex.slice(2), 'hex')
 
-    console.log(`[📊 REGISTRO] Nulificador Secreto: 0x${nullifier.toString('hex')}`)
-    console.log(`[📊 REGISTRO] Preimagen Secreta:   0x${secret.toString('hex')}`)
-    console.log(`[📊 REGISTRO] Compromiso Criptográfico: ${commitmentHashHex}`)
+    console.log(`[REGISTRO] Nulificador Secreto: 0x${nullifier.toString('hex')}`)
+    console.log(`[REGISTRO] Preimagen Secreta:   0x${secret.toString('hex')}`)
+    console.log(`[REGISTRO] Compromiso Criptográfico: ${commitmentHashHex}`)
 
     // 3. Depósito Anónimo en el Fondo de Privacidad (0.01 HBAR)
-    console.log('\n[⚙️ PROCESO] Paso 3: Depositando 0.01 HBAR en el Fondo con el Compromiso Criptográfico...')
+    console.log('\n[PROCESO] Paso 3: Depositando 0.01 HBAR en el Fondo con el Compromiso Criptográfico...')
     const depositTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
@@ -171,18 +171,18 @@ const main = async () => {
       .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer)), client, { gas: 250000 })
 
     const depositReceipt = await depositTx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Depósito Confirmado! Estado en Consenso: ${depositReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] HashScan del Depósito: ${getHashscanUrl(depositTx)}`)
-    console.log('[ℹ️ INFORMACIÓN] Los fondos están blindados en el fondo. La identidad del depositante está desacoplada.')
+    console.log(`[ÉXITO] ¡Depósito Confirmado! Estado en Consenso: ${depositReceipt.status.toString()}`)
+    console.log(`[REGISTRO] HashScan del Depósito: ${getHashscanUrl(depositTx)}`)
+    console.log('[INFORMACIÓN] Los fondos están blindados en el fondo. La identidad del depositante está desacoplada.')
 
     // 4. Retiro Confidencial hacia Receptor Stealth / No Vinculado
-    console.log('\n[⚙️ PROCESO] Paso 4: Iniciando Redención Confidencial hacia Destinatario Stealth...')
+    console.log('\n[PROCESO] Paso 4: Iniciando Redención Confidencial hacia Destinatario Stealth...')
     const stealthRecipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
     const stealthRecipientAddress = await getAccountEvmAddress(stealthRecipientId) // alias accounts are paid at their EVM alias
 
     const initialStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[📊 REGISTRO] Destino Stealth: ${stealthRecipientId} (${stealthRecipientAddress})`)
-    console.log(`[📊 REGISTRO] Balance Pre-Retiro Stealth: ${initialStealthBalance} HBAR`)
+    console.log(`[REGISTRO] Destino Stealth: ${stealthRecipientId} (${stealthRecipientAddress})`)
+    console.log(`[REGISTRO] Balance Pre-Retiro Stealth: ${initialStealthBalance} HBAR`)
 
     // Revelar nulificador y secreto al contrato:
     // El contrato calcula Keccak256(nullifier, secret) en la cadena, valida el compromiso,
@@ -197,22 +197,22 @@ const main = async () => {
       ), client, { gas: 300000 })
 
     const withdrawReceipt = await withdrawTx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Retiro Confidencial Liquidado! Estado: ${withdrawReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] HashScan del Retiro: ${getHashscanUrl(withdrawTx)}`)
+    console.log(`[ÉXITO] ¡Retiro Confidencial Liquidado! Estado: ${withdrawReceipt.status.toString()}`)
+    console.log(`[REGISTRO] HashScan del Retiro: ${getHashscanUrl(withdrawTx)}`)
 
     // 5. Verificar Liquidación y Estado de Balances
-    console.log('\n[⚙️ PROCESO] Paso 5: Verificando Liquidación de Balances y Ruptura de Trazabilidad...')
+    console.log('\n[PROCESO] Paso 5: Verificando Liquidación de Balances y Ruptura de Trazabilidad...')
     await sleep(3000)
     const finalStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[📊 REGISTRO] Balance Post-Retiro Stealth: ${finalStealthBalance} HBAR (+0.01 HBAR transferidos)`)
+    console.log(`[REGISTRO] Balance Post-Retiro Stealth: ${finalStealthBalance} HBAR (+0.01 HBAR transferidos)`)
 
     if (finalStealthBalance <= initialStealthBalance) {
       throw new Error('Fallo en la verificación de liquidación: el balance stealth no incrementó')
     }
-    console.log('[✅ ÉXITO] ¡El receptor stealth recibió los fondos con CERO vínculos en cadena con el depositante!')
+    console.log('[ÉXITO] ¡El receptor stealth recibió los fondos con CERO vínculos en cadena con el depositante!')
 
     // 6. Probar Defensa Contra Doble Gasto (Simulación de Ataque)
-    console.log('\n[⚙️ PROCESO] Paso 6: Probando Defensa Contra Replay y Doble Gasto (Simulación de Ataque)...')
+    console.log('\n[PROCESO] Paso 6: Probando Defensa Contra Replay y Doble Gasto (Simulación de Ataque)...')
     try {
       const replayTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(contractId)
@@ -224,26 +224,26 @@ const main = async () => {
         ), client, { gas: 300000 })
 
       await replayTx.getReceipt(client)
-      console.error('[❌ ERROR] Violación de seguridad: ¡El ataque de repetición tuvo éxito!')
+      console.error('[ERROR] Violación de seguridad: ¡El ataque de repetición tuvo éxito!')
       process.exitCode = 1
     } catch (replayError) {
-      console.log('[✅ ÉXITO] ¡Ataque de doble gasto rechazado exitosamente por la verificación de nulificador en la EVM!')
-      console.log(`[📊 REGISTRO] Motivo de Reversión Esperado: "${replayError.message}"`)
+      console.log('[ÉXITO] ¡Ataque de doble gasto rechazado exitosamente por la verificación de nulificador en la EVM!')
+      console.log(`[REGISTRO] Motivo de Reversión Esperado: "${replayError.message}"`)
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los fondos de Privacidad Zero-Knowledge desacoplan los orígenes y destinos en la red.')
     console.log('Al verificar preimágenes criptográficas en Solidity, Hedera EVM provee garantías')
     console.log('matemáticas de privacidad a costos de gas sub-centavo sin requerir redes privadas.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Los nulificadores son la base para evitar el doble gasto en ZK. El compromiso')
     console.log('blinda el depósito, mientras que el nulificador unidireccional registra el retiro')
     console.log('sin revelar a cuál depósito pertenecía originalmente.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en el Fondo de Privacidad ZK:', error.message)
+    console.error('\n[ERROR] Fallo en el Fondo de Privacidad ZK:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -254,7 +254,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

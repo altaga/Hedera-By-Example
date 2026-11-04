@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Reconstrucción Trustless de Datos desde HCS-1
- * [ CONCEPTO ] Verificación Criptográfica de Integridad y Reensamblaje
+ * [CONCEPTO] Verificación Criptográfica de Integridad y Reensamblaje
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Verificación Sin Confianza: La reconstrucción de datos HCS-1 es el proceso
@@ -44,13 +44,13 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta Lab 04 primero.')
+    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta Lab 04 primero.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[ℹ️ INFO] Consultando Mirror Node para Topic: ${topicId}`)
+    console.log(`[INFO] Consultando Mirror Node para Topic: ${topicId}`)
 
     /**
      * Recuperación de fragmentos vía Mirror Node REST API.
@@ -82,19 +82,19 @@ const main = async () => {
       return parsed.filter((sh) => sh.fid === latest.fid).length >= latest.t
     }
 
-    console.log('[⚙️ PROCESO] Descargando fragmentos del ledger descentralizado...')
+    console.log('[PROCESO] Descargando fragmentos del ledger descentralizado...')
     const allMessages = (await waitForMirror(async () => {
       const messages = await fetchAllMessages()
       return hasAllShards(messages) ? messages : null
     }, { timeoutMs: 60_000 })) || await fetchAllMessages()
 
     if (allMessages.length === 0) {
-      console.error('[❌ FALLO] No hay mensajes en este tema. Ejecuta el Lab 04 primero.')
+      console.error('[FALLO] No hay mensajes en este tema. Ejecuta el Lab 04 primero.')
       process.exitCode = 1
       return
     }
 
-    console.log(`[📊 REGISTRO] Se localizaron ${allMessages.length} mensajes en el Mirror Node.`)
+    console.log(`[REGISTRO] Se localizaron ${allMessages.length} mensajes en el Mirror Node.`)
 
     // 1. Decodificar y Filtrar Fragmentos HCS-1
     const shards = allMessages
@@ -116,8 +116,8 @@ const main = async () => {
     const latestFid = shards[shards.length - 1].fid
     const filteredShards = shards.filter(sh => sh.fid === latestFid)
 
-    console.log(`[✅ ÉXITO] Identidad del Activo (FID): ${latestFid}`)
-    console.log(`[ℹ️ INFO] Reensamblando a partir de ${filteredShards.length} shards.`)
+    console.log(`[ÉXITO] Identidad del Activo (FID): ${latestFid}`)
+    console.log(`[INFO] Reensamblando a partir de ${filteredShards.length} shards.`)
 
     // 3. Ordenar por índice para restaurar integridad estructural
     filteredShards.sort((a, b) => a.i - b.i)
@@ -133,7 +133,7 @@ const main = async () => {
     filteredShards.forEach(sh => {
       show.shards({ id: 'hcs1-stitch', title: 'Fragmentos reensamblados', total: totalExpected, done: sh.i + 1 })
       fullBase64 += sh.d
-      console.log(`   └─ [LECTURA] Fragmento ${sh.i + 1}/${totalExpected} procesado.`)
+      console.log(`└─ [LECTURA] Fragmento ${sh.i + 1}/${totalExpected} procesado.`)
     })
 
     // 6. Persistir resultado reconstruido como binario
@@ -144,13 +144,13 @@ const main = async () => {
 
     fs.writeFileSync(outputPath, resultBuffer)
 
-    console.log('\n--- 💎 [✅ ÉXITO] ACTIVO RECONSTRUIDO CON ÉXITO ---')
-    console.log(`[📊 REGISTRO] Identidad Digital: ${latestFid}`)
-    console.log(`[📊 REGISTRO] Tamaño Final:    ${resultBuffer.length} bytes`)
-    console.log(`[📊 REGISTRO] Ubicación:       ${outputPath}`)
+    console.log('\n---  [ÉXITO] ACTIVO RECONSTRUIDO CON ÉXITO ---')
+    console.log(`[REGISTRO] Identidad Digital: ${latestFid}`)
+    console.log(`[REGISTRO] Tamaño Final:    ${resultBuffer.length} bytes`)
+    console.log(`[REGISTRO] Ubicación:       ${outputPath}`)
     console.log('---------------------------------------------------------')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La soberanía de los datos radica en poder reconstruirlos sin')
     console.log('permisos de terceros. Mientras un Mirror Node de Hedera exista,')
     console.log('tus activos digitales estarán seguros y disponibles para ser')
@@ -158,7 +158,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La reconstrucción de datos falló:', error.message)
+    console.error('\n[FALLO] La reconstrucción de datos falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -167,7 +167,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

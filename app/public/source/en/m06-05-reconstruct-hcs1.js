@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: HCS-1 Data Reconstruction (Image Example)
- * [ CONCEPT ] Subscription-to-State Mirror Node Retrieval
+ * [CONCEPT] Subscription-to-State Mirror Node Retrieval
  * ============================================================================
  * [ KEY CONCEPT ]
  * Trustless Reconstruction: Because each shard is cryptographically
@@ -45,13 +45,13 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration. Run Lab 04 first.')
+    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration. Run Lab 04 first.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[⚙️ PROCESS] Querying Mirror Node for messages in Topic: ${topicId}`)
+    console.log(`[PROCESS] Querying Mirror Node for messages in Topic: ${topicId}`)
 
     /**
      * We use the Mirror Node REST API to retrieve topic messages.
@@ -84,19 +84,19 @@ const main = async () => {
       return parsed.filter((sh) => sh.fid === latest.fid).length >= latest.t
     }
 
-    console.log('[ℹ️ INFO] Fetching shards from Mirror Node...')
+    console.log('[INFO] Fetching shards from Mirror Node...')
     const allMessages = (await waitForMirror(async () => {
       const messages = await fetchAllMessages()
       return hasAllShards(messages) ? messages : null
     }, { timeoutMs: 60_000 })) || await fetchAllMessages()
 
     if (allMessages.length === 0) {
-      console.error('[❌ FAILED] No messages found in this topic. Run Lab 04 first.')
+      console.error('[FAILED] No messages found in this topic. Run Lab 04 first.')
       process.exitCode = 1
       return
     }
 
-    console.log(`[📊 LOG] Found ${allMessages.length} total messages in Mirror Node.`)
+    console.log(`[LOG] Found ${allMessages.length} total messages in Mirror Node.`)
 
     // 1. Decode and Filter HCS-1 Shards
     const shards = allMessages
@@ -121,8 +121,8 @@ const main = async () => {
     const latestFid = shards[shards.length - 1].fid
     const filteredShards = shards.filter(sh => sh.fid === latestFid)
 
-    console.log(`[📊 LOG] Target File Identity (FID): ${latestFid}`)
-    console.log(`[ℹ️ INFO] Reconstructing with ${filteredShards.length} shards...`)
+    console.log(`[LOG] Target File Identity (FID): ${latestFid}`)
+    console.log(`[INFO] Reconstructing with ${filteredShards.length} shards...`)
 
     // 3. Sort shards by index 'i' to ensure correct ordering
     filteredShards.sort((a, b) => a.i - b.i)
@@ -138,7 +138,7 @@ const main = async () => {
     filteredShards.forEach(sh => {
       show.shards({ id: 'hcs1-stitch', title: 'Shards stitched back together', total: totalExpected, done: sh.i + 1 })
       fullBase64 += sh.d
-      console.log(` └─ [⚙️ PROCESS] Shard ${sh.i + 1}/${totalExpected} stitched.`)
+      console.log(`└─ [PROCESS] Shard ${sh.i + 1}/${totalExpected} stitched.`)
     })
 
     // 6. Convert back to binary and save as PNG
@@ -148,11 +148,11 @@ const main = async () => {
 
     fs.writeFileSync(outputPath, resultBuffer)
 
-    console.log('\n[✅ SUCCESS] Reconstruction Complete!')
-    console.log(`[📊 LOG] Final Image Size: ${resultBuffer.length} bytes`)
-    console.log(`[ℹ️ INFO] Successfully saved to: ${outputPath}`)
+    console.log('\n[SUCCESS] Reconstruction Complete!')
+    console.log(`[LOG] Final Image Size: ${resultBuffer.length} bytes`)
+    console.log(`[INFO] Successfully saved to: ${outputPath}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Trustless Reconstruction: Because each shard is cryptographically')
     console.log('timestamped by Hedera, the client knows with 100% certainty that the')
     console.log('reconstructed image is the exact same one that was anchored in the')
@@ -160,7 +160,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Reconstruction Failed:', error.message)
+    console.error('\n[FAILED] Reconstruction Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -169,7 +169,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

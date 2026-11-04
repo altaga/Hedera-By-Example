@@ -1,4 +1,4 @@
-# 🪙 Module 3: Hedera Token Service (HTS)
+# Module 3: Hedera Token Service (HTS)
 ## Native Tokenization with Database Performance
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -23,7 +23,7 @@
 
 ---
 
-## 🎨 Token Lifecycle in HTS
+## Token Lifecycle in HTS
 
 ```mermaid
 %%{init: {
@@ -62,7 +62,7 @@ graph LR
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Native Tokens vs. Smart Contracts
 In Hedera, tokens are first-class citizens. This means transfer and balance logic is integrated into the nodes, making them 1,000 times faster and cheaper than an ERC-20 on Ethereum.
@@ -75,11 +75,11 @@ Hedera allows you to define collection rules at the protocol level. You can conf
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Token Service (HTS) Overview](https://docs.hedera.com/hedera/core-concepts/tokens)
 - [HIP-412: NFT Metadata JSON Schema](https://hips.hedera.com/hip/hip-412)
 - [Token Custom Fees Documentation](https://docs.hedera.com/hedera/networks/mainnet/custom-fees)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. REAL TOKENIZATION.
+ 2026 **HEDERA FOR DUMMIES**. REAL TOKENIZATION.

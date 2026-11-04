@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
- * [ CONCEPTO ] Deuda Comercial Fraccionada y Liquidez Secundaria
+ * [CONCEPTO] Deuda Comercial Fraccionada y Liquidez Secundaria
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Desbloqueando Capital de Trabajo Ilíquido: Las pequeñas y medianas empresas (PyMEs)
@@ -22,7 +22,7 @@
  * - Actual:   M11 Lab 05: Factoraje de Facturas RWA
  * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo RWA
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Las suscripciones de inversionistas y el pago del deudor se modelan con transferencias simples. Los tokens son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -63,16 +63,16 @@ const main = async () => {
     const upfrontPayoutToSmeUsd = INVOICE_METADATA.faceValueUsd - discountAmountUsd
     const annualizedRoiPercent = INVOICE_METADATA.annualDiscountRate * 100
 
-    console.log('[⚙️ PROCESO] Calculando la Economía de Tokenización de la Factura...')
-    console.log(`[📊 REGISTRO] ID de Factura:         ${INVOICE_METADATA.invoiceId}`)
-    console.log(`[📊 REGISTRO] Deudor Corporativo:    ${INVOICE_METADATA.debtor}`)
-    console.log(`[📊 REGISTRO] Proveedor PyME:        ${INVOICE_METADATA.supplierSme}`)
-    console.log(`[📊 REGISTRO] Valor Nominal:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (Plazo: 60 Días)`)
-    console.log(`[📊 REGISTRO] Efectivo PyME Inmediato: $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Liquidez Inmediata)`)
-    console.log(`[📊 REGISTRO] Rendimiento Inversor:  $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
+    console.log('[PROCESO] Calculando la Economía de Tokenización de la Factura...')
+    console.log(`[REGISTRO] ID de Factura:         ${INVOICE_METADATA.invoiceId}`)
+    console.log(`[REGISTRO] Deudor Corporativo:    ${INVOICE_METADATA.debtor}`)
+    console.log(`[REGISTRO] Proveedor PyME:        ${INVOICE_METADATA.supplierSme}`)
+    console.log(`[REGISTRO] Valor Nominal:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (Plazo: 60 Días)`)
+    console.log(`[REGISTRO] Efectivo PyME Inmediato: $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Liquidez Inmediata)`)
+    console.log(`[REGISTRO] Rendimiento Inversor:  $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
 
     // 2. Tokenizar la Cuenta por Cobrar en HTS
-    console.log('\n[⚙️ PROCESO] Acuñando 50,000 Tokens Fraccionados de Factura en Hedera Token Service...')
+    console.log('\n[PROCESO] Acuñando 50,000 Tokens Fraccionados de Factura en Hedera Token Service...')
     const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
@@ -92,11 +92,11 @@ const main = async () => {
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ ÉXITO] Token de Factura RWA Desplegado: ${invoiceTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
+    console.log(`[ÉXITO] Token de Factura RWA Desplegado: ${invoiceTokenId}`)
+    console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
 
     // 3. Simular la Suscripción del Fondo de Liquidez (Mercado Secundario)
-    console.log('\n[⚙️ PROCESO] El Fondo de Liquidez adquiere los 50,000 tokens adelantando el capital...')
+    console.log('\n[PROCESO] El Fondo de Liquidez adquiere los 50,000 tokens adelantando el capital...')
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const subscriptionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulación de transferencia de liquidez
@@ -106,11 +106,11 @@ const main = async () => {
 
     const subResponse = await subscriptionTx.execute(client)
     await subResponse.getReceipt(client)
-    console.log('[✅ ÉXITO] Capital Adelantado Transferido a la PyME.')
+    console.log('[ÉXITO] Capital Adelantado Transferido a la PyME.')
 
     // 4. Día 60: Pago del Deudor y Rendimiento Automatizado para Inversores
     console.log('\n===============================================================')
-    console.log('📅 VENCIMIENTO: EL DEUDOR LIQUIDA EL VALOR TOTAL DE $50,000 USD')
+    console.log('VENCIMIENTO: EL DEUDOR LIQUIDA EL VALOR TOTAL DE $50,000 USD')
     console.log('===============================================================')
 
     const payoutTx = await new TransferTransaction()
@@ -123,22 +123,22 @@ const main = async () => {
     const payoutReceipt = await payoutResponse.getReceipt(client)
     const payoutHashscanUrl = getHashscanUrl(payoutResponse)
 
-    console.log('[✅ ÉXITO] Distribución de Rendimiento Final Liquidada On-Chain:')
-    console.log(`[📊 REGISTRO] Estado:            ${payoutReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${payoutResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan:        ${payoutHashscanUrl}`)
+    console.log('[ÉXITO] Distribución de Rendimiento Final Liquidada On-Chain:')
+    console.log(`[REGISTRO] Estado:            ${payoutReceipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${payoutResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] HashScan:        ${payoutHashscanUrl}`)
 
     updateState('INVOICE_TOKEN_ID', invoiceTokenId)
     updateState('INVOICE_SETTLEMENT_TX_ID', payoutResponse.transactionId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La tokenización de RWAs conecta el comercio del mundo real con las DeFi.')
     console.log('Hedera elimina la fricción de conciliación, permitiendo a las empresas acceder a')
     console.log('liquidez global instantánea a una fracción de los costos del factoraje bancario clásico.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la simulación de factoraje de factura:', error.message)
+    console.error('\n[FALLO] Fallo en la simulación de factoraje de factura:', error.message)
     process.exit(1)
   }
 }
@@ -147,7 +147,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

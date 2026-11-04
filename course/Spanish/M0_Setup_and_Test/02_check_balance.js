@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Verificación y Activación de Cuenta
- * [ CONCEPTO ] Sincronización de Identidad On-Chain
+ * [CONCEPTO] Sincronización de Identidad On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Portal al Ledger: El objeto `Client` es tu portal al ledger. Al llamar a
@@ -51,7 +51,7 @@ const main = async () => {
   const evmAddress = process.env.OPERATOR_EVM_ADDRESS
 
   if (!operatorKey) {
-    console.error('[❌ FALLO] Falta OPERATOR_PRIVATE_KEY en el archivo .env. Ejecuta el Lab 01 primero.')
+    console.error('[FALLO] Falta OPERATOR_PRIVATE_KEY en el archivo .env. Ejecuta el Lab 01 primero.')
     process.exit(1)
   }
 
@@ -60,7 +60,7 @@ const main = async () => {
   const isValidId = (id) => /^\d+\.\d+\.\d+$/.test(id || '')
   let accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
   if (!isValidId(accountId) && evmAddress) {
-    console.log(`[⚙️ PROCESO] Buscando la cuenta creada para ${evmAddress}...`)
+    console.log(`[PROCESO] Buscando la cuenta creada para ${evmAddress}...`)
     accountId = await waitForMirror(async () => {
       const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`)
       return res.ok ? (await res.json()).account : null
@@ -68,9 +68,9 @@ const main = async () => {
   }
 
   if (!isValidId(accountId)) {
-    console.log(`[ℹ️ INFO] Verificando Cuenta: ${evmAddress}`)
-    console.log(`[📊 REGISTRO] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
-    console.error('\n[❌ FALLO] MANUAL_ACCOUNT_ID no está definido y falta OPERATOR_ID en el archivo .env.')
+    console.log(`[INFO] Verificando Cuenta: ${evmAddress}`)
+    console.log(`[REGISTRO] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
+    console.error('\n[FALLO] MANUAL_ACCOUNT_ID no está definido y falta OPERATOR_ID en el archivo .env.')
     process.exitCode = 1
     console.error('Pega el ID 0.0.X en la constante MANUAL_ACCOUNT_ID al inicio de este archivo.')
     process.exit(1)
@@ -80,22 +80,22 @@ const main = async () => {
 
   try {
     const inputId = accountId
-    console.log(`[⚙️ PROCESO] Consultando saldo para la cuenta ${inputId} en el Testnet...`)
+    console.log(`[PROCESO] Consultando saldo para la cuenta ${inputId} en el Testnet...`)
 
     const query = new MirrorNodeAccountBalanceQuery()
       .setAccountId(inputId)
 
     const balance = await query.execute(client)
 
-    console.log('\n[✅ ÉXITO] Conexión a la red exitosa.')
-    console.log(`[📊 REGISTRO] Account ID: ${inputId}`)
-    console.log(`[📊 REGISTRO] Saldo Actual: ${balance.hbars.toString()}`)
+    console.log('\n[ÉXITO] Conexión a la red exitosa.')
+    console.log(`[REGISTRO] Account ID: ${inputId}`)
+    console.log(`[REGISTRO] Saldo Actual: ${balance.hbars.toString()}`)
 
     // Actualizar el .env con el ID verificado
-    console.log('\n[ℹ️ INFO] Sincronizando OPERATOR_ID en el archivo .env...')
+    console.log('\n[INFO] Sincronizando OPERATOR_ID en el archivo .env...')
     updateEnv('OPERATOR_ID', inputId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El objeto `Client` es tu portal al ledger. Al llamar a')
     console.log('`setOperator()`, estableces QUIÉN paga y QUIÉN firma cada operación')
     console.log('posterior. Esto garantiza que tus futuras transacciones sean')
@@ -104,7 +104,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La verificación de saldo falló:', error.message)
+    console.error('\n[FALLO] La verificación de saldo falló:', error.message)
     process.exit(1)
   }
 }
@@ -113,7 +113,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

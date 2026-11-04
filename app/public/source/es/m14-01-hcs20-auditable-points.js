@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Puntos Auditables HCS-20 y Libros de Inscripciones
- * [ CONCEPTO ] Contabilidad por Event-Sourcing de Alto Rendimiento sobre Consenso
+ * [CONCEPTO] Contabilidad por Event-Sourcing de Alto Rendimiento sobre Consenso
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Contabilidad por Inscripciones Basada en Eventos: En lugar de guardar los balances
@@ -149,7 +149,7 @@ const main = async () => {
 
   try {
     // 1. Crear Tópico Dedicado para el Registro de Inscripciones HCS-20
-    console.log('[⚙️ PROCESO] Creando tópico dedicado para el libro de inscripciones HCS-20...')
+    console.log('[PROCESO] Creando tópico dedicado para el libro de inscripciones HCS-20...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-20:AUDITABLE:POINTS:V1')
@@ -158,13 +158,13 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Libro de Puntos HCS-20 Creado: Tópico ID ${topicId}`)
+    console.log(`[ÉXITO] Libro de Puntos HCS-20 Creado: Tópico ID ${topicId}`)
 
     const stateEngine = new HCS20StateEngine()
     const recipientAgent = '0.0.8707881'
 
     // 2. Inscribir Despliegue de Token (Deploy validado por HCS20DeployMessageSchema)
-    console.log('\n[⚙️ PROCESO] Inscribiendo Despliegue de Token HCS-20: Ticker [aipnt] (Máx: 1,000,000)...')
+    console.log('\n[PROCESO] Inscribiendo Despliegue de Token HCS-20: Ticker [aipnt] (Máx: 1,000,000)...')
     const deployMsg = HCS20.deploy('AI Reputation Points', 'aipnt', 1000000)
     // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const deployTx = await new TopicMessageSubmitTransaction()
@@ -173,10 +173,10 @@ const main = async () => {
       .execute(client)
     const deployReceipt = await deployTx.getReceipt(client)
     stateEngine.processMessage(deployMsg, deployReceipt.topicSequenceNumber)
-    console.log(`[✅ ÉXITO] AIPNT Desplegado en Secuencia de Consenso #${deployReceipt.topicSequenceNumber}`)
+    console.log(`[ÉXITO] AIPNT Desplegado en Secuencia de Consenso #${deployReceipt.topicSequenceNumber}`)
 
     // 3. Inscribir Emisión de Puntos (Mint validado por HCS20MintMessageSchema)
-    console.log(`\n[⚙️ PROCESO] Inscribiendo Emisión de 50,000 AIPNT para Operador (${operatorId})...`)
+    console.log(`\n[PROCESO] Inscribiendo Emisión de 50,000 AIPNT para Operador (${operatorId})...`)
     const mintMsg = HCS20.mint('aipnt', operatorId.toString(), 50000)
     const mintTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -184,10 +184,10 @@ const main = async () => {
       .execute(client)
     const mintReceipt = await mintTx.getReceipt(client)
     stateEngine.processMessage(mintMsg, mintReceipt.topicSequenceNumber)
-    console.log(`[✅ ÉXITO] Emitidos 50,000 AIPNT en Secuencia de Consenso #${mintReceipt.topicSequenceNumber}`)
+    console.log(`[ÉXITO] Emitidos 50,000 AIPNT en Secuencia de Consenso #${mintReceipt.topicSequenceNumber}`)
 
     // 4. Inscribir Transferencia de Puntos (Transfer validado por HCS20TransferMessageSchema)
-    console.log(`\n[⚙️ PROCESO] Inscribiendo Transferencia de 12,500 AIPNT del Operador al Agente (${recipientAgent})...`)
+    console.log(`\n[PROCESO] Inscribiendo Transferencia de 12,500 AIPNT del Operador al Agente (${recipientAgent})...`)
     const transferMsg = HCS20.transfer('aipnt', operatorId.toString(), recipientAgent, 12500)
     const transferTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -195,12 +195,12 @@ const main = async () => {
       .execute(client)
     const transferReceipt = await transferTx.getReceipt(client)
     stateEngine.processMessage(transferMsg, transferReceipt.topicSequenceNumber)
-    console.log(`[✅ ÉXITO] Transferidos 12,500 AIPNT en Secuencia de Consenso #${transferReceipt.topicSequenceNumber}`)
+    console.log(`[ÉXITO] Transferidos 12,500 AIPNT en Secuencia de Consenso #${transferReceipt.topicSequenceNumber}`)
 
     // 5. Auditoría y Reconstrucción del Estado por el Indexador
-    console.log('\n[📊 AUDITORÍA] Estado Reconstruido del Libro HCS-20:')
-    console.log(`[📊 REGISTRO] Balance Operador (${operatorId}):       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
-    console.log(`[📊 REGISTRO] Balance Agente Destino (${recipientAgent}): ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
+    console.log('\n[AUDITORÍA] Estado Reconstruido del Libro HCS-20:')
+    console.log(`[REGISTRO] Balance Operador (${operatorId}):       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
+    console.log(`[REGISTRO] Balance Agente Destino (${recipientAgent}): ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
 
     // Persistir estado
     updateState('HCS20_TOPIC_ID', topicId)
@@ -208,18 +208,18 @@ const main = async () => {
     updateState('HCS20_OPERATOR_BALANCE', stateEngine.getBalance('AIPNT', operatorId.toString()))
     updateState('HCS20_AGENT_BALANCE', stateEngine.getBalance('AIPNT', recipientAgent))
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-20 es contabilidad basada en eventos puros sobre Hedera. Cualquier indexador')
     console.log(`que lea el Tópico ${topicId} llegará exactamente a los mismos balances matemáticos`)
     console.log('sin ejecutar una sola instrucción de código de bytes en un contrato inteligente.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('El almacenamiento en la máquina virtual EVM es costoso; el consenso en HCS es trivialmente barato.')
     console.log('Separar la secuencia de datos del cómputo off-chain es la clave para escalar a millones de usuarios.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de HCS-20:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de HCS-20:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -230,7 +230,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Transferencias Atómicas de HBAR
- * [ CONCEPTO ] El Libro Mayor de Suma Cero y Finalidad Definitiva
+ * [CONCEPTO] El Libro Mayor de Suma Cero y Finalidad Definitiva
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Integridad Matemática: El `TransferTransaction` de Hedera es un "Libro Mayor
@@ -44,13 +44,13 @@ const main = async () => {
   const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[❌ FALLO] Falta el ACCOUNT_1_ID en el archivo .env.')
+    console.error('[FALLO] Falta el ACCOUNT_1_ID en el archivo .env.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[⚙️ PROCESO] Preparando transferencia de 1 HBAR de ${operatorId} a ${targetId}...`)
+    console.log(`[PROCESO] Preparando transferencia de 1 HBAR de ${operatorId} a ${targetId}...`)
 
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transaction = await new TransferTransaction()
@@ -60,14 +60,14 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] Transferencia confirmada por la red. Estado: ${receipt.status.toString()}`)
+    console.log(`\n[ÉXITO] Transferencia confirmada por la red. Estado: ${receipt.status.toString()}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Finalidad en el Hashgraph: A diferencia de las redes de Minería')
     console.log('(PoW), Hedera no requiere "confirmaciones múltiples". Una vez')
     console.log('que recibes el recibo con éxito, la transacción es definitiva')
@@ -76,7 +76,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La transferencia de HBAR falló:', error.message)
+    console.error('\n[FALLO] La transferencia de HBAR falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -85,7 +85,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

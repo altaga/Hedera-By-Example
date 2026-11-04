@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Consultas REST Asíncronas al Mirror Node
- * [ CONCEPTO ] El Camino Correcto: Interrogación Gratuita del Estado
+ * [CONCEPTO] El Camino Correcto: Interrogación Gratuita del Estado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * No pagues por lo que es público: Los Mirror Nodes son bases de datos
@@ -42,7 +42,7 @@ const getAccountBalancesAsync = async (accountId) => {
   // Arma la URL REST: las lecturas van al Mirror Node, nunca a los nodos de consenso.
   const targetUrl = `${baseUrl}/api/v1/balances?account.id=${accountId}`
 
-  console.log(`[⚙️ PROCESO] Realizando HTTP GET al Mirror Node: ${targetUrl}`)
+  console.log(`[PROCESO] Realizando HTTP GET al Mirror Node: ${targetUrl}`)
 
   try {
     const response = await fetch(targetUrl)
@@ -81,21 +81,21 @@ const main = async () => {
   try {
     const balanceData = await getAccountBalancesAsync(targetAccount)
 
-    console.log('\n[✅ ÉXITO] Interrogación de estado a costo cero (Costo: 0 ℏ).')
-    console.log(`[📊 REGISTRO] Account ID: ${balanceData.accountId}`)
-    console.log(`[📊 REGISTRO] Saldo Actual: ${balanceData.hbars.toFixed(8)} ℏ`)
-    console.log(`[📊 REGISTRO] Tokens Asociados: ${balanceData.tokens.length}`)
+    console.log('\n[ÉXITO] Interrogación de estado a costo cero (Costo: 0 ℏ).')
+    console.log(`[REGISTRO] Account ID: ${balanceData.accountId}`)
+    console.log(`[REGISTRO] Saldo Actual: ${balanceData.hbars.toFixed(8)} ℏ`)
+    console.log(`[REGISTRO] Tokens Asociados: ${balanceData.tokens.length}`)
 
-    console.log('\n[ℹ️ INFO] Siguiente objetivo: Manejar grandes volúmenes de datos con paginación.')
+    console.log('\n[INFO] Siguiente objetivo: Manejar grandes volúmenes de datos con paginación.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al utilizar Mirror Nodes, tu aplicación puede escalar')
     console.log('infinitamente en lecturas de datos sin incurrir en costos')
     console.log('de transacción de red, reservando HBAR solo para escrituras.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La interrogación REST falló:', error.message)
+    console.error('\n[FALLO] La interrogación REST falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -104,7 +104,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

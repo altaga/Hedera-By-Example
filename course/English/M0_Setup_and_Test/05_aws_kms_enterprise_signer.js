@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: AWS KMS Enterprise Signer
- * [ CONCEPT ] Cloud Hardware Security Modules (HSM) & Air-Gapped Custody
+ * [CONCEPT] Cloud Hardware Security Modules (HSM) & Air-Gapped Custody
  * ============================================================================
  * [ KEY CONCEPT ]
  * In enterprise banking, exchanges, and institutional custody (Fireblocks,
@@ -25,7 +25,7 @@
  * - Previous: Lab 04: Native Account Creation
  * - Next:     Lab 06: OpenTelemetry Consensus Telemetry
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real.
  *
  * [ BEFORE YOU RUN ]
@@ -114,7 +114,7 @@ class EnterpriseKmsAdapter {
     const { KeyId, Message, MessageType, SigningAlgorithm } = commandInput
 
     if (this.isLiveAws) {
-      console.log(`[☁️ AWS KMS LIVE] Dispatching SignCommand to AWS KMS HSM (${this.region})...`)
+      console.log(`[ AWS KMS LIVE] Dispatching SignCommand to AWS KMS HSM (${this.region})...`)
       const { KMSClient, SignCommand } = await import('@aws-sdk/client-kms')
       const kms = new KMSClient({ region: this.region })
       const res = await kms.send(new SignCommand(commandInput))
@@ -126,8 +126,8 @@ class EnterpriseKmsAdapter {
     }
 
     // Secure In-Memory Enclave Simulation (Zero Cloud Setup Required)
-    console.log(`[🔒 ENCLAVE HSM] Simulating AWS KMS Hardware Enclave for Key: ${KeyId.substring(0, 36)}...`)
-    console.log(`[📊 LOG] Algorithm: ${SigningAlgorithm} | MessageType: ${MessageType} | Payload: ${Message.length} bytes`)
+    console.log(`[ ENCLAVE HSM] Simulating AWS KMS Hardware Enclave for Key: ${KeyId.substring(0, 36)}...`)
+    console.log(`[LOG] Algorithm: ${SigningAlgorithm} | MessageType: ${MessageType} | Payload: ${Message.length} bytes`)
 
     let derSig
     if (this._isolatedKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')) {
@@ -169,23 +169,23 @@ const main = async () => {
   const custodyKey = PrivateKey.fromStringDer(operatorKey)
   const isECDSA = custodyKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')
 
-  console.log('[🔐 SECURITY] Custody Mode: Air-Gapped KMS Signer')
-  console.log(`[📊 LOG] Account ID:        ${operatorId.toString()}`)
-  console.log(`[📊 LOG] Public Key (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
-  console.log(`[📊 LOG] Key Algorithm:     ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
+  console.log('[SECURITY] Custody Mode: Air-Gapped KMS Signer')
+  console.log(`[LOG] Account ID:        ${operatorId.toString()}`)
+  console.log(`[LOG] Public Key (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
+  console.log(`[LOG] Key Algorithm:     ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
 
   // Initialize AWS KMS Adapter (Zero external programs needed; supports live AWS KMS seamlessly)
   const kmsAdapter = new EnterpriseKmsAdapter({ isolatedKey: custodyKey })
 
   try {
-    console.log('\n[⚙️ PROCESS] Step 1: Constructing raw, un-signed transaction...')
+    console.log('\n[PROCESS] Step 1: Constructing raw, un-signed transaction...')
 
     // Construct a benign state ping transfer transaction (0 HBAR to self)
     const transaction = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(0))
       .freezeWith(client)
 
-    console.log('[⚙️ PROCESS] Step 2: Delegating signature callback to AWS KMS HSM Enclave...')
+    console.log('[PROCESS] Step 2: Delegating signature callback to AWS KMS HSM Enclave...')
 
     // Sign using Hedera's asynchronous signWith callback
     await transaction.signWith(custodyKey.publicKey, async (transactionBodyBytes) => {
@@ -200,22 +200,22 @@ const main = async () => {
       // Convert DER signature to Hedera's expected format
       if (isECDSA) {
         const rawSignature = unpackDerToRaw(kmsResponse.Signature)
-        console.log(`[✅ SUCCESS] DER Signature decoded to canonical 64 bytes: ${rawSignature.toString('hex').substring(0, 24)}...`)
+        console.log(`[SUCCESS] DER Signature decoded to canonical 64 bytes: ${rawSignature.toString('hex').substring(0, 24)}...`)
         return rawSignature
       }
 
       return kmsResponse.Signature
     })
 
-    console.log('\n[⚙️ PROCESS] Step 3: Broadcasting KMS-signed transaction to Hedera consensus nodes...')
+    console.log('\n[PROCESS] Step 3: Broadcasting KMS-signed transaction to Hedera consensus nodes...')
     const txResponse = await transaction.execute(client)
     const receipt = await txResponse.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] Consensus Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] Transaction ID:     ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] View on HashScan: ${getHashscanUrl(txResponse)}`)
+    console.log(`\n[SUCCESS] Consensus Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] Transaction ID:     ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(txResponse)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero Key Exposure: The application environment NEVER holds the private key.')
     console.log('The transaction bytes were sent to an isolated hardware security module (HSM),')
     console.log('signed in hardware, and verified on Hedera. This is the mandatory architecture')
@@ -224,7 +224,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] KMS Signing Error: ${error.message}`)
+    console.error(`\n[FAILED] KMS Signing Error: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -235,7 +235,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

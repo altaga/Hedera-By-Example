@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Comunicación A2A Paralela Segura
- * [ CONCEPTO ] Arquitectura Zero Trust y Detección de Intrusos (IDS)
+ * [CONCEPTO] Arquitectura Zero Trust y Detección de Intrusos (IDS)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Confianza Cero (Zero Trust): En un entorno seguro de IA distribuida, cada
@@ -26,7 +26,7 @@
  * - Actual:   M9 Lab 09: Comunicación Segura y Verificada
  * - Siguiente: M9 Lab 10: Defensa Activa contra Adversarios
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Agente A -> Buzón del agente B: Contenido + hash + firma (llave de sesión)
  * Nota Agente B: Verifica la firma con la llave del agente A
  * Agente B -> Buzón del agente A: Respuesta firmada
@@ -65,7 +65,7 @@ const main = async () => {
   if (!sessionPrivKeyDer) {
     sessionPrivKeyDer = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivKeyDer)
-    console.log('[ℹ️ INFO] Se generó una llave de sesión ECDSA nueva para Agente A ↔ Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
+    console.log('[INFO] Se generó una llave de sesión ECDSA nueva para Agente A  Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
   const sessionPub = sessionPriv.publicKey
@@ -76,7 +76,7 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     let lastProcessedRound = 0
-    console.log(`🛡️  [ℹ️ INFO] Agente B: Operativo en Modo Seguro en Inbox [${inbox}]...`)
+    console.log(`[INFO] Agente B: Operativo en Modo Seguro en Inbox [${inbox}]...`)
 
     new TopicMessageQuery()
       .setTopicId(inbox)
@@ -88,8 +88,8 @@ const main = async () => {
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
           if (data?.verified_payload) {
-            console.log('\n--- 🛡️  [DETECCIÓN] TRAZA DEL SISTEMA DE SEGURIDAD ---')
-            console.log(`[📊 REGISTRO] Analizando paquete del registro público: ${inbox}`)
+            console.log('\n---   [DETECCIÓN] TRAZA DEL SISTEMA DE SEGURIDAD ---')
+            console.log(`[REGISTRO] Analizando paquete del registro público: ${inbox}`)
 
             const payload = JSON.parse(data.verified_payload)
 
@@ -100,28 +100,28 @@ const main = async () => {
             )
 
             if (!isAuthentic) {
-              console.log('[ℹ️ INFO] Etapa 1: Firma ECDSA ❌ INVÁLIDA')
-              console.log('[ℹ️ INFO] Intento de falsificación detectado. Descartando datos.')
+              console.log('[INFO] Etapa 1: Firma ECDSA  INVÁLIDA')
+              console.log('[INFO] Intento de falsificación detectado. Descartando datos.')
               return
             }
-            console.log('[ℹ️ INFO] Etapa 1: Firma ECDSA ✅ VERIFICADA')
+            console.log('[INFO] Etapa 1: Firma ECDSA  VERIFICADA')
 
             // CAPA 2: Frescura y Secuencia (Anti-Replay)
             if (payload.round <= lastProcessedRound) {
-              console.log(`[ℹ️ INFO] Etapa 2: Secuencia ❌ REPETIDA (Ronda ${payload.round} <= ${lastProcessedRound})`)
-              console.log('[ℹ️ INFO] Ataque de Replay detectado. Ignorando mensaje antiguo.')
+              console.log(`[INFO] Etapa 2: Secuencia  REPETIDA (Ronda ${payload.round} <= ${lastProcessedRound})`)
+              console.log('[INFO] Ataque de Replay detectado. Ignorando mensaje antiguo.')
               return
             }
-            console.log(`[ℹ️ INFO] Etapa 2: Secuencia ✅ RECIENTE (Ronda ${payload.round})`)
+            console.log(`[INFO] Etapa 2: Secuencia  RECIENTE (Ronda ${payload.round})`)
 
             // EJECUCIÓN (Solo tras superar todo el guantelete criptográfico)
-            console.log('[✅ ÉXITO] Paquete de confianza. Procesando lógica de respuesta...')
+            console.log('[ÉXITO] Paquete de confianza. Procesando lógica de respuesta...')
             lastProcessedRound = payload.round
 
             await sleep(3000)
             await hcs10.sendMessage(outbox, { text: `¡Respuesta Segura para Ronda ${payload.round}!`, target: agentA_Id })
           }
-        } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
+        } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
       })
   }
 
@@ -131,14 +131,14 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
-    console.log(`🤖 [ℹ️ INFO] Agente A: Emisor Genuino en Outbox [${outbox}]...`)
+    console.log(`[INFO] Agente A: Emisor Genuino en Outbox [${outbox}]...`)
 
     const sendPing = async (round) => {
-      console.log('\n--- 🤖 AGENTE A: ENSAMBLAJE DE MENSAJE SEGURO ---')
+      console.log('\n---  AGENTE A: ENSAMBLAJE DE MENSAJE SEGURO ---')
       const payloadObj = { text: `Mensaje de Ronda ${round}`, round, ts: Date.now() }
       const payloadString = JSON.stringify(payloadObj)
 
-      console.log('[⚙️ PROCESO] Hasheando y firmando carga útil con llave de sesión...')
+      console.log('[PROCESO] Hasheando y firmando carga útil con llave de sesión...')
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
 
       await hcs10.sendMessage(inbox, {
@@ -146,7 +146,7 @@ const main = async () => {
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })
-      console.log('[ℹ️ INFO] Mensaje verificado publicado en el ledger.')
+      console.log('[INFO] Mensaje verificado publicado en el ledger.')
     }
 
     new TopicMessageQuery()
@@ -154,14 +154,14 @@ const main = async () => {
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`Ronda ${currentRound}`)) {
-          console.log(`\n[✅ ÉXITO] Agente A recibió respuesta segura para Ronda ${currentRound}.`)
+          console.log(`\n[ÉXITO] Agente A recibió respuesta segura para Ronda ${currentRound}.`)
           if (currentRound < 3) {
             currentRound++
             await sleep(4000)
             await sendPing(currentRound)
           } else {
-            console.log('\n🏁 --- [✅ ÉXITO] Secuencia completada. Seguridad 100% verificada. ---')
-            console.log('\n💡 CONCEPTO CLAVE:')
+            console.log('\n --- [ÉXITO] Secuencia completada. Seguridad 100% verificada. ---')
+            console.log('\n CONCEPTO CLAVE:')
             console.log('Detección de Intrusos (IDS): Este script demuestra una arquitectura "Zero Trust".')
             console.log('Al combinar verificación ECDSA y control de nonces, transformas un tópico')
             console.log('público de HCS en un canal de comando seguro e inviolable.')
@@ -183,7 +183,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Benchmark de Latencia HCS (Protocolo Ping-Pong)
- * [ CONCEPTO ] Latencia de Ida y Vuelta Descentralizada
+ * [CONCEPTO] Latencia de Ida y Vuelta Descentralizada
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * SLA Descentralizado: La "Latencia de Consenso" es el tiempo que tarda la
@@ -48,7 +48,7 @@ class HcsNode {
   }
 
   listen (messageType, onMessageCallback) {
-    console.log(`[ℹ️ INFO] ${this.name}: Escuchando mensajes de tipo '${messageType}'...`)
+    console.log(`[INFO] ${this.name}: Escuchando mensajes de tipo '${messageType}'...`)
     // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
       .setTopicId(this.topicId)
@@ -91,7 +91,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta el Lab 01 primero.')
+    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta el Lab 01 primero.')
     process.exitCode = 1
     return
   }
@@ -142,7 +142,7 @@ const main = async () => {
         const rtt = catchTime - startTime // TOTAL RTT
 
         benchmarkResults.push({ cycle, outbound, turnaround, inbound, rtt })
-        console.log(`[✅ ÉXITO] Ciclo ${cycle} procesado. RTT Total: ${rtt}ms`)
+        console.log(`[ÉXITO] Ciclo ${cycle} procesado. RTT Total: ${rtt}ms`)
 
         if (benchmarkResults.length === TOTAL_CYCLES) {
           renderFinalReport(benchmarkResults)
@@ -158,7 +158,7 @@ const main = async () => {
     show.chart({ type: 'stacked', title: 'Tiempo de ida y vuelta por etapa', unit: 'ms', xLabel: 'Cycle', categories: results.map((r) => `#${r.cycle}`), series: [{ name: 'A → ledger', values: results.map((r) => r.outbound) }, { name: 'ledger → B → ledger', values: results.map((r) => r.turnaround) }, { name: 'ledger → A', values: results.map((r) => r.inbound) }] })
 
     console.log('\n' + '='.repeat(75))
-    console.log('         📊 INFORME DE LATENCIA DE PRECISIÓN HCS')
+    console.log('INFORME DE LATENCIA DE PRECISIÓN HCS')
     console.log('='.repeat(75))
     console.log('Ciclo | Salida(A->L) | Retorno(L->B->L)  | Entrada(L->A) | RTT TOTAL')
     console.log('-'.repeat(75))
@@ -170,31 +170,31 @@ const main = async () => {
       console.log(`${cycleStr}| ${outStr}| ${turnStr}| ${inStr}| ${res.rtt}ms`)
     })
     console.log('='.repeat(75))
-    console.log('[ℹ️ INFO] RTT es la latencia de red pura (estabilización excluida).')
+    console.log('[INFO] RTT es la latencia de red pura (estabilización excluida).')
     console.log('='.repeat(75))
   }
 
   try {
-    console.log('[ℹ️ INFO] Esperando estabilización de malla gRPC (5s)...')
+    console.log('[INFO] Esperando estabilización de malla gRPC (5s)...')
     await new Promise(resolve => setTimeout(resolve, 5000))
 
     for (let i = 1; i <= TOTAL_CYCLES; i++) {
-      console.log(`\n--- [⚙️ PROCESO] Lanzando Ciclo de Handshake ${i}/${TOTAL_CYCLES} ---`)
+      console.log(`\n--- [PROCESO] Lanzando Ciclo de Handshake ${i}/${TOTAL_CYCLES} ---`)
       await nodeA.send('PING', { cycle: i })
 
       if (i < TOTAL_CYCLES) {
-        console.log(`[ℹ️ INFO] Ciclo ${i} enviado. Pausa de estabilidad...`)
+        console.log(`[INFO] Ciclo ${i} enviado. Pausa de estabilidad...`)
         await new Promise(resolve => setTimeout(resolve, 5000))
       }
     }
-    console.log('\n[ℹ️ INFO] Todos los disparadores enviados. Esperando reensamblaje final de consenso...')
+    console.log('\n[INFO] Todos los disparadores enviados. Esperando reensamblaje final de consenso...')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Conocer este RTT te permite decidir si una operación debe ser')
     console.log('asincrónica (optimista) en el Frontend o si el usuario puede')
     console.log('esperar la confirmación definitiva del ledger sin fricción.')
   } catch (error) {
-    console.error('\n[❌ FALLO] El Benchmark falló:', error.message)
+    console.error('\n[FALLO] El Benchmark falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -203,7 +203,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,26 +1,26 @@
-# ⚡ HEDERA PARA DUMMIES
+# HEDERA PARA DUMMIES
 
 > [!IMPORTANT]
 > **ESTADO: OPERACIONAL v2.0.0**  
-> **MISIÓN:** CERRAR LA BRECHA ENTRE EL "HOLA MUNDO" Y LA ARQUITECTURA HASHGRAPH DE GRADO DE PRODUCCIÓN.
+> **MISIÓN:** CERRAR LA BRECHA ENTRE EL "HOLA MUNDO"Y LA ARQUITECTURA HASHGRAPH DE GRADO DE PRODUCCIÓN.
 
 ---
 
-## 💀 LA VERDAD BRUTAL
+## LA VERDAD BRUTAL
 La mayoría de los cursos de blockchain te enseñan a construir "Productos Mínimos Viables" lentos, costosos y frágiles. **Este no es ese curso.** 
 
 Nos enfocamos en el ecosistema **Hedera Hashgraph**: un ledger distribuido de alto rendimiento que ofrece más de 10,000 TPS, finalidad en segundos y tarifas predecibles. Utilizamos **JavaScript Funcional** para construir sistemas que son tan elegantes como potentes.
 
 ---
 
-## 🛠️ LA INFRAESTRUCTURA
+## LA INFRAESTRUCTURA
 
-### [ 01 ] PRERREQUISITOS
+### [01] PRERREQUISITOS
 - **RUNTIME:** Node.js v18.0+
 - **IDENTIDAD:** Cuenta de Hedera Testnet ([Obtén una aquí](https://portal.hedera.com))
 - **ENTORNO:** Un archivo `.env` en la raíz que contenga `OPERATOR_ID` y `OPERATOR_PRIVATE_KEY`.
 
-### [ 02 ] DESPLIEGUE
+### [02] DESPLIEGUE
 Clona el currículo e inicializa el entorno:
 ```bash
 git clone https://github.com/VAI/Hedera-for-Dummies.git
@@ -30,7 +30,7 @@ npm install
 
 ---
 
-## 📚 EL CURRÍCULO (ESPAÑOL)
+## EL CURRÍCULO (ESPAÑOL)
 
 | # | MÓDULO | CONCEPTO CLAVE | MOMENTO DE APRENDIZAJE |
 | :--- | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ npm install
 
 ---
 
-## 🌍 LOCALIZACIÓN / LOCALIZATION
+## LOCALIZACIÓN / LOCALIZATION
 
 > [!TIP]
 > **SELECCIÓN DE IDIOMA:**  
@@ -64,8 +64,8 @@ npm install
 
 ---
 
-## ⚠️ REGLA DE ESTANDARIZACIÓN
+## REGLA DE ESTANDARIZACIÓN
 Para mantener la compatibilidad internacional, todos los **Nombres de Productos** y **Servicios Principales** (ej., *Hedera Token Service*, *Mirror Node*, *Atomic Swap*) permanecen en inglés en todas las traducciones. Enseñamos el código, pero respetamos la terminología técnica.
 
 ---
-© 2026 **HEDERA PARA DUMMIES**. CONSTRUIDO POR VELOCIDAD. FIJADO POR TARIFAS. SIN RELLENOS. SIN COMPROMISOS.
+ 2026 **HEDERA PARA DUMMIES**. CONSTRUIDO POR VELOCIDAD. FIJADO POR TARIFAS. SIN RELLENOS. SIN COMPROMISOS.

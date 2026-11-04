@@ -1,4 +1,4 @@
-# ⚛️ Módulo 4: Operaciones de Tokens e Intercambios Atómicos
+# Módulo 4: Operaciones de Tokens e Intercambios Atómicos
 ## Comercio sin Confianza y Eficiencia en Transferencias
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
@@ -22,7 +22,7 @@
 
 ---
 
-## 🤝 El Intercambio Atómico (Atomic Swap)
+## El Intercambio Atómico (Atomic Swap)
 
 En Hedera, puedes incluir hasta 10 transferencias en una sola transacción. Si una sola de ellas falla (ej. por saldo insuficiente), TODA la transacción se revierte.
 
@@ -69,7 +69,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Atomicidad (All-or-Nothing)
 La atomicidad elimina el riesgo de contraparte. No necesitas un "escrow" o un tercero de confianza; la red misma garantiza que el intercambio sea simultáneo.
@@ -82,11 +82,11 @@ Cada transacción de transferencia en Hedera tiene un límite de "puntos de tran
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Transfer Transactions (Hedera Docs)](https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transfer-tokens)
 - [Understanding Atomicity in DLT](https://hedera.com/learning/hedera-hashgraph/what-is-atomicity)
 - [Token Transfer Limits and Fees](https://docs.hedera.com/hedera/networks/mainnet/fees)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. COMERCIO SEGURO.
+ 2026 **HEDERA PARA DUMMIES**. COMERCIO SEGURO.

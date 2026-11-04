@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Cross-Ledger Protocol (CLPR) & Cryptographic State Proofs (HIP-1535)
- * [ CONCEPT ] Bridgeless Cross-Chain Communication via Cryptographic Inclusion
+ * [CONCEPT] Bridgeless Cross-Chain Communication via Cryptographic Inclusion
  * ============================================================================
  * [ KEY CONCEPT ]
  * Bridgeless Interoperability: Conventional cross-chain bridges rely on trusted
@@ -26,7 +26,7 @@
  * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
  * - Next:     M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The TSS council signatures and the HIP-1535 state proof are simulated (the protocol is not live yet). The HCS anchoring is real.
  *
  * [ BEFORE YOU RUN ]
@@ -147,7 +147,7 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log('[⚙️ PROCESS] Initializing LIVE on-chain anchor topic for cross-ledger events...')
+    console.log('[PROCESS] Initializing LIVE on-chain anchor topic for cross-ledger events...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('CLPR:Cross-Ledger:StateProof:HIP-1535')
@@ -156,7 +156,7 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] CLPR Anchor Topic Created on Testnet: ${topicId}`)
+    console.log(`[SUCCESS] CLPR Anchor Topic Created on Testnet: ${topicId}`)
 
     // Cross-ledger event payload (e.g., token burn on Hedera to unlock on Polygon)
     const crossLedgerPayload = {
@@ -168,7 +168,7 @@ const main = async () => {
       nonce: crypto.randomBytes(8).toString('hex')
     }
 
-    console.log('\n[⚙️ PROCESS] Submitting cross-chain intent to Hedera Consensus Service...')
+    console.log('\n[PROCESS] Submitting cross-chain intent to Hedera Consensus Service...')
     // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -177,10 +177,10 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const consensusSequence = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ SUCCESS] Live Consensus Reached! Sequence Number: #${consensusSequence}`)
+    console.log(`[SUCCESS] Live Consensus Reached! Sequence Number: #${consensusSequence}`)
 
     // [ARCHITECTURAL SIMULATION] Synthesize validator roster for TSS verification
-    console.log('\n[⚙️ PROCESS] [ARCHITECTURAL SIMULATION] Generating HIP-1535 TSS state proof...')
+    console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Generating HIP-1535 TSS state proof...')
     const councilPrivateKeys = [
       '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
       '0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01',
@@ -198,23 +198,23 @@ const main = async () => {
       validatorKeys: councilPrivateKeys
     })
 
-    console.log('[📊 LOG] CLPR State Proof Packet Built:')
-    console.log(`[📊 LOG] Protocol:         ${clprProof.version}`)
-    console.log(`[📊 LOG] Source Ledger:    ${clprProof.sourceLedger}`)
-    console.log(`[📊 LOG] Dest Ledger:      ${clprProof.destinationLedger}`)
-    console.log(`[📊 LOG] Merkle StateRoot: ${clprProof.stateRoot}`)
-    console.log(`[📊 LOG] State Commitment: ${clprProof.commitment}`)
-    console.log(`[📊 LOG] TSS Quorum:       ${clprProof.tssQuorum.signatures.length}/${clprProof.tssQuorum.totalSigners} signatures (Threshold: ${clprProof.tssQuorum.threshold})`)
+    console.log('[LOG] CLPR State Proof Packet Built:')
+    console.log(`[LOG] Protocol:         ${clprProof.version}`)
+    console.log(`[LOG] Source Ledger:    ${clprProof.sourceLedger}`)
+    console.log(`[LOG] Dest Ledger:      ${clprProof.destinationLedger}`)
+    console.log(`[LOG] Merkle StateRoot: ${clprProof.stateRoot}`)
+    console.log(`[LOG] State Commitment: ${clprProof.commitment}`)
+    console.log(`[LOG] TSS Quorum:       ${clprProof.tssQuorum.signatures.length}/${clprProof.tssQuorum.totalSigners} signatures (Threshold: ${clprProof.tssQuorum.threshold})`)
 
-    console.log('\n[⚙️ PROCESS] Destination chain verifier checking proof against authorized roster...')
+    console.log('\n[PROCESS] Destination chain verifier checking proof against authorized roster...')
     const isValid = verifyCLPRProof(clprProof, authorizedCouncilRoster)
 
     if (!isValid) {
       throw new Error('CLPR State Proof verification failed cryptographic threshold!')
     }
 
-    console.log('[✅ SUCCESS] Cryptographic State Proof Verified Against Council Roster!')
-    console.log('[ℹ️ INFO] No bridge multisig, custodial relayer, or wrapped token honeypot was required.')
+    console.log('[SUCCESS] Cryptographic State Proof Verified Against Council Roster!')
+    console.log('[INFO] No bridge multisig, custodial relayer, or wrapped token honeypot was required.')
 
     // Persist state for downstream labs
     updateState('CLPR_TOPIC_ID', topicId)
@@ -222,18 +222,18 @@ const main = async () => {
     updateState('CLPR_COMMITMENT_HASH', clprProof.commitment)
     updateState('CLPR_PAYLOAD_HASH', clprProof.payloadHash)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Under HIP-1535 (CLPR), cross-ledger settlements are secured by mathematics,')
     console.log('not centralized escrow bridges. A recipient smart contract on Ethereum or')
     console.log('Polygon verifies the TSS consensus signature directly to release native assets.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('By eliminating custodial intermediaries, the single most exploited attack vector')
     console.log('in crypto history is reduced to zero. Future interoperability is purely cryptographic.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] CLPR State Proof Failure:', error.message)
+    console.error('\n[ERROR] CLPR State Proof Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -244,7 +244,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

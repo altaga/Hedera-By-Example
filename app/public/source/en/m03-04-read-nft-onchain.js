@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Reading HFS-Backed NFT Data On-Chain
- * [ CONCEPT ] On-Chain Metadata Resolution
+ * [CONCEPT] On-Chain Metadata Resolution
  * ============================================================================
  * [ KEY CONCEPT ]
  * This is "On-Chain Resolution". Unlike a web database where data can be
@@ -48,7 +48,7 @@ const main = async () => {
 
   try {
     // Step 1: Query the NFT Info to get the metadata pointer
-    console.log(`[⚙️ PROCESS] Querying NFT Info for Token ${TOKEN_ID}, Serial #${SERIAL_NUMBER}...`)
+    console.log(`[PROCESS] Querying NFT Info for Token ${TOKEN_ID}, Serial #${SERIAL_NUMBER}...`)
     const nftId = new NftId(TokenId.fromString(TOKEN_ID), SERIAL_NUMBER)
 
     const nftInfos = await new TokenNftInfoQuery()
@@ -63,20 +63,20 @@ const main = async () => {
 
     // Metadata is stored as a byte array on the ledger, so we convert it to a string
     const metadataPointer = Buffer.from(nftInfo.metadata).toString('utf8')
-    console.log(`[✅ SUCCESS] Raw Metadata Pointer Found: ${metadataPointer}`)
+    console.log(`[SUCCESS] Raw Metadata Pointer Found: ${metadataPointer}`)
 
     // Step 2: Extract the File ID from the HIP-412 'hedera://' format
-    console.log('[ℹ️ INFO] Parsing metadata pointer for File Service resolution...')
+    console.log('[INFO] Parsing metadata pointer for File Service resolution...')
     let fileIdString = metadataPointer
 
     if (metadataPointer.includes('hedera://')) {
       const parts = metadataPointer.split('/')
       fileIdString = parts[parts.length - 1]
     }
-    console.log(`[📊 LOG] Target File ID Resolved: ${fileIdString}`)
+    console.log(`[LOG] Target File ID Resolved: ${fileIdString}`)
 
     // Step 3: Query HFS to download the metadata file contents
-    console.log(`[⚙️ PROCESS] Downloading JSON metadata from HFS File ${fileIdString}...`)
+    console.log(`[PROCESS] Downloading JSON metadata from HFS File ${fileIdString}...`)
     const fileContents = await new FileContentsQuery()
       .setFileId(fileIdString)
       .execute(client)
@@ -86,16 +86,16 @@ const main = async () => {
     const metadataObj = JSON.parse(jsonString)
 
     // Step 4: Display the final results
-    console.log('\n--- 🎉 SUCCESS: DECODED ON-CHAIN NFT DATA ---')
-    console.log(`[📊 LOG] Token Name:   ${metadataObj.name}`)
-    console.log(`[📊 LOG] Creator:      ${metadataObj.creator}`)
-    console.log(`[📊 LOG] Description:  ${metadataObj.description}`)
-    console.log(`[📊 LOG] Image URI:    ${metadataObj.image}`)
+    console.log('\n---  SUCCESS: DECODED ON-CHAIN NFT DATA ---')
+    console.log(`[LOG] Token Name:   ${metadataObj.name}`)
+    console.log(`[LOG] Creator:      ${metadataObj.creator}`)
+    console.log(`[LOG] Description:  ${metadataObj.description}`)
+    console.log(`[LOG] Image URI:    ${metadataObj.image}`)
 
-    console.log('\n[📊 LOG] Full Metadata Metadata Signature:')
+    console.log('\n[LOG] Full Metadata Metadata Signature:')
     console.log(JSON.stringify(metadataObj, null, 2))
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('This is "On-Chain Resolution". Unlike a web database where data can be')
     console.log('deleted, once metadata is on HFS and pointed to by an NFT, it is')
     console.log('permanently linked and verifiable by anyone in the world.')
@@ -103,7 +103,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Resolution Query Failed:', error.message)
+    console.error('\n[FAILED] Resolution Query Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -112,7 +112,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

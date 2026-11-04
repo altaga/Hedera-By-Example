@@ -2,10 +2,10 @@
 /**
  * ============================================================================
  * Lab 01: Deprecation of Synchronous State Queries
- * [ CONCEPT ] Consensus Node Mutation vs. Mirror Node Query
+ * [CONCEPT] Consensus Node Mutation vs. Mirror Node Query
  * ============================================================================
  * [ KEY CONCEPT ]
- * The "Legacy" Query: Starting in @hiero-ledger/sdk v2.90+, `AccountBalanceQuery`
+ * The "Legacy"Query: Starting in @hiero-ledger/sdk v2.90+, `AccountBalanceQuery`
  * against consensus nodes is officially disabled and throws a deprecation error,
  * enforcing the migration to `MirrorNodeAccountBalanceQuery` or Mirror Node REST APIs.
  * This is part of the Command Query Responsibility Segregation (CQRS) shift.
@@ -37,8 +37,8 @@ import { getClient } from '../M99_Utilities/index.js'
  * Demonstrates the SDK enforcement of Mirror Node queries over Consensus queries.
  */
 const legacyBalanceQuery = async (client, accountIdStr) => {
-  console.warn('\n⚠️ [WARNING]: Attempting legacy AccountBalanceQuery on Consensus nodes...')
-  console.log('[ℹ️ INFO] In @hiero-ledger/sdk v2.90+, this pattern is blocked in favor of Mirror Node CQRS.')
+  console.warn('\n [WARNING]: Attempting legacy AccountBalanceQuery on Consensus nodes...')
+  console.log('[INFO] In @hiero-ledger/sdk v2.90+, this pattern is blocked in favor of Mirror Node CQRS.')
 
   try {
     // The old way: ask a consensus node directly (slow, paid, and being phased out).
@@ -47,8 +47,8 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
     const balance = await query.execute(client)
     return balance.hbars
   } catch (deprecatedError) {
-    console.log(`[✅ CQRS ENFORCED] SDK blocked legacy consensus query: "${deprecatedError.message}"`)
-    console.log('[⚙️ PROCESS] Falling back to MirrorNodeAccountBalanceQuery...')
+    console.log(`[ CQRS ENFORCED] SDK blocked legacy consensus query: "${deprecatedError.message}"`)
+    console.log('[PROCESS] Falling back to MirrorNodeAccountBalanceQuery...')
     // The replacement: the SDK reads the same balance from the Mirror Node, for free.
     const mirrorBalance = await new MirrorNodeAccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
@@ -63,21 +63,21 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESS] Interrogating state for account: ${operatorId}...`)
+    console.log(`[PROCESS] Interrogating state for account: ${operatorId}...`)
     const hbars = await legacyBalanceQuery(client, operatorId)
 
-    console.log(`[📊 LOG] Retrieved Balance: ${hbars.toString()}`)
-    console.log('\n[ℹ️ INFO] Ready for the CQRS Mirror Node Fetch structure in Lab 02.')
+    console.log(`[LOG] Retrieved Balance: ${hbars.toString()}`)
+    console.log('\n[INFO] Ready for the CQRS Mirror Node Fetch structure in Lab 02.')
 
-    console.log('\n💡 KEY CONCEPT:')
-    console.log('The "Legacy" Query: Consensus nodes are for ordering transactions (Commands),')
+    console.log('\n KEY CONCEPT:')
+    console.log('The "Legacy"Query: Consensus nodes are for ordering transactions (Commands),')
     console.log('not serving state reads (Queries). Using Mirror Nodes fetches data for free')
     console.log('and preserves consensus CPU for high-throughput transactions.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Query Failed:', error.message)
+    console.error('\n[FAILED] Query Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -86,7 +86,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

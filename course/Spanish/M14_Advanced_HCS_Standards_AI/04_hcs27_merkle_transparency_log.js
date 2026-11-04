@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Puntos de Control de Transparencia Merkle HCS-27 y Pruebas Criptográficas
- * [ CONCEPTO ] Lotes Off-Chain Masivos con Raíces Merkle Ancladas al Consenso
+ * [CONCEPTO] Lotes Off-Chain Masivos con Raíces Merkle Ancladas al Consenso
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Puntos de Control de Transparencia Escalables: Cuando un agente de IA o empresa
@@ -26,7 +26,7 @@
  * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes HCS-26
  * - Siguiente: M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Los 64 registros de inferencia son sintéticos. El árbol de Merkle, la prueba y el checkpoint en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -136,7 +136,7 @@ const main = async () => {
   try {
     // 1. Crear Tópico de Puntos de Control HCS-27
     const topicMemo = buildHCS27TopicMemo()
-    console.log(`[⚙️ PROCESO] Creando Tópico de Puntos de Control HCS-27 (Memo: ${topicMemo})...`)
+    console.log(`[PROCESO] Creando Tópico de Puntos de Control HCS-27 (Memo: ${topicMemo})...`)
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo(topicMemo)
@@ -145,11 +145,11 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico HCS-27 Creado: ${topicId}`)
+    console.log(`[ÉXITO] Tópico HCS-27 Creado: ${topicId}`)
 
     // 2. Simular 64 Inferencias / Decisiones de IA de Alta Frecuencia Off-Chain
     const batchSize = 64
-    console.log(`\n[⚙️ PROCESO] Sintetizando lote de ${batchSize} registros de inferencia de IA off-chain...`)
+    console.log(`\n[PROCESO] Sintetizando lote de ${batchSize} registros de inferencia de IA off-chain...`)
     const rawInferences = []
     for (let i = 0; i < batchSize; i++) {
       rawInferences.push(JSON.stringify({
@@ -162,10 +162,10 @@ const main = async () => {
     }
 
     // 3. Construir Árbol Merkle
-    console.log('[⚙️ PROCESO] Construyendo árbol Merkle criptográfico sobre el lote...')
+    console.log('[PROCESO] Construyendo árbol Merkle criptográfico sobre el lote...')
     const merkleTree = buildMerkleTree(rawInferences)
-    console.log(`[✅ ÉXITO] ¡Árbol Merkle estructurado en ${merkleTree.layers.length} capas!`)
-    console.log(`[📊 REGISTRO] Raíz Merkle Calculada: ${merkleTree.root}`)
+    console.log(`[ÉXITO] ¡Árbol Merkle estructurado en ${merkleTree.layers.length} capas!`)
+    console.log(`[REGISTRO] Raíz Merkle Calculada: ${merkleTree.root}`)
 
     // 4. Ensamblar Punto de Control HCS-27
     const checkpoint = {
@@ -178,7 +178,7 @@ const main = async () => {
       timestamp: new Date().toISOString()
     }
 
-    console.log('\n[⚙️ PROCESO] Anclando Punto de Control HCS-27 al Consenso de Hedera...')
+    console.log('\n[PROCESO] Anclando Punto de Control HCS-27 al Consenso de Hedera...')
     // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -188,22 +188,22 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seqNum = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ ÉXITO] Punto de Control Anclado en Secuencia #${seqNum} en Tópico ${topicId}`)
+    console.log(`[ÉXITO] Punto de Control Anclado en Secuencia #${seqNum} en Tópico ${topicId}`)
 
     // 5. Generar y Verificar Prueba de Inclusión para Inferencia #42
     const targetIndex = 42
     const targetPayload = rawInferences[targetIndex]
     const targetLeafHash = merkleTree.leaves[targetIndex]
 
-    console.log(`\n[⚙️ PROCESO] Generando prueba de inclusión Merkle para la Inferencia #${targetIndex}...`)
+    console.log(`\n[PROCESO] Generando prueba de inclusión Merkle para la Inferencia #${targetIndex}...`)
     const proof = getMerkleProof(merkleTree, targetIndex)
     show.merkle({ title: 'Prueba de inclusión de Merkle para la inferencia #42', leafCount: merkleTree.leaves.length, leafIndex: targetIndex, root: merkleTree.root, proof: proof.map((p) => p.hash.toString('hex')) })
 
-    console.log(`[📊 REGISTRO] Pasos de Prueba:     ${proof.length} hashes (log2(${batchSize}) = 6 pasos)`)
-    console.log(`[📊 REGISTRO] Hash Hoja Objetivo:  ${targetLeafHash}`)
+    console.log(`[REGISTRO] Pasos de Prueba:     ${proof.length} hashes (log2(${batchSize}) = 6 pasos)`)
+    console.log(`[REGISTRO] Hash Hoja Objetivo:  ${targetLeafHash}`)
 
     const isProofValid = verifyMerkleProof(targetLeafHash, proof, merkleTree.root)
-    console.log(`\n[📊 AUDITORÍA] Verificación Criptográfica: ${isProofValid ? 'VERIFICADO (100% INCLUIDO)' : 'FRAUDULENTO'}`)
+    console.log(`\n[AUDITORÍA] Verificación Criptográfica: ${isProofValid ? 'VERIFICADO (100% INCLUIDO)' : 'FRAUDULENTO'}`)
 
     if (!isProofValid) throw new Error('¡Fallo en la verificación de la prueba Merkle!')
 
@@ -213,18 +213,18 @@ const main = async () => {
     updateState('HCS27_MERKLE_ROOT', merkleTree.root)
     updateState('HCS27_VERIFIED_LEAF', targetLeafHash)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-27 ofrece lo mejor de dos mundos: Millones de micro-operaciones corren off-chain')
     console.log('sin saturar la red, mientras un mensaje periódico en HCS establece una verdad')
     console.log('matemática e inquebrantable en Hedera.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Agrupar 10,000 operaciones en una sola raíz Merkle reduce los costos de transacción un 99.99%')
     console.log('manteniendo una auditabilidad jurídica y técnica del 100%.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de HCS-27:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de HCS-27:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -235,7 +235,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

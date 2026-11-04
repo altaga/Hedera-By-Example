@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Testing the Multisig Authority
- * [ CONCEPT ] Cryptographically Enforced Permission Layer
+ * [CONCEPT] Cryptographically Enforced Permission Layer
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Enforcement Layer: Traditional databases rely on application code to
@@ -47,7 +47,7 @@ const main = async () => {
   const bobKeyStr = getState('MULTISIG_KEY_BOB')
 
   if (!multisigId || !aliceKeyStr || !bobKeyStr) {
-    console.error('[❌ FAILED] Multisig Account ID not found. Run Lab 01 first.')
+    console.error('[FAILED] Multisig Account ID not found. Run Lab 01 first.')
     process.exitCode = 1
     return
   }
@@ -55,12 +55,12 @@ const main = async () => {
   const aliceKey = PrivateKey.fromString(aliceKeyStr)
   const bobKey = PrivateKey.fromString(bobKeyStr)
 
-  console.log(`[ℹ️ INFO] Testing Threshold Policy for Account: ${multisigId}`)
+  console.log(`[INFO] Testing Threshold Policy for Account: ${multisigId}`)
 
   try {
     // --- PHASE 1: ATTEMPT WITH 1 SIGNATURE (ALICE ONLY) ---
     console.log('\n--- Phase 1: Under-Threshold Simulation ---')
-    console.log('[⚙️ PROCESS] Proposing transfer with only 1 signature (Alice)...')
+    console.log('[PROCESS] Proposing transfer with only 1 signature (Alice)...')
 
     const failTx = await new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
@@ -71,15 +71,15 @@ const main = async () => {
     try {
       const response = await failTx.execute(client)
       await response.getReceipt(client)
-      console.log('[❌ FAILED] Logic Violation: Transaction succeeded without enough signatures!')
+      console.log('[FAILED] Logic Violation: Transaction succeeded without enough signatures!')
     } catch (e) {
-      console.log('[✅ SUCCESS] Expected Failure: Network rejected (INVALID_SIGNATURE).')
-      console.log(`[📊 LOG] Network error message: ${e.message}`)
+      console.log('[SUCCESS] Expected Failure: Network rejected (INVALID_SIGNATURE).')
+      console.log(`[LOG] Network error message: ${e.message}`)
     }
 
     // --- PHASE 2: ATTEMPT WITH 2 SIGNATURES (ALICE + BOB) ---
     console.log('\n--- Phase 2: Threshold Compliance Simulation ---')
-    console.log('[⚙️ PROCESS] Proposing transfer with 2 required signatures (Alice + Bob)...')
+    console.log('[PROCESS] Proposing transfer with 2 required signatures (Alice + Bob)...')
 
     const successTx = await new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
@@ -93,10 +93,10 @@ const main = async () => {
     const response = await successTx.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] TRANSACTION SUCCESSFUL! Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`\n[SUCCESS] TRANSACTION SUCCESSFUL! Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Enforcement Layer: In Hedera, the "Database" (the Ledger)')
     console.log('refuses to even process the transaction if the cryptographic')
     console.log('threshold isn\'t met. The permission logic is part of the data itself.')
@@ -104,7 +104,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Unexpected Authority Failure:', error.message)
+    console.error('\n[FAILED] Unexpected Authority Failure:', error.message)
     process.exitCode = 1
   }
 }
@@ -113,7 +113,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

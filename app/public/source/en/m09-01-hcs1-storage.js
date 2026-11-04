@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: HCS-1 Static File Storage (Heavy Payloads)
- * [ CONCEPT ] Decentralized Data Anchoring
+ * [CONCEPT] Decentralized Data Anchoring
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Immutable Rulebook: Traditional HCS messages are limited to 1,024 bytes.
@@ -59,7 +59,7 @@ const main = async () => {
 
   try {
     // 1. Create a dedicated HCS-1 archive topic
-    console.log(`[⚙️ PROCESS] Creating secure HCS-1 archive topic on ${network}...`)
+    console.log(`[PROCESS] Creating secure HCS-1 archive topic on ${network}...`)
     const createTx = await new TopicCreateTransaction()
       .setTopicMemo('hcs-1:esports_anticheat_v2')
       .setSubmitKey(client.operatorPublicKey) // Only you can write!
@@ -69,15 +69,15 @@ const main = async () => {
     const createReceipt = await createResponse.getReceipt(client)
     const topicId = createReceipt.topicId.toString()
 
-    console.log(`\n[✅ SUCCESS] HCS-1 Root Topic Created: ${topicId}`)
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(createResponse)}`)
+    console.log(`\n[SUCCESS] HCS-1 Root Topic Created: ${topicId}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(createResponse)}`)
 
-    console.log('[ℹ️ INFO] Synchronizing state.json with HCS-1 Policy Topic...')
+    console.log('[INFO] Synchronizing state.json with HCS-1 Policy Topic...')
     updateState('HCS1_TOPIC_ID', topicId)
 
     // 2. Submit the massive Anti-Cheat Policy
-    console.log(`\n[⚙️ PROCESS] Submitting Anti-Cheat Policy (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)
-    console.log('[ℹ️ INFO] The SDK is auto-chunking the payload into HCS-1 shards...')
+    console.log(`\n[PROCESS] Submitting Anti-Cheat Policy (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)
+    console.log('[INFO] The SDK is auto-chunking the payload into HCS-1 shards...')
 
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -88,10 +88,10 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] Payload anchored! Status: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Final HashScan: ${getHashscanUrl(submitResponse)}`)
+    console.log(`\n[SUCCESS] Payload anchored! Status: ${submitReceipt.status.toString()}`)
+    console.log(`[LOG] Final HashScan: ${getHashscanUrl(submitResponse)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The rules are now locked on the ledger. If a pro player gets banned,')
     console.log('you can publicly share the Topic ID to prove the AI acted fairly based')
     console.log('on immutable rules established before the match even started.')
@@ -99,7 +99,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HCS-1 Lifecycle Failed:', error.message)
+    console.error('\n[FAILED] HCS-1 Lifecycle Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -108,7 +108,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

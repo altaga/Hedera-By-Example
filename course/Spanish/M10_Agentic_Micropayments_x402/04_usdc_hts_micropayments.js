@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Micropagos en Stablecoins (USDC) con HTS
- * [ CONCEPTO ] Liquidaciones de Fracciones de Centavo con Hedera Token Service
+ * [CONCEPTO] Liquidaciones de Fracciones de Centavo con Hedera Token Service
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Paradoja de las Tarjetas de Crédito: Cobrar \$0.01 por una petición a una API
@@ -22,13 +22,13 @@
  * - Actual:   M10 Lab 04: Micropagos USDC en HTS
  * - Siguiente: M10 Lab 05: Límites Financieros (Guardrails)
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Servidor -> Agente: Desafío 402 con precio en USDC ($0.025)
  * Agente -> Hedera: Transferencia de token HTS de 25,000 unidades base
  * Hedera -> Agente: Recibo SUCCESS
  * Agente -> Servidor: Reintenta con el ID de la transacción de pago
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El "USDC" es un token de prueba que acuña el lab, y el pago es una transferencia a ti mismo. Ambos son reales en testnet.
  *
  * [ ANTES DE EJECUTAR ]
@@ -58,7 +58,7 @@ const main = async () => {
 
     // 1. Crear o reutilizar un token fungible HTS que represente USDC (6 decimales)
     if (!mockUsdcTokenId) {
-      console.log('[⚙️ PROCESO] Creando token HTS simulado de USDC en testnet (6 decimales)...')
+      console.log('[PROCESO] Creando token HTS simulado de USDC en testnet (6 decimales)...')
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Hedera USD Coin')
@@ -76,18 +76,18 @@ const main = async () => {
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const tokenCreateReceipt = await tokenCreateResponse.getReceipt(client)
       mockUsdcTokenId = tokenCreateReceipt.tokenId.toString()
-      console.log(`[✅ ÉXITO] Token USDC en HTS Creado: ${mockUsdcTokenId}`)
+      console.log(`[ÉXITO] Token USDC en HTS Creado: ${mockUsdcTokenId}`)
       updateState('X402_MOCK_USDC_TOKEN_ID', mockUsdcTokenId)
     } else {
-      console.log(`[ℹ️ INFO] Reutilizando Token USDC en HTS existente: ${mockUsdcTokenId}`)
+      console.log(`[INFO] Reutilizando Token USDC en HTS existente: ${mockUsdcTokenId}`)
     }
 
     // 2. Simular micropago x402: $0.025 USD por una inferencia LLM de alta precisión
     const costUsd = 0.025
     const microUnits = Math.round(costUsd * 1000000) // 25,000 unidades base
 
-    console.log(`\n[⚙️ PROCESO] Iniciando liquidación x402 por $${costUsd} USD (${microUnits} unidades base)...`)
-    console.log(`[📊 REGISTRO] Token de Pago: HTS (${mockUsdcTokenId})`)
+    console.log(`\n[PROCESO] Iniciando liquidación x402 por $${costUsd} USD (${microUnits} unidades base)...`)
+    console.log(`[REGISTRO] Token de Pago: HTS (${mockUsdcTokenId})`)
 
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transferTx = await new TransferTransaction()
@@ -100,34 +100,34 @@ const main = async () => {
     const receipt = await txResponse.getReceipt(client)
     const hashscanUrl = getHashscanUrl(txResponse)
 
-    console.log('\n[✅ ÉXITO] Micropago USDC en HTS Confirmado On-Chain:')
-    console.log(`[📊 REGISTRO] Estado:            ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan:        ${hashscanUrl}`)
+    console.log('\n[ÉXITO] Micropago USDC en HTS Confirmado On-Chain:')
+    console.log(`[REGISTRO] Estado:            ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] HashScan:        ${hashscanUrl}`)
 
     // 3. Análisis Comparativo de Viabilidad Económica
     console.log('\n===============================================================')
-    console.log('📊 BENCHMARK DE VIABILIDAD ECONÓMICA: INFERENCIA DE $0.025 USD')
+    console.log('BENCHMARK DE VIABILIDAD ECONÓMICA: INFERENCIA DE $0.025 USD')
     console.log('===============================================================')
     console.log('1. Riel Tradicional (Visa / Stripe):')
-    console.log('   - Comisión: $0.30 fijo + 2.9% = $0.3007')
-    console.log('   - Ingreso Neto del Comercio: -$0.2757 (¡PÉRDIDA DEL 1,100% POR PETICIÓN!)')
+    console.log('- Comisión: $0.30 fijo + 2.9% = $0.3007')
+    console.log('- Ingreso Neto del Comercio: -$0.2757 (¡PÉRDIDA DEL 1,100% POR PETICIÓN!)')
     console.log('2. Ethereum L1 / L2 Congestionada:')
-    console.log('   - Tarifa de Gas: $0.40 - $2.50')
-    console.log('   - Viabilidad Económica: IMPOSIBLE')
+    console.log('- Tarifa de Gas: $0.40 - $2.50')
+    console.log('- Viabilidad Económica: IMPOSIBLE')
     console.log('3. Hedera Token Service (HTS):')
-    console.log('   - Tarifa de Red: ~$0.001 USD fija')
-    console.log('   - Ingreso Neto del Comercio: +$0.024 USD (96% de Margen)')
+    console.log('- Tarifa de Red: ~$0.001 USD fija')
+    console.log('- Ingreso Neto del Comercio: +$0.024 USD (96% de Margen)')
     console.log('===============================================================')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HTS se ejecuta a nivel nativo de Gossip y Virtual Voting sin el sobrecosto')
     console.log('de compilación y loops de la EVM. Esto habilita micropagos de alta frecuencia')
     console.log('que hacen rentable cobrar por token consumido en fracciones de centavo.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en el micropago USDC en HTS:', error.message)
+    console.error('\n[FALLO] Fallo en el micropago USDC en HTS:', error.message)
     process.exit(1)
   }
 }
@@ -136,7 +136,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

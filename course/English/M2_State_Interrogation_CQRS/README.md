@@ -1,4 +1,4 @@
-# 🔍 Module 2: State Interrogation and CQRS
+# Module 2: State Interrogation and CQRS
 ## Efficient and Scalable Network Queries
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -20,7 +20,7 @@
 
 ---
 
-## ⚡ The CQRS Pattern in Hedera
+## The CQRS Pattern in Hedera
 
 In Hedera, the ideal architecture separates the responsibilities of commands (state changes) and queries (state reading).
 
@@ -70,7 +70,7 @@ graph TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Why Avoid Synchronous Queries?
 Querying a consensus node requires it to stop its primary work (validating transactions) to respond. This is expensive (higher fees) and does not scale.
@@ -83,11 +83,11 @@ When you request a long list (e.g., all tokens for an account), the Mirror Node 
 
 ---
 
-## 📚 Official References
+## Official References
 - [Mirror Node API Documentation](https://mainnet-public.mirrornode.hedera.com/api/v1/docs/)
 - [CQRS Pattern in Distributed Architectures](https://martinfowler.com/bliki/CQRS.html)
 - [Hedera Mirror Node Architecture](https://docs.hedera.com/hedera/core-concepts/mirror-nodes)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. SCALE WITHOUT LIMITS.
+ 2026 **HEDERA FOR DUMMIES**. SCALE WITHOUT LIMITS.

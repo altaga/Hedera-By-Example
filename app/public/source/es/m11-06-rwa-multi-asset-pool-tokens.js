@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
- * [ CONCEPTO ] Portafolios Tokenizados Componibles y Liquidación Atómica de Canastas
+ * [CONCEPTO] Portafolios Tokenizados Componibles y Liquidación Atómica de Canastas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Uno de los mayores avances institucionales de tokenización en Hedera (implementado
@@ -62,7 +62,7 @@ const main = async () => {
 
   try {
     // 1. Desplegar los 3 Tokens RWA Regulados Subyacentes en HTS
-    console.log('[⚙️ PROCESO] Paso 1: Desplegando los 3 Activos RWA Subyacentes en HTS...')
+    console.log('[PROCESO] Paso 1: Desplegando los 3 Activos RWA Subyacentes en HTS...')
     const underlyingTokens = []
 
     for (const item of BASKET_WEIGHTS) {
@@ -83,11 +83,11 @@ const main = async () => {
         return (await res.getReceipt(client)).tokenId
       }, { minBalance: item.weight })
       underlyingTokens.push({ ...item, tokenId })
-      console.log(`[✅ ACTIVO RWA] ${item.symbol.padEnd(10)} (${item.name.padEnd(44)}) ➔ Token ID: ${tokenId.toString()}`)
+      console.log(`[ ACTIVO RWA] ${item.symbol.padEnd(10)} (${item.name.padEnd(44)}) ➔ Token ID: ${tokenId.toString()}`)
     }
 
-    // 2. Desplegar el "Pool Token Institucional RWA" Compuesto (POOL-RWA)
-    console.log('\n[⚙️ PROCESO] Paso 2: Desplegando Pool Token Compuesto Multi-Activo [POOL-RWA]...')
+    // 2. Desplegar el "Pool Token Institucional RWA"Compuesto (POOL-RWA)
+    console.log('\n[PROCESO] Paso 2: Desplegando Pool Token Compuesto Multi-Activo [POOL-RWA]...')
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
     const poolTokenId = await reuseToken('REUSE_M11_06_POOL', async () => {
       const poolTx = await new TokenCreateTransaction()
@@ -103,11 +103,11 @@ const main = async () => {
       const poolRes = await (await poolTx.sign(issuerKey)).execute(client)
       return (await poolRes.getReceipt(client)).tokenId
     }, { minBalance: 1000, check: (t) => t.memo === poolMemo })
-    console.log(`[✅ ÉXITO] Pool Token Compuesto Creado: ${poolTokenId.toString()}`)
-    console.log(`[📊 REGISTRO] Memo de Composición On-Chain: ${poolMemo}`)
+    console.log(`[ÉXITO] Pool Token Compuesto Creado: ${poolTokenId.toString()}`)
+    console.log(`[REGISTRO] Memo de Composición On-Chain: ${poolMemo}`)
 
     // 3. Aprovisionar Bóveda de Participante Autorizado (AP) y Fondear Activos Subyacentes
-    console.log('\n[⚙️ PROCESO] Paso 3: Aprovisionando Bóveda de Participante Autorizado (AP) Institucional...')
+    console.log('\n[PROCESO] Paso 3: Aprovisionando Bóveda de Participante Autorizado (AP) Institucional...')
     const apKey = PrivateKey.generateED25519()
     const apRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(apKey.publicKey)
@@ -123,10 +123,10 @@ const main = async () => {
       seedTx.addTokenTransfer(asset.tokenId, apAccountId, asset.weight)
     }
     await (await seedTx.execute(client)).getReceipt(client)
-    console.log(`[🏦 BÓVEDA AP] Cuenta ${apAccountId.toString()} fondeada con 500 USTB-MMF, 300 CORP-BND, 200 CRE-REIT`)
+    console.log(`[ BÓVEDA AP] Cuenta ${apAccountId.toString()} fondeada con 500 USTB-MMF, 300 CORP-BND, 200 CRE-REIT`)
 
     // 4. Creación Atómica de Canasta: ¡El AP Deposita 3 Tramos RWA y Recibe 1,000 POOL-RWA en UNA Transacción!
-    console.log('\n[⚙️ PROCESO] Paso 4: Ejecutando Creación Atómica de Canasta de 4 Tokens (DvP)...')
+    console.log('\n[PROCESO] Paso 4: Ejecutando Creación Atómica de Canasta de 4 Tokens (DvP)...')
     const atomicBasketSwap = new TransferTransaction()
       // Tramos 1, 2, 3: El AP deposita la canasta RWA subyacente en la Tesorería del Pool
       .addTokenTransfer(underlyingTokens[0].tokenId, apAccountId, -500)
@@ -145,8 +145,8 @@ const main = async () => {
     const signedSwap = await (await atomicBasketSwap.sign(apKey)).sign(issuerKey)
     const swapRes = await signedSwap.execute(client)
     const swapReceipt = await swapRes.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Creación Atómica de Canasta Liquidada! Estado: ${swapReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Tx ID: ${swapRes.transactionId.toString()}`)
+    console.log(`[ÉXITO] ¡Creación Atómica de Canasta Liquidada! Estado: ${swapReceipt.status.toString()}`)
+    console.log(`[REGISTRO] Tx ID: ${swapRes.transactionId.toString()}`)
 
     // 5. Verificar el Balance Final de Pool Tokens del AP vía Mirror Node
     await sleep(3500)
@@ -154,23 +154,23 @@ const main = async () => {
       .setAccountId(apAccountId)
       .setTokenId(poolTokenId)
       .execute(client)
-    console.log(`\n[📊 AUDITORÍA] Balance Final del AP: ${apPoolBal.balance.toString()} POOL-RWA (Respaldado 1:1 por 3 Tramos RWA en Bóveda)`)
+    console.log(`\n[AUDITORÍA] Balance Final del AP: ${apPoolBal.balance.toString()} POOL-RWA (Respaldado 1:1 por 3 Tramos RWA en Bóveda)`)
 
     updateState('RWA_POOL_TOKEN_ID', poolTokenId.toString())
     updateState('RWA_AP_ACCOUNT_ID', apAccountId.toString())
     updateState('RWA_POOL_SHARES_MINTED', apPoolBal.balance.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los Pool Tokens permiten a las instituciones agrupar Fondos Monetarios, Bonos y Acciones')
     console.log('en un único instrumento HTS transferible utilizado como colateral instantáneo en FX y DeFi.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Gracias a que Hedera soporta transferencias atómicas multi-token de forma nativa en Capa 1,')
     console.log('crear o redimir una canasta de ETF multi-activo no requiere contratos inteligentes de custodia.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de Pool Token RWA:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de Pool Token RWA:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -181,7 +181,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

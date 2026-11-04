@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Protocolo Cross-Ledger (CLPR) y Pruebas Criptográficas de Estado (HIP-1535)
- * [ CONCEPTO ] Comunicación Cross-Chain Sin Puentes Vía Inclusión Criptográfica
+ * [CONCEPTO] Comunicación Cross-Chain Sin Puentes Vía Inclusión Criptográfica
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Interoperabilidad Sin Puentes (Bridgeless): Los puentes tradicionales dependen
@@ -27,7 +27,7 @@
  * - Actual:    M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
  * - Siguiente: M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Las firmas del consejo TSS y la prueba de estado HIP-1535 son simuladas (el protocolo aún no está activo). El anclaje en HCS es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -148,7 +148,7 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Inicializando tópico de anclaje EN VIVO para eventos cross-ledger...')
+    console.log('[PROCESO] Inicializando tópico de anclaje EN VIVO para eventos cross-ledger...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('CLPR:Cross-Ledger:StateProof:HIP-1535')
@@ -157,7 +157,7 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico de anclaje CLPR creado en Testnet: ${topicId}`)
+    console.log(`[ÉXITO] Tópico de anclaje CLPR creado en Testnet: ${topicId}`)
 
     // Payload de evento cross-ledger (ej. quema en Hedera para liberar en Polygon)
     const crossLedgerPayload = {
@@ -169,7 +169,7 @@ const main = async () => {
       nonce: crypto.randomBytes(8).toString('hex')
     }
 
-    console.log('\n[⚙️ PROCESO] Transmitiendo intención cross-chain al Hedera Consensus Service...')
+    console.log('\n[PROCESO] Transmitiendo intención cross-chain al Hedera Consensus Service...')
     // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -178,10 +178,10 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const consensusSequence = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ ÉXITO] ¡Consenso en vivo alcanzado! Número de Secuencia: #${consensusSequence}`)
+    console.log(`[ÉXITO] ¡Consenso en vivo alcanzado! Número de Secuencia: #${consensusSequence}`)
 
     // [SIMULACIÓN ARQUITECTÓNICA] Red de validadores sintética para verificación TSS
-    console.log('\n[⚙️ PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Generando prueba de estado TSS HIP-1535...')
+    console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Generando prueba de estado TSS HIP-1535...')
     const councilPrivateKeys = [
       '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
       '0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01',
@@ -199,23 +199,23 @@ const main = async () => {
       validatorKeys: councilPrivateKeys
     })
 
-    console.log('[📊 REGISTRO] Paquete de Prueba de Estado CLPR Construido:')
-    console.log(`[📊 REGISTRO] Protocolo:          ${clprProof.version}`)
-    console.log(`[📊 REGISTRO] Ledger Origen:      ${clprProof.sourceLedger}`)
-    console.log(`[📊 REGISTRO] Ledger Destino:     ${clprProof.destinationLedger}`)
-    console.log(`[📊 REGISTRO] Raíz Merkle Estado: ${clprProof.stateRoot}`)
-    console.log(`[📊 REGISTRO] Compromiso Estado:  ${clprProof.commitment}`)
-    console.log(`[📊 REGISTRO] Quórum TSS:         ${clprProof.tssQuorum.signatures.length}/${clprProof.tssQuorum.totalSigners} firmas (Umbral: ${clprProof.tssQuorum.threshold})`)
+    console.log('[REGISTRO] Paquete de Prueba de Estado CLPR Construido:')
+    console.log(`[REGISTRO] Protocolo:          ${clprProof.version}`)
+    console.log(`[REGISTRO] Ledger Origen:      ${clprProof.sourceLedger}`)
+    console.log(`[REGISTRO] Ledger Destino:     ${clprProof.destinationLedger}`)
+    console.log(`[REGISTRO] Raíz Merkle Estado: ${clprProof.stateRoot}`)
+    console.log(`[REGISTRO] Compromiso Estado:  ${clprProof.commitment}`)
+    console.log(`[REGISTRO] Quórum TSS:         ${clprProof.tssQuorum.signatures.length}/${clprProof.tssQuorum.totalSigners} firmas (Umbral: ${clprProof.tssQuorum.threshold})`)
 
-    console.log('\n[⚙️ PROCESO] Verificador en cadena de destino validando prueba contra lista del consejo...')
+    console.log('\n[PROCESO] Verificador en cadena de destino validando prueba contra lista del consejo...')
     const isValid = verifyCLPRProof(clprProof, authorizedCouncilRoster)
 
     if (!isValid) {
       throw new Error('¡La prueba de estado CLPR no cumplió el umbral criptográfico!')
     }
 
-    console.log('[✅ ÉXITO] ¡Prueba de Estado Criptográfica Verificada Contra el Consejo Autorizado!')
-    console.log('[ℹ️ INFO] Cero puentes multi-firma, cero relayers de custodia, cero tokens envueltos vulnerables.')
+    console.log('[ÉXITO] ¡Prueba de Estado Criptográfica Verificada Contra el Consejo Autorizado!')
+    console.log('[INFO] Cero puentes multi-firma, cero relayers de custodia, cero tokens envueltos vulnerables.')
 
     // Persistir estado
     updateState('CLPR_TOPIC_ID', topicId)
@@ -223,18 +223,18 @@ const main = async () => {
     updateState('CLPR_COMMITMENT_HASH', clprProof.commitment)
     updateState('CLPR_PAYLOAD_HASH', clprProof.payloadHash)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Bajo HIP-1535 (CLPR), las liquidaciones cross-ledger se aseguran con matemáticas,')
     console.log('no con contratos de depósito centralizados. Un contrato inteligente en Ethereum o')
     console.log('Polygon verifica directamente la firma TSS de consenso para liberar activos nativos.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Al eliminar intermediarios de custodia, se reduce a cero el vector de ataque más explotado')
     console.log('del ecosistema cripto. La interoperabilidad del futuro es puramente criptográfica.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Prueba de Estado CLPR:', error.message)
+    console.error('\n[ERROR] Fallo en Prueba de Estado CLPR:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -245,7 +245,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

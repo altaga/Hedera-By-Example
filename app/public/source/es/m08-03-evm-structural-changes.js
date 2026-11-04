@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Ciclo de Vida de Contratos y Renta de Almacenamiento
- * [ CONCEPTO ] Sostenibilidad Operativa y Gestión del Estado
+ * [CONCEPTO] Sostenibilidad Operativa y Gestión del Estado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Ledger Sostenible: A diferencia de otras redes donde el almacenamiento
@@ -42,7 +42,7 @@ import { getClient, getState } from '../M99_Utilities/index.js'
  * Envolvedor funcional para recargar el tiempo de vida de renovación del contrato.
  */
 const extendContractLifespan = async (client, contractId, adminKey) => {
-  console.log(`[⚙️ PROCESO] Extendiendo periodo de Auto-Renovación por 30 días para: ${contractId}...`)
+  console.log(`[PROCESO] Extendiendo periodo de Auto-Renovación por 30 días para: ${contractId}...`)
   const thirtyDaysInSeconds = 30 * 24 * 60 * 60
 
   const tx = await new ContractUpdateTransaction()
@@ -64,7 +64,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FALLO] Falta SC_STORAGE_ID en el estado local. Ejecuta Lab 01 primero.')
+    console.error('[FALLO] Falta SC_STORAGE_ID en el estado local. Ejecuta Lab 01 primero.')
     process.exitCode = 1
     return
   }
@@ -74,11 +74,11 @@ const main = async () => {
   try {
     const receipt = await extendContractLifespan(client, contractId, adminKey)
 
-    console.log(`\n[✅ ÉXITO] Vida útil del contrato extendida con éxito. Estado: ${receipt.status.toString()}`)
-    console.log('[ℹ️ INFO] El periodo de auto-renovación ha sido actualizado a 30 días.')
-    console.log('[ℹ️ INFO] La red deducirá automáticamente la renta del saldo del contrato.')
+    console.log(`\n[ÉXITO] Vida útil del contrato extendida con éxito. Estado: ${receipt.status.toString()}`)
+    console.log('[INFO] El periodo de auto-renovación ha sido actualizado a 30 días.')
+    console.log('[INFO] La red deducirá automáticamente la renta del saldo del contrato.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La renta de almacenamiento es la herramienta de Hedera para evitar')
     console.log('la hinchazón del estado (state bloat). En producción, se suele')
     console.log('asignar un `autoRenewAccountId` (cuenta de tesorería) para asegurar')
@@ -87,7 +87,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La extensión de vida útil del contrato falló:', error.message)
+    console.error('\n[FALLO] La extensión de vida útil del contrato falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -96,7 +96,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

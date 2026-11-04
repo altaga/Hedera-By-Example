@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Puente de Transmisión de Eventos Empresarial (Kafka / Redpanda hacia HCS)
- * [ CONCEPTO ] Colas Particionadas de Alto Rendimiento y Marcas de Agua Inmutables
+ * [CONCEPTO] Colas Particionadas de Alto Rendimiento y Marcas de Agua Inmutables
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Las arquitecturas empresariales modernas procesan millones de eventos en streaming
@@ -100,11 +100,11 @@ const main = async () => {
 
   try {
     // 1. Inicializar Clúster Kafka en Memoria con 2 Particiones
-    console.log('[⚙️ PROCESO] Paso 1: Inicializando Flujo Distribuido Kafka (orders.settlement.v1)...')
+    console.log('[PROCESO] Paso 1: Inicializando Flujo Distribuido Kafka (orders.settlement.v1)...')
     const broker = new InMemoryKafkaBroker('orders.settlement.v1', 2)
 
     // 2. Ingerir Flujo de Eventos de Alta Velocidad en Particiones
-    console.log('[⚙️ PROCESO] Paso 2: Ingestando Eventos en Tiempo Real de Comercio y Tesorería...')
+    console.log('[PROCESO] Paso 2: Ingestando Eventos en Tiempo Real de Comercio y Tesorería...')
     const sampleEvents = [
       { key: 'CUST-8812', orderId: 'ORD-901', amount: 450.00, currency: 'USD', status: 'AUTHORIZED' },
       { key: 'CUST-1049', orderId: 'ORD-902', amount: 120.50, currency: 'EUR', status: 'SETTLED' },
@@ -115,11 +115,11 @@ const main = async () => {
 
     sampleEvents.forEach(evt => {
       const pub = broker.publish(evt.key, evt)
-      console.log(`[📦 KAFKA] Clave: ${evt.key} ➔ Partición [${pub.partitionId}] Offset: ${pub.offset} (SHA: ${pub.hash.substring(0, 10)}...)`)
+      console.log(`[KAFKA] Clave: ${evt.key} ➔ Partición [${pub.partitionId}] Offset: ${pub.offset} (SHA: ${pub.hash.substring(0, 10)}...)`)
     })
 
     // 3. Compilar Marca de Agua de Estado entre Particiones
-    console.log('\n[⚙️ PROCESO] Paso 3: Compilando Marca de Agua de Estado en las Particiones...')
+    console.log('\n[PROCESO] Paso 3: Compilando Marca de Agua de Estado en las Particiones...')
     const watermarks = broker.getPartitionWatermarks()
     const stateHasher = crypto.createHash('sha256')
     watermarks.forEach(w => stateHasher.update(`${w.partition}:${w.highWatermarkOffset}:${w.latestRecordHash}`))
@@ -134,48 +134,48 @@ const main = async () => {
       committedAt: new Date().toISOString()
     }
 
-    console.log(`[📊 LOG] Total de Particiones:  ${watermarks.length}`)
-    console.log(`[📊 LOG] Total de Logs Ingeridos: ${watermarks.reduce((acc, w) => acc + w.totalRecords, 0)}`)
-    console.log(`[📊 LOG] Checksum del Estado:   ${clusterStateChecksum}`)
+    console.log(`[LOG] Total de Particiones:  ${watermarks.length}`)
+    console.log(`[LOG] Total de Logs Ingeridos: ${watermarks.reduce((acc, w) => acc + w.totalRecords, 0)}`)
+    console.log(`[LOG] Checksum del Estado:   ${clusterStateChecksum}`)
 
     // 4. Crear Tema de Anclaje HCS en Hedera Testnet
-    console.log('\n[⚙️ PROCESO] Paso 4: Creando Tópico de Consenso de Anclaje HCS...')
+    console.log('\n[PROCESO] Paso 4: Creando Tópico de Consenso de Anclaje HCS...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('KAFKA_ENTERPRISE_ANCHOR_STREAM')
       .execute(client)
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId
-    console.log(`[✅ ÉXITO] Tópico de Anclaje HCS Creado: ${topicId.toString()}`)
+    console.log(`[ÉXITO] Tópico de Anclaje HCS Creado: ${topicId.toString()}`)
 
     // 5. Anclar Checkpoint en la Capa de Consenso de Hedera
-    console.log('\n[⚙️ PROCESO] Paso 5: Anclando Marca de Agua Kafka en Hedera Consensus Service...')
+    console.log('\n[PROCESO] Paso 5: Anclando Marca de Agua Kafka en Hedera Consensus Service...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(checkpointCommit))
       .execute(client)
     const submitReceipt = await submitTx.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] ¡Punto de Control Kafka Anclado en HCS! Estado: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción:      ${submitTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(submitTx)}`)
+    console.log(`\n[ÉXITO] ¡Punto de Control Kafka Anclado en HCS! Estado: ${submitReceipt.status.toString()}`)
+    console.log(`[LOG] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
+    console.log(`[LOG] ID de Transacción:      ${submitTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(submitTx)}`)
 
     updateState('KAFKA_HCS_TOPIC_ID', topicId.toString())
     updateState('KAFKA_LAST_ANCHOR_SEQ', submitReceipt.topicSequenceNumber.toString())
     updateState('KAFKA_STATE_CHECKSUM', clusterStateChecksum)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Arquitectura Empresarial Híbrida: Kafka procesa más de 100,000 msgs/seg internamente.')
     console.log('HCS actúa como el tribunal criptográfico de registro. Cualquier auditor puede verificar')
     console.log('que el estado de los offsets en el momento del consenso coincide con el ancla externa.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Al desacoplar el procesamiento de flujos de alta velocidad del anclaje de consenso,')
     console.log('las organizaciones obtienen conformidad SOC-2, HIPAA y Basilea III a un costo predecible de $0.0001 por anclaje.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución del Puente Kafka:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución del Puente Kafka:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -186,7 +186,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

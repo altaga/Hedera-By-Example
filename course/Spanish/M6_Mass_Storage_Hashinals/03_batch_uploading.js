@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Carga por Lotes Multi-Activo (Manifiestos Compuestos)
- * [ CONCEPTO ] Bundling On-Chain y Empaquetado Inmuntable
+ * [CONCEPTO] Bundling On-Chain y Empaquetado Inmuntable
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Un Solo Registro: En lugar de crear un File ID independiente por cada
@@ -46,7 +46,7 @@ const main = async () => {
   const fileId = getState('HFS_FILE_ID')
 
   if (!fileId) {
-    console.error('[❌ FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01/02 primero.')
+    console.error('[FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01/02 primero.')
     process.exitCode = 1
     return
   }
@@ -57,8 +57,8 @@ const main = async () => {
     // Solo los documentos fuente: largeFile.png ya se subió en el Lab 02 y reconstructed_* son salidas de los Labs 05/08.
     const files = fs.readdirSync(assetsDir).filter((f) => !f.startsWith('reconstructed_') && f !== 'largeFile.png')
 
-    console.log(`[ℹ️ INFO] Escaneando directorio: ${assetsDir}`)
-    console.log(`[ℹ️ INFO] Se encontraron ${files.length} archivos para anclar en el bundle.`)
+    console.log(`[INFO] Escaneando directorio: ${assetsDir}`)
+    console.log(`[INFO] Se encontraron ${files.length} archivos para anclar en el bundle.`)
 
     // Construcción del Manifiesto Binario
     let combinedBuffer = Buffer.from('\n--- INICIO DEL MANIFIESTO MULTI-ACTIVO ---\n')
@@ -68,7 +68,7 @@ const main = async () => {
       const stats = fs.statSync(filePath)
       const content = fs.readFileSync(filePath)
 
-      console.log(`   └─ [PACK] ${file} (${stats.size} bytes)`)
+      console.log(`└─ [PACK] ${file} (${stats.size} bytes)`)
 
       combinedBuffer = Buffer.concat([
         combinedBuffer,
@@ -78,13 +78,13 @@ const main = async () => {
       ])
     }
 
-    console.log(`\n[📊 REGISTRO] Tamaño Total del Bundle: ${combinedBuffer.length} bytes`)
+    console.log(`\n[REGISTRO] Tamaño Total del Bundle: ${combinedBuffer.length} bytes`)
 
     // Fragmentación para estabilidad en la carga masiva
     const CHUNK_SIZE = 4096
     let lastResponse
 
-    console.log(`[⚙️ PROCESO] Transmitiendo bundle en ${Math.ceil(combinedBuffer.length / CHUNK_SIZE)} fragmentos...`)
+    console.log(`[PROCESO] Transmitiendo bundle en ${Math.ceil(combinedBuffer.length / CHUNK_SIZE)} fragmentos...`)
 
     for (let i = 0; i < combinedBuffer.length; i += CHUNK_SIZE) {
       const chunk = combinedBuffer.slice(i, i + CHUNK_SIZE)
@@ -98,13 +98,13 @@ const main = async () => {
       lastResponse = await transaction.execute(client)
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       await lastResponse.getReceipt(client)
-      console.log(`   └─ Fragmento ${Math.floor(i / CHUNK_SIZE) + 1} anclado.`)
+      console.log(`└─ Fragmento ${Math.floor(i / CHUNK_SIZE) + 1} anclado.`)
     }
 
-    console.log(`\n[✅ ÉXITO] Bundle multi-activo adjuntado al Archivo: ${fileId}`)
-    console.log(`[📊 REGISTRO] Ver última transacción: ${getHashscanUrl(lastResponse)}`)
+    console.log(`\n[ÉXITO] Bundle multi-activo adjuntado al Archivo: ${fileId}`)
+    console.log(`[REGISTRO] Ver última transacción: ${getHashscanUrl(lastResponse)}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al usar un solo File ID para todo tu set de activos, reduces')
     console.log('considerablemente los costos de creación en la red y simplificas')
     console.log('la gobernanza de tus datos, permitiendo que una dApp entera')
@@ -113,7 +113,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El empaquetado masivo HFS falló:', error.message)
+    console.error('\n[FALLO] El empaquetado masivo HFS falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -122,7 +122,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

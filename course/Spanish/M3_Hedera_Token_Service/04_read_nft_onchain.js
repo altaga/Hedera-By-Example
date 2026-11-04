@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Resolución de Metadatos NFT On-Chain
- * [ CONCEPTO ] Verificación sin Confianza (Trustless Verification)
+ * [CONCEPTO] Verificación sin Confianza (Trustless Verification)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Auditoría Total: En un sistema descentralizado, cualquier observador debe
@@ -49,7 +49,7 @@ const main = async () => {
 
   try {
     // Paso 1: Consultar la información del NFT para obtener el puntero de metadatos
-    console.log(`[⚙️ PROCESO] Consultando registro on-chain para Token ${TOKEN_ID}, Serial #${SERIAL_NUMBER}...`)
+    console.log(`[PROCESO] Consultando registro on-chain para Token ${TOKEN_ID}, Serial #${SERIAL_NUMBER}...`)
     const nftId = new NftId(TokenId.fromString(TOKEN_ID), SERIAL_NUMBER)
 
     const nftInfos = await new TokenNftInfoQuery()
@@ -62,20 +62,20 @@ const main = async () => {
 
     const nftInfo = nftInfos[0]
     const metadataPointer = Buffer.from(nftInfo.metadata).toString('utf8')
-    console.log(`[📊 REGISTRO] Puntero (Metadata URI): ${metadataPointer}`)
+    console.log(`[REGISTRO] Puntero (Metadata URI): ${metadataPointer}`)
 
     // Paso 2: Extraer el File ID del formato 'hedera://'
-    console.log('[⚙️ PROCESO] Resolviendo URI de protocolo nativo...')
+    console.log('[PROCESO] Resolviendo URI de protocolo nativo...')
     let fileIdString = metadataPointer
 
     if (metadataPointer.includes('hedera://')) {
       const parts = metadataPointer.split('/')
       fileIdString = parts[parts.length - 1]
     }
-    console.log(`[📊 REGISTRO] File ID Resolucionado: ${fileIdString}`)
+    console.log(`[REGISTRO] File ID Resolucionado: ${fileIdString}`)
 
     // Paso 3: Consultar HFS para descargar el JSON de metadatos
-    console.log(`[⚙️ PROCESO] Descargando JSON de metadatos desde el Archivo HFS: ${fileIdString}...`)
+    console.log(`[PROCESO] Descargando JSON de metadatos desde el Archivo HFS: ${fileIdString}...`)
     const fileContents = await new FileContentsQuery()
       .setFileId(fileIdString)
       .execute(client)
@@ -84,17 +84,17 @@ const main = async () => {
     const metadataObj = JSON.parse(jsonString)
 
     // Paso 4: Mostrar los resultados finales
-    console.log('\n--- 💎 [✅ ÉXITO] METADATOS ON-CHAIN DECODIFICADOS ---')
-    console.log(`[📊 REGISTRO] Nombre:        ${metadataObj.name}`)
-    console.log(`[📊 REGISTRO] Creador:       ${metadataObj.creator}`)
-    console.log(`[📊 REGISTRO] Descripción:   ${metadataObj.description}`)
-    console.log(`[📊 REGISTRO] Recurso Image: ${metadataObj.image}`)
+    console.log('\n---  [ÉXITO] METADATOS ON-CHAIN DECODIFICADOS ---')
+    console.log(`[REGISTRO] Nombre:        ${metadataObj.name}`)
+    console.log(`[REGISTRO] Creador:       ${metadataObj.creator}`)
+    console.log(`[REGISTRO] Descripción:   ${metadataObj.description}`)
+    console.log(`[REGISTRO] Recurso Image: ${metadataObj.image}`)
     console.log('---------------------------------------------------------')
 
-    console.log('\n[ℹ️ INFO] Objeto JSON Final:')
+    console.log('\n[INFO] Objeto JSON Final:')
     console.log(JSON.stringify(metadataObj, null, 2))
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Cualquier observador externo puede ejecutar este script para')
     console.log('verificar la autenticidad e integridad del activo digital,')
     console.log('garantizando una "Verificación sin Confianza" (Trustless).')
@@ -102,7 +102,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La resolución de metadatos falló:', error.message)
+    console.error('\n[FALLO] La resolución de metadatos falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -111,7 +111,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

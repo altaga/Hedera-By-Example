@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Structural Differences and Rent Mechanics
- * [ CONCEPT ] Operational Sustainability & State Management
+ * [CONCEPT] Operational Sustainability & State Management
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Sustainable Ledger: Unlike Ethereum, where state storage is "Free but
@@ -39,7 +39,7 @@ import { getClient, getState } from '../M99_Utilities/index.js'
  * Functional wrapper to top-up contract rent lifespan
  */
 const extendContractLifespan = async (client, contractId, adminKey) => {
-  console.log(`[⚙️ PROCESS] Proposing lifespan extension for contract: ${contractId}...`)
+  console.log(`[PROCESS] Proposing lifespan extension for contract: ${contractId}...`)
   const thirtyDaysInSeconds = 30 * 24 * 60 * 60
 
   const tx = await new ContractUpdateTransaction()
@@ -62,7 +62,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
+    console.error('[FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
     process.exitCode = 1
     return
   }
@@ -70,11 +70,11 @@ const main = async () => {
   try {
     const receipt = await extendContractLifespan(client, contractId, adminKey)
 
-    console.log(`\n[✅ SUCCESS] Contract Lifespan Extended (Status: ${receipt.status.toString()})`)
-    console.log('[📊 LOG] Auto-renewal period is now set to 30 days.')
-    console.log('[ℹ️ INFO] Contract will automatically pull rent from its balance or payer.')
+    console.log(`\n[SUCCESS] Contract Lifespan Extended (Status: ${receipt.status.toString()})`)
+    console.log('[LOG] Auto-renewal period is now set to 30 days.')
+    console.log('[INFO] Contract will automatically pull rent from its balance or payer.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Sustainable Ledger: By enforcing rent, Hedera ensures that the')
     console.log('"State" of the network does not grow infinitely with junk data. This')
     console.log("script shows how to programmatically extend a contract's lifespan.")
@@ -82,7 +82,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Lifespan Extension Failed:', error.message)
+    console.error('\n[FAILED] Lifespan Extension Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

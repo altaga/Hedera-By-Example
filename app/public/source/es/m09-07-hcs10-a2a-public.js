@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Orquestación Agente-a-Agente (A2A) HCS-10
- * [ CONCEPTO ] Comunicación Entre Agentes y Sincronización de Estado
+ * [CONCEPTO] Comunicación Entre Agentes y Sincronización de Estado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Colaboración Autónoma: La arquitectura HCS-10 escala más allá de la
@@ -25,7 +25,7 @@
  * - Actual:   M9 Lab 07: Comunicación Agente-a-Agente (A2A)
  * - Siguiente: M9 Lab 08: Simulación de Ataque de Suplantación
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Agente A -> Buzón del agente B: Mensaje de la ronda 1
  * Agente B -> Buzón del agente A: Respuesta
  * Agente A -> Buzón del agente B: Mensaje de la ronda 2
@@ -62,7 +62,7 @@ const main = async () => {
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
   if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
-    console.error('[❌ FALLO] Faltan identidades de agentes o canales de comunicación.')
+    console.error('[FALLO] Faltan identidades de agentes o canales de comunicación.')
     process.exitCode = 1
     return
   }
@@ -73,7 +73,7 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
     const processedMessages = new Set()
 
-    console.log(`🤖 [ℹ️ INFO] Agente B: Operativo en Inbox [${inbox}]...`)
+    console.log(`[INFO] Agente B: Operativo en Inbox [${inbox}]...`)
 
     // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
@@ -81,7 +81,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         client,
-        (err) => { console.error(` [❌ FALLO] Mirror Node Agente B: ${err.message}`); process.exit(1) },
+        (err) => { console.error(` [FALLO] Mirror Node Agente B: ${err.message}`); process.exit(1) },
         async (msg) => {
           const tsString = msg.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -96,22 +96,22 @@ const main = async () => {
             const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
             if (data?.text?.includes('Hola') || data?.text?.includes('Hello')) {
-              console.log('\n--- 📥 AGENTE B: EVENTO DE ORQUESTACIÓN RECIBIDO ---')
-              console.log(`[📊 REGISTRO] Mensaje: "${data.text}"`)
+              console.log('\n---  AGENTE B: EVENTO DE ORQUESTACIÓN RECIBIDO ---')
+              console.log(`[REGISTRO] Mensaje: "${data.text}"`)
 
               const roundMatch = data.text.match(/\d+/)
               const round = roundMatch ? roundMatch[0] : 'desconocida'
 
-              console.log(`[⚙️ PROCESO] Ejecutando análisis para la Ronda ${round}...`)
+              console.log(`[PROCESO] Ejecutando análisis para la Ronda ${round}...`)
               await sleep(3000)
 
-              console.log('[✅ ÉXITO] Enviando respuesta de conformidad al canal de salida.')
+              console.log('[ÉXITO] Enviando respuesta de conformidad al canal de salida.')
               await hcs10.sendMessage(outbox, {
                 text: `¡Mensaje Ronda ${round} Procesado!`,
                 target: agentA_Id
               })
             }
-          } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
+          } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
         }
       )
   }
@@ -125,17 +125,17 @@ const main = async () => {
     let currentRound = 1
     const maxRounds = 3
 
-    console.log(`🤖 [ℹ️ INFO] Agente A: Operativo en Outbox [${outbox}]...`)
+    console.log(`[INFO] Agente A: Operativo en Outbox [${outbox}]...`)
 
     const sendPing = async (round) => {
-      console.log('\n--- 🤖 AGENTE A: ACTUALIZACIÓN DE ESTADO ---')
-      console.log(`[⚙️ PROCESO] Iniciando Ronda ${round} de coordinación...`)
+      console.log('\n---  AGENTE A: ACTUALIZACIÓN DE ESTADO ---')
+      console.log(`[PROCESO] Iniciando Ronda ${round} de coordinación...`)
 
       await hcs10.sendMessage(inbox, {
         operator_id: agentA_Id,
         text: `Hola Agente B, sincronizando ronda ${round}`
       })
-      console.log(`[ℹ️ INFO] Señal de Ronda ${round} publicada en el ledger.`)
+      console.log(`[INFO] Señal de Ronda ${round} publicada en el ledger.`)
     }
 
     new TopicMessageQuery()
@@ -143,7 +143,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         client,
-        (err) => { console.error(` [❌ FALLO] Mirror Node Agente A: ${err.message}`); process.exit(1) },
+        (err) => { console.error(` [FALLO] Mirror Node Agente A: ${err.message}`); process.exit(1) },
         async (msg) => {
           const tsString = msg.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -154,16 +154,16 @@ const main = async () => {
           const content = Buffer.from(msg.contents, 'utf8').toString()
 
           if (content.includes(`Ronda ${currentRound}`)) {
-            console.log('\n--- 📥 AGENTE A: RESPUESTA DE COLABORACIÓN CONFIRMADA ---')
-            console.log(`[✅ ÉXITO] Recibida confirmación válida para la Ronda ${currentRound}.`)
+            console.log('\n---  AGENTE A: RESPUESTA DE COLABORACIÓN CONFIRMADA ---')
+            console.log(`[ÉXITO] Recibida confirmación válida para la Ronda ${currentRound}.`)
 
             if (currentRound < maxRounds) {
               currentRound++
               await sleep(4000)
               await sendPing(currentRound)
             } else {
-              console.log('\n🏁 --- [✅ ÉXITO] Secuencia completada. Todos los agentes sincronizados. ---')
-              console.log('\n💡 CONCEPTO CLAVE:')
+              console.log('\n --- [ÉXITO] Secuencia completada. Todos los agentes sincronizados. ---')
+              console.log('\n CONCEPTO CLAVE:')
               console.log('Autonomía Cooperativa: Este laboratorio demuestra una orquestación fundamental')
               console.log('donde dos agentes actúan como un "Enjambre". Al desacoplar los agentes y usar')
               console.log('el ledger como capa de coordinación, se crea un sistema tolerante a fallos y auditable.')
@@ -186,7 +186,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

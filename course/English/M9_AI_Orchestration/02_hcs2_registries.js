@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: HCS-2 Topic Registries
- * [ CONCEPT ] Decentralized Service Discovery (Yellow Pages)
+ * [CONCEPT] Decentralized Service Discovery (Yellow Pages)
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Public Index: HCS-2 defines a JSON schema that turns an HCS topic into
@@ -58,14 +58,14 @@ const main = async () => {
   const targetAgentTopicId = getState('HCS1_TOPIC_ID')
 
   if (!targetAgentTopicId) {
-    console.error('[❌ FAILED] Missing HCS-1 Topic ID. Please run Lab 01 first.')
+    console.error('[FAILED] Missing HCS-1 Topic ID. Please run Lab 01 first.')
     process.exitCode = 1
     return
   }
 
   try {
     // 1. Create the Verified Esports Agent Registry topic
-    console.log(`[⚙️ PROCESS] Creating "Verified Esports Registry" topic on ${network}...`)
+    console.log(`[PROCESS] Creating "Verified Esports Registry" topic on ${network}...`)
     const registryTx = await new TopicCreateTransaction()
       .setTopicMemo('hcs-2:verified_esports_agents_v1')
       .setSubmitKey(client.operatorPublicKey)
@@ -75,14 +75,14 @@ const main = async () => {
     const registryReceipt = await registryResponse.getReceipt(client)
     const registryTopicId = registryReceipt.topicId.toString()
 
-    console.log(`\n[✅ SUCCESS] Registry Topic Created: ${registryTopicId}`)
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(registryResponse)}`)
+    console.log(`\n[SUCCESS] Registry Topic Created: ${registryTopicId}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(registryResponse)}`)
 
-    console.log('[ℹ️ INFO] Synchronizing state.json with HCS-2 Registry ID...')
+    console.log('[INFO] Synchronizing state.json with HCS-2 Registry ID...')
     updateState('HCS2_REGISTRY_TOPIC_ID', registryTopicId)
 
     // 2. Submit our Lab 02 Anti-Cheat Agent into this new registry
-    console.log(`\n[⚙️ PROCESS] Registering Anti-Cheat Agent (${targetAgentTopicId}) into the directory...`)
+    console.log(`\n[PROCESS] Registering Anti-Cheat Agent (${targetAgentTopicId}) into the directory...`)
     const discoveryPayload = buildHcs2RegistryMessage(
       'Official Tournament Agent Registry',
       targetAgentTopicId,
@@ -98,13 +98,13 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] HCS-2 Entry Published! Status: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 LOG] View Entry on HashScan: ${getHashscanUrl(submitResponse)}`)
+    console.log(`\n[SUCCESS] HCS-2 Entry Published! Status: ${submitReceipt.status.toString()}`)
+    console.log(`[LOG] View Entry on HashScan: ${getHashscanUrl(submitResponse)}`)
 
-    console.log('\n[📊 LOG] RAW HCS-2 Payload:')
+    console.log('\n[LOG] RAW HCS-2 Payload:')
     console.log(JSON.stringify(discoveryPayload, null, 4))
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('By registering your specific Anti-Cheat topic in a standardized HCS-2 registry,')
     console.log('third-party tournament clients, leaderboards, and auditors can automatically')
     console.log('discover and verify your game\'s rules without needing your API keys.')
@@ -112,7 +112,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Registry Lifecycle Failed:', error.message)
+    console.error('\n[FAILED] Registry Lifecycle Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -121,7 +121,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Protocolos de Autorización Nativa (Allowances)
- * [ CONCEPTO ] Delegación de Gasto y Soberanía del Usuario
+ * [CONCEPTO] Delegación de Gasto y Soberanía del Usuario
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * DeFi con Transparencia: En sistemas DeFi tradicionales, el comando
@@ -45,7 +45,7 @@ import { getClient, getState } from '../M99_Utilities/index.js'
  * Envolvedor funcional para establecer asignaciones de gasto nativas.
  */
 const establishContractApproval = async (client, ownerId, ownerKey, spenderContractId) => {
-  console.log(`[⚙️ PROCESO] Aprobando asignación de 5 HBAR para el contrato: ${spenderContractId}...`)
+  console.log(`[PROCESO] Aprobando asignación de 5 HBAR para el contrato: ${spenderContractId}...`)
 
   // Aprueba una allowance: el spender puede mover hasta este monto en nombre del dueño.
   const tx = await new AccountAllowanceApproveTransaction()
@@ -70,7 +70,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FALLO] Falta SC_STORAGE_ID en la configuración. Ejecuta Lab 01 primero.')
+    console.error('[FALLO] Falta SC_STORAGE_ID en la configuración. Ejecuta Lab 01 primero.')
     process.exitCode = 1
     return
   }
@@ -85,11 +85,11 @@ const main = async () => {
       contractId
     )
 
-    console.log(`\n[✅ ÉXITO] Asignación Nativa establecida. Estado: ${receipt.status.toString()}`)
-    console.log(`[ℹ️ INFO] El contrato ${contractId} está autorizado para gastar 5 HBAR del Operador.`)
-    console.log('[ℹ️ INFO] Esta autorización es revocable y visible en el Mirror Node.')
+    console.log(`\n[ÉXITO] Asignación Nativa establecida. Estado: ${receipt.status.toString()}`)
+    console.log(`[INFO] El contrato ${contractId} está autorizado para gastar 5 HBAR del Operador.`)
+    console.log('[INFO] Esta autorización es revocable y visible en el Mirror Node.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Las asignaciones de Hedera permiten que las dApps operen de')
     console.log('forma fluida sin requerir firmas constantes del usuario, mientras')
     console.log('se mantiene un registro de auditoría inmutable sobre quién puede')
@@ -98,7 +98,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El protocolo de autorización nativo falló:', error.message)
+    console.error('\n[FALLO] El protocolo de autorización nativo falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -107,7 +107,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Autonomous Agent Financial Guardrails
- * [ CONCEPT ] Policy Engines, Spending Ceilings, and Circuit Breakers
+ * [CONCEPT] Policy Engines, Spending Ceilings, and Circuit Breakers
  * ============================================================================
  * [ KEY CONCEPT ]
  * Financial Blast Radius: Giving an autonomous agent private keys without
@@ -22,7 +22,7 @@
  * - Previous: M10 Lab 04: HTS USDC Micropayments
  * - Next:     M10 Lab 06: Autonomous Market Agent
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Server -> Agent: Request 1: 0.5 ℏ to a verified merchant
  * Note Agent: Approved (within budget and allowlist)
  * Server -> Agent: Request 2: 12 ℏ
@@ -103,16 +103,16 @@ const main = async () => {
     const verifiedMerchantB = '0.0.98765'
     const rogueMerchant = '0.0.66699'
 
-    console.log('[⚙️ PROCESS] Initializing Agent Deterministic Policy Engine...')
+    console.log('[PROCESS] Initializing Agent Deterministic Policy Engine...')
     const policy = new AgentPolicyEngine({
       dailyLimitHbar: 5.0,
       maxPerRequestHbar: 1.5,
       allowedMerchants: [verifiedMerchantA, verifiedMerchantB]
     })
 
-    console.log('[📊 LOG] Daily Budget Limit:      5.0 HBAR')
-    console.log('[📊 LOG] Max Cost Per Request:    1.5 HBAR')
-    console.log(`[📊 LOG] Verified Merchants:      ${verifiedMerchantA}, ${verifiedMerchantB}`)
+    console.log('[LOG] Daily Budget Limit:      5.0 HBAR')
+    console.log('[LOG] Max Cost Per Request:    1.5 HBAR')
+    console.log(`[LOG] Verified Merchants:      ${verifiedMerchantA}, ${verifiedMerchantB}`)
 
     // Scenario 1: Legitimate query within policy
     console.log('\n--- TEST SCENARIO 1: Legitimate Query ---')
@@ -136,7 +136,7 @@ const main = async () => {
     console.log(`[RESULT]  Approved: ${res3.approved} | Rejection Reason: ${res3.reason}`)
 
     // 4. Log Approved Spending to Immutable HCS Audit Log
-    console.log('\n[⚙️ PROCESS] Anchoring approved payment audit event to Hedera Consensus Service...')
+    console.log('\n[PROCESS] Anchoring approved payment audit event to Hedera Consensus Service...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('x402:agent_guardrail_audit')
@@ -162,19 +162,19 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`[✅ SUCCESS] Audit Event Recorded on HCS Topic: ${auditTopicId}`)
-    console.log(`[📊 LOG] Audit Message: ${auditMessage}`)
+    console.log(`[SUCCESS] Audit Event Recorded on HCS Topic: ${auditTopicId}`)
+    console.log(`[LOG] Audit Message: ${auditMessage}`)
 
     updateState('X402_AUDIT_TOPIC_ID', auditTopicId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Decentralized identity and spending guardrails protect the human owner')
     console.log('from financial liabilities. Anchoring spending audits to HCS creates an')
     console.log('irrefutable, tamper-proof record of every dollar spent by autonomous agents.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Guardrail simulation failed:', error.message)
+    console.error('\n[ERROR] Guardrail simulation failed:', error.message)
     process.exit(1)
   }
 }
@@ -183,7 +183,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

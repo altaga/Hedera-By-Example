@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Creación de Topic HCS Inmutable
- * [ CONCEPTO ] Colas de Mensajes Descentralizadas (Topics)
+ * [CONCEPTO] Colas de Mensajes Descentralizadas (Topics)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Auditoría Descentralizada: El Hedera Consensus Service (HCS) es una
@@ -43,7 +43,7 @@ const main = async () => {
   const { client } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Ejecutando creación de Tema (Topic) en el Hedera Consensus Service...')
+    console.log('[PROCESO] Ejecutando creación de Tema (Topic) en el Hedera Consensus Service...')
 
     // Creamos un Tema abierto (Sin llaves) para facilitar la experimentación pública.
     // En producción, se usaría .setSubmitKey() para restringir quién puede publicar.
@@ -53,19 +53,19 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
     const topicId = receipt.topicId.toString()
 
-    console.log(`\n[✅ ÉXITO] Tema HCS creado exitosamente: ${topicId}`)
+    console.log(`\n[ÉXITO] Tema HCS creado exitosamente: ${topicId}`)
 
     // Sincronizar el Topic ID para laboratorios posteriores
-    console.log('[ℹ️ INFO] Guardando Topic ID en el estado local del módulo...')
+    console.log('[INFO] Guardando Topic ID en el estado local del módulo...')
     updateState('HCS_TOPIC_ID', topicId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al no asignar una adminKey, el tema es ahora "Inmutable".')
     console.log('Nadie puede borrar los mensajes ni cerrar el canal, creando')
     console.log('una fuente de verdad inmutable para cualquier aplicación')
@@ -74,7 +74,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La creación del Topic HCS falló:', error.message)
+    console.error('\n[FALLO] La creación del Topic HCS falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -83,7 +83,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 11: Precompilación HSS Cron Autónomo en Solidity (0x16b)
- * [ CONCEPTO ] Contratos Inteligentes que se Autoprograman en Capa 1 de Hedera
+ * [CONCEPTO] Contratos Inteligentes que se Autoprograman en Capa 1 de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En los ecosistemas EVM tradicionales (Ethereum, Polygon, Arbitrum), los contratos
@@ -55,7 +55,7 @@ import { getClient, getHashscanUrl, getState, updateState, executeWithGas } from
 import solc from 'solc'
 
 const compileCronVaultContract = () => {
-  console.log('[⚙️ PROCESO] Compilando 11_solidity_autonomous_hss_cron.sol con solc 0.8.20...')
+  console.log('[PROCESO] Compilando 11_solidity_autonomous_hss_cron.sol con solc 0.8.20...')
   const contractPath = new URL('./11_solidity_autonomous_hss_cron.sol', import.meta.url)
   const sourceCode = fs.readFileSync(contractPath, 'utf8')
 
@@ -105,12 +105,12 @@ const main = async () => {
 
     if (contractIdStr) {
       contractId = ContractId.fromString(contractIdStr)
-      console.log(`[✅ ÉXITO] Reutilizando contrato AutonomousCronVault ID: ${contractIdStr}`)
+      console.log(`[ÉXITO] Reutilizando contrato AutonomousCronVault ID: ${contractIdStr}`)
     } else {
       const { bytecode } = compileCronVaultContract()
-      console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
+      console.log(`[ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
 
-      console.log('\n[⚙️ PROCESO] Paso 1: Desplegando AutonomousCronVault en Hedera EVM...')
+      console.log('\n[PROCESO] Paso 1: Desplegando AutonomousCronVault en Hedera EVM...')
       // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -123,13 +123,13 @@ const main = async () => {
       contractIdStr = contractId.toString()
       updateState('AUTONOMOUS_CRON_VAULT_ID', contractIdStr)
 
-      console.log(`[✅ ÉXITO] AutonomousCronVault Desplegado con Contract ID: ${contractIdStr}`)
-      console.log(`[📊 LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
-      console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
+      console.log(`[ÉXITO] AutonomousCronVault Desplegado con Contract ID: ${contractIdStr}`)
+      console.log(`[LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
+      console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
     // 2. Disparar Latido Autónomo On-Chain
-    console.log('\n[⚙️ PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat()...')
+    console.log('\n[PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat()...')
     // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
     const heartbeatTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
@@ -137,11 +137,11 @@ const main = async () => {
       .setFunction('performAutonomousHeartbeat'), client, { gas: 200000 })
 
     const heartbeatRecord = await heartbeatTx.getRecord(client)
-    console.log(`[✅ ÉXITO] ¡Latido Ejecutado! Estado: ${heartbeatRecord.receipt.status.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción de Consenso: ${heartbeatTx.transactionId.toString()}`)
+    console.log(`[ÉXITO] ¡Latido Ejecutado! Estado: ${heartbeatRecord.receipt.status.toString()}`)
+    console.log(`[LOG] ID de Transacción de Consenso: ${heartbeatTx.transactionId.toString()}`)
 
     // 3. Programar Ejecución Futura mediante Precompilación HSS 0x16b
-    console.log('\n[⚙️ PROCESO] Paso 3: Disparando scheduleNextHeartbeat() mediante Precompilación 0x16b...')
+    console.log('\n[PROCESO] Paso 3: Disparando scheduleNextHeartbeat() mediante Precompilación 0x16b...')
     const payerEvmAddress = `0x${AccountId.fromString(operatorId).toEvmAddress()}`
 
     const scheduleCallTx = await executeWithGas((gas) => new ContractExecuteTransaction()
@@ -150,25 +150,25 @@ const main = async () => {
       .setFunction('scheduleNextHeartbeat', new ContractFunctionParameters().addAddress(payerEvmAddress)), client, { gas: 300000 })
 
     const scheduleRecord = await scheduleCallTx.getRecord(client)
-    console.log(`[✅ ÉXITO] ¡Tarea Cron Autónoma Programada! Estado: ${scheduleRecord.receipt.status.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción de Programación: ${scheduleCallTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan:             ${getHashscanUrl(scheduleCallTx)}`)
+    console.log(`[ÉXITO] ¡Tarea Cron Autónoma Programada! Estado: ${scheduleRecord.receipt.status.toString()}`)
+    console.log(`[LOG] ID de Transacción de Programación: ${scheduleCallTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan:             ${getHashscanUrl(scheduleCallTx)}`)
 
     updateState('AUTONOMOUS_CRON_LAST_TX_ID', scheduleCallTx.transactionId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Arquitectura Autoprogramada 0x16b: Los contratos inteligentes en Hedera pueden')
     console.log('programar sus propias operaciones recurrentes de manera autónoma sin servidores ni bots.')
     console.log('La transacción vive en la capa de consenso hasta madurar su momento de ejecución.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Eliminación de Dependencias de Keepers: Al reemplazar redes externas con precompilaciones')
     console.log('HSS nativas, los protocolos reducen la complejidad operativa a cero y garantizan su')
     console.log('ejecución incluso ante congestiones de red o caídas de nubes externas.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución de Cron Autónomo:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución de Cron Autónomo:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -179,7 +179,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC-SHA256)
- * [ CONCEPT ] Low-Power Logistics Monitoring & Automated SLA Slashing
+ * [CONCEPT] Low-Power Logistics Monitoring & Automated SLA Slashing
  * ============================================================================
  * [ KEY CONCEPT ]
  * Low-power IoT devices (cellular asset trackers, cold-chain biologics containers,
@@ -28,7 +28,7 @@
  * - RFC 2104: HMAC: Keyed-Hashing for Message Authentication
  * - WHO Technical Report 961: Temperature & Humidity Monitoring in Cold Chains
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The IoT tracker and its HTTP requests are emulated. The HMAC checks and the HCS records are real.
  *
  * [ BEFORE YOU RUN ]
@@ -139,13 +139,13 @@ class LogisticsSLAGateway {
 
 async function main () {
   console.log('====================================================================')
-  console.log('❄️ DEPIN LAB 02: LIGHTWEIGHT COLD-CHAIN TELEMETRY & SLA SLASHING')
+  console.log('DEPIN LAB 02: LIGHTWEIGHT COLD-CHAIN TELEMETRY & SLA SLASHING')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
 
     // 1. Provision HCS Topic for Cold Chain SLA Tracking
     console.log('\n[1/5] Creating Dedicated Logistics Cold-Chain HCS Topic...')
@@ -157,8 +157,8 @@ async function main () {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TOPIC CREATED] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TOPIC CREATED] ID: ${topicId}`)
+    console.log(`[EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Provision Gateway and Device Credentials
     console.log('\n[2/5] Configuring Zero-Trust Device Credentials & Gateway...')
@@ -171,10 +171,10 @@ async function main () {
       [deviceId]: { apiKey, sharedHmacSecret }
     }, 2.0, 8.0)
 
-    console.log(`[📦 SENSOR] Assigned Device ID: ${deviceId}`)
-    console.log(`[🔑 API KEY] ${apiKey.substring(0, 20)}...`)
-    console.log(`[🔒 HMAC SECRET] ${sharedHmacSecret.substring(0, 16)}...`)
-    console.log('[📋 SLA TARGET] Vaccine Storage Requirement: +2.0°C to +8.0°C')
+    console.log(`[SENSOR] Assigned Device ID: ${deviceId}`)
+    console.log(`[ API KEY] ${apiKey.substring(0, 20)}...`)
+    console.log(`[ HMAC SECRET] ${sharedHmacSecret.substring(0, 16)}...`)
+    console.log('[ SLA TARGET] Vaccine Storage Requirement: +2.0°C to +8.0°C')
 
     // 3. Emulate Telemetry Lifecycle: 3 Compliant Readings + 1 Critical Excursion
     console.log('\n[3/5] Emulating Sensor Wakeup & Telemetry Submissions...')
@@ -200,10 +200,10 @@ async function main () {
       }
 
       if (evaluation.isSlaBreached) {
-        console.log(`   🚨 [REPORT #${i + 1}] Temp: ${r.temp}°C | SLA VIOLATION! (Limits: +2°C to +8°C) | Loc: ${r.geo}`)
+        console.log(`[REPORT #${i + 1}] Temp: ${r.temp}°C | SLA VIOLATION! (Limits: +2°C to +8°C) | Loc: ${r.geo}`)
         slaBreachEvent = { ...evaluation, geo: r.geo }
       } else {
-        console.log(`   ❄️ [REPORT #${i + 1}] Temp: ${r.temp}°C | SLA Compliant ✅ | HMAC: Verified | Loc: ${r.geo}`)
+        console.log(`[REPORT #${i + 1}] Temp: ${r.temp}°C | SLA Compliant  | HMAC: Verified | Loc: ${r.geo}`)
       }
     }
 
@@ -226,8 +226,8 @@ async function main () {
       .execute(client)
 
     const auditReceipt = await auditSubmitTx.getReceipt(client)
-    console.log(`[✅ AUDIT ANCHORED] Sequence #${auditReceipt.topicSequenceNumber} on HCS`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(auditSubmitTx.transactionId.toString())}`)
+    console.log(`[ AUDIT ANCHORED] Sequence #${auditReceipt.topicSequenceNumber} on HCS`)
+    console.log(`[EXPLORER] ${getHashscanUrl(auditSubmitTx.transactionId.toString())}`)
 
     // 5. Trigger Immutable SLA Breach Event & Slashing Notice
     console.log('\n[5/5] Notarizing SLA Breach & Bond Slashing Notice to HCS...')
@@ -249,26 +249,26 @@ async function main () {
       .execute(client)
 
     const breachReceipt = await breachSubmitTx.getReceipt(client)
-    console.log(`[🚨 BREACH ANCHORED] Sequence #${breachReceipt.topicSequenceNumber} on HCS!`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(breachSubmitTx.transactionId.toString())}`)
+    console.log(`[ BREACH ANCHORED] Sequence #${breachReceipt.topicSequenceNumber} on HCS!`)
+    console.log(`[EXPLORER] ${getHashscanUrl(breachSubmitTx.transactionId.toString())}`)
 
     // Persist State
     updateState('DEPIN_COLDCHAIN_TOPIC_ID', topicId)
     updateState('DEPIN_COLDCHAIN_DEVICE_ID', deviceId)
     updateState('DEPIN_COLDCHAIN_BREACH_TEMP', `${slaBreachEvent.temperatureCelsius}°C`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Low-power IoT nodes save energy with lightweight HTTP + HMAC-SHA256 signatures.')
     console.log('When an enterprise gateway detects an SLA breach, anchoring the event to HCS provides')
     console.log('verifiable evidence that automates bond slashing and prevents insurance fraud.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Always authenticate both device identity (API Key) and payload integrity (HMAC).')
     console.log('A signed payload prevents relay attacks and proves the physical custody chain.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Cold Chain DePIN Execution Failure:', error.message)
+    console.error('\n[ERROR] Cold Chain DePIN Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -279,7 +279,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

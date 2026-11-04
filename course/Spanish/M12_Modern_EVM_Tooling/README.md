@@ -1,4 +1,4 @@
-# 🛠️ Módulo 12: Tooling EVM Moderno sobre Hedera
+# Módulo 12: Tooling EVM Moderno sobre Hedera
 ## Scaffold-HBAR, Foundry, Hardhat y Fachadas Directas HTS
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 En este módulo cerramos la brecha para los desarrolladores nativos de Ethereum. Aprenderás a apuntar el tooling habitual de la EVM hacia el JSON-RPC Relay de Hedera y a manipular activos nativos de Hedera Token Service (HTS) directamente como si fueran contratos ERC-20.
 
@@ -21,7 +21,7 @@ En este módulo cerramos la brecha para los desarrolladores nativos de Ethereum.
 
 ---
 
-## 🏗️ El Puente del Ecosistema EVM de Hedera
+## El Puente del Ecosistema EVM de Hedera
 
 ```mermaid
 %%{init: {
@@ -71,7 +71,7 @@ graph LR
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. La Arquitectura del JSON-RPC Relay
 Hedera no ejecuta una mempool secuencial tradicional de la EVM. En su lugar, el **JSON-RPC Relay** de código abierto traduce las llamadas RPC estándar de Ethereum (`eth_getBalance`, `eth_sendRawTransaction`, `eth_call`) a transacciones nativas de Hedera, enrutándolas directamente por las capas de consenso de Hashgraph y mirror nodes.
@@ -84,7 +84,7 @@ Mientras que las transacciones en Ethereum queman montos impredecibles de ETH se
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Documentación del Hedera Smart Contract Service](https://docs.hedera.com/hedera/sdks-and-apis/smart-contracts)
 - [Repositorio GitHub de Scaffold-HBAR](https://github.com/hedera-dev/scaffold-hbar)
 - [Hedera JSON-RPC Relay](https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay)
@@ -92,4 +92,4 @@ Mientras que las transacciones en Ethereum queman montos impredecibles de ETH se
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. CÓDIGO SOLIDITY. VELOCIDAD HASHGRAPH. CERO FRICCIÓN.
+ 2026 **HEDERA PARA DUMMIES**. CÓDIGO SOLIDITY. VELOCIDAD HASHGRAPH. CERO FRICCIÓN.

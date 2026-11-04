@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: HCS-28 Verifiable AI Agent Audit Trail & Cognitive Provenance
- * [ CONCEPT ] Cryptographic Non-Repudiation for Autonomous Intelligence
+ * [CONCEPT] Cryptographic Non-Repudiation for Autonomous Intelligence
  * ============================================================================
  * [ KEY CONCEPT ]
  * Cognitive Provenance & Liability: As autonomous AI agents execute financial
@@ -25,7 +25,7 @@
  * - Previous: M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  * - Next:     M14 Lab 06: Encrypted AI Agent Swarm Chat (P2P Over HCS)
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit stream on HCS is real.
  *
  * [ BEFORE YOU RUN ]
@@ -95,7 +95,7 @@ const main = async () => {
 
   try {
     // 1. Create HCS-28 Audit Stream Topic
-    console.log('[⚙️ PROCESS] Creating dedicated HCS-28 Cognitive Audit Topic...')
+    console.log('[PROCESS] Creating dedicated HCS-28 Cognitive Audit Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-28:AGENT:COGNITIVE:AUDIT')
@@ -104,10 +104,10 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] HCS-28 Audit Topic Deployed: ${topicId}`)
+    console.log(`[SUCCESS] HCS-28 Audit Topic Deployed: ${topicId}`)
 
     // 2. Synthesize Autonomous Reasoning Cycle for Financial Risk Agent
-    console.log('\n[⚙️ PROCESS] Simulating autonomous reasoning cycle for Agent Atlas...')
+    console.log('\n[PROCESS] Simulating autonomous reasoning cycle for Agent Atlas...')
     const agentWallet = ethers.Wallet.createRandom()
 
     const simulatedPrompt = 'Rebalance Hedera liquidity pool treasury: Swap 10,000 HBAR for USDC if volatility index exceeds 35%.'
@@ -132,16 +132,16 @@ const main = async () => {
       guardrailChecks: simulatedGuardrails
     })
 
-    console.log('[📊 LOG] HCS-28 Cognitive Audit Record Generated:')
-    console.log(`[📊 LOG] Session ID:     ${auditRecord.sessionId} (Cycle #${auditRecord.cycleIndex})`)
-    console.log(`[📊 LOG] Agent Address:  ${auditRecord.agentAddress}`)
-    console.log(`[📊 LOG] Prompt Hash:    ${auditRecord.hashes.prompt}`)
-    console.log(`[📊 LOG] Reasoning Hash: ${auditRecord.hashes.reasoning}`)
-    console.log(`[📊 LOG] Guardrails:     ${auditRecord.guardrails.passed ? 'ALL PASSED (COMPLIANT)' : 'VIOLATION'}`)
-    console.log(`[📊 LOG] Record Hash:    ${auditRecord.recordHash}`)
+    console.log('[LOG] HCS-28 Cognitive Audit Record Generated:')
+    console.log(`[LOG] Session ID:     ${auditRecord.sessionId} (Cycle #${auditRecord.cycleIndex})`)
+    console.log(`[LOG] Agent Address:  ${auditRecord.agentAddress}`)
+    console.log(`[LOG] Prompt Hash:    ${auditRecord.hashes.prompt}`)
+    console.log(`[LOG] Reasoning Hash: ${auditRecord.hashes.reasoning}`)
+    console.log(`[LOG] Guardrails:     ${auditRecord.guardrails.passed ? 'ALL PASSED (COMPLIANT)' : 'VIOLATION'}`)
+    console.log(`[LOG] Record Hash:    ${auditRecord.recordHash}`)
 
     // 3. Commit Audit Record to HCS Consensus
-    console.log('\n[⚙️ PROCESS] Anchoring immutable record to HCS consensus topic...')
+    console.log('\n[PROCESS] Anchoring immutable record to HCS consensus topic...')
     // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -150,12 +150,12 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seq = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ SUCCESS] Audit Record Sealed at Consensus Sequence #${seq}`)
+    console.log(`[SUCCESS] Audit Record Sealed at Consensus Sequence #${seq}`)
 
     // 4. Verification of Agent Non-Repudiation Signature
     const recoveredAgent = ethers.recoverAddress(auditRecord.recordHash, auditRecord.agentSignature)
     const isAuthentic = recoveredAgent.toLowerCase() === agentWallet.address.toLowerCase()
-    console.log(`\n[📊 AUDIT] Agent Non-Repudiation Check: ${isAuthentic ? 'AUTHENTIC (SIGNED BY AGENT)' : 'FORGERY'}`)
+    console.log(`\n[AUDIT] Agent Non-Repudiation Check: ${isAuthentic ? 'AUTHENTIC (SIGNED BY AGENT)' : 'FORGERY'}`)
 
     // Persist state
     updateState('HCS28_TOPIC_ID', topicId)
@@ -163,18 +163,18 @@ const main = async () => {
     updateState('HCS28_RECORD_HASH', auditRecord.recordHash)
     updateState('HCS28_AGENT_ADDRESS', agentWallet.address)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-28 solves the accountability problem in artificial intelligence.')
     console.log('Because the audit record is cryptographically signed and sequenced on Hedera,')
     console.log('no developer or AI agent can alter history to conceal a financial loss or bug.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Enterprise AI governance does not require slowing down autonomous execution;')
     console.log('it requires immutable cryptographic auditability at consensus speed.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-28 Execution Failure:', error.message)
+    console.error('\n[ERROR] HCS-28 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -185,7 +185,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

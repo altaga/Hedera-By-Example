@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Parser de Flujo de Bloques Protobuf e Indexador de Cambios de Estado
- * [ CONCEPTO ] Ingesta Binaria en Streaming de Protobuf desde Nodos de Bloque Hedera 2026
+ * [CONCEPTO] Ingesta Binaria en Streaming de Protobuf desde Nodos de Bloque Hedera 2026
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Bajo HIP-1056, HIP-1081 y la arquitectura de Nodos de Bloque (Block Nodes) de Hedera
@@ -99,12 +99,12 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Paso 1: Compilando Esquema Canónico Protobuf de Flujo de Bloques...')
+    console.log('[PROCESO] Paso 1: Compilando Esquema Canónico Protobuf de Flujo de Bloques...')
     const { Block, BlockHeader, StateChange, TransactionRecordItem } = buildBlockStreamProtobufRoot()
-    console.log('[✅ ÉXITO] Tipos Protobuf Inicializados: BlockHeader, StateChange, TransactionRecordItem, Block')
+    console.log('[ÉXITO] Tipos Protobuf Inicializados: BlockHeader, StateChange, TransactionRecordItem, Block')
 
     // 2. Sintetizar Bloque de Consenso 2026 con Transiciones de Estado
-    console.log('\n[⚙️ PROCESO] Paso 2: Ensamblando Bloque de Consenso Sintético con Mutaciones de Estado...')
+    console.log('\n[PROCESO] Paso 2: Ensamblando Bloque de Consenso Sintético con Mutaciones de Estado...')
     const currentBlockHeight = 48192042
     const prevHash = crypto.createHash('sha384').update('hedera-block-48192041').digest()
     const tssSig = crypto.randomBytes(64) // Firma TSS de 64 bytes
@@ -156,57 +156,57 @@ const main = async () => {
     }
 
     // 3. Serializar a Búfer Binario de Flujo Protobuf
-    console.log('[⚙️ PROCESO] Paso 3: Serializando Bloque a Búfer Binario Protobuf...')
+    console.log('[PROCESO] Paso 3: Serializando Bloque a Búfer Binario Protobuf...')
     const verifiedMessage = Block.create(sampleBlockData)
     const rawProtobufBytes = Block.encode(verifiedMessage).finish()
 
-    console.log('[✅ ÉXITO] ¡Bloque Codificado!')
-    console.log(`[📊 LOG] Tamaño del Payload Binario: ${rawProtobufBytes.length} bytes`)
-    console.log('[📊 LOG] Tasa de Compresión:         ~82% menor que la representación JSON')
-    console.log(`[📊 LOG] Vista Previa Hex Binaria:   ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
+    console.log('[ÉXITO] ¡Bloque Codificado!')
+    console.log(`[LOG] Tamaño del Payload Binario: ${rawProtobufBytes.length} bytes`)
+    console.log('[LOG] Tasa de Compresión:         ~82% menor que la representación JSON')
+    console.log(`[LOG] Vista Previa Hex Binaria:   ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
 
     // 4. Ingesta y Deserialización en Pipeline de Alto Rendimiento
-    console.log('\n[⚙️ PROCESO] Paso 4: Ingesta en Streaming con Deserialización Zero-Copy...')
+    console.log('\n[PROCESO] Paso 4: Ingesta en Streaming con Deserialización Zero-Copy...')
     const decodedBlock = Block.decode(rawProtobufBytes)
 
-    console.log('[✅ ÉXITO] ¡Flujo de Bloque Binario Decodificado en < 1ms!')
-    console.log(`   Altura del Bloque:       #${decodedBlock.header.blockNumber}`)
-    console.log(`   Hash Previo:             ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
-    console.log(`   Transacciones en Bloque: ${decodedBlock.transactions.length}`)
-    console.log(`   Prueba de Firma TSS:     ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
+    console.log('[ÉXITO] ¡Flujo de Bloque Binario Decodificado en < 1ms!')
+    console.log(`Altura del Bloque:       #${decodedBlock.header.blockNumber}`)
+    console.log(`Hash Previo:             ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
+    console.log(`Transacciones en Bloque: ${decodedBlock.transactions.length}`)
+    console.log(`Prueba de Firma TSS:     ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
 
     // 5. Extraer e Indexar Mutaciones de Estado Granulares
-    console.log('\n[⚙️ PROCESO] Paso 5: Aplicando Mutaciones de Estado en Tiempo Real...')
+    console.log('\n[PROCESO] Paso 5: Aplicando Mutaciones de Estado en Tiempo Real...')
     let totalStateMutations = 0
 
     decodedBlock.transactions.forEach((tx, idx) => {
-      console.log(`   Tx [${idx + 1}] ID: ${tx.transactionId} | Estado: ${tx.status} | Comisión: ${tx.feeChargedTinybars} tinybars`)
+      console.log(`Tx [${idx + 1}] ID: ${tx.transactionId} | Estado: ${tx.status} | Comisión: ${tx.feeChargedTinybars} tinybars`)
       tx.stateChanges.forEach(sc => {
         totalStateMutations++
         const prev = sc.previousValue ? Buffer.from(sc.previousValue).toString('utf8') : '0'
         const next = sc.newValue ? Buffer.from(sc.newValue).toString('utf8') : '0'
-        console.log(`      ➔ Mutación de Estado: [${sc.stateKey}] ${prev} ➔ ${next}`)
+        console.log(`➔ Mutación de Estado: [${sc.stateKey}] ${prev} ➔ ${next}`)
       })
     })
 
-    console.log(`\n[✅ ÉXITO] ¡Ingeridas ${totalStateMutations} mutaciones de estado con precisión criptográfica total!`)
+    console.log(`\n[ÉXITO] ¡Ingeridas ${totalStateMutations} mutaciones de estado con precisión criptográfica total!`)
 
     updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', decodedBlock.header.blockNumber.toString())
     updateState('BLOCK_STREAM_STATE_CHANGES_COUNT', totalStateMutations)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Flujos Continuos de Bloques Protobuf: En la arquitectura 2026/2027 de Hedera, los Block Nodes')
     console.log('transmiten feeds binarios de mutaciones de estado en Protobuf. Los indexadores procesan')
     console.log('cambios a velocidad de memoria sin estrangulamiento de consultas ni cuellos de botella de JSON.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Cambios de Estado frente a Archivos de Registro: Al emitir mutaciones explícitas de clave-valor')
     console.log('(StateChanges), los nodos eliminan la necesidad de re-ejecutar smart contracts o transacciones')
     console.log('off-chain para conocer el nuevo saldo de una cuenta o el suministro de un token.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ingesta del Flujo Protobuf:', error.message)
+    console.error('\n[ERROR] Fallo en la Ingesta del Flujo Protobuf:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -217,7 +217,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

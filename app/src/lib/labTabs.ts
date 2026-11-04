@@ -27,7 +27,10 @@ export interface LabWalkthroughSegment {
   doc: string[]
   code?: string
   start?: number
+  /** Single extracted module (legacy); prefer companionModules for strips. */
   companionModule?: ExtractedCompanionModule
+  /** Compact strip of extracted modules shown once in the main walkthrough. */
+  companionModules?: ExtractedCompanionModule[]
 }
 
 export interface LabCodeFile {
@@ -39,6 +42,90 @@ export interface LabCodeFile {
   code: string
   readOnly?: boolean
   segments?: LabWalkthroughSegment[]
+  /** Shared course deps (M99) — keep out of the primary file tab strip. */
+  secondary?: boolean
+}
+
+const nonEmptyLines = (code?: string) =>
+  (code || '').split('\n').filter((l) => l.trim().length > 0).length
+
+const docChars = (doc?: string[]) => (doc || []).join(' ').trim().length
+
+/** Node CLI self-launcher at the bottom of every lab — noise in the walkthrough. */
+export function isCliLauncherSegment (seg: LabWalkthroughSegment): boolean {
+  const code = seg.code || ''
+  return /import\.meta\.filename/.test(code) && /process\.argv\s*\[\s*1\s*\]/.test(code)
+}
+
+/**
+ * Collapse choppy walkthrough rows: adjacent short steps become one block.
+ * Companion module strips are never merged.
+ */
+export function mergeWalkthroughSegments (
+  segments: LabWalkthroughSegment[]
+): LabWalkthroughSegment[] {
+  const out: LabWalkthroughSegment[] = []
+
+  for (const seg of segments) {
+    if (seg.companionModules?.length || seg.companionModule) {
+      out.push(seg)
+      continue
+    }
+    if (isCliLauncherSegment(seg)) continue
+    if (!seg.code?.trim() && !(seg.doc && seg.doc.length)) continue
+
+    const prev = out[out.length - 1]
+    if (!prev || prev.companionModules?.length || prev.companionModule) {
+      out.push({
+        doc: [...(seg.doc || [])],
+        code: seg.code,
+        start: seg.start,
+      })
+      continue
+    }
+
+    const prevLines = nonEmptyLines(prev.code)
+    const curLines = nonEmptyLines(seg.code)
+    const barePrev = !(prev.doc && prev.doc.length)
+    const bareCur = !(seg.doc && seg.doc.length)
+    const bothTiny = prevLines <= 10 && curLines <= 10 && prevLines + curLines <= 28
+    const bothModest =
+      prevLines <= 14 &&
+      curLines <= 14 &&
+      prevLines + curLines <= 36 &&
+      docChars(prev.doc) <= 140 &&
+      docChars(seg.doc) <= 140
+    const absorbBareCode = bareCur && curLines > 0 && prevLines + curLines <= 48
+    const bothBare = barePrev && bareCur
+    const onlyDocIntoCode = curLines === 0 && !!seg.doc?.length && prevLines > 0 && prevLines <= 40
+
+    if ((bothTiny || bothModest || absorbBareCode || bothBare || onlyDocIntoCode) && (prev.code || seg.code || seg.doc?.length)) {
+      if (seg.code?.trim()) {
+        const left = prev.code || ''
+        const right = seg.code || ''
+        const joiner = left && right ? '\n\n' : ''
+        prev.code = `${left}${joiner}${right}`
+      }
+      if (seg.doc?.length) prev.doc = [...(prev.doc || []), ...seg.doc]
+      continue
+    }
+
+    out.push({
+      doc: [...(seg.doc || [])],
+      code: seg.code,
+      start: seg.start,
+    })
+  }
+
+  return out
+}
+
+/** True when a walkthrough row should use the compact stacked layout. */
+export function isCompactWalkSegment (seg: LabWalkthroughSegment): boolean {
+  if (seg.companionModules?.length || seg.companionModule) return false
+  const lines = nonEmptyLines(seg.code)
+  const chars = docChars(seg.doc)
+  return lines <= 16 && chars <= 180
 }
 
 /**
@@ -161,11 +248,12 @@ export function extractCompanionModulesFromCode(source: string, lang: Lang): {
     return { modules: [], mainWithoutModules: source }
   }
 
-  // Replace module regions in reverse order to keep character offsets valid
+  // Replace module regions in reverse order to keep character offsets valid.
+  // Keep a one-line pointer — multi-line banners reintroduce the text wall we just removed.
   let mainWithoutModules = source
   const reverseModules = [...modules].sort((a, b) => b.start - a.start)
   for (const m of reverseModules) {
-    const placeholder = `// ----------------------------------------------------------------------------\n// [Module: ${m.name}.js]\n// ${m.description || 'Definition in companion tab.'}\n// ----------------------------------------------------------------------------`
+    const placeholder = `// → ${m.name}.js (companion tab)`
     mainWithoutModules =
       mainWithoutModules.slice(0, m.start) + placeholder + mainWithoutModules.slice(m.end)
   }
@@ -225,87 +313,92 @@ export function buildLabFileTabs({
   // 1. Extract classes and helper functions
   const { modules, mainWithoutModules } = extractCompanionModulesFromCode(code, lang)
 
-  // 2. Partition walkthrough segments between main and companion modules
+  // 2. Partition walkthrough segments between main and companion modules.
+  // One compact strip lists every extracted module — never one prose card per file.
   const rawSegments = body.segments || []
   const mainSegments: LabWalkthroughSegment[] = []
-  const insertedCallouts = new Set<string>()
+  let stripInserted = false
 
-  for (const seg of rawSegments) {
-    let matchedModule: ExtractedCompanionModule | null = null
+  const ensureModuleStrip = (atLine?: number) => {
+    if (stripInserted || modules.length === 0) return
+    stripInserted = true
+    mainSegments.push({
+      doc: [],
+      start: atLine ?? modules[0].startLine,
+      companionModules: modules,
+    })
+  }
 
+  const matchModule = (segCode: string): ExtractedCompanionModule | null => {
+    const trimmedCode = segCode.trim()
+    if (!trimmedCode) return null
+    const firstLine = trimmedCode.split('\n')[0].trim()
     for (const mod of modules) {
-      const trimmedCode = seg.code ? seg.code.trim() : ''
-      if (!trimmedCode) continue
-      const firstLine = trimmedCode.split('\n')[0].trim()
       if (
         mod.code.includes(trimmedCode) ||
-        (firstLine.length > 5 && mod.code.includes(firstLine))
+        (firstLine.length > 5 && mod.code.includes(firstLine)) ||
+        new RegExp(`(?:class|const|let|var|function)\\s+${mod.name}\\b`).test(firstLine)
       ) {
-        matchedModule = mod
-        break
+        return mod
       }
     }
+    return null
+  }
+
+  for (const seg of rawSegments) {
+    const matchedModule = seg.code ? matchModule(seg.code) : null
 
     if (matchedModule) {
       const mainRegex = /(?:\n|^)(?:const|async\s+function|function)\s+main\b/
       const mainMatch = mainRegex.exec(seg.code || '')
 
       if (mainMatch) {
-        // Straddling segment: cleanly split between module and main to prevent any code bleed
         const modPartCode = seg.code.slice(0, mainMatch.index).trim()
         const mainPartCode = seg.code.slice(mainMatch.index).trim()
 
         if (modPartCode) {
           matchedModule.segments.push({ ...seg, code: modPartCode })
         }
-        if (!insertedCallouts.has(matchedModule.id)) {
-          insertedCallouts.add(matchedModule.id)
-          mainSegments.push({
-            doc: [
-              lang === 'es'
-                ? `**Módulo: ${matchedModule.name}.js**`
-                : `**Module: ${matchedModule.name}.js**`,
-              lang === 'es'
-                ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
-                : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
-            ],
-            code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
-            start: matchedModule.startLine,
-            companionModule: matchedModule,
-          })
-        }
+        ensureModuleStrip(matchedModule.startLine)
         if (mainPartCode) {
           mainSegments.push({
-            doc: lang === 'es' ? ['Flujo principal de ejecución'] : ['Main execution flow'],
+            doc: lang === 'es' ? ['Flujo principal'] : ['Main flow'],
             code: mainPartCode,
             start: seg.start,
           })
         }
       } else {
-        // Add segment to companion module walkthrough
         matchedModule.segments.push(seg)
-
-        // Add a single companion callout row in main walkthrough at the insertion point
-        if (!insertedCallouts.has(matchedModule.id)) {
-          insertedCallouts.add(matchedModule.id)
-          mainSegments.push({
-            doc: [
-              lang === 'es'
-                ? `**Módulo: ${matchedModule.name}.js**`
-                : `**Module: ${matchedModule.name}.js**`,
-              lang === 'es'
-                ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
-                : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
-            ],
-            code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
-            start: matchedModule.startLine,
-            companionModule: matchedModule,
-          })
-        }
+        ensureModuleStrip(matchedModule.startLine)
       }
     } else {
       mainSegments.push(seg)
     }
+  }
+
+  // Catch leftover segments whose bodies still live inside an extracted module
+  for (let i = mainSegments.length - 1; i >= 0; i--) {
+    const seg = mainSegments[i]
+    if (!seg.code || seg.companionModules?.length || seg.companionModule) continue
+    const trimmed = seg.code.trim()
+    if (!trimmed || trimmed.split('\n').length < 2) continue
+    const home = modules.find((mod) => mod.code.includes(trimmed))
+    if (!home) continue
+    home.segments.unshift(seg)
+    mainSegments.splice(i, 1)
+  }
+
+  if (modules.length > 0 && !stripInserted) {
+    const insertAt = mainSegments.findIndex((s) =>
+      /(?:const|async\s+function|function)\s+main\b/.test(s.code || '')
+    )
+    const strip: LabWalkthroughSegment = {
+      doc: [],
+      start: modules[0].startLine,
+      companionModules: modules,
+    }
+    if (insertAt >= 0) mainSegments.splice(insertAt, 0, strip)
+    else mainSegments.unshift(strip)
   }
 
   // 3. Main runner tab
@@ -321,7 +414,7 @@ export function buildLabFileTabs({
         : 'Entry point and transaction execution flow on Hedera',
     code: modules.length > 0 ? mainWithoutModules : code,
     readOnly: false,
-    segments: mainSegments,
+    segments: mergeWalkthroughSegments(mainSegments),
   })
 
   // 4. Extracted companion module tabs
@@ -334,13 +427,14 @@ export function buildLabFileTabs({
       description: m.description,
       code: m.code,
       readOnly: false,
-      segments: m.segments,
+      segments: mergeWalkthroughSegments(m.segments),
     })
   }
 
-  // 5. Auxiliary files (.sol, .csv, .json, .md)
+  // 5. Auxiliary text files (.sol, .csv, .json, .md) — never images (those stay in LabFiles)
   if (Array.isArray(body.files)) {
     for (const f of body.files) {
+      if (/\.(png|jpe?g|gif|webp|svg)$/i.test(f.name)) continue
       const ext = f.name.split('.').pop()?.toLowerCase() || ''
       let kind: LabCodeFile['kind'] = 'asset'
       let badge = ext.toUpperCase()
@@ -380,13 +474,14 @@ export function buildLabFileTabs({
     }
   }
 
-  // 6. M99 Utilities tab if imported
+  // 6. M99 Utilities — secondary "Deps" slot (not a primary file tab)
   if (code.includes('M99_Utilities') || code.includes('../M99_Utilities')) {
     tabs.push({
       id: 'util:m99',
       name: 'M99_Utilities.js',
       kind: 'util',
-      badge: 'UTIL',
+      badge: 'DEPS',
+      secondary: true,
       description:
         lang === 'es'
           ? 'Utilidades de resiliencia, estimación de gas y reuso de contratos/tokens en Testnet'

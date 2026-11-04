@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Decentralized Identity (DID) on HCS
- * [ CONCEPT ] Self-Sovereign Identity Anchoring
+ * [CONCEPT] Self-Sovereign Identity Anchoring
  * ============================================================================
  * [ KEY CONCEPT ]
  * Self-Sovereign Identity: This pattern allows for verifiable,
@@ -42,7 +42,7 @@ const main = async () => {
 
   try {
     // 1. Create a Topic to act as the DID Registry
-    console.log('[⚙️ PROCESS] Creating HCS Topic for DID Document anchoring...')
+    console.log('[PROCESS] Creating HCS Topic for DID Document anchoring...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('DID Registry')
       .freezeWith(client)
@@ -51,7 +51,7 @@ const main = async () => {
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
 
-    console.log(`\n[✅ SUCCESS] DID Registry Topic Created: ${topicId.toString()}`)
+    console.log(`\n[SUCCESS] DID Registry Topic Created: ${topicId.toString()}`)
 
     // 2. Construct a W3C DID Document using @hiero-did-sdk standard
     // We use the Operator Key so Lab 06 can prove ownership during login
@@ -78,11 +78,11 @@ const main = async () => {
       assertionMethod: [keyId]
     }
 
-    console.log('\n[📊 LOG] Generated W3C DID Document (using @hiero-did-sdk format):')
+    console.log('\n[LOG] Generated W3C DID Document (using @hiero-did-sdk format):')
     console.log(JSON.stringify(didDocument, null, 2))
 
     // 3. Anchor the DID Document to HCS
-    console.log('\n[⚙️ PROCESS] Anchoring DID Document to the ledger...')
+    console.log('\n[PROCESS] Anchoring DID Document to the ledger...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(didDocument))
@@ -90,15 +90,15 @@ const main = async () => {
 
     await submitTx.getReceipt(client)
 
-    console.log('\n[✅ SUCCESS] DID Document Anchored Successfully!')
-    console.log(`[📊 LOG] Registry: ${topicId.toString()}`)
-    console.log(`[📊 LOG] DID ID:   ${didDocument.id}`)
+    console.log('\n[SUCCESS] DID Document Anchored Successfully!')
+    console.log(`[LOG] Registry: ${topicId.toString()}`)
+    console.log(`[LOG] DID ID:   ${didDocument.id}`)
 
     // Save for Step 06 (Login Test)
-    console.log('[ℹ️ INFO] Synchronizing state.json with DID Topic ID...')
+    console.log('[INFO] Synchronizing state.json with DID Topic ID...')
     updateState('DID_TOPIC_ID', topicId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Self-Sovereign Identity: This pattern allows for verifiable,')
     console.log('cryptographically secure identity that cannot be revoked by a third')
     console.log('party. Hedera acts as the ultimate, neutral directory of truth.')
@@ -106,7 +106,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] DID Anchoring Failed:', error.message)
+    console.error('\n[FAILED] DID Anchoring Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -115,7 +115,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

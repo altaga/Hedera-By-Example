@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
- * [ CONCEPT ] Composable Tokenized Portfolios & Atomic Basket Settlement
+ * [CONCEPT] Composable Tokenized Portfolios & Atomic Basket Settlement
  * ============================================================================
  * [ KEY CONCEPT ]
  * One of Hedera's landmark institutional tokenization breakthroughs (pioneered
@@ -61,7 +61,7 @@ const main = async () => {
 
   try {
     // 1. Deploy the 3 Underlying Regulated RWA Tokens on HTS
-    console.log('[⚙️ PROCESS] Step 1: Deploying 3 Underlying RWA Constituents on HTS...')
+    console.log('[PROCESS] Step 1: Deploying 3 Underlying RWA Constituents on HTS...')
     const underlyingTokens = []
 
     for (const item of BASKET_WEIGHTS) {
@@ -82,11 +82,11 @@ const main = async () => {
         return (await res.getReceipt(client)).tokenId
       }, { minBalance: item.weight })
       underlyingTokens.push({ ...item, tokenId })
-      console.log(`[✅ RWA LEG] ${item.symbol.padEnd(10)} (${item.name.padEnd(36)}) ➔ Token ID: ${tokenId.toString()}`)
+      console.log(`[ RWA LEG] ${item.symbol.padEnd(10)} (${item.name.padEnd(36)}) ➔ Token ID: ${tokenId.toString()}`)
     }
 
     // 2. Deploy the Composite "Institutional RWA Pool Token" (POOL-RWA)
-    console.log('\n[⚙️ PROCESS] Step 2: Deploying Composite Multi-Asset Pool Token [POOL-RWA]...')
+    console.log('\n[PROCESS] Step 2: Deploying Composite Multi-Asset Pool Token [POOL-RWA]...')
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
     const poolTokenId = await reuseToken('REUSE_M11_06_POOL', async () => {
       const poolTx = await new TokenCreateTransaction()
@@ -102,11 +102,11 @@ const main = async () => {
       const poolRes = await (await poolTx.sign(issuerKey)).execute(client)
       return (await poolRes.getReceipt(client)).tokenId
     }, { minBalance: 1000, check: (t) => t.memo === poolMemo })
-    console.log(`[✅ SUCCESS] Composite Pool Token Created: ${poolTokenId.toString()}`)
-    console.log(`[📊 LOG] On-Chain Basket Composition Memo: ${poolMemo}`)
+    console.log(`[SUCCESS] Composite Pool Token Created: ${poolTokenId.toString()}`)
+    console.log(`[LOG] On-Chain Basket Composition Memo: ${poolMemo}`)
 
     // 3. Provision an Institutional Authorized Participant (AP) & Seed Underlying Assets
-    console.log('\n[⚙️ PROCESS] Step 3: Provisioning Institutional Authorized Participant (AP) Vault...')
+    console.log('\n[PROCESS] Step 3: Provisioning Institutional Authorized Participant (AP) Vault...')
     const apKey = PrivateKey.generateED25519()
     const apRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(apKey.publicKey)
@@ -122,10 +122,10 @@ const main = async () => {
       seedTx.addTokenTransfer(asset.tokenId, apAccountId, asset.weight)
     }
     await (await seedTx.execute(client)).getReceipt(client)
-    console.log(`[🏦 AP VAULT] Account ${apAccountId.toString()} funded with 500 USTB-MMF, 300 CORP-BND, 200 CRE-REIT`)
+    console.log(`[ AP VAULT] Account ${apAccountId.toString()} funded with 500 USTB-MMF, 300 CORP-BND, 200 CRE-REIT`)
 
     // 4. Atomic Basket Creation: AP Deposits 3 RWA Legs & Receives 1,000 POOL-RWA in ONE Transaction!
-    console.log('\n[⚙️ PROCESS] Step 4: Executing Atomic 4-Token Basket Creation (DvP)...')
+    console.log('\n[PROCESS] Step 4: Executing Atomic 4-Token Basket Creation (DvP)...')
     const atomicBasketSwap = new TransferTransaction()
       // Leg 1, 2, 3: AP deposits underlying RWA basket into Pool Treasury
       .addTokenTransfer(underlyingTokens[0].tokenId, apAccountId, -500)
@@ -144,8 +144,8 @@ const main = async () => {
     const signedSwap = await (await atomicBasketSwap.sign(apKey)).sign(issuerKey)
     const swapRes = await signedSwap.execute(client)
     const swapReceipt = await swapRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Atomic Basket Creation Settled! Status: ${swapReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Tx ID: ${swapRes.transactionId.toString()}`)
+    console.log(`[SUCCESS] Atomic Basket Creation Settled! Status: ${swapReceipt.status.toString()}`)
+    console.log(`[LOG] Tx ID: ${swapRes.transactionId.toString()}`)
 
     // 5. Verify AP's Final Pool Token Balance via Mirror Node
     await sleep(3500)
@@ -153,23 +153,23 @@ const main = async () => {
       .setAccountId(apAccountId)
       .setTokenId(poolTokenId)
       .execute(client)
-    console.log(`\n[📊 AUDIT] AP Final Pool Token Balance: ${apPoolBal.balance.toString()} POOL-RWA (Backed 1:1 by 3 RWA Vault Legs)`)
+    console.log(`\n[AUDIT] AP Final Pool Token Balance: ${apPoolBal.balance.toString()} POOL-RWA (Backed 1:1 by 3 RWA Vault Legs)`)
 
     updateState('RWA_POOL_TOKEN_ID', poolTokenId.toString())
     updateState('RWA_AP_ACCOUNT_ID', apAccountId.toString())
     updateState('RWA_POOL_SHARES_MINTED', apPoolBal.balance.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Pool Tokens allow institutions to bundle Money Market Funds, Bonds, and Equities')
     console.log('into a single transferable HTS instrument used as instant collateral for FX and DeFi.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Because Hedera supports multi-token atomic transfers natively at Layer 1,')
     console.log('creating or redeeming a multi-asset ETF basket requires zero escrow smart contracts.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] RWA Pool Token Execution Failure:', error.message)
+    console.error('\n[ERROR] RWA Pool Token Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -180,7 +180,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

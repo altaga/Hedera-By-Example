@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Mirror Node GraphQL Subgraph Indexer
- * [ CONCEPT ] Single-Roundtrip Unified Graph Query Engine over Hedera State
+ * [CONCEPT] Single-Roundtrip Unified Graph Query Engine over Hedera State
  * ============================================================================
  * [ KEY CONCEPT ]
  * In REST APIs, assembling a complete user portfolio requires "over-fetching"
@@ -108,7 +108,7 @@ const main = async () => {
   const indexer = new HederaSubgraphIndexer(mirrorBase)
 
   try {
-    console.log('[⚙️ PROCESS] Step 1: Compiling GraphQL Subgraph schema definition...')
+    console.log('[PROCESS] Step 1: Compiling GraphQL Subgraph schema definition...')
 
     const sampleGraphQLQuery = `
       query GetAccountPortfolio($accountId: ID!) {
@@ -131,21 +131,21 @@ const main = async () => {
     `
     console.log(sampleGraphQLQuery)
 
-    console.log(`[⚙️ PROCESS] Step 2: Executing GraphQL Subgraph resolver for Account: ${operatorId}...`)
+    console.log(`[PROCESS] Step 2: Executing GraphQL Subgraph resolver for Account: ${operatorId}...`)
     const result = await indexer.resolveAccountPortfolio({
       accountId: operatorId.toString(),
       includeTokens: true,
       txLimit: 3
     })
 
-    console.log(`\n[✅ SUCCESS] Unified Subgraph Entity Resolved in ${result.metadata.resolverDurationMs} ms!`)
-    console.log('\n--- 📦 RESOLVED GRAPHQL JSON PAYLOAD ---')
+    console.log(`\n[SUCCESS] Unified Subgraph Entity Resolved in ${result.metadata.resolverDurationMs} ms!`)
+    console.log('\n---  RESOLVED GRAPHQL JSON PAYLOAD ---')
     console.log(JSON.stringify(result.data, null, 2))
 
     updateState('GRAPHQL_LAST_RESOLVER_MS', result.metadata.resolverDurationMs)
     updateState('GRAPHQL_INDEXED_ACCOUNT', operatorId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Eliminating REST Waterfalls: Instead of firing serial HTTP requests from')
     console.log('your UI, the GraphQL Subgraph indexer resolves multi-entity relationships')
     console.log('in parallel, delivering production-grade dashboards with sub-100ms roundtrips.')
@@ -153,7 +153,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] GraphQL Indexer Error: ${error.message}`)
+    console.error(`\n[FAILED] GraphQL Indexer Error: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -164,7 +164,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

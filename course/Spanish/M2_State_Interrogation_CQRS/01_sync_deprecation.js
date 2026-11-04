@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Depreciación de Consultas Sincrónicas
- * [ CONCEPTO ] Arquitectura CQRS (Command Query Responsibility Segregation)
+ * [CONCEPTO] Arquitectura CQRS (Command Query Responsibility Segregation)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Evolución del Protocolo: Hedera ha migrado hacia un patrón CQRS estricto. Los
@@ -40,7 +40,7 @@ import { getClient } from '../M99_Utilities/index.js'
  * Demuestra cómo el SDK bloquea la consulta sincrónica en consenso y redirige al Mirror Node.
  */
 const legacyBalanceQuery = async (client, accountIdStr) => {
-  console.log('\n⚠️  [ℹ️ INFO] Intentando Patrón Legacy: AccountBalanceQuery en Consenso...')
+  console.log('\n  [INFO] Intentando Patrón Legacy: AccountBalanceQuery en Consenso...')
 
   try {
     // La forma antigua: preguntar directo a un nodo de consenso (lento, de pago y en retiro).
@@ -49,8 +49,8 @@ const legacyBalanceQuery = async (client, accountIdStr) => {
     const balance = await query.execute(client)
     return balance.hbars
   } catch (deprecatedError) {
-    console.log(`[✅ CQRS APLICADO] El SDK bloqueó la consulta legacy: "${deprecatedError.message}"`)
-    console.log('[⚙️ PROCESO] Ejecutando reemplazo oficial MirrorNodeAccountBalanceQuery...')
+    console.log(`[ CQRS APLICADO] El SDK bloqueó la consulta legacy: "${deprecatedError.message}"`)
+    console.log('[PROCESO] Ejecutando reemplazo oficial MirrorNodeAccountBalanceQuery...')
     // El reemplazo: el SDK lee el mismo saldo del Mirror Node, gratis.
     const mirrorBalance = await new MirrorNodeAccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountIdStr))
@@ -65,15 +65,15 @@ const main = async () => {
   const { client, operatorId } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESO] Realizando consulta de saldo para ${operatorId}...`)
+    console.log(`[PROCESO] Realizando consulta de saldo para ${operatorId}...`)
     const hbars = await legacyBalanceQuery(client, operatorId)
 
-    console.log(`\n[✅ ÉXITO] Saldo Obtenido: ${hbars.toString()}`)
-    console.log(`[📊 REGISTRO] Saldo: ${hbars.toTinybars().toString()} tinybars`)
+    console.log(`\n[ÉXITO] Saldo Obtenido: ${hbars.toString()}`)
+    console.log(`[REGISTRO] Saldo: ${hbars.toTinybars().toString()} tinybars`)
 
-    console.log('\n[ℹ️ INFO] Siguiente objetivo: Migrar a consultas REST gratuitas.')
+    console.log('\n[INFO] Siguiente objetivo: Migrar a consultas REST gratuitas.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La arquitectura asíncrona permite que los Mirror Nodes sirvan')
     console.log('datos de lectura sin costo, liberando a los nodos de consenso')
     console.log('para procesar miles de transacciones por segundo (TPS).')
@@ -81,7 +81,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La consulta sincrónica falló:', error.message)
+    console.error('\n[FALLO] La consulta sincrónica falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -90,7 +90,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: EIP-7702 Pectra Account Delegation on Hedera JSON-RPC Relay
- * [ CONCEPT ] Temporary Smart Contract Code Execution for Standard EOAs
+ * [CONCEPT] Temporary Smart Contract Code Execution for Standard EOAs
  * ============================================================================
  * [ KEY CONCEPT ]
  * In the Ethereum Pectra hard fork (EIP-7702), standard Externally Owned Accounts
@@ -33,7 +33,7 @@
  * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
  * - Next:     M12 Lab 06: ERC-4337 Paymaster & Gasless UserOperations
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The EIP-7702 batch execution is simulated (status SIMULATED_CONFIRMED); the relay does not run Type 4 transactions here.
  *
  * [ BEFORE YOU RUN ]
@@ -113,16 +113,16 @@ const main = async () => {
     const delegationEngine = new Eip7702DelegationEngine(296) // Hedera Testnet
 
     // 1. Generate Delegating EOA and Implementation Contract Address
-    console.log('[⚙️ PROCESS] Step 1: Generating EOA Delegator & Batch Implementation Address...')
+    console.log('[PROCESS] Step 1: Generating EOA Delegator & Batch Implementation Address...')
     const delegatorWallet = ethers.Wallet.createRandom()
     const batchContractAddress = '0x0000000000000000000000000000000000abacba' // Batch executor contract address
 
-    console.log(`[📊 LOG] Delegator EOA Address:      ${delegatorWallet.address}`)
-    console.log(`[📊 LOG] Target Delegation Contract: ${batchContractAddress}`)
-    console.log('[📊 LOG] Target Network:             Hedera Testnet (Chain ID 296)')
+    console.log(`[LOG] Delegator EOA Address:      ${delegatorWallet.address}`)
+    console.log(`[LOG] Target Delegation Contract: ${batchContractAddress}`)
+    console.log('[LOG] Target Network:             Hedera Testnet (Chain ID 296)')
 
     // 2. Construct and Sign EIP-7702 Authorization Payload
-    console.log('\n[⚙️ PROCESS] Step 2: Constructing EIP-7702 Authorization Tuple...')
+    console.log('\n[PROCESS] Step 2: Constructing EIP-7702 Authorization Tuple...')
     const nonce = 0
     const authorization = await delegationEngine.signAuthorization(
       delegatorWallet,
@@ -130,50 +130,50 @@ const main = async () => {
       nonce
     )
 
-    console.log('[✅ SUCCESS] EIP-7702 Authorization Signed:')
-    console.log(`   Chain ID:    ${authorization.chainId}`)
-    console.log(`   Contract:    ${authorization.contractAddress}`)
-    console.log(`   Nonce:       ${authorization.nonce}`)
-    console.log(`   yParity:     ${authorization.yParity}`)
-    console.log(`   r:           ${authorization.r.substring(0, 18)}...`)
-    console.log(`   s:           ${authorization.s.substring(0, 18)}...`)
-    console.log(`   Auth Digest: ${authorization.authHash}`)
+    console.log('[SUCCESS] EIP-7702 Authorization Signed:')
+    console.log(`Chain ID:    ${authorization.chainId}`)
+    console.log(`Contract:    ${authorization.contractAddress}`)
+    console.log(`Nonce:       ${authorization.nonce}`)
+    console.log(`yParity:     ${authorization.yParity}`)
+    console.log(`r:           ${authorization.r.substring(0, 18)}...`)
+    console.log(`s:           ${authorization.s.substring(0, 18)}...`)
+    console.log(`Auth Digest: ${authorization.authHash}`)
 
     // 3. Cryptographic Signature Verification
-    console.log('\n[⚙️ PROCESS] Step 3: Verifying Cryptographic Recovery via Hedera JSON-RPC Relay Engine...')
+    console.log('\n[PROCESS] Step 3: Verifying Cryptographic Recovery via Hedera JSON-RPC Relay Engine...')
     const recovered = delegationEngine.verifyAuthorization(authorization)
 
     if (recovered.toLowerCase() !== delegatorWallet.address.toLowerCase()) {
       throw new Error(`Signature mismatch! Recovered: ${recovered}, Expected: ${delegatorWallet.address}`)
     }
-    console.log(`[✅ SUCCESS] Cryptographic Proof Validated! Recovered EOA: ${recovered}`)
+    console.log(`[SUCCESS] Cryptographic Proof Validated! Recovered EOA: ${recovered}`)
 
     // 4. Simulate Type 4 (0x04) Batch Execution
-    console.log('\n[⚙️ PROCESS] Step 4: Simulating EIP-7702 Type 4 Atomic Multi-Call Batch...')
+    console.log('\n[PROCESS] Step 4: Simulating EIP-7702 Type 4 Atomic Multi-Call Batch...')
     const multiCallBatch = [
       { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0' }, // Token approval
       { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0' } // Atomic swap
     ]
 
-    console.log('   [Action 1] HTS Token Approval via Facade (Gasless)')
-    console.log('   [Action 2] Atomic Liquidity Settlement (Gasless)')
-    console.log('[✅ SUCCESS] Batch executed atomically within EOA context! Status: SIMULATED_CONFIRMED')
+    console.log('[Action 1] HTS Token Approval via Facade (Gasless)')
+    console.log('[Action 2] Atomic Liquidity Settlement (Gasless)')
+    console.log('[SUCCESS] Batch executed atomically within EOA context! Status: SIMULATED_CONFIRMED')
 
     updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)
     updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero Contract Deployment Cost: Traditional smart accounts require deploying a proxy')
     console.log('contract on-chain. With EIP-7702, existing Hedera EOAs gain smart contract superpowers')
     console.log('ephemerally or for designated sessions with ZERO deployment gas overhead.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Hedera JSON-RPC Relay seamlessly supports EIP-7702 transactions, allowing full compatibility')
     console.log('with modern Ethereum wallet standards (Viem, Wagmi, RainbowKit) on top of Hedera.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] EIP-7702 Execution Failure:', error.message)
+    console.error('\n[ERROR] EIP-7702 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -184,7 +184,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

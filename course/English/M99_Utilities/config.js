@@ -62,7 +62,7 @@ export const getClient = () => {
   const network = process.env.NETWORK || 'testnet'
 
   if (!operatorId || !operatorKey) {
-    console.error('❌ ERROR: Missing credentials (OPERATOR_ID or OPERATOR_PRIVATE_KEY) in .env file.')
+    console.error('ERROR: Missing credentials (OPERATOR_ID or OPERATOR_PRIVATE_KEY) in .env file.')
     process.exit(1)
   }
 

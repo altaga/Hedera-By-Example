@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: The Hybrid Execution Environment (Standard SDK + Ethers.js)
- * [ CONCEPT ] Dual-Path Consensus & RPC Interop
+ * [CONCEPT] Dual-Path Consensus & RPC Interop
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Best of Both Worlds: Hedera is unique because it offers two ways to speak
@@ -50,7 +50,7 @@ const ABI = [
  * PATH 1: Native Hedera SDK Execution
  */
 const executeContractNatively = async (client, contractId, value) => {
-  console.log(`[⚙️ PROCESS] Path 1: Executing set(${value}) via Native Hedera SDK (gRPC)...`)
+  console.log(`[PROCESS] Path 1: Executing set(${value}) via Native Hedera SDK (gRPC)...`)
 
   const txResponse = await executeWithGas((gas) => new ContractExecuteTransaction()
     .setContractId(contractId)
@@ -58,7 +58,7 @@ const executeContractNatively = async (client, contractId, value) => {
     .setFunction('set', new ContractFunctionParameters().addUint256(value)), client, { gas: 2000000 })
 
   const receipt = await txResponse.getReceipt(client)
-  console.log(`[✅ SUCCESS] Native Call Successful (Status: ${receipt.status.toString()})`)
+  console.log(`[SUCCESS] Native Call Successful (Status: ${receipt.status.toString()})`)
   return receipt.status.toString()
 }
 
@@ -66,7 +66,7 @@ const executeContractNatively = async (client, contractId, value) => {
  * PATH 2: Web3 Ethers.js Execution
  */
 const executeContractWithEthers = async (evmAddress, privateKey, value) => {
-  console.log(`[⚙️ PROCESS] Path 2: Executing set(${value}) via Ethers.js (JSON-RPC)...`)
+  console.log(`[PROCESS] Path 2: Executing set(${value}) via Ethers.js (JSON-RPC)...`)
 
   // Connect to the Hashio JSON-RPC Relay
   const provider = new ethers.JsonRpcProvider('https://testnet.hashio.io/api')
@@ -80,10 +80,10 @@ const executeContractWithEthers = async (evmAddress, privateKey, value) => {
   // EIP-1559 fees from fee history, which the relay does not always report on the same scale.
   const gasPrice = BigInt(await provider.send('eth_gasPrice', []))
   const tx = await contract.set(value, { gasPrice })
-  console.log(`[📊 LOG] Ethers Transaction Hash: ${tx.hash}`)
+  console.log(`[LOG] Ethers Transaction Hash: ${tx.hash}`)
 
   const receipt = await tx.wait()
-  console.log(`[✅ SUCCESS] Ethers Call Successful (Status: ${receipt.status === 1 ? 'SUCCESS' : 'FAILED'})`)
+  console.log(`[SUCCESS] Ethers Call Successful (Status: ${receipt.status === 1 ? 'SUCCESS' : 'FAILED'})`)
   return receipt.status
 }
 
@@ -94,7 +94,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
+    console.error('[FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
     process.exitCode = 1
     return
   }
@@ -105,7 +105,7 @@ const main = async () => {
     // Step A: Get the EVM Address for Ethers
     const info = await new ContractInfoQuery().setContractId(contractId).execute(client)
     const evmAddress = `0x${info.contractAccountId}`
-    console.log(`[ℹ️ INFO] Target EVM Address: ${evmAddress}`)
+    console.log(`[INFO] Target EVM Address: ${evmAddress}`)
 
     // PATH 1: Native SDK
     await executeContractNatively(client, contractId, 111)
@@ -118,15 +118,15 @@ const main = async () => {
     await executeContractWithEthers(evmAddress, rawEthersKey, 222)
 
     // FINAL VERIFICATION: Query the state
-    console.log('\n[⚙️ PROCESS] Performing Cross-Path State Audit...')
+    console.log('\n[PROCESS] Performing Cross-Path State Audit...')
     const provider = new ethers.JsonRpcProvider('https://testnet.hashio.io/api')
     const contractInfo = new ethers.Contract(evmAddress, ABI, provider)
     const finalValue = await contractInfo.get()
 
-    console.log(`\n🎉 [✅ SUCCESS] Final Integrated State: ${finalValue}`)
-    console.log('[ℹ️ INFO] Proof of Hybrid Interoperability: SUCCESS.')
+    console.log(`\n [SUCCESS] Final Integrated State: ${finalValue}`)
+    console.log('[INFO] Proof of Hybrid Interoperability: SUCCESS.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Best of Both Worlds: Use the Native SDK for high-performance')
     console.log('service orchestration and security. Use Ethers.js for frontend')
     console.log('integration and interacting with standard DeFi protocols. This script')
@@ -135,7 +135,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Hybrid Verification Failed:', error.message)
+    console.error('\n[FAILED] Hybrid Verification Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -144,7 +144,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

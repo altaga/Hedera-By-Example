@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Tokens de Seguridad ERC-1400 y Cronogramas de Cupones de Bonos
- * [ CONCEPTO ] Partición por Tramos y Servicio Automatizado de Deuda
+ * [CONCEPTO] Partición por Tramos y Servicio Automatizado de Deuda
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Instrumentos de Deuda Programables: Los bonos corporativos y municipales han sufrido
@@ -22,7 +22,7 @@
  * - Actual:   M11 Lab 02: Bonos de Deuda ERC-1400
  * - Siguiente: M11 Lab 03: Roles en Stablecoin Studio
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Los periodos de cupón se simulan en lugar de esperar fechas reales. Los tokens y pagos son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -69,11 +69,11 @@ const main = async () => {
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESO] Inicializando Estructura de Bonos para: ${BOND_SPECIFICATION.issuer}`)
-    console.log(`[📊 REGISTRO] ISIN: ${BOND_SPECIFICATION.isin} | Vencimiento: ${BOND_SPECIFICATION.maturityYears} Años`)
+    console.log(`[PROCESO] Inicializando Estructura de Bonos para: ${BOND_SPECIFICATION.issuer}`)
+    console.log(`[REGISTRO] ISIN: ${BOND_SPECIFICATION.isin} | Vencimiento: ${BOND_SPECIFICATION.maturityYears} Años`)
 
     // 1. Emitir el Token de Seguridad en HTS representando la Serie de Bonos
-    console.log('\n[⚙️ PROCESO] Desplegando token de bonos compatible con ERC-1400 en HTS...')
+    console.log('\n[PROCESO] Desplegando token de bonos compatible con ERC-1400 en HTS...')
     const bondTokenId = (await reuseToken('REUSE_M11_02_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const bondCreateTx = await new TokenCreateTransaction()
@@ -94,12 +94,12 @@ const main = async () => {
       return (await (await bondCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ ÉXITO] Token de Bonos Corporativos Desplegado: ${bondTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
+    console.log(`[ÉXITO] Token de Bonos Corporativos Desplegado: ${bondTokenId}`)
+    console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
 
     // 2. Simular Cronograma de Pago Trimestral de Cupones
     console.log('\n===============================================================')
-    console.log('📅 EJECUTANDO DISTRIBUCIÓN TRIMESTRAL DE CUPONES (AUTOMATIZADO)')
+    console.log('EJECUTANDO DISTRIBUCIÓN TRIMESTRAL DE CUPONES (AUTOMATIZADO)')
     console.log('===============================================================')
 
     BOND_SPECIFICATION.partitions.forEach((tranche) => {
@@ -114,7 +114,7 @@ const main = async () => {
     })
 
     // 3. Ejecutar Liquidación On-Chain de Cupones
-    console.log('\n[⚙️ PROCESO] Ejecutando distribución atómica on-chain de cupones...')
+    console.log('\n[PROCESO] Ejecutando distribución atómica on-chain de cupones...')
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const couponDistributionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-1.0)) // Distribución de rendimiento de cupones
@@ -126,22 +126,22 @@ const main = async () => {
     const couponReceipt = await couponResponse.getReceipt(client)
     const couponHashscanUrl = getHashscanUrl(couponResponse)
 
-    console.log('\n[✅ ÉXITO] Distribución de Cupones Liquidada On-Chain:')
-    console.log(`[📊 REGISTRO] Estado:            ${couponReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${couponResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan:        ${couponHashscanUrl}`)
+    console.log('\n[ÉXITO] Distribución de Cupones Liquidada On-Chain:')
+    console.log(`[REGISTRO] Estado:            ${couponReceipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${couponResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] HashScan:        ${couponHashscanUrl}`)
 
     updateState('BOND_TOKEN_ID', bondTokenId)
     updateState('BOND_COUPON_TX_ID', couponResponse.transactionId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('ERC-1400 reemplaza los equipos manuales de servicio de bonos con liquidación')
     console.log('programática. Cupones, vencimientos y tramos de votación son gobernados por el')
     console.log('ledger, eliminando intermediarios y reduciendo costos de administración en más del 80%.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la emisión del bono ERC-1400:', error.message)
+    console.error('\n[FALLO] Fallo en la emisión del bono ERC-1400:', error.message)
     process.exit(1)
   }
 }
@@ -150,7 +150,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

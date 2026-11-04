@@ -22,7 +22,7 @@ const main = async () => {
   const receiverId = process.env.ACCOUNT_1_ID
 
   if (!senderId || !senderKeyStr || !receiverId) {
-    console.error('❌ Missing senderID or senderKeyStr in .env')
+    console.error('Missing senderID or senderKeyStr in .env')
     process.exit(1)
   }
 
@@ -43,10 +43,10 @@ const main = async () => {
     const response = await transaction.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`✅ Success! Transfer Status: ${receipt.status.toString()}`)
+    console.log(`Success! Transfer Status: ${receipt.status.toString()}`)
     client.close()
   } catch (error) {
-    console.error('\n❌ Transfer Failed:', error.message)
+    console.error('\n Transfer Failed:', error.message)
     process.exit(1)
   }
 }

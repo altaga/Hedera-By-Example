@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Hedera Block Streams & Aggregated TSS Verification (HIP-1056)
- * [ CONCEPT ] Unified Block Ingestion with Cryptographic Threshold Proofs
+ * [CONCEPT] Unified Block Ingestion with Cryptographic Threshold Proofs
  * ============================================================================
  * [ KEY CONCEPT ]
  * Unified Block Stream: Hedera historically streamed raw record files (.rcd)
@@ -25,7 +25,7 @@
  * - Previous: M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
  * - Next:     M13 Lab 04: Block Node Discovery & Data Lake (HIP-1081 / HIP-1137)
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The TSS quorum verification is simulated (HIP-1056 is not live yet).
  *
  * [ BEFORE YOU RUN ]
@@ -147,18 +147,18 @@ const main = async () => {
   const { network } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESS] Ingesting LIVE latest block from Hedera ${network} Mirror Node...`)
+    console.log(`[PROCESS] Ingesting LIVE latest block from Hedera ${network} Mirror Node...`)
     const { block: liveBlock, transactions: liveTxs } = await fetchLatestBlockAndTxs(network)
 
-    console.log('[✅ SUCCESS] Live Block Stream Frame Ingested:')
-    console.log(`[📊 LOG] Block Number:       #${liveBlock.number}`)
-    console.log(`[📊 LOG] Consensus Window:   ${liveBlock.timestamp.from} -> ${liveBlock.timestamp.to}`)
-    console.log(`[📊 LOG] Block Record Count: ${liveBlock.count} (Sampled ${liveTxs.length} live tx hashes)`)
-    console.log(`[📊 LOG] Previous Hash:      ${liveBlock.previous_hash.slice(0, 32)}...`)
-    console.log(`[📊 LOG] Official Hash:      ${liveBlock.hash.slice(0, 32)}...`)
+    console.log('[SUCCESS] Live Block Stream Frame Ingested:')
+    console.log(`[LOG] Block Number:       #${liveBlock.number}`)
+    console.log(`[LOG] Consensus Window:   ${liveBlock.timestamp.from} -> ${liveBlock.timestamp.to}`)
+    console.log(`[LOG] Block Record Count: ${liveBlock.count} (Sampled ${liveTxs.length} live tx hashes)`)
+    console.log(`[LOG] Previous Hash:      ${liveBlock.previous_hash.slice(0, 32)}...`)
+    console.log(`[LOG] Official Hash:      ${liveBlock.hash.slice(0, 32)}...`)
 
     // 2. Compute Merkle Root over live transactions & construct HIP-1056 Block Header
-    console.log('\n[⚙️ PROCESS] Computing Merkle Root over live block transactions & reconstructing header...')
+    console.log('\n[PROCESS] Computing Merkle Root over live block transactions & reconstructing header...')
     const txMerkleRoot = computeTransactionsMerkleRoot(liveTxs, liveBlock.hash)
     show.merkle({ title: 'Merkle tree over the block transactions', leafCount: Math.max(liveTxs.length, 1), root: txMerkleRoot })
     const blockHeader = {
@@ -171,11 +171,11 @@ const main = async () => {
     }
 
     const calculatedHash = calculateBlockHash(blockHeader)
-    console.log(`[📊 LOG] Transactions Merkle Root: ${txMerkleRoot}`)
-    console.log(`[📊 LOG] Canonical Header Digest:  ${calculatedHash.slice(0, 48)}...`)
+    console.log(`[LOG] Transactions Merkle Root: ${txMerkleRoot}`)
+    console.log(`[LOG] Canonical Header Digest:  ${calculatedHash.slice(0, 48)}...`)
 
     // 3. [ARCHITECTURAL SIMULATION] Assemble and verify TSS consensus quorum
-    console.log('\n[⚙️ PROCESS] [ARCHITECTURAL SIMULATION] Verifying HIP-1056 TSS Consensus Quorum...')
+    console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Verifying HIP-1056 TSS Consensus Quorum...')
 
     const councilPrivateKeys = [
       '0x1111111111111111111111111111111111111111111111111111111111111111',
@@ -204,27 +204,27 @@ const main = async () => {
       throw new Error('TSS Block Quorum failed to achieve 2/3 consensus threshold!')
     }
 
-    console.log('[✅ SUCCESS] TSS Cryptographic Quorum Verified Against Council Roster!')
-    console.log(`[📊 LOG] Signers Verified:  ${signatures.length}/${tssProof.totalStakeUnits} validators`)
-    console.log(`[📊 LOG] Stake Consensus:   ${(signatures.length / tssProof.totalStakeUnits * 100).toFixed(1)}% (Threshold: 66.7%)`)
+    console.log('[SUCCESS] TSS Cryptographic Quorum Verified Against Council Roster!')
+    console.log(`[LOG] Signers Verified:  ${signatures.length}/${tssProof.totalStakeUnits} validators`)
+    console.log(`[LOG] Stake Consensus:   ${(signatures.length / tssProof.totalStakeUnits * 100).toFixed(1)}% (Threshold: 66.7%)`)
 
     // Persist state
     updateState('BLOCK_STREAM_NUMBER', liveBlock.number)
     updateState('BLOCK_STREAM_HASH', liveBlock.hash)
     updateState('BLOCK_STREAM_TX_COUNT', liveBlock.count)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Under HIP-1056, Block Streams eliminate the fragmentation of legacy record files.')
     console.log('Every block is a cryptographically complete unit verified by a succinct TSS')
     console.log('proof, enabling trustless light clients, zk-rollups, and EVM fast-sync.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Threshold signature aggregation reduces verification complexity from O(N) to O(1),')
     console.log('making it practical to audit Hedera finality on resource-constrained devices.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Block Stream Verification Failure:', error.message)
+    console.error('\n[ERROR] Block Stream Verification Failure:', error.message)
     process.exit(1)
   }
 }
@@ -233,7 +233,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

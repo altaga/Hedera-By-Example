@@ -57,6 +57,8 @@ export default function HederaByExample () {
   const searchRef = useRef<HTMLInputElement | null>(null)
   // Each run gets an id; output from a run that belongs to a lab we left is ignored.
   const runIdRef = useRef(0)
+  // Where Resources was opened from — second click toggles back.
+  const resourcesReturnRef = useRef<Route>({ view: 'index' })
   const t = STRINGS[lang]
 
   // Restore preferences, route and wallet after the static HTML hydrates.
@@ -194,7 +196,13 @@ export default function HederaByExample () {
         onLang={(l) => savePrefs({ lang: l })}
         onTheme={() => savePrefs({ theme: theme === 'dark' ? 'light' : 'dark' })}
         onAccount={() => setAccountOpen(true)}
-        onResources={() => go({ view: 'resources' })}
+        onResources={() => {
+          if (route.view === 'resources') go(resourcesReturnRef.current)
+          else {
+            resourcesReturnRef.current = route
+            go({ view: 'resources' })
+          }
+        }}
         isResources={route.view === 'resources'}
       />
 

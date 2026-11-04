@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 10: Secure A2A Communication with Active Attack
- * [ CONCEPT ] Resiliency under Adversarial Conditions
+ * [CONCEPT] Resiliency under Adversarial Conditions
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Hardened Network: In Lab 08, the adversary successfully hijacked the
@@ -22,7 +22,7 @@
  * - Previous: M9 Lab 09: HCS-10 A2A Secure
  * - Next:     M9 Lab 11: HCS-10 A2A Encrypted
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent A -> Agent B Inbox: Signed message
  * Attacker -> Agent B Inbox: Forged message (wrong key)
  * Note Agent B: Signature check rejects the forgery
@@ -66,7 +66,7 @@ const main = async () => {
   if (!sessionPrivStr) {
     sessionPrivStr = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivStr)
-    console.log('[ℹ️ INFO] Generated a new ECDSA session key for Agent A ↔ Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
+    console.log('[INFO] Generated a new ECDSA session key for Agent A  Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
   const sessionPub = sessionPriv.publicKey
@@ -77,7 +77,7 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     let lastProcessedRound = 0
-    console.log(`🛡️  [ℹ️ INFO] Agent B IDS active: Listening on ${inbox}`)
+    console.log(`[INFO] Agent B IDS active: Listening on ${inbox}`)
 
     new TopicMessageQuery()
       .setTopicId(inbox)
@@ -89,7 +89,7 @@ const main = async () => {
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
           if (data?.verified_payload) {
-            console.log('\n--- 🛡️  [ℹ️ INFO] INTRUSION DETECTION SYSTEM (IDS) TRACE ---')
+            console.log('\n---   [INFO] INTRUSION DETECTION SYSTEM (IDS) TRACE ---')
             const payload = JSON.parse(data.verified_payload)
 
             // STAGE 1: CRYPTOGRAPHIC INTEGRITY
@@ -99,28 +99,28 @@ const main = async () => {
             )
 
             if (!isAuthentic) {
-              console.log('[✅ SUCCESS] Signature: ❌ INVALID')
-              console.log('[ℹ️ INFO] FORGERY DETECTED. Packet from adversarial actor dropped.')
+              console.log('[SUCCESS] Signature:  INVALID')
+              console.log('[INFO] FORGERY DETECTED. Packet from adversarial actor dropped.')
               return
             }
-            console.log('[✅ SUCCESS] Signature: ✅ VERIFIED')
+            console.log('[SUCCESS] Signature:  VERIFIED')
 
             // STAGE 2: SEQUENCE/NONCE FRESHNESS
             if (payload.round <= lastProcessedRound) {
-              console.log(`[✅ SUCCESS] Sequence: ❌ STALE (Round ${payload.round} <= ${lastProcessedRound})`)
-              console.log('[ℹ️ INFO] REPLAY ATTACK REJECTED. Packet dropped.')
+              console.log(`[SUCCESS] Sequence:  STALE (Round ${payload.round} <= ${lastProcessedRound})`)
+              console.log('[INFO] REPLAY ATTACK REJECTED. Packet dropped.')
               return
             }
-            console.log(`[✅ SUCCESS] Sequence: ✅ FRESH (Round ${payload.round})`)
+            console.log(`[SUCCESS] Sequence:  FRESH (Round ${payload.round})`)
 
             // EXECUTION
-            console.log(`[📊 LOG] Result: Trusted Packet. Responding to "${payload.text}"...`)
+            console.log(`[LOG] Result: Trusted Packet. Responding to "${payload.text}"...`)
             lastProcessedRound = payload.round
 
             await sleep(5000)
             await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentA_Id })
           }
-        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
+        } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
       })
   }
 
@@ -130,10 +130,10 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
-    console.log(`🤖 [ℹ️ INFO] Agent A Monitoring Outbox [${outbox}]`)
+    console.log(`[INFO] Agent A Monitoring Outbox [${outbox}]`)
 
     const sendPing = async (round) => {
-      console.log('\n--- 🤖 [⚙️ PROCESS] AGENT A: DISPATCHING SECURE COMMAND ---')
+      console.log('\n---  [PROCESS] AGENT A: DISPATCHING SECURE COMMAND ---')
       const payloadObj = { text: `Hello ${round}`, round, ts: Date.now() }
       const payloadString = JSON.stringify(payloadObj)
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
@@ -143,7 +143,7 @@ const main = async () => {
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })
-      console.log(`[✅ SUCCESS] Secure message published for Round ${round}.`)
+      console.log(`[SUCCESS] Secure message published for Round ${round}.`)
     }
 
     new TopicMessageQuery()
@@ -151,14 +151,14 @@ const main = async () => {
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
-          console.log(`\n[📊 LOG] 📥 AGENT A Received response for Round ${currentRound}.`)
+          console.log(`\n[LOG]  AGENT A Received response for Round ${currentRound}.`)
           if (currentRound < 3) {
             currentRound++
             await sleep(5000)
             await sendPing(currentRound)
           } else {
-            console.log('\n🏁 [✅ SUCCESS] Sequence complete. All security parameters maintained.')
-            console.log('\n💡 KEY CONCEPT:')
+            console.log('\n [SUCCESS] Sequence complete. All security parameters maintained.')
+            console.log('\n KEY CONCEPT:')
             console.log('The Hardened Network: In this lab, we successfully defeated the attack.')
             console.log('By layering cryptographic session validation, we protected the conversation')
             console.log('from malicious actors, even on a public, permissionless ledger topic.')
@@ -180,14 +180,14 @@ const main = async () => {
       const isForgery = Math.random() > 0.5
 
       if (isForgery) {
-        console.log('\n--- 😈 [⚙️ PROCESS] ADVERSARY: ATTEMPTING FORGERY ---')
+        console.log('\n---  [PROCESS] ADVERSARY: ATTEMPTING FORGERY ---')
         await hcs10.sendMessage(inbox, {
           operator_id: agentA_Id,
           verified_payload: JSON.stringify({ text: 'Malicious Command', round: 99 }),
           session_proof: 'c0de'.repeat(32)
         })
       } else {
-        console.log('\n--- 😈 [⚙️ PROCESS] ADVERSARY: ATTEMPTING REPLAY ATTACK ---')
+        console.log('\n---  [PROCESS] ADVERSARY: ATTEMPTING REPLAY ATTACK ---')
         const replay = JSON.stringify({ text: 'Hello 1', round: 1, ts: 1713723000 })
         const sig = sessionPriv.sign(Buffer.from(replay, 'utf8'))
         await hcs10.sendMessage(inbox, { verified_payload: replay, session_proof: Buffer.from(sig).toString('hex') })
@@ -204,7 +204,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -312,7 +312,6 @@ export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean;
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     endpoints.push('http://localhost:3005/api/welcome-drop')
   }
-  endpoints.push('https://hfd-wallet.vercel.app/api/welcome-drop')
 
   let lastError = 'Failed to claim welcome drop'
   for (const endpoint of endpoints) {

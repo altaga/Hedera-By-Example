@@ -35,7 +35,7 @@ if (!OPERATOR_KEY) {
   process.exit(1);
 }
 
-const POOL_SIZE = parseInt(process.env.FAUCET_POOL_SIZE || '100', 10);
+const POOL_SIZE = parseInt(process.env.FAUCET_POOL_SIZE || '25', 10);
 const TARGET_HBAR = parseFloat(process.env.TARGET_HBAR_PER_WALLET || '100');
 const MAX_RETRIES = 3;
 

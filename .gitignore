@@ -38,3 +38,4 @@ state.json.*.tmp
 faucet/data/
 faucet/logs/
 faucet/faucet-accounts.json
+faucet/.local-backups/

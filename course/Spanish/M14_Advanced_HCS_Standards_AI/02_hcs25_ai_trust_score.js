@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Puntuación de Confianza de IA HCS-25 y Metodología de Atestación
- * [ CONCEPTO ] Vector de Reputación Descentralizado para Agentes Autónomos
+ * [CONCEPTO] Vector de Reputación Descentralizado para Agentes Autónomos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Reputación Portable de IA: A medida que los agentes autónomos administran capital,
@@ -105,14 +105,14 @@ const main = async () => {
 
   try {
     // 1. Crear Tópico de Registro HCS-25
-    console.log('[⚙️ PROCESO] Inicializando Tópico de Registro de Reputación HCS-25...')
+    console.log('[PROCESO] Inicializando Tópico de Registro de Reputación HCS-25...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-25:AI:TRUST:REGISTRY')
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico de Registro HCS-25 Creado: ${topicId}`)
+    console.log(`[ÉXITO] Tópico de Registro HCS-25 Creado: ${topicId}`)
 
     // 2. Definir Agente Autónomo y Métricas de Rendimiento
     const targetAgentId = '0.0.8707881'
@@ -122,10 +122,10 @@ const main = async () => {
       humanFeedbackScore: 0.940 // 94.0% satisfacción en retroalimentación humana
     }
 
-    console.log(`\n[⚙️ PROCESO] Evaluando métricas para el Agente Objetivo (${targetAgentId}):`)
-    console.log(`[📊 REGISTRO] Ratio de Disponibilidad:   ${(agentMetrics.uptimeRatio * 100).toFixed(2)}%`)
-    console.log(`[📊 REGISTRO] Precisión de Consenso:    ${(agentMetrics.consensusAccuracy * 100).toFixed(2)}%`)
-    console.log(`[📊 REGISTRO] Calificación Humana:     ${(agentMetrics.humanFeedbackScore * 100).toFixed(2)}%`)
+    console.log(`\n[PROCESO] Evaluando métricas para el Agente Objetivo (${targetAgentId}):`)
+    console.log(`[REGISTRO] Ratio de Disponibilidad:   ${(agentMetrics.uptimeRatio * 100).toFixed(2)}%`)
+    console.log(`[REGISTRO] Precisión de Consenso:    ${(agentMetrics.consensusAccuracy * 100).toFixed(2)}%`)
+    console.log(`[REGISTRO] Calificación Humana:     ${(agentMetrics.humanFeedbackScore * 100).toFixed(2)}%`)
 
     // 3. Quórum de Evaluadores Firma la Atestación
     const evaluators = [
@@ -133,7 +133,7 @@ const main = async () => {
       { evaluatorId: 'auditor-hashgraph-dao', privateKey: '0x2222222222222222222222222222222222222222222222222222222222222222' }
     ]
 
-    console.log('\n[⚙️ PROCESO] Compilando documento de atestación multi-firma HCS-25...')
+    console.log('\n[PROCESO] Compilando documento de atestación multi-firma HCS-25...')
     const attestation = createHCS25Attestation({
       agentAccountId: targetAgentId,
       epochNumber: 42,
@@ -141,13 +141,13 @@ const main = async () => {
       evaluators
     })
 
-    console.log(`[✅ ÉXITO] Puntuación Compuesta Calculada: ${attestation.compositeScore} / 100`)
-    console.log(`[📊 REGISTRO] Nivel de Confianza:    ${attestation.trustTier}`)
-    console.log(`[📊 REGISTRO] Hash del Documento:    ${attestation.documentHash}`)
-    console.log(`[📊 REGISTRO] Firmas de Respaldo:    ${attestation.endorsements.length} firmas independientes`)
+    console.log(`[ÉXITO] Puntuación Compuesta Calculada: ${attestation.compositeScore} / 100`)
+    console.log(`[REGISTRO] Nivel de Confianza:    ${attestation.trustTier}`)
+    console.log(`[REGISTRO] Hash del Documento:    ${attestation.documentHash}`)
+    console.log(`[REGISTRO] Firmas de Respaldo:    ${attestation.endorsements.length} firmas independientes`)
 
     // 4. Anclar Atestación al Flujo de Consenso de Hedera
-    console.log('\n[⚙️ PROCESO] Transmitiendo Atestación HCS-25 al Consenso de Hedera...')
+    console.log('\n[PROCESO] Transmitiendo Atestación HCS-25 al Consenso de Hedera...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(attestation))
@@ -155,7 +155,7 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seqNum = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ ÉXITO] ¡Atestación Anclada! Secuencia de Consenso #${seqNum}`)
+    console.log(`[ÉXITO] ¡Atestación Anclada! Secuencia de Consenso #${seqNum}`)
 
     // 5. Verificación Criptográfica contra el Padrón Autorizado de Evaluadores
     const authorizedRoster = new Set(
@@ -169,7 +169,7 @@ const main = async () => {
       }
     }
 
-    console.log(`\n[📊 AUDITORÍA] Verificación Criptográfica: ${validSigs}/${attestation.endorsements.length} Firmas VÁLIDAS`)
+    console.log(`\n[AUDITORÍA] Verificación Criptográfica: ${validSigs}/${attestation.endorsements.length} Firmas VÁLIDAS`)
 
     // Persistir estado
     updateState('HCS25_TOPIC_ID', topicId)
@@ -177,18 +177,18 @@ const main = async () => {
     updateState('HCS25_COMPOSITE_SCORE', attestation.compositeScore)
     updateState('HCS25_TRUST_TIER', attestation.trustTier)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Bajo HCS-25, la solvencia y fiabilidad de un agente es un hecho verificable on-chain.')
     console.log('Protocolos de préstamos, exchanges automatizados y otros agentes pueden consultar')
     console.log(`el Tópico ${topicId} para definir ratios de colateral y límites de crédito dinámicamente.`)
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Sin una capa de reputación criptográfica, la economía de agentes de IA se colapsaría por fraude.')
     console.log('Hedera Consensus Service actúa como la agencia de calificación crediticia imparcial de Web3.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de HCS-25:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de HCS-25:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -199,7 +199,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

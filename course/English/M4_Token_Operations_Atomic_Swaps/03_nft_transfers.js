@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: NFT Transfers (Ownership Change)
- * [ CONCEPT ] Unique Digital Inheritance
+ * [CONCEPT] Unique Digital Inheritance
  * ============================================================================
  * [ KEY CONCEPT ]
  * True Ownership: Once this transaction is successfully processed, the
@@ -42,9 +42,9 @@ const main = async () => {
   const tokenId = getState('NFT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID or NFT_TOKEN_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID or NFT_TOKEN_ID in configuration.')
     process.exitCode = 1
-    console.log('[ℹ️ INFO] Tip: Run M3.3 to issue an NFT collection first.')
+    console.log('[INFO] Tip: Run M3.3 to issue an NFT collection first.')
     return
   }
 
@@ -52,11 +52,11 @@ const main = async () => {
     // The lowest serial the operator still holds (serial #1 may be gone after earlier runs).
     const serial = await findOwnedSerial(tokenId, operatorId)
     if (!serial) {
-      console.error(`[❌ FAILED] ${operatorId} holds no serial of ${tokenId}. Run M3 Lab 03 to mint more.`)
+      console.error(`[FAILED] ${operatorId} holds no serial of ${tokenId}. Run M3 Lab 03 to mint more.`)
       process.exitCode = 1
       return
     }
-    console.log(`[⚙️ PROCESS] Transferring NFT ${tokenId} Serial #${serial} to ${targetId}...`)
+    console.log(`[PROCESS] Transferring NFT ${tokenId} Serial #${serial} to ${targetId}...`)
 
     // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const transaction = await new TransferTransaction()
@@ -65,13 +65,13 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ SUCCESS] Success! NFT Transfer Status: ${receipt.status.toString()}`)
+    console.log(`\n[SUCCESS] Success! NFT Transfer Status: ${receipt.status.toString()}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('True Ownership: Once this transaction is successfully processed, the')
     console.log("record of ownership is updated in the network's consensus state. No")
     console.log('central database can reverse this transfer.')
@@ -80,11 +80,11 @@ const main = async () => {
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     if (error.message.includes('TOKEN_NOT_ASSOCIATED_TO_ACCOUNT')) {
-      console.error('\n[❌ FAILED] Transfer Failed: Target Account is not associated with this NFT collection.')
+      console.error('\n[FAILED] Transfer Failed: Target Account is not associated with this NFT collection.')
       process.exitCode = 1
-      console.log('[ℹ️ INFO] Tip: Run M3.2 or perform a TokenAssociateTransaction for the child wallet.')
+      console.log('[INFO] Tip: Run M3.2 or perform a TokenAssociateTransaction for the child wallet.')
     } else {
-      console.error('\n[❌ FAILED] Transfer Failed:', error.message)
+      console.error('\n[FAILED] Transfer Failed:', error.message)
       process.exitCode = 1
     }
   }
@@ -94,7 +94,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

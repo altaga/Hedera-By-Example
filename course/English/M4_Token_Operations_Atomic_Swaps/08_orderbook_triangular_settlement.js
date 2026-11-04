@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: In-Memory Orderbook & Triangular L1 Atomic Settlement (Ring Trade)
- * [ CONCEPT ] Off-Chain Order Matching with Zero-Escrow Multi-Party L1 Clearing
+ * [CONCEPT] Off-Chain Order Matching with Zero-Escrow Multi-Party L1 Clearing
  * ============================================================================
  * [ KEY CONCEPT ]
  * Automated Market Makers (AMMs) suffer from slippage, front-running (MEV), and
@@ -30,7 +30,7 @@
  * - Previous: M4 Lab 07: Airdrop Cancel & Reject (HIP-904)
  * - Next:     M4 Lab 09: Zero-Capital Flash Loans & Atomic L1 Settlement
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Alpha -> Solver: Signed limit order (USD → GOLD)
  * Beta -> Solver: Signed limit order (GOLD → HBAR)
  * Gamma -> Solver: Signed limit order (HBAR → USD)
@@ -69,7 +69,7 @@ class TriangularMatchingEngine {
 
   submitOrder (order) {
     this.orders.push(order)
-    console.log(`[📊 ORDERBOOK] New Limit Order: ${order.traderName} offers ${order.sellAmount} ${order.sellSymbol} ➔ wants ${order.buyAmount} ${order.buySymbol}`)
+    console.log(`[ORDERBOOK] New Limit Order: ${order.traderName} offers ${order.sellAmount} ${order.sellSymbol} ➔ wants ${order.buyAmount} ${order.buySymbol}`)
   }
 
   findTriangularRing () {
@@ -100,7 +100,7 @@ const main = async () => {
 
   try {
     // 1. Provision 2 Fungible HTS Assets: USD Token & GOLD Token
-    console.log('[⚙️ PROCESS] Step 1: Deploying Synthetic Trading Pair on HTS (USD & GOLD)...')
+    console.log('[PROCESS] Step 1: Deploying Synthetic Trading Pair on HTS (USD & GOLD)...')
     const usdId = await reuseToken('REUSE_M4_08_USD', async () => {
       const usdTx = await new TokenCreateTransaction()
         .setTokenName('Synthetic USD Credit')
@@ -125,11 +125,11 @@ const main = async () => {
       return (await (await (await goldTx.sign(treasuryKey)).execute(client)).getReceipt(client)).tokenId
     }, { minBalance: 5 })
 
-    console.log(`[✅ SUCCESS] HTS Token USD Created:  ${usdId.toString()}`)
-    console.log(`[✅ SUCCESS] HTS Token GOLD Created: ${goldId.toString()}`)
+    console.log(`[SUCCESS] HTS Token USD Created:  ${usdId.toString()}`)
+    console.log(`[SUCCESS] HTS Token GOLD Created: ${goldId.toString()}`)
 
     // 2. Provision 3 Autonomous Traders with Initial Inventories
-    console.log('\n[⚙️ PROCESS] Step 2: Provisioning 3 Traders (Alpha, Beta, Gamma) with Auto-Association...')
+    console.log('\n[PROCESS] Step 2: Provisioning 3 Traders (Alpha, Beta, Gamma) with Auto-Association...')
     const alphaKey = PrivateKey.generateED25519()
     const betaKey = PrivateKey.generateED25519()
     const gammaKey = PrivateKey.generateED25519()
@@ -141,7 +141,7 @@ const main = async () => {
         .setMaxAutomaticTokenAssociations(5)
         .execute(client)
       const id = (await res.getReceipt(client)).accountId
-      console.log(`[👤 TRADER] ${name} (${id.toString()}) provisioned.`)
+      console.log(`[TRADER] ${name} (${id.toString()}) provisioned.`)
       return id
     }
 
@@ -152,7 +152,7 @@ const main = async () => {
     // Fund Trader Alpha with 100 USD
     // Fund Trader Beta with 1 HBAR
     // Fund Trader Gamma with 5 GOLD
-    console.log('\n[⚙️ PROCESS] Distributing Initial Asset Inventories to Traders...')
+    console.log('\n[PROCESS] Distributing Initial Asset Inventories to Traders...')
     const seedInventoryTx = new TransferTransaction()
       .addTokenTransfer(usdId, operatorId, -100)
       .addTokenTransfer(usdId, alphaId, 100)
@@ -163,10 +163,10 @@ const main = async () => {
       .freezeWith(client)
 
     await (await seedInventoryTx.execute(client)).getReceipt(client)
-    console.log('[✅ SUCCESS] Inventories Funded: Alpha(100 USD), Beta(1 HBAR), Gamma(5 GOLD)')
+    console.log('[SUCCESS] Inventories Funded: Alpha(100 USD), Beta(1 HBAR), Gamma(5 GOLD)')
 
     // 3. Off-Chain Orderbook: Submit 3 Non-Overlapping Limit Orders
-    console.log('\n[⚙️ PROCESS] Step 3: Submitting Off-Chain Cryptographic Limit Orders...')
+    console.log('\n[PROCESS] Step 3: Submitting Off-Chain Cryptographic Limit Orders...')
     const engine = new TriangularMatchingEngine()
 
     // Trader Alpha: Sells 100 USD ➔ Wants 1 HBAR
@@ -209,18 +209,18 @@ const main = async () => {
     })
 
     // 4. Ring Detection Algorithm
-    console.log('\n[⚙️ PROCESS] Step 4: Running Coincidence of Wants (CoW) Graph Cycle Detection...')
+    console.log('\n[PROCESS] Step 4: Running Coincidence of Wants (CoW) Graph Cycle Detection...')
     const ring = engine.findTriangularRing()
     if (!ring) {
       throw new Error('No triangular ring could be matched!')
     }
-    console.log('[🎯 MATCH FOUND] Closed Ring Identified: Alpha ➔ Beta ➔ Gamma ➔ Alpha!')
-    console.log('   Alpha delivers USD  ➔ Gamma receives USD')
-    console.log('   Gamma delivers GOLD ➔ Beta receives GOLD')
-    console.log('   Beta delivers HBAR  ➔ Alpha receives HBAR')
+    console.log('[ MATCH FOUND] Closed Ring Identified: Alpha ➔ Beta ➔ Gamma ➔ Alpha!')
+    console.log('Alpha delivers USD  ➔ Gamma receives USD')
+    console.log('Gamma delivers GOLD ➔ Beta receives GOLD')
+    console.log('Beta delivers HBAR  ➔ Alpha receives HBAR')
 
     // 5. Atomic Layer 1 Settlement (6 Transfer Legs in 1 Transaction!)
-    console.log('\n[⚙️ PROCESS] Step 5: Compiling 6-Leg Atomic L1 Clearing Transaction...')
+    console.log('\n[PROCESS] Step 5: Compiling 6-Leg Atomic L1 Clearing Transaction...')
     const ringClearingTx = new TransferTransaction()
       // Leg 1 & 2: Alpha delivers 100 USD to Gamma
       .addTokenTransfer(usdId, alphaId, -100)
@@ -235,32 +235,32 @@ const main = async () => {
       .freezeWith(client)
 
     // Collect cryptographic co-signatures from all 3 traders off-chain
-    console.log('[⚙️ PROCESS] Aggregating Ed25519 Signatures from all 3 Ring Participants...')
+    console.log('[PROCESS] Aggregating Ed25519 Signatures from all 3 Ring Participants...')
     const signedClearingTx = await (await (await ringClearingTx.sign(alphaKey)).sign(betaKey)).sign(gammaKey)
 
     // Execute atomic settlement in a single consensus call
     const clearingRes = await signedClearingTx.execute(client)
     const clearingReceipt = await clearingRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Triangular Ring Cleared on Consensus! Status: ${clearingReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Consensus Tx ID: ${clearingRes.transactionId.toString()}`)
+    console.log(`[SUCCESS] Triangular Ring Cleared on Consensus! Status: ${clearingReceipt.status.toString()}`)
+    console.log(`[LOG] Consensus Tx ID: ${clearingRes.transactionId.toString()}`)
 
     updateState('COW_SETTLED_TX_ID', clearingRes.transactionId.toString())
     updateState('COW_USD_TOKEN_ID', usdId.toString())
     updateState('COW_GOLD_TOKEN_ID', goldId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Triangular Ring Trades eliminate the need for centralized intermediaries or')
     console.log('fragmented liquidity pools. Settle N-party Coincidence of Wants directly in')
     console.log('a single atomic Hedera Layer 1 transaction with zero execution slippage.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Because Hedera enforces atomicity natively across multiple accounts and tokens,')
     console.log('if any trader had insufficient balance or an invalid signature, 100% of the trade')
     console.log('would fail atomically without locking or draining any trader\'s funds.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Triangular Settlement Failure:', error.message)
+    console.error('\n[ERROR] Triangular Settlement Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -271,7 +271,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Native Account Creation
- * [ CONCEPT ] Environment Provisioning & Multi-Account Setup
+ * [CONCEPT] Environment Provisioning & Multi-Account Setup
  * ============================================================================
  * [ KEY CONCEPT ]
  * Treasury Independence: Using accounts other than the operator allows
@@ -42,11 +42,11 @@ const main = async () => {
     const existingId = process.env[`${accountName}_ID`]
 
     if (existingId) {
-      console.log(`[ℹ️ INFO] ${accountName} already exists: ${existingId}. Skipping creation.`)
+      console.log(`[INFO] ${accountName} already exists: ${existingId}. Skipping creation.`)
       return
     }
 
-    console.log(`[⚙️ PROCESS] Provisioning ${accountName} with 1 HBAR...`)
+    console.log(`[PROCESS] Provisioning ${accountName} with 1 HBAR...`)
     // Generate a key locally: the private key never leaves this process.
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
@@ -64,12 +64,12 @@ const main = async () => {
     const newAccountId = receipt.accountId.toString()
     const evmAddress = '0x' + newPublicKey.toEvmAddress()
 
-    console.log(`[ℹ️ INFO] Synchronizing ${accountName} to .env...`)
+    console.log(`[INFO] Synchronizing ${accountName} to .env...`)
     updateEnv(`${accountName}_ID`, newAccountId)
     updateEnv(`${accountName}_EVM_ADDRESS`, evmAddress)
     updateEnv(`${accountName}_PRIVATE_KEY`, newPrivateKey.toStringDer())
 
-    console.log(`[✅ SUCCESS] ${accountName} created: ${newAccountId}`)
+    console.log(`[SUCCESS] ${accountName} created: ${newAccountId}`)
   }
 
   try {
@@ -77,7 +77,7 @@ const main = async () => {
     await provisionAccount('ACCOUNT_1')
     await provisionAccount('ACCOUNT_2')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('You now have three accounts: Operator (Treasury), Account 1, and Account 2.')
     console.log('This allows you to test fees and multi-party flows without being')
     console.log('exempt by the Treasury.')
@@ -85,7 +85,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Provisioning Failed:', error.message)
+    console.error('\n[FAILED] Provisioning Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -94,7 +94,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

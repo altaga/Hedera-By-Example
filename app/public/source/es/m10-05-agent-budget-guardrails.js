@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
- * [ CONCEPTO ] Motores de Políticas, Techos de Gasto y Disyuntores
+ * [CONCEPTO] Motores de Políticas, Techos de Gasto y Disyuntores
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Radio de Impacto Financiero: Darle llaves privadas a un agente de IA sin límites
@@ -23,7 +23,7 @@
  * - Actual:   M10 Lab 05: Límites Financieros (Guardrails)
  * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Servidor -> Agente: Solicitud 1: 0.5 ℏ a un comercio verificado
  * Nota Agente: Aprobada (dentro del presupuesto y la lista permitida)
  * Servidor -> Agente: Solicitud 2: 12 ℏ
@@ -104,16 +104,16 @@ const main = async () => {
     const verifiedMerchantB = '0.0.98765'
     const rogueMerchant = '0.0.66699'
 
-    console.log('[⚙️ PROCESO] Inicializando Motor de Políticas Determinista del Agente...')
+    console.log('[PROCESO] Inicializando Motor de Políticas Determinista del Agente...')
     const policy = new AgentPolicyEngine({
       dailyLimitHbar: 5.0,
       maxPerRequestHbar: 1.5,
       allowedMerchants: [verifiedMerchantA, verifiedMerchantB]
     })
 
-    console.log('[📊 REGISTRO] Límite Diario:              5.0 HBAR')
-    console.log('[📊 REGISTRO] Costo Máximo por Petición:  1.5 HBAR')
-    console.log(`[📊 REGISTRO] Comercios Verificados:      ${verifiedMerchantA}, ${verifiedMerchantB}`)
+    console.log('[REGISTRO] Límite Diario:              5.0 HBAR')
+    console.log('[REGISTRO] Costo Máximo por Petición:  1.5 HBAR')
+    console.log(`[REGISTRO] Comercios Verificados:      ${verifiedMerchantA}, ${verifiedMerchantB}`)
 
     // Escenario 1: Petición legítima dentro de la política
     console.log('\n--- ESCENARIO 1: Petición Legítima ---')
@@ -137,7 +137,7 @@ const main = async () => {
     console.log(`[RESULTADO] Aprobado: ${res3.approved} | Motivo de Rechazo: ${res3.reason}`)
 
     // 4. Anclar auditoría de gasto a un Tópico Inmutable de HCS
-    console.log('\n[⚙️ PROCESO] Anclando evento de auditoría de pago a Hedera Consensus Service...')
+    console.log('\n[PROCESO] Anclando evento de auditoría de pago a Hedera Consensus Service...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('x402:agent_guardrail_audit')
@@ -163,19 +163,19 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`[✅ ÉXITO] Evento de Auditoría Registrado en Tópico HCS: ${auditTopicId}`)
-    console.log(`[📊 REGISTRO] Mensaje de Auditoría: ${auditMessage}`)
+    console.log(`[ÉXITO] Evento de Auditoría Registrado en Tópico HCS: ${auditTopicId}`)
+    console.log(`[REGISTRO] Mensaje de Auditoría: ${auditMessage}`)
 
     updateState('X402_AUDIT_TOPIC_ID', auditTopicId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La identidad descentralizada y las políticas de gasto protegen al titular humano')
     console.log('de contingencias financieras. Anclar las auditorías a HCS genera un registro')
     console.log('irrefutable e inmutable de cada centavo gastado por agentes autónomos.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la simulación de límites financieros:', error.message)
+    console.error('\n[FALLO] Fallo en la simulación de límites financieros:', error.message)
     process.exit(1)
   }
 }
@@ -184,7 +184,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

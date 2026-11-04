@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Real-Time Event Sourcing Reactor (Mirror Stream + SQLite In-Memory CQRS)
- * [ CONCEPT ] Sub-Millisecond Relational Read-Model over Hedera Consensus Events
+ * [CONCEPT] Sub-Millisecond Relational Read-Model over Hedera Consensus Events
  * ============================================================================
  * [ KEY CONCEPT ]
  * In production fintech and decentralized exchange (DEX) architectures, relying
@@ -85,12 +85,12 @@ const main = async () => {
 
   try {
     // 1. Initialize Embedded SQLite In-Memory Read-Model
-    console.log('[⚙️ PROCESS] Initializing Embedded `node:sqlite` In-Memory Relational Engine...')
+    console.log('[PROCESS] Initializing Embedded `node:sqlite` In-Memory Relational Engine...')
     const db = setupInMemoryDatabase()
-    console.log('[✅ SUCCESS] SQLite CQRS Schema Materialized (Tables: `transactions`, `account_aggregates`)')
+    console.log('[SUCCESS] SQLite CQRS Schema Materialized (Tables: `transactions`, `account_aggregates`)')
 
     // 2. Command Side: Trigger a fresh on-chain testnet event
-    console.log('\n[⚙️ PROCESS] [COMMAND SIDE] Generating Live Consensus Event on Hedera Testnet...')
+    console.log('\n[PROCESS] [COMMAND SIDE] Generating Live Consensus Event on Hedera Testnet...')
     const dummyRecipient = AccountId.fromString('0.0.8707881')
     const microTransferTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.01))
@@ -99,15 +99,15 @@ const main = async () => {
       .execute(client)
 
     const receipt = await microTransferTx.getReceipt(client)
-    console.log(`[✅ SUCCESS] Consensus Command Settled! Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] Transaction ID: ${microTransferTx.transactionId.toString()}`)
+    console.log(`[SUCCESS] Consensus Command Settled! Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] Transaction ID: ${microTransferTx.transactionId.toString()}`)
 
     // Allow Mirror Node a brief window to reach consensus ingestion
-    console.log('\n[⚙️ PROCESS] Waiting 3.5s for Mirror Node event propagation...')
+    console.log('\n[PROCESS] Waiting 3.5s for Mirror Node event propagation...')
     await sleep(3500)
 
     // 3. Ingestion Reactor: Ingest and materialize mirror events into SQLite
-    console.log('[⚙️ PROCESS] [INGESTION REACTOR] Pulling transaction events from Mirror Node...')
+    console.log('[PROCESS] [INGESTION REACTOR] Pulling transaction events from Mirror Node...')
     const baseUrl = getMirrorNodeBaseUrl()
     const mirrorResponse = await fetch(`${baseUrl}/api/v1/transactions?account.id=${operatorId.toString()}&limit=25&order=desc`)
 
@@ -117,7 +117,7 @@ const main = async () => {
 
     const mirrorData = await mirrorResponse.json()
     const transactions = mirrorData.transactions || []
-    console.log(`[📊 LOG] Retrieved ${transactions.length} raw historical events from Mirror Node.`)
+    console.log(`[LOG] Retrieved ${transactions.length} raw historical events from Mirror Node.`)
 
     // Prepared statements for high-throughput batch inserts
     const insertTxStmt = db.prepare(`
@@ -168,10 +168,10 @@ const main = async () => {
       ingestedCount++
     }
     db.exec('COMMIT')
-    console.log(`[✅ SUCCESS] Successfully materialized ${ingestedCount} events into Local SQLite Read-Model.`)
+    console.log(`[SUCCESS] Successfully materialized ${ingestedCount} events into Local SQLite Read-Model.`)
 
     // 4. Query Side: Execute Relational Analytics directly from CPU memory
-    console.log('\n[⚡ CQRS QUERY MODEL] Executing Analytical Aggregations on SQLite In-Memory Database:')
+    console.log('\n[ CQRS QUERY MODEL] Executing Analytical Aggregations on SQLite In-Memory Database:')
     const aggregateQuery = db.prepare(`
       SELECT 
         account_id, 
@@ -186,7 +186,7 @@ const main = async () => {
     console.table(aggResult)
 
     // 5. High-Frequency CQRS Benchmark (SQLite vs. Network REST)
-    console.log('\n[⚡ CQRS BENCHMARK] Latency Face-Off: Local SQLite vs. Remote Mirror REST API:')
+    console.log('\n[ CQRS BENCHMARK] Latency Face-Off: Local SQLite vs. Remote Mirror REST API:')
 
     // Benchmark Local In-Memory Query
     const localStart = performance.now()
@@ -203,26 +203,26 @@ const main = async () => {
     const restEnd = performance.now()
     const restMs = restEnd - restStart
 
-    console.log(`[📊 METRIC] Local SQLite Read Latency:   ${avgLocalMs.toFixed(4)} ms per query`)
-    console.log(`[📊 METRIC] Remote Mirror REST Latency:   ${restMs.toFixed(2)} ms per request`)
-    console.log(`[🚀 SPEEDUP] Local CQRS Read Model is ~${Math.round(restMs / avgLocalMs)}x FASTER!`)
+    console.log(`[METRIC] Local SQLite Read Latency:   ${avgLocalMs.toFixed(4)} ms per query`)
+    console.log(`[METRIC] Remote Mirror REST Latency:   ${restMs.toFixed(2)} ms per request`)
+    console.log(`[SPEEDUP] Local CQRS Read Model is ~${Math.round(restMs / avgLocalMs)}x FASTER!`)
 
     updateState('CQRS_REACTOR_INGESTED_TXS', ingestedCount.toString())
     updateState('CQRS_SQLITE_LATENCY_MS', avgLocalMs.toFixed(4))
     updateState('CQRS_REST_LATENCY_MS', restMs.toFixed(2))
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('CQRS isolates state mutation from state reading. By materializing Hedera')
     console.log('consensus events into an embedded SQLite engine (`node:sqlite`), the application')
     console.log('achieves microsecond analytical queries and immunity from network rate-limits.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Never make direct network REST calls inside high-frequency trading loops or')
     console.log('backend APIs. Ingest asynchronously, materialize locally, and query at CPU speed.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] CQRS Reactor Execution Failure:', error.message)
+    console.error('\n[ERROR] CQRS Reactor Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -233,7 +233,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

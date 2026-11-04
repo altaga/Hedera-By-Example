@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Flujos de Automatización con Foundry y Hardhat
- * [ CONCEPTO ] Plantillas de Configuración para Frameworks de Ethereum
+ * [CONCEPTO] Plantillas de Configuración para Frameworks de Ethereum
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Flujos de Ethereum sin Fricción: No necesitas reescribir tus scripts de despliegue
@@ -83,7 +83,7 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Validando compatibilidad del JSON-RPC Relay de Hedera con Foundry y Hardhat...')
+    console.log('[PROCESO] Validando compatibilidad del JSON-RPC Relay de Hedera con Foundry y Hardhat...')
     const rpcUrl = 'https://testnet.hashio.io/api'
     // Hashio es el relay JSON-RPC de Hedera: Foundry y Hardhat le hablan como a cualquier cadena EVM (chain ID 296 en testnet).
     const provider = new ethers.JsonRpcProvider(rpcUrl)
@@ -93,26 +93,26 @@ const main = async () => {
     const blockNumber = await provider.getBlockNumber()
     const latencyMs = Date.now() - startTime
 
-    console.log('[✅ ÉXITO] Endpoint RPC Responsivo:')
-    console.log(`[📊 REGISTRO] RPC Objetivo:    ${rpcUrl}`)
-    console.log(`[📊 REGISTRO] Latencia de Red: ${latencyMs} ms`)
-    console.log(`[📊 REGISTRO] Bloque Actual:   #${blockNumber}`)
+    console.log('[ÉXITO] Endpoint RPC Responsivo:')
+    console.log(`[REGISTRO] RPC Objetivo:    ${rpcUrl}`)
+    console.log(`[REGISTRO] Latencia de Red: ${latencyMs} ms`)
+    console.log(`[REGISTRO] Bloque Actual:   #${blockNumber}`)
 
     // 1. Mostrar Configuración de Producción para Foundry
     console.log('\n===============================================================')
-    console.log('🛠️ PLANTILLA: CONFIGURACIÓN DE FOUNDRY (foundry.toml)')
+    console.log('PLANTILLA: CONFIGURACIÓN DE FOUNDRY (foundry.toml)')
     console.log('===============================================================')
     console.log(FOUNDRY_CONFIG_BLUEPRINT.trim())
     console.log('\nComando de Despliegue (Foundry Forge):')
     console.log('forge create --rpc-url https://testnet.hashio.io \\')
-    console.log('  --private-key $OPERATOR_PRIVATE_KEY \\')
-    console.log('  src/HtsTokenVault.sol:HtsTokenVault \\')
-    console.log('  --constructor-args 0x0000000000000000000000000000000000003039')
+    console.log('--private-key $OPERATOR_PRIVATE_KEY \\')
+    console.log('src/HtsTokenVault.sol:HtsTokenVault \\')
+    console.log('--constructor-args 0x0000000000000000000000000000000000003039')
     console.log('===============================================================')
 
     // 2. Mostrar Configuración de Producción para Hardhat
     console.log('\n===============================================================')
-    console.log('🛠️ PLANTILLA: CONFIGURACIÓN DE HARDHAT (hardhat.config.ts)')
+    console.log('PLANTILLA: CONFIGURACIÓN DE HARDHAT (hardhat.config.ts)')
     console.log('===============================================================')
     console.log(HARDHAT_CONFIG_BLUEPRINT.trim())
     console.log('\nComando de Despliegue (Hardhat):')
@@ -122,14 +122,14 @@ const main = async () => {
     updateState('FOUNDRY_CONFIG_VERIFIED', true)
     updateState('HARDHAT_CONFIG_VERIFIED', true)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Hedera es un ecosistema amigable para desarrolladores de Ethereum: conservas')
     console.log('tus herramientas favoritas, linters de Solidity, tests unitarios y frameworks,')
     console.log('mientras disfrutas de finalidad en segundos y tarifas fijas de centavos.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la validación de plantillas de flujo:', error.message)
+    console.error('\n[FALLO] Fallo en la validación de plantillas de flujo:', error.message)
     process.exit(1)
   }
 }
@@ -138,7 +138,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

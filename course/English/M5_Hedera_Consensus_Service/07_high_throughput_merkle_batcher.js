@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: High-Throughput Merkle Batch Ingestion Engine & L1 Inclusion Proofs
- * [ CONCEPT ] Compressing High-Frequency Event Streams into Sub-Cent Consensus Anchors
+ * [CONCEPT] Compressing High-Frequency Event Streams into Sub-Cent Consensus Anchors
  * ============================================================================
  * [ KEY CONCEPT ]
  * In enterprise architectures (IoT telemetry, supply chain tracking, high-speed
@@ -110,7 +110,7 @@ const main = async () => {
 
   try {
     // 1. Deploy an Audit Anchor HCS Topic
-    console.log('[⚙️ PROCESS] Step 1: Deploying Immutable HCS Audit Anchor Topic...')
+    console.log('[PROCESS] Step 1: Deploying Immutable HCS Audit Anchor Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('ENTERPRISE:MERKLE_BATCH_ANCHOR:V1')
@@ -119,11 +119,11 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId
-    console.log(`[✅ SUCCESS] HCS Anchor Topic Created: ${topicId.toString()}`)
+    console.log(`[SUCCESS] HCS Anchor Topic Created: ${topicId.toString()}`)
 
     // 2. Simulate High-Throughput Telemetry Event Stream (1,024 High-Speed Records)
     const BATCH_SIZE = 1024
-    console.log(`\n[⚙️ PROCESS] Step 2: Ingesting Stream of ${BATCH_SIZE} High-Frequency Enterprise Records in Memory...`)
+    console.log(`\n[PROCESS] Step 2: Ingesting Stream of ${BATCH_SIZE} High-Frequency Enterprise Records in Memory...`)
     const rawEvents = []
     const sampleTargetIndex = 427
 
@@ -136,19 +136,19 @@ const main = async () => {
         ts: Date.now() - (BATCH_SIZE - i) * 10
       }))
     }
-    console.log(`[📊 LOG] Ingestion buffer full: ${rawEvents.length} telemetry packets processed.`)
-    console.log(`[🔍 TARGET] Designating Audit Target Event #${sampleTargetIndex}:`)
-    console.log(`   ${rawEvents[sampleTargetIndex]}`)
+    console.log(`[LOG] Ingestion buffer full: ${rawEvents.length} telemetry packets processed.`)
+    console.log(`[TARGET] Designating Audit Target Event #${sampleTargetIndex}:`)
+    console.log(`${rawEvents[sampleTargetIndex]}`)
 
     // 3. Compute Cryptographic Merkle Tree
-    console.log('\n[⚙️ PROCESS] Step 3: Computing Keccak-256 Binary Merkle Tree...')
+    console.log('\n[PROCESS] Step 3: Computing Keccak-256 Binary Merkle Tree...')
     const merkleEngine = new MerkleTreeEngine(rawEvents)
     const merkleRoot = merkleEngine.getRoot()
-    console.log(`[🔐 CRYPTO ROOT] Batch Merkle Root: ${merkleRoot}`)
-    console.log(`[📊 TREE METRICS] Depth: ${merkleEngine.layers.length} layers | Leaves: ${BATCH_SIZE}`)
+    console.log(`[ CRYPTO ROOT] Batch Merkle Root: ${merkleRoot}`)
+    console.log(`[ TREE METRICS] Depth: ${merkleEngine.layers.length} layers | Leaves: ${BATCH_SIZE}`)
 
     // 4. Anchor Merkle Root Commitment to HCS
-    console.log('\n[⚙️ PROCESS] Step 4: Anchoring Merkle Root Commitment to Hedera Consensus Layer...')
+    console.log('\n[PROCESS] Step 4: Anchoring Merkle Root Commitment to Hedera Consensus Layer...')
     const anchorPayload = {
       protocol: 'hcs-merkle-batch-v1',
       merkle_root: merkleRoot,
@@ -166,35 +166,35 @@ const main = async () => {
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
-    console.log(`[✅ SUCCESS] Merkle Root Anchored at Consensus Sequence #${submitReceipt.topicSequenceNumber}!`)
-    console.log('[📊 COST EFFICIENCY] 1,024 Events Anchored in ONE Tx (~$0.0001 total consensus fee)')
+    console.log(`[SUCCESS] Merkle Root Anchored at Consensus Sequence #${submitReceipt.topicSequenceNumber}!`)
+    console.log('[ COST EFFICIENCY] 1,024 Events Anchored in ONE Tx (~$0.0001 total consensus fee)')
 
     // 5. Generate and Verify Inclusion Proof for Target Event
-    console.log(`\n[⚙️ PROCESS] Step 5: Generating Compact O(log N) Inclusion Proof for Event #${sampleTargetIndex}...`)
+    console.log(`\n[PROCESS] Step 5: Generating Compact O(log N) Inclusion Proof for Event #${sampleTargetIndex}...`)
     const inclusionProof = merkleEngine.getProof(sampleTargetIndex)
-    console.log(`[📊 PROOF COMPRESSION] Proof Size: Only ${inclusionProof.length} 32-byte hashes for ${BATCH_SIZE} events!`)
+    console.log(`[ PROOF COMPRESSION] Proof Size: Only ${inclusionProof.length} 32-byte hashes for ${BATCH_SIZE} events!`)
 
-    console.log('[⚙️ PROCESS] Light-Client Independent Verification:')
+    console.log('[PROCESS] Light-Client Independent Verification:')
     const isValid = MerkleTreeEngine.verifyProof(rawEvents[sampleTargetIndex], inclusionProof, merkleRoot)
     show.merkle({ title: 'Inclusion proof for one event in the batch', leafCount: rawEvents.length, leafIndex: sampleTargetIndex, root: merkleRoot, proof: inclusionProof.map((p) => p.hash.toString('hex')) })
-    console.log(`[🛡️ CRYPTO PROOF] Verification Result: ${isValid ? 'VERIFIED VALID (Cryptographic Match)' : 'REJECTED'}`)
+    console.log(`[ CRYPTO PROOF] Verification Result: ${isValid ? 'VERIFIED VALID (Cryptographic Match)' : 'REJECTED'}`)
 
     updateState('MERKLE_BATCH_TOPIC_ID', topicId.toString())
     updateState('MERKLE_BATCH_ROOT', merkleRoot)
     updateState('MERKLE_BATCH_SIZE', BATCH_SIZE.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Merkle Batch Ingestion Engine enables infinite horizontal scaling.')
     console.log('By committing a single Keccak-256 Merkle root to HCS, thousands of events')
     console.log('inherit Hedera\'s immutable network timestamp and fair consensus ordering.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('External clients only need an O(log N) branch proof (10 hashes for 1,024 events)')
     console.log('to mathematically prove tamper-proof inclusion against the public consensus record.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Merkle Batcher Failure:', error.message)
+    console.error('\n[ERROR] Merkle Batcher Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -205,7 +205,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

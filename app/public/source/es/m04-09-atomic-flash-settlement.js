@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica en Capa 1
- * [ CONCEPTO ] Préstamo, Arbitraje y Reembolso Atómico en una Única Transacción
+ * [CONCEPTO] Préstamo, Arbitraje y Reembolso Atómico en una Única Transacción
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En las finanzas descentralizadas de Ethereum (Aave, Balancer, Uniswap), un
@@ -38,7 +38,7 @@
  * - Anterior:  M4 Lab 08: Libro de Órdenes en Memoria y Liquidación L1 Triangular
  * - Siguiente: M5 Lab 01: Temas Inmutables
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Prestatario -> Hedera: Una transacción: pedir prestado + operar + pagar
  * Nota Hedera: Cada parte se valida contra los saldos al llegar a consenso
  * Hedera -> Prestatario: Solo se liquida si el préstamo se paga en la misma transacción
@@ -95,17 +95,17 @@ const main = async () => {
       betaSpread
     )
 
-    console.log('[⚙️ PROCESO] Paso 1: Analizando Oportunidad de Arbitraje con Préstamo Flash...')
-    console.log(`[📊 LOG] Principal Flash:          ${loanPrincipalTinybars} tinybars (${loanPrincipalTinybars / 1e8} ℏ)`)
-    console.log(`[📊 LOG] Comisión Flash (0.09%):   ${flashFee} tinybars`)
-    console.log(`[📊 LOG] Rendimiento Bruto:        ${grossReturn - loanPrincipalTinybars} tinybars`)
-    console.log(`[📊 LOG] Beneficio Neto Proyectado: ${netProfit} tinybars`)
+    console.log('[PROCESO] Paso 1: Analizando Oportunidad de Arbitraje con Préstamo Flash...')
+    console.log(`[LOG] Principal Flash:          ${loanPrincipalTinybars} tinybars (${loanPrincipalTinybars / 1e8} ℏ)`)
+    console.log(`[LOG] Comisión Flash (0.09%):   ${flashFee} tinybars`)
+    console.log(`[LOG] Rendimiento Bruto:        ${grossReturn - loanPrincipalTinybars} tinybars`)
+    console.log(`[LOG] Beneficio Neto Proyectado: ${netProfit} tinybars`)
 
-    console.log('\n[⚙️ PROCESO] Paso 2: Compilando Transacción Atómica L1 de Liquidación Flash en 4 Tramos...')
-    console.log('   Tramo 1: Bóveda Flash ➔ Despacha el préstamo de capital al Arbitrajista')
-    console.log('   Tramo 2: Arbitrajista ➔ Ejecuta swap de liquidez sintética en Mercado Alfa')
-    console.log('   Tramo 3: Arbitrajista ➔ Ejecuta liquidación en Mercado Beta')
-    console.log('   Tramo 4: Arbitrajista ➔ Reembolsa capital + 90 tinybars de comisión a la Bóveda')
+    console.log('\n[PROCESO] Paso 2: Compilando Transacción Atómica L1 de Liquidación Flash en 4 Tramos...')
+    console.log('Tramo 1: Bóveda Flash ➔ Despacha el préstamo de capital al Arbitrajista')
+    console.log('Tramo 2: Arbitrajista ➔ Ejecuta swap de liquidez sintética en Mercado Alfa')
+    console.log('Tramo 3: Arbitrajista ➔ Ejecuta liquidación en Mercado Beta')
+    console.log('Tramo 4: Arbitrajista ➔ Reembolsa capital + 90 tinybars de comisión a la Bóveda')
 
     // Construir la transacción atómica unificada en Capa 1 de Hedera
     // La transacción compila todas las operaciones en un solo payload inmutable de consenso.
@@ -117,26 +117,26 @@ const main = async () => {
       .setTransactionMemo('HEDERA:L1:FLASH_LOAN_ATOMIC_SETTLEMENT')
       .freezeWith(client)
 
-    console.log('\n[⚙️ PROCESO] Paso 3: Transmitiendo Transacción Atómica Flash a Nodos de Consenso...')
+    console.log('\n[PROCESO] Paso 3: Transmitiendo Transacción Atómica Flash a Nodos de Consenso...')
     const txResponse = await flashTx.execute(client)
     const receipt = await txResponse.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] ¡Liquidación Atómica Flash Finalizada! Estado: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción de Consenso: ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan:       ${getHashscanUrl(txResponse)}`)
+    console.log(`\n[ÉXITO] ¡Liquidación Atómica Flash Finalizada! Estado: ${receipt.status.toString()}`)
+    console.log(`[LOG] ID de Transacción de Consenso: ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan:       ${getHashscanUrl(txResponse)}`)
 
     updateState('FLASH_SETTLEMENT_TX_ID', txResponse.transactionId.toString())
     updateState('FLASH_PRINCIPAL_TINYBARS', loanPrincipalTinybars)
     updateState('FLASH_NET_PROFIT_TINYBARS', netProfit)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Préstamos Flash sin Smart Contracts: A diferencia de los protocolos EVM que exigen')
     console.log('costosos contratos de pools de préstamos y hooks de retorno consumidores de gas,')
     console.log('Hedera admite liquidaciones atómicas multicuenta nativamente en Capa 1.')
     console.log('Si un solo tramo falla o viola la conservación de saldos, los nodos de consenso')
     console.log('rechazan la transacción completa en menos de 3 segundos.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Dado que las tarifas de transacción en Hedera están fijadas en fracciones de centavo ($0.0001),')
     console.log('los arbitrajistas flash de alta frecuencia pueden rentabilizar microdiferenciales')
     console.log('que resultarían totalmente inviables en Ethereum o rollups L2 donde las alzas de gas')
@@ -144,7 +144,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Liquidación de Préstamo Flash:', error.message)
+    console.error('\n[ERROR] Fallo en Liquidación de Préstamo Flash:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -155,7 +155,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

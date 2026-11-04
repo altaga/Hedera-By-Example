@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
- * [ CONCEPT ] Confidential Peer-to-Peer Agent Negotiation over Public Consensus
+ * [CONCEPT] Confidential Peer-to-Peer Agent Negotiation over Public Consensus
  * ============================================================================
  * [ KEY CONCEPT ]
  * Confidential Swarm Communication: When autonomous AI agents collaborate or
@@ -29,7 +29,7 @@
  * - Previous: M14 Lab 05: HCS-28 Agent Audit Stream
  * - Next:     M14 Lab 07: HCS-15..18 Botanical Agent Swarms
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Alpha -> Hedera: Publish ECDH public key (handshake)
  * Beta -> Hedera: Publish ECDH public key (handshake)
  * Note Alpha: Derives the shared AES key
@@ -99,17 +99,17 @@ const main = async () => {
 
   try {
     // 1. Create Public Consensus Topic for Encrypted Chat Channel
-    console.log('[⚙️ PROCESS] Deploying secure HCS Communication Topic...')
+    console.log('[PROCESS] Deploying secure HCS Communication Topic...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS:A2A:ENCRYPTED:SWARM:CHANNEL')
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] Public Consensus Chat Topic Created: ${topicId}`)
+    console.log(`[SUCCESS] Public Consensus Chat Topic Created: ${topicId}`)
 
     // 2. Initialize Agent Cryptographic Identifiers & ECDH Keypairs
-    console.log('\n[⚙️ PROCESS] Initializing Agent ECDH Keypairs (Curve: prime256v1)...')
+    console.log('\n[PROCESS] Initializing Agent ECDH Keypairs (Curve: prime256v1)...')
     const agentOracleECDH = crypto.createECDH('prime256v1')
     agentOracleECDH.generateKeys()
 
@@ -119,11 +119,11 @@ const main = async () => {
     const oraclePubKeyHex = agentOracleECDH.getPublicKey('hex')
     const arbitrageurPubKeyHex = agentArbitrageurECDH.getPublicKey('hex')
 
-    console.log(`[🤖 AGENT 1] Name: Agent Alpha (Oracle)       | Public Key: ${oraclePubKeyHex.slice(0, 24)}...`)
-    console.log(`[🤖 AGENT 2] Name: Agent Beta  (Arbitrageur) | Public Key: ${arbitrageurPubKeyHex.slice(0, 24)}...`)
+    console.log(`[ AGENT 1] Name: Agent Alpha (Oracle)       | Public Key: ${oraclePubKeyHex.slice(0, 24)}...`)
+    console.log(`[ AGENT 2] Name: Agent Beta  (Arbitrageur) | Public Key: ${arbitrageurPubKeyHex.slice(0, 24)}...`)
 
     // 2.5 Publish Ephemeral ECDH Public Keys to HCS Topic (On-Chain Handshake)
-    console.log('\n[⚙️ PROCESS] Publishing Ephemeral ECDH Public Keys to HCS Topic (Handshake)...')
+    console.log('\n[PROCESS] Publishing Ephemeral ECDH Public Keys to HCS Topic (Handshake)...')
     for (const [agentName, pubKey] of [['Agent Alpha (Oracle)', oraclePubKeyHex], ['Agent Beta (Arbitrageur)', arbitrageurPubKeyHex]]) {
       const handshakeTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -137,11 +137,11 @@ const main = async () => {
         }))
         .execute(client)
       const hsReceipt = await handshakeTx.getReceipt(client)
-      console.log(`[🤝 HANDSHAKE] ${agentName} ECDH Public Key anchored at Sequence #${hsReceipt.topicSequenceNumber}`)
+      console.log(`[HANDSHAKE] ${agentName} ECDH Public Key anchored at Sequence #${hsReceipt.topicSequenceNumber}`)
     }
 
     // 3. Perform Diffie-Hellman Key Exchange to derive shared AES-256 key
-    console.log('\n[⚙️ PROCESS] Executing Elliptic Curve Diffie-Hellman Key Derivation...')
+    console.log('\n[PROCESS] Executing Elliptic Curve Diffie-Hellman Key Derivation...')
     const sharedSecretOracle = agentOracleECDH.computeSecret(agentArbitrageurECDH.getPublicKey())
     const sharedSecretArbitrageur = agentArbitrageurECDH.computeSecret(agentOracleECDH.getPublicKey())
 
@@ -151,8 +151,8 @@ const main = async () => {
     const keyFingerprint = crypto.createHash('sha256').update(aesKeyOracle).digest('hex')
 
     const keysMatch = aesKeyOracle.equals(aesKeyArbitrageur)
-    console.log(`[✅ SUCCESS] Shared Symmetric Secret Established: ${keysMatch ? 'MATCH (100% SECURE)' : 'MISMATCH'}`)
-    console.log(`[🔑 KEY] Non-Reversible SHA-256 Key Fingerprint: ${keyFingerprint.slice(0, 32)}...`)
+    console.log(`[SUCCESS] Shared Symmetric Secret Established: ${keysMatch ? 'MATCH (100% SECURE)' : 'MISMATCH'}`)
+    console.log(`[KEY] Non-Reversible SHA-256 Key Fingerprint: ${keyFingerprint.slice(0, 32)}...`)
 
     // 4. Conversation Simulation: Encrypted OTC Negotiation
     const dialogue = [
@@ -174,7 +174,7 @@ const main = async () => {
     ]
 
     console.log('\n═════════════════════════════════════════════════════════════════════════')
-    console.log('              LIVE ENCRYPTED CONSENSUS CONVERSATION AUDIT               ')
+    console.log('LIVE ENCRYPTED CONSENSUS CONVERSATION AUDIT               ')
     console.log('═════════════════════════════════════════════════════════════════════════')
 
     for (let i = 0; i < dialogue.length; i++) {
@@ -207,36 +207,36 @@ const main = async () => {
       // Decrypt message on receiver side
       const decryptedText = decryptMessage(encryptedPacket, decryptionKey)
 
-      console.log(`\n💬 [MESSAGE #${seq}] Sender: ${step.sender}`)
-      console.log(`   ├─ 🔒 What Mirror Node Sees (Ciphertext): ${encryptedPacket.ciphertext.slice(0, 32)}... [Tag: ${encryptedPacket.tag.slice(0, 16)}]`)
-      console.log(`   └─ 🔓 Decrypted Plaintext by Receiver:    "${decryptedText}"`)
+      console.log(`\n [MESSAGE #${seq}] Sender: ${step.sender}`)
+      console.log(`├─  What Mirror Node Sees (Ciphertext): ${encryptedPacket.ciphertext.slice(0, 32)}... [Tag: ${encryptedPacket.tag.slice(0, 16)}]`)
+      console.log(`└─  Decrypted Plaintext by Receiver:    "${decryptedText}"`)
     }
 
     console.log('\n═════════════════════════════════════════════════════════════════════════')
-    console.log('                     CONFIDENTIALITY AUDIT REPORT                       ')
+    console.log('CONFIDENTIALITY AUDIT REPORT                       ')
     console.log('═════════════════════════════════════════════════════════════════════════')
-    console.log(`[📊 LOG] Hedera Topic ID:       ${topicId}`)
-    console.log('[📊 LOG] Encryption Algorithm:  AES-256-GCM (NIST SP 800-38D GMAC Tag)')
-    console.log('[📊 LOG] Public Visibility:     ZERO plain-text leakage on Mirror Nodes or explorers')
-    console.log('[📊 LOG] Consensus Ordering:    100% fair timestamped sequence numbers on Hedera')
+    console.log(`[LOG] Hedera Topic ID:       ${topicId}`)
+    console.log('[LOG] Encryption Algorithm:  AES-256-GCM (NIST SP 800-38D GMAC Tag)')
+    console.log('[LOG] Public Visibility:     ZERO plain-text leakage on Mirror Nodes or explorers')
+    console.log('[LOG] Consensus Ordering:    100% fair timestamped sequence numbers on Hedera')
 
     // Persist state (never persist raw encryption keys — only the non-reversible fingerprint!)
     updateState('ENCRYPTED_CHAT_TOPIC_ID', topicId)
     updateState('ENCRYPTED_CHAT_CIPHER_ALGO', 'AES-256-GCM')
     updateState('ENCRYPTED_CHAT_SHARED_KEY_DIGEST', keyFingerprint)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('This architecture is the Holy Grail for enterprise and AI agents:')
     console.log('You get decentralized, tamper-proof ordering from Hedera Consensus Service,')
     console.log('while preserving military-grade data privacy through client-side encryption.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('True privacy does not come from hiding the ledger, but from ensuring that')
     console.log('only authorized peers possess the ECDH-derived decryption keys.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Encrypted Chat Failure:', error.message)
+    console.error('\n[ERROR] Encrypted Chat Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -247,7 +247,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

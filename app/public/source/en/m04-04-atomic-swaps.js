@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Atomic Swaps (Multi-Asset Exchange)
- * [ CONCEPT ] Trustless Multi-Party Settlement
+ * [CONCEPT] Trustless Multi-Party Settlement
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Multi-Signer Flow: Because both parties are giving up assets, both
@@ -20,7 +20,7 @@
  * - Previous: M4 Lab 03: NFT Transfers
  * - Next:     M4 Lab 05: Parallel Transfers
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Treasury -> Buyer: NFT #1
  * Buyer -> Treasury: HBAR payment
  * Note Hedera: Both legs in ONE TransferTransaction, signed by both
@@ -49,7 +49,7 @@ const main = async () => {
   const nftTokenId = getState('NFT_TOKEN_ID')
 
   if (!userId || !userKey || !nftTokenId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID, ACCOUNT_1_PRIVATE_KEY, or NFT_TOKEN_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID, ACCOUNT_1_PRIVATE_KEY, or NFT_TOKEN_ID in configuration.')
     process.exitCode = 1
     return
   }
@@ -60,13 +60,13 @@ const main = async () => {
     // The lowest serial the operator still holds (serial #1 may be gone after earlier runs).
     const serial = await findOwnedSerial(nftTokenId, operatorId)
     if (!serial) {
-      console.error(`[❌ FAILED] ${operatorId} holds no serial of ${nftTokenId}. Run M3 Lab 03 to mint more.`)
+      console.error(`[FAILED] ${operatorId} holds no serial of ${nftTokenId}. Run M3 Lab 03 to mint more.`)
       process.exitCode = 1
       return
     }
-    console.log('[⚙️ PROCESS] Initiating Atomic Swap (Primary Sale Simulation):')
-    console.log(` └─ Operator (Seller) sends NFT Serial #${serial} -> User (Buyer)`)
-    console.log(' └─ User (Buyer) sends 1 HBAR -> Operator (Seller)')
+    console.log('[PROCESS] Initiating Atomic Swap (Primary Sale Simulation):')
+    console.log(`└─ Operator (Seller) sends NFT Serial #${serial} -> User (Buyer)`)
+    console.log('└─ User (Buyer) sends 1 HBAR -> Operator (Seller)')
 
     // A single TransferTransaction can hold dozens of atomic movements
     const transaction = await new TransferTransaction()
@@ -80,19 +80,19 @@ const main = async () => {
       .freezeWith(client)
 
     // BOTH parties must sign because both are giving up assets
-    console.log('[ℹ️ INFO] Collecting signatures from both parties...')
+    console.log('[INFO] Collecting signatures from both parties...')
     await transaction.sign(userPrivKey)
     // Operator signs automatically upon execution as they are the payer
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ SUCCESS] Success! Atomic Swap Status: ${receipt.status.toString()}`)
-    console.log('[ℹ️ INFO] Ownership and HBAR have been exchanged atomically in one block.')
+    console.log(`\n[SUCCESS] Success! Atomic Swap Status: ${receipt.status.toString()}`)
+    console.log('[INFO] Ownership and HBAR have been exchanged atomically in one block.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Multi-Signer Flow: Because both parties are giving up assets, both')
     console.log('must sign the transaction. The Hedera SDK handles collecting these')
     console.log('signatures before the transaction is executed.')
@@ -100,7 +100,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Atomic Swap Failed:', error.message)
+    console.error('\n[FAILED] Atomic Swap Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -109,7 +109,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

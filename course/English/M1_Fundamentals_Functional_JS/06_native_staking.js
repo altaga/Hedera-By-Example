@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Lab 06: Native Staking (HIP-584)
- * [ CONCEPT ] Consensus Node Delegation & Rewards
+ * [CONCEPT] Consensus Node Delegation & Rewards
  * ============================================================================
  * [ KEY CONCEPT ]
  * Hedera's Proof-of-Stake allows accounts to stake their HBAR balance to a
@@ -41,7 +41,7 @@ const main = async () => {
     // We will stake the operator account to Node 2
     const TARGET_NODE_ID = 2
 
-    console.log(`[⚙️ PROCESS] Updating Account ${operatorId} to stake to Node ${TARGET_NODE_ID}...`)
+    console.log(`[PROCESS] Updating Account ${operatorId} to stake to Node ${TARGET_NODE_ID}...`)
 
     // 1. Update the account to stake to the node and accept rewards
     const tx = await new AccountUpdateTransaction()
@@ -51,21 +51,21 @@ const main = async () => {
       .execute(client)
 
     await tx.getReceipt(client)
-    console.log('[✅ SUCCESS] Account staking updated successfully!')
+    console.log('[SUCCESS] Account staking updated successfully!')
 
     // 2. Verify the staking configuration by querying the account info
-    console.log('\n[⚙️ PROCESS] Querying Account Info to verify staking status...')
+    console.log('\n[PROCESS] Querying Account Info to verify staking status...')
     const info = await new AccountInfoQuery()
       .setAccountId(operatorId)
       .execute(client)
 
-    console.log('\n[📊 LOG] Staking Information:')
+    console.log('\n[LOG] Staking Information:')
     console.log(`- Staked to Node ID: ${info.stakingInfo.stakedNodeId}`)
     console.log(`- Staked to Account ID: ${info.stakingInfo.stakedAccountId || 'None'}`)
     console.log(`- Declining Rewards?: ${info.stakingInfo.declineStakingReward}`)
     console.log(`- Pending Rewards (HBAR): ${info.stakingInfo.pendingReward.toTinybars().toNumber() / 100000000}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Staking on Hedera is non-custodial and liquid. Your funds are never')
     console.log('locked, and you can transfer them at any time. The rewards are')
     console.log('automatically triggered and paid out when a transaction occurs.')
@@ -73,7 +73,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -82,7 +82,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

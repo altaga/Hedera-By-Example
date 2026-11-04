@@ -1,4 +1,4 @@
-# 🧠 Module 8: Smart Contracts and EVM
+# Module 8: Smart Contracts and EVM
 ## Ethereum Compatibility and Hedera Power
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -24,7 +24,7 @@
 
 ---
 
-## 🏗️ System Contracts (The Master Bridge)
+## System Contracts (The Master Bridge)
 
 System Contracts allow a Solidity contract to "talk" to native Hedera services, combining the flexibility of the EVM with the speed of HTS.
 
@@ -63,7 +63,7 @@ graph LR
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Full EVM Compatibility
 Hedera supports the same tools as Ethereum (Hardhat, Foundry, Remix, Ethers.js). You can migrate your Ethereum dApps to Hedera with minimal changes and enjoy fixed fees in dollars.
@@ -76,11 +76,11 @@ In Hedera, the gas price does not fluctuate with network demand. The execution c
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Smart Contract Service (HSCS)](https://docs.hedera.com/hedera/core-concepts/smart-contracts)
 - [HIP-206: HTS System Contract](https://hips.hedera.com/hip/hip-206)
 - [Besu EVM on Hedera](https://hedera.com/blog/hedera-evm-the-best-of-both-worlds)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. THE BRAIN OF THE NETWORK.
+ 2026 **HEDERA FOR DUMMIES**. THE BRAIN OF THE NETWORK.

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: HIP-1261 Simple Fees & Deterministic Pricing Engine
- * [ CONCEPT ] Predictable Hedera Fee Modeling (Node, Network, Service)
+ * [CONCEPT] Predictable Hedera Fee Modeling (Node, Network, Service)
  * ============================================================================
  * [ KEY CONCEPT ]
  * Unlike Ethereum gas auctions where prices spike 100x during network congestion,
@@ -83,16 +83,16 @@ const main = async () => {
   const mirrorBase = getMirrorNodeBaseUrl()
 
   try {
-    console.log('[⚙️ PROCESS] Step 1: Interrogating live network exchange rate from Mirror Node...')
+    console.log('[PROCESS] Step 1: Interrogating live network exchange rate from Mirror Node...')
     const rateInfo = await fetchExchangeRate(mirrorBase)
 
-    console.log('\n--- 💱 HEDERA ON-CHAIN EXCHANGE RATE ---')
-    console.log(`🔹 USD Rate per HBAR:   $${rateInfo.rateUsdPerHbar.toFixed(4)}`)
-    console.log(`🔹 HBAR Equivalent:     ${rateInfo.hbarEquiv} ℏ`)
-    console.log(`🔹 Cent Equivalent:     ${rateInfo.cents} ¢`)
-    console.log(`🔹 Rate Expiration:     ${rateInfo.expiration}`)
+    console.log('\n---  HEDERA ON-CHAIN EXCHANGE RATE ---')
+    console.log(`USD Rate per HBAR:   $${rateInfo.rateUsdPerHbar.toFixed(4)}`)
+    console.log(`HBAR Equivalent:     ${rateInfo.hbarEquiv} ℏ`)
+    console.log(`Cent Equivalent:     ${rateInfo.cents} ¢`)
+    console.log(`Rate Expiration:     ${rateInfo.expiration}`)
 
-    console.log('\n[⚙️ PROCESS] Step 2: Deconstructing HIP-1261 Fee Schedule for CryptoTransfer...')
+    console.log('\n[PROCESS] Step 2: Deconstructing HIP-1261 Fee Schedule for CryptoTransfer...')
 
     // Standard Hedera Fee Schedule USD constants for baseline CryptoTransfer
     const NODE_FEE_USD = 0.0001
@@ -105,13 +105,13 @@ const main = async () => {
     const serviceFeeTinybars = calculateTinybars(SERVICE_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
     const totalPredictedTinybars = nodeFeeTinybars + networkFeeTinybars + serviceFeeTinybars
 
-    console.log('\n--- 📊 PREDICTIVE FEE DECONSTRUCTION (HIP-1261) ---')
-    console.log(`🔹 Node Fee:     $${NODE_FEE_USD.toFixed(4)} USD -> ${nodeFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Network Fee:  $${NETWORK_FEE_USD.toFixed(4)} USD -> ${networkFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Service Fee:  $${SERVICE_FEE_USD.toFixed(4)} USD -> ${serviceFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Total Quote:  $${TOTAL_STANDARD_FEE_USD.toFixed(4)} USD -> ${totalPredictedTinybars.toLocaleString()} tinybars (~${(totalPredictedTinybars / 1e8).toFixed(6)} ℏ)`)
+    console.log('\n---  PREDICTIVE FEE DECONSTRUCTION (HIP-1261) ---')
+    console.log(`Node Fee:     $${NODE_FEE_USD.toFixed(4)} USD -> ${nodeFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Network Fee:  $${NETWORK_FEE_USD.toFixed(4)} USD -> ${networkFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Service Fee:  $${SERVICE_FEE_USD.toFixed(4)} USD -> ${serviceFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Total Quote:  $${TOTAL_STANDARD_FEE_USD.toFixed(4)} USD -> ${totalPredictedTinybars.toLocaleString()} tinybars (~${(totalPredictedTinybars / 1e8).toFixed(6)} ℏ)`)
 
-    console.log('\n[⚙️ PROCESS] Step 3: Executing live CryptoTransfer to verify consensus billing...')
+    console.log('\n[PROCESS] Step 3: Executing live CryptoTransfer to verify consensus billing...')
 
     // Benchmark transaction: transfer 0 HBAR to self
     const transaction = await new TransferTransaction()
@@ -123,19 +123,19 @@ const main = async () => {
     const actualFeeTinybars = record.transactionFee.toTinybars().toNumber()
     const actualFeeUsd = (actualFeeTinybars / 1e8) * rateInfo.rateUsdPerHbar
 
-    console.log('\n--- 🎯 CONSENSUS BILLING VERIFICATION ---')
-    console.log(`🔹 Consensus Status:  ${record.receipt.status.toString()}`)
-    console.log(`🔹 Transaction ID:    ${response.transactionId.toString()}`)
-    console.log(`🔹 Actual Fee Charged:${actualFeeTinybars.toLocaleString()} tinybars (${record.transactionFee.toString()})`)
-    console.log(`🔹 Actual Fee in USD: $${actualFeeUsd.toFixed(6)} USD`)
-    console.log(`🔹 Variance vs Quote: ${Math.abs(actualFeeTinybars - totalPredictedTinybars).toLocaleString()} tinybars`)
-    console.log(`[🔗 EXPLORER] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log('\n---  CONSENSUS BILLING VERIFICATION ---')
+    console.log(`Consensus Status:  ${record.receipt.status.toString()}`)
+    console.log(`Transaction ID:    ${response.transactionId.toString()}`)
+    console.log(`Actual Fee Charged:${actualFeeTinybars.toLocaleString()} tinybars (${record.transactionFee.toString()})`)
+    console.log(`Actual Fee in USD: $${actualFeeUsd.toFixed(6)} USD`)
+    console.log(`Variance vs Quote: ${Math.abs(actualFeeTinybars - totalPredictedTinybars).toLocaleString()} tinybars`)
+    console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(response)}`)
 
     updateState('HIP1261_LAST_TX_ID', response.transactionId.toString())
     updateState('HIP1261_ACTUAL_FEE_TINYBARS', actualFeeTinybars)
     updateState('HIP1261_RATE_USD_PER_HBAR', rateInfo.rateUsdPerHbar)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero Gas Auctions: On Hedera, fees are fixed in USD and deterministic.')
     console.log('Enterprises budget their cloud and ledger costs with 100% financial predictability,')
     console.log('knowing a crypto transfer costs exactly $0.001 USD regardless of network volume.')
@@ -143,7 +143,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] Fee Engine Calculation Failed: ${error.message}`)
+    console.error(`\n[FAILED] Fee Engine Calculation Failed: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -154,7 +154,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Stablecoin Studio Role-Based Governance
- * [ CONCEPT ] Segregation of Duties in Fiat-Backed Stablecoins
+ * [CONCEPT] Segregation of Duties in Fiat-Backed Stablecoins
  * ============================================================================
  * [ KEY CONCEPT ]
  * Cryptographic Separation of Powers: Centralized stablecoins run on trust;
@@ -45,19 +45,19 @@ const main = async () => {
 
   try {
     // 1. Generate segregated keys for institutional roles
-    console.log('[⚙️ PROCESS] Generating segregated cryptographic role keys...')
+    console.log('[PROCESS] Generating segregated cryptographic role keys...')
     const cashInKey = PrivateKey.generateECDSA()
     const burnKey = PrivateKey.generateECDSA()
     const freezeKey = PrivateKey.generateECDSA()
     const wipeKey = PrivateKey.generateECDSA()
     const kycKey = PrivateKey.generateECDSA()
 
-    console.log(`[📊 LOG] Cash-In Role Key: ${cashInKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[📊 LOG] Freeze Role Key:  ${freezeKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[📊 LOG] Wipe Role Key:    ${wipeKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[LOG] Cash-In Role Key: ${cashInKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[LOG] Freeze Role Key:  ${freezeKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[LOG] Wipe Role Key:    ${wipeKey.publicKey.toStringDer().substring(0, 24)}...`)
 
     // 2. Deploy Institutional Stablecoin on HTS with Dedicated Role Keys
-    console.log('\n[⚙️ PROCESS] Deploying institutional stablecoin with Stablecoin Studio architecture...')
+    console.log('\n[PROCESS] Deploying institutional stablecoin with Stablecoin Studio architecture...')
     const stablecoinTokenId = (await reuseToken('REUSE_M11_03_TOKEN', async () => {
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Hedera Digital Dollar')
@@ -77,11 +77,11 @@ const main = async () => {
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ SUCCESS] Institutional Stablecoin Created: ${stablecoinTokenId}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
+    console.log(`[SUCCESS] Institutional Stablecoin Created: ${stablecoinTokenId}`)
+    console.log(`[EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
 
     // 3. Exercise Role 1: Cash-In (Mint upon $250,000 USD fiat deposit confirmation)
-    console.log('\n[⚙️ PROCESS] Cash-In Role: Banking wire confirmed. Minting $250,000 USDD...')
+    console.log('\n[PROCESS] Cash-In Role: Banking wire confirmed. Minting $250,000 USDD...')
     const mintAmount = 250000 * 1000000 // 250,000 with 6 decimals
     const mintTx = await new TokenMintTransaction()
       .setTokenId(stablecoinTokenId)
@@ -91,12 +91,12 @@ const main = async () => {
     const mintResponse = await mintTx.execute(client)
     const mintReceipt = await mintResponse.getReceipt(client)
 
-    console.log(`[✅ SUCCESS] Cash-In Completed: New Total Supply = ${mintReceipt.totalSupply.toString()}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${getHashscanUrl(mintResponse)}`)
+    console.log(`[SUCCESS] Cash-In Completed: New Total Supply = ${mintReceipt.totalSupply.toString()}`)
+    console.log(`[EXPLORER] HashScan: ${getHashscanUrl(mintResponse)}`)
 
     // 4. Exercise Role 2 & 3: Sanctions Compliance (Freeze & Wipe Simulation)
     console.log('\n===============================================================')
-    console.log('🛡️ REGULATORY COMPLIANCE EXERCISE: SANCTIONS LIST ENFORCEMENT')
+    console.log('REGULATORY COMPLIANCE EXERCISE: SANCTIONS LIST ENFORCEMENT')
     console.log('===============================================================')
     console.log('1. AML Screener flags suspicious address interacting with mixer.')
     console.log('2. Freeze Role executes TokenFreezeTransaction on consensus layer.')
@@ -106,7 +106,7 @@ const main = async () => {
     updateState('STABLECOIN_TOKEN_ID', stablecoinTokenId)
     updateState('STABLECOIN_MINT_TX_ID', mintResponse.transactionId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Stablecoin Studio bridges traditional banking regulations with distributed')
     console.log('ledger technology. Regulators require freeze and clawback mechanisms for')
     console.log('fiat-backed assets; Hedera provides them natively in HTS without vulnerable')
@@ -114,7 +114,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Stablecoin governance failed:', error.message)
+    console.error('\n[ERROR] Stablecoin governance failed:', error.message)
     process.exit(1)
   }
 }
@@ -123,7 +123,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

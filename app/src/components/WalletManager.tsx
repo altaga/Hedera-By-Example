@@ -290,8 +290,8 @@ function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; on
         <div className='welcome-drop-card is-claimed'>
           <p className='muted' style={{ margin: 0, fontSize: 12 }}>
             {lang === 'es'
-              ? 'ℹ️ El drop de bienvenida de 10 ℏ ya fue otorgado a tu primera wallet (límite de 1 por usuario). Para cuentas adicionales usa el faucet oficial:'
-              : 'ℹ️ The 10 ℏ welcome drop was already claimed for your first wallet (limit 1 per learner). For additional accounts use the official faucet:'}
+              ? 'El drop de bienvenida de 10 ℏ ya fue otorgado a tu primera wallet (límite de 1 por usuario). Para cuentas adicionales usa el faucet oficial:'
+              : 'The 10 ℏ welcome drop was already claimed for your first wallet (limit 1 per learner). For additional accounts use the official faucet:'}
           </p>
         </div>
       )}

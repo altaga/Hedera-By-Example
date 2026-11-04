@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Native Hedera File Service (HFS) - Normal Files
- * [ CONCEPT ] Ledger-Native Persistence
+ * [CONCEPT] Ledger-Native Persistence
  * ============================================================================
  * [ KEY CONCEPT ]
  * Ledger-Native Persistence: When you store a file on HFS, it is immediately
@@ -52,9 +52,9 @@ const main = async () => {
     }
 
     const imageBuffer = fs.readFileSync(imagePath)
-    console.log(`[ℹ️ INFO] Reading asset: ${path.basename(imagePath)} (${imageBuffer.length} bytes)`)
+    console.log(`[INFO] Reading asset: ${path.basename(imagePath)} (${imageBuffer.length} bytes)`)
 
-    console.log('[⚙️ PROCESS] Creating a permissioned file on Hedera (Single Transaction)...')
+    console.log('[PROCESS] Creating a permissioned file on Hedera (Single Transaction)...')
 
     // Create the file on HFS: up to ~4 KB per transaction; larger content is appended.
     const transaction = await new FileCreateTransaction()
@@ -68,13 +68,13 @@ const main = async () => {
     const receipt = await response.getReceipt(client)
     const fileId = receipt.fileId
 
-    console.log(`\n[✅ SUCCESS] Small Image File Created: ${fileId.toString()}`)
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`\n[SUCCESS] Small Image File Created: ${fileId.toString()}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     // Automatically sync for reference (Step 06 looks for HFS_FILE_ID)
     updateState('HFS_FILE_ID', fileId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Ledger-Native Persistence: When you store a file on HFS, it is')
     console.log('immediately available to all nodes and is protected by the HBAR')
     console.log("ecosystem. This is the ultimate \"Anchor\" for your application's data.")
@@ -82,7 +82,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HFS Small File Creation Failed:', error.message)
+    console.error('\n[FAILED] HFS Small File Creation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

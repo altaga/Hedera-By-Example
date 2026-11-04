@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Generación del Desafío Servidor HTTP 402
- * [ CONCEPTO ] Desafíos de Pago Legibles por Máquinas
+ * [CONCEPTO] Desafíos de Pago Legibles por Máquinas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Cabecera del Paywall: En lugar de redirigir a un agente de IA a una página
@@ -22,12 +22,12 @@
  * - Actual:   M10 Lab 01: Desafío 402 del Servidor
  * - Siguiente: M10 Lab 02: Firma de Pago del Agente
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Agente -> Servidor: GET /api/v1/alpha-intelligence/market-depth
  * Nota Servidor: Sin API key, token ni cookie
  * Servidor -> Agente: 402 Payment Required (precio, beneficiario, nonce, vencimiento)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * La solicitud HTTP y el servidor corren en el mismo proceso; no se levanta un servidor web.
  *
  * [ ANTES DE EJECUTAR ]
@@ -88,22 +88,22 @@ const main = async () => {
     const resourcePath = '/api/v1/alpha-intelligence/market-depth'
     const queryCostHbar = 0.5 // 0.5 HBAR por petición
 
-    console.log(`[⚙️ PROCESO] Simulando petición no autenticada hacia: ${resourcePath}`)
-    console.log('[ℹ️ INFO] No hay API Key, token Bearer de OAuth ni Cookie de sesión.')
+    console.log(`[PROCESO] Simulando petición no autenticada hacia: ${resourcePath}`)
+    console.log('[INFO] No hay API Key, token Bearer de OAuth ni Cookie de sesión.')
 
-    console.log('\n[⚙️ PROCESO] Interceptor del servidor disparando desafío HTTP 402...')
+    console.log('\n[PROCESO] Interceptor del servidor disparando desafío HTTP 402...')
     // El servidor responde a una petición protegida con un desafío de pago en vez de los datos.
     const challenge = create402Challenge(resourcePath, queryCostHbar, operatorId.toString(), network)
 
-    console.log('\n[✅ ÉXITO] Desafío HTTP 402 Payment Required Generado:')
-    console.log(`[📊 REGISTRO] Estado HTTP:          ${challenge.status} Payment Required`)
-    console.log(`[📊 REGISTRO] Recurso Objetivo:     ${challenge.headers['x402-resource']}`)
-    console.log(`[📊 REGISTRO] Red Requerida:        ${challenge.headers['x402-network']}`)
-    console.log(`[📊 REGISTRO] Esquema de Pago:      ${challenge.headers['x402-scheme']}`)
-    console.log(`[📊 REGISTRO] Dirección Receptora:  ${challenge.headers['x402-payee']}`)
-    console.log(`[📊 REGISTRO] Costo Requerido:      ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
-    console.log(`[📊 REGISTRO] Nonce Criptográfico:  ${challenge.headers['x402-nonce']}`)
-    console.log(`[📊 REGISTRO] Válido Hasta:         ${challenge.body.details.validUntil}`)
+    console.log('\n[ÉXITO] Desafío HTTP 402 Payment Required Generado:')
+    console.log(`[REGISTRO] Estado HTTP:          ${challenge.status} Payment Required`)
+    console.log(`[REGISTRO] Recurso Objetivo:     ${challenge.headers['x402-resource']}`)
+    console.log(`[REGISTRO] Red Requerida:        ${challenge.headers['x402-network']}`)
+    console.log(`[REGISTRO] Esquema de Pago:      ${challenge.headers['x402-scheme']}`)
+    console.log(`[REGISTRO] Dirección Receptora:  ${challenge.headers['x402-payee']}`)
+    console.log(`[REGISTRO] Costo Requerido:      ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
+    console.log(`[REGISTRO] Nonce Criptográfico:  ${challenge.headers['x402-nonce']}`)
+    console.log(`[REGISTRO] Válido Hasta:         ${challenge.body.details.validUntil}`)
 
     // Persistir el desafío para el Lab 02
     updateState('X402_CHALLENGE_RESOURCE', resourcePath)
@@ -112,14 +112,14 @@ const main = async () => {
     updateState('X402_CHALLENGE_NONCE', challenge.headers['x402-nonce'])
     updateState('X402_CHALLENGE_EXPIRES', challenge.headers['x402-expires'])
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La respuesta HTTP 402 se autodescribe por completo. Cualquier agente máquina')
     console.log('puede inspeccionar las cabeceras, evaluar si el costo encaja en su política')
     console.log('de presupuesto, y construir una prueba de liquidación on-chain de forma autónoma.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo al generar el desafío 402:', error.message)
+    console.error('\n[FALLO] Fallo al generar el desafío 402:', error.message)
     process.exit(1)
   }
 }
@@ -128,7 +128,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

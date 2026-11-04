@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Renta de Estado y Ciclo de Vida de la Cuenta
- * [ CONCEPTO ] Sostenibilidad y Almacenamiento Serverless
+ * [CONCEPTO] Sostenibilidad y Almacenamiento Serverless
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * State Rent: A diferencia de otras blockchains donde el crecimiento del
@@ -43,14 +43,14 @@ const main = async () => {
   const targetAccountId = process.env.ACCOUNT_1_ID
 
   if (!targetAccountId) {
-    console.error('[❌ FALLO] Falta ACCOUNT_1_ID en el archivo .env.')
+    console.error('[FALLO] Falta ACCOUNT_1_ID en el archivo .env.')
     process.exitCode = 1
     return
   }
 
   try {
     // --- ETAPA 1: TELEMETRÍA DE MERCADO (Oráculo del Mirror Node) ---
-    console.log('[⚙️ PROCESO] Consultando oráculo del Mirror Node para tasa de cambio...')
+    console.log('[PROCESO] Consultando oráculo del Mirror Node para tasa de cambio...')
 
     const mirrorUrl = getMirrorNodeBaseUrl()
     const response = await fetch(`${mirrorUrl}/api/v1/network/exchangerate`)
@@ -58,15 +58,15 @@ const main = async () => {
 
     const currentRate = rateData.current_rate
     const liveHbarPrice = (currentRate.cent_equivalent / currentRate.hbar_equivalent) / 100
-    console.log(`[📊 REGISTRO] Precio en Vivo: 1 HBAR = $${liveHbarPrice.toFixed(4)} USD`)
+    console.log(`[REGISTRO] Precio en Vivo: 1 HBAR = $${liveHbarPrice.toFixed(4)} USD`)
 
     // --- ETAPA 2: TELEMETRÍA DE SALDO ---
-    console.log(`[⚙️ PROCESO] Consultando saldo para la cuenta ${targetAccountId}...`)
+    console.log(`[PROCESO] Consultando saldo para la cuenta ${targetAccountId}...`)
     const query = new MirrorNodeAccountBalanceQuery().setAccountId(AccountId.fromString(targetAccountId))
     const balance = await query.execute(client)
 
     const currentHbar = Number(balance.hbars.toTinybars()) / 100000000
-    console.log(`[📊 REGISTRO] Saldo Actual: ${balance.hbars.toString()} (${currentHbar} HBAR)`)
+    console.log(`[REGISTRO] Saldo Actual: ${balance.hbars.toString()} (${currentHbar} HBAR)`)
 
     // --- ETAPA 3: PROYECCIÓN DE RENTA ---
     const renewalFeeUsd = 0.01 // Costo fijo por ciclo de 90 días
@@ -75,15 +75,15 @@ const main = async () => {
     const totalDaysCovered = totalCycles * 90
     const totalYearsCovered = (totalDaysCovered / 365).toFixed(1)
 
-    console.log('\n--- 📊 [REGISTRO] Resumen de Autonomía de Renta ---')
-    console.log(` └─ Valor USD Total:   $${totalUsdValue.toFixed(4)} USD`)
-    console.log(` └─ Ciclos de Renov.:  ${Math.floor(totalCycles)} periodos de 90 días`)
-    console.log(` └─ Días Totales:      ~${Math.floor(totalDaysCovered)} Días`)
-    console.log(` └─ Vida Útil Total:   ~${totalYearsCovered} Años`)
+    console.log('\n---  [REGISTRO] Resumen de Autonomía de Renta ---')
+    console.log(`└─ Valor USD Total:   $${totalUsdValue.toFixed(4)} USD`)
+    console.log(`└─ Ciclos de Renov.:  ${Math.floor(totalCycles)} periodos de 90 días`)
+    console.log(`└─ Días Totales:      ~${Math.floor(totalDaysCovered)} Días`)
+    console.log(`└─ Vida Útil Total:   ~${totalYearsCovered} Años`)
 
-    console.log('\n[✅ ÉXITO] Proyección de ciclo de vida calculada.')
+    console.log('\n[ÉXITO] Proyección de ciclo de vida calculada.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Mientras esta cuenta mantenga HBAR, pagará automáticamente su propia')
     console.log('renta cada 90 días. Si el saldo llega a 0, el nodo eventualmente')
     console.log('eliminará la cuenta para liberar memoria, garantizando la eficiencia')
@@ -92,7 +92,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La consulta de renta falló:', error.message)
+    console.error('\n[FALLO] La consulta de renta falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -101,7 +101,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

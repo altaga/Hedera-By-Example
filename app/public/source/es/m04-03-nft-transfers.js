@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Transferencias de NFT (Propiedad por Número de Serie)
- * [ CONCEPTO ] Granularidad de Activos Únicos e Identidad Compuesta
+ * [CONCEPTO] Granularidad de Activos Únicos e Identidad Compuesta
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Identidad Inequívoca: A diferencia de los tokens fungibles, cada unidad de
@@ -46,7 +46,7 @@ const main = async () => {
   const tokenId = getState('NFT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[❌ FALLO] Falta NFT_TOKEN_ID en el estado o ACCOUNT_1 en el .env.')
+    console.error('[FALLO] Falta NFT_TOKEN_ID en el estado o ACCOUNT_1 en el .env.')
     process.exitCode = 1
     return
   }
@@ -55,11 +55,11 @@ const main = async () => {
     // El menor serial que el operador todavía tiene (el #1 puede haberse enviado en una ejecución anterior).
     const serial = await findOwnedSerial(tokenId, operatorId)
     if (!serial) {
-      console.error(`[❌ FALLO] ${operatorId} no tiene ningún serial de ${tokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
+      console.error(`[FALLO] ${operatorId} no tiene ningún serial de ${tokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
       process.exitCode = 1
       return
     }
-    console.log(`[⚙️ PROCESO] Transfiriendo NFT ${tokenId} Serial #${serial} a ${targetId}...`)
+    console.log(`[PROCESO] Transfiriendo NFT ${tokenId} Serial #${serial} a ${targetId}...`)
 
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transaction = await new TransferTransaction()
@@ -72,14 +72,14 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] Propiedad del serial transferida con éxito. Estado: ${receipt.status.toString()}`)
+    console.log(`\n[ÉXITO] Propiedad del serial transferida con éxito. Estado: ${receipt.status.toString()}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El par (Token ID + Serial) es el identificador definitivo en el')
     console.log('ledger. Al ser una operación nativa de HTS, la transferencia')
     console.log('ocurre con finalidad absoluta, garantizando que el nuevo dueño')
@@ -89,11 +89,11 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     if (error.message.includes('TOKEN_NOT_ASSOCIATED_TO_ACCOUNT')) {
-      console.error('\n[❌ FALLO] Fallo por falta de Asociación: El receptor no acepta esta colección NFT.')
+      console.error('\n[FALLO] Fallo por falta de Asociación: El receptor no acepta esta colección NFT.')
       process.exitCode = 1
       console.log('[TIP] Asegúrate de que ACCOUNT_1 esté asociada a la colección NFT en M3 o M0.')
     } else {
-      console.error('\n[❌ FALLO] La transferencia del NFT falló:', error.message)
+      console.error('\n[FALLO] La transferencia del NFT falló:', error.message)
       process.exitCode = 1
     }
   }
@@ -103,7 +103,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

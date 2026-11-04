@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: HCS Precision Benchmarking (Latency Teardown)
- * [ CONCEPT ] Decentralized gRPC Round-Trip Latency
+ * [CONCEPT] Decentralized gRPC Round-Trip Latency
  * ============================================================================
  * [ KEY CONCEPT ]
  * Consensus Accuracy: Unlike local network pings, an HCS Handshake relies on
@@ -45,7 +45,7 @@ class HcsNode {
   }
 
   listen (messageType, onMessageCallback) {
-    console.log(`[ℹ️ INFO] ${this.name}: Listener active for '${messageType}' messages.`)
+    console.log(`[INFO] ${this.name}: Listener active for '${messageType}' messages.`)
     // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
       .setTopicId(this.topicId)
@@ -88,7 +88,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration.')
+    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration.')
     process.exitCode = 1
     return
   }
@@ -139,7 +139,7 @@ const main = async () => {
         const rtt = catchTime - startTime // TOTAL
 
         benchmarkResults.push({ cycle, outbound, turnaround, inbound, rtt })
-        console.log(`[⚙️ PROCESS] Cycle ${cycle} Processed. RTT: ${rtt}ms`)
+        console.log(`[PROCESS] Cycle ${cycle} Processed. RTT: ${rtt}ms`)
 
         if (benchmarkResults.length === TOTAL_CYCLES) {
           renderFinalReport(benchmarkResults)
@@ -168,12 +168,12 @@ const main = async () => {
       console.log(`${cycleStr}| ${outStr}| ${turnStr}| ${inStr}| ${res.rtt}ms`)
     })
     console.log('='.repeat(75))
-    console.log('[ℹ️ INFO] RTT is purely network turn-around (5s stabilization excluded).')
+    console.log('[INFO] RTT is purely network turn-around (5s stabilization excluded).')
     console.log('='.repeat(75))
   }
 
   try {
-    console.log('[ℹ️ INFO] Waiting for gRPC mesh stabilization (5s)...')
+    console.log('[INFO] Waiting for gRPC mesh stabilization (5s)...')
     await new Promise(resolve => setTimeout(resolve, 5000))
 
     for (let i = 1; i <= TOTAL_CYCLES; i++) {
@@ -181,19 +181,19 @@ const main = async () => {
       await nodeA.send('PING', { cycle: i })
 
       if (i < TOTAL_CYCLES) {
-        console.log(`[ℹ️ INFO] Cycle ${i} complete. Stability pause (5s)...`)
+        console.log(`[INFO] Cycle ${i} complete. Stability pause (5s)...`)
         await new Promise(resolve => setTimeout(resolve, 5000))
       }
     }
     console.log('\nAll triggers sent. Awaiting final consensus reassembly...')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Consensus Accuracy: Unlike local network pings, an HCS Ping relies on')
     console.log('the network reaching a chronological agreement. The latency you see')
     console.log('here is the time it takes for a message to become "Immutable" and')
     console.log('globally recognized.')
   } catch (error) {
-    console.error('\n[❌ FAILED] Benchmark Failed:', error.message)
+    console.error('\n[FAILED] Benchmark Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -202,7 +202,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

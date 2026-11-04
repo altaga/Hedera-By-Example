@@ -1,4 +1,4 @@
-# 🏛️ Module 11: Hedera Studios & Real-World Assets (RWA)
+# Module 11: Hedera Studios & Real-World Assets (RWA)
 ## Institutional Tokenization, ERC-3643 Compliance, and Stablecoin Governance
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 In this module, we transition from toy digital collectibles to institutional capital markets: compliant equity, tokenized bonds with automated coupon schedules, and regulatory-ready stablecoins with Proof-of-Reserve (PoR).
 
@@ -23,7 +23,7 @@ In this module, we transition from toy digital collectibles to institutional cap
 
 ---
 
-## 🏛️ Institutional Asset Lifecycle (ERC-3643 / ATS)
+## Institutional Asset Lifecycle (ERC-3643 / ATS)
 
 ```mermaid
 %%{init: {
@@ -72,7 +72,7 @@ flowchart TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Why Vanilla ERC-20 Fails for Institutional RWAs
 Standard ERC-20 tokens are permissionless: anyone can transfer to any address. Securities regulations (SEC, MiCA, FINMA) require that tokenized equities, real estate, and debt instruments can **only** be held by accredited, KYC-verified investors in approved jurisdictions. The **ERC-3643** standard enforces this by gating every transfer through an Identity Registry.
@@ -92,7 +92,7 @@ To avoid Terra/Luna style de-pegging catastrophes, fiat-backed stablecoins on He
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Asset Tokenization Studio (ATS)](https://docs.hedera.com/solutions/tokenization/ats)
 - [ATS GitHub Repository](https://github.com/hashgraph/asset-tokenization-studio)
 - [Hedera Stablecoin Studio](https://docs.hedera.com/solutions/tokenization/stablecoin)
@@ -101,4 +101,4 @@ To avoid Terra/Luna style de-pegging catastrophes, fiat-backed stablecoins on He
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. REGULATED LIQUIDITY. ZERO FRICTION. NO COMPROMISE.
+ 2026 **HEDERA FOR DUMMIES**. REGULATED LIQUIDITY. ZERO FRICTION. NO COMPROMISE.

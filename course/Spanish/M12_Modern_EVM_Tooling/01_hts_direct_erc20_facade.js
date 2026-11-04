@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Fachada Directa HTS como ERC-20 (Ejecución en Solidity)
- * [ CONCEPTO ] Compatibilidad Directa Solidity ERC-20 con HIP-719
+ * [CONCEPTO] Compatibilidad Directa Solidity ERC-20 con HIP-719
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Adiós al Precompilado 0x167: Históricamente, interactuar con un token HTS desde
@@ -44,7 +44,7 @@ import {
 import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
-  console.log('[⚙️ PROCESO] Compilando contrato inteligente Solidity con solc 0.8.20...')
+  console.log('[PROCESO] Compilando contrato inteligente Solidity con solc 0.8.20...')
   const sourceCode = fs.readFileSync(sourcePath, 'utf8')
 
   const input = {
@@ -82,7 +82,7 @@ const main = async () => {
 
   try {
     // 1. Crear un token fungible nativo en HTS
-    console.log('[⚙️ PROCESO] Creando token nativo HTS...')
+    console.log('[PROCESO] Creando token nativo HTS...')
     const htsTokenId = await reuseToken('REUSE_M12_01_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenCreateTx = await new TokenCreateTransaction()
@@ -104,17 +104,17 @@ const main = async () => {
 
     // Derivar dirección EVM determinista (HIP-719)
     const tokenEvmAddress = `0x${htsTokenId.toEvmAddress()}`
-    console.log(`[✅ ÉXITO] Token Nativo HTS Creado: ${htsTokenId.toString()}`)
-    console.log(`[📊 REGISTRO] Dirección EVM Determinista: ${tokenEvmAddress}`)
+    console.log(`[ÉXITO] Token Nativo HTS Creado: ${htsTokenId.toString()}`)
+    console.log(`[REGISTRO] Dirección EVM Determinista: ${tokenEvmAddress}`)
 
     // 2. Compilar Contrato Solidity
     const currentDir = path.dirname(import.meta.filename)
     const solPath = path.join(currentDir, '01_hts_direct_erc20_facade.sol')
     const { bytecode, abi } = compileSolidityContract(solPath)
-    console.log(`[✅ ÉXITO] Contrato Compilado. Tamaño del Bytecode: ${bytecode.length / 2} bytes`)
+    console.log(`[ÉXITO] Contrato Compilado. Tamaño del Bytecode: ${bytecode.length / 2} bytes`)
 
     // 3. Desplegar Contrato en Hedera mediante ContractCreateFlow
-    console.log('\n[⚙️ PROCESO] Desplegando contrato HtsTokenVault en el Smart Contract Service de Hedera...')
+    console.log('\n[PROCESO] Desplegando contrato HtsTokenVault en el Smart Contract Service de Hedera...')
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
     const contractId = await reuseContract('REUSE_M12_01_CONTRACT', bytecode + tokenEvmAddress, async () => {
@@ -129,22 +129,22 @@ const main = async () => {
     })
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`
 
-    console.log(`[✅ ÉXITO] Contrato Desplegado en Hedera: ${contractId.toString()}`)
-    console.log(`[📊 REGISTRO] Dirección EVM del Contrato: ${contractEvmAddress}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/contract/${contractId}`}`)
+    console.log(`[ÉXITO] Contrato Desplegado en Hedera: ${contractId.toString()}`)
+    console.log(`[REGISTRO] Dirección EVM del Contrato: ${contractEvmAddress}`)
+    console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/contract/${contractId}`}`)
 
     updateState('FACADE_HTS_TOKEN_ID', htsTokenId.toString())
     updateState('FACADE_HTS_EVM_ADDRESS', tokenEvmAddress)
     updateState('FACADE_CONTRACT_ID', contractId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HIP-719 elimina la fricción para desarrolladores de contratos inteligentes en Ethereum.')
     console.log('Tus contratos en Solidity pueden integrarse directamente con activos de Hedera')
     console.log('Token Service utilizando interfaces estándar IERC20 de OpenZeppelin.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en el despliegue de la fachada HTS:', error.message)
+    console.error('\n[FALLO] Fallo en el despliegue de la fachada HTS:', error.message)
     process.exit(1)
   }
 }
@@ -153,7 +153,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

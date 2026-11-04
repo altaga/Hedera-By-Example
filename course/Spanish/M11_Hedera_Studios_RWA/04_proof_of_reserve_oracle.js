@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
- * [ CONCEPTO ] Atestación de Colateral en Tiempo Real y Prevención de Desanclaje
+ * [CONCEPTO] Atestación de Colateral en Tiempo Real y Prevención de Desanclaje
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Solvencia Criptográfica: Emitir stablecoins u oro tokenizado sin pruebas en tiempo
@@ -22,7 +22,7 @@
  * - Actual:   M11 Lab 04: Oráculo Proof-of-Reserve
  * - Siguiente: M11 Lab 05: Factoraje de Facturas RWA
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Las cifras de reservas del custodio son simuladas. Las reacciones en la red a esas cifras son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -86,7 +86,7 @@ const main = async () => {
 
   try {
     // 1. Crear tópico dedicado de HCS para Atestaciones de Reservas
-    console.log('[⚙️ PROCESO] Inicializando canal de consenso Proof-of-Reserve...')
+    console.log('[PROCESO] Inicializando canal de consenso Proof-of-Reserve...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('por:custodian_attestation_feed')
@@ -96,7 +96,7 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicResponse.getReceipt(client)
     const porTopicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico de Atestación PoR Creado: ${porTopicId}`)
+    console.log(`[ÉXITO] Tópico de Atestación PoR Creado: ${porTopicId}`)
 
     const oracle = new ProofOfReserveOracle(porTopicId, '0.0.999123')
 
@@ -106,10 +106,10 @@ const main = async () => {
     const custodianA = 1312500 // $1.31M en efectivo en BNY Mellon
     const resultA = oracle.evaluateSolvency(supplyA, custodianA)
 
-    console.log(`[📊 REGISTRO] Suministro On-Chain:  $${supplyA.toLocaleString()} USDD`)
-    console.log(`[📊 REGISTRO] Bóveda del Custodio:  $${custodianA.toLocaleString()} USD`)
-    console.log(`[📊 REGISTRO] Ratio de Colateral:   ${resultA.ratio}%`)
-    console.log(`[📊 REGISTRO] Emisión Permitida:    ${oracle.mintingEnabled ? 'SÍ' : 'NO'}`)
+    console.log(`[REGISTRO] Suministro On-Chain:  $${supplyA.toLocaleString()} USDD`)
+    console.log(`[REGISTRO] Bóveda del Custodio:  $${custodianA.toLocaleString()} USD`)
+    console.log(`[REGISTRO] Ratio de Colateral:   ${resultA.ratio}%`)
+    console.log(`[REGISTRO] Emisión Permitida:    ${oracle.mintingEnabled ? 'SÍ' : 'NO'}`)
 
     // Enviar atestación a HCS
     const attestationMsgA = JSON.stringify({
@@ -128,7 +128,7 @@ const main = async () => {
       .setMessage(attestationMsgA)
       .freezeWith(client)
     await msgTxA.execute(client)
-    console.log('[✅ ÉXITO] Atestación 1 Anclada al Consenso de Hedera.')
+    console.log('[ÉXITO] Atestación 1 Anclada al Consenso de Hedera.')
 
     // Escenario B: Pánico Bancario / Déficit Repentino (Evento de Estrés)
     console.log('\n--- CICLO DE ATESTACIÓN 2: Caída Repentina de Colateral ---')
@@ -136,11 +136,11 @@ const main = async () => {
     const custodianB = 1050000 // Solo quedan $1.05M (¡Déficit!)
     const resultB = oracle.evaluateSolvency(supplyB, custodianB)
 
-    console.log(`[📊 REGISTRO] Suministro On-Chain:  $${supplyB.toLocaleString()} USDD`)
-    console.log(`[📊 REGISTRO] Bóveda del Custodio:  $${custodianB.toLocaleString()} USD`)
-    console.log(`[🚨 ALERTA] Ratio de Colateral:     ${resultB.ratio}% (< 100%)`)
-    console.log(`[🚨 ALERTA] Disyuntor de Seguridad: ${resultB.circuitBreakerAction}`)
-    console.log(`[🚨 ALERTA] Estado de Emisión:      ${oracle.mintingEnabled ? 'ACTIVE' : 'HALTED'}`)
+    console.log(`[REGISTRO] Suministro On-Chain:  $${supplyB.toLocaleString()} USDD`)
+    console.log(`[REGISTRO] Bóveda del Custodio:  $${custodianB.toLocaleString()} USD`)
+    console.log(`[ALERTA] Ratio de Colateral:     ${resultB.ratio}% (< 100%)`)
+    console.log(`[ALERTA] Disyuntor de Seguridad: ${resultB.circuitBreakerAction}`)
+    console.log(`[ALERTA] Estado de Emisión:      ${oracle.mintingEnabled ? 'ACTIVE' : 'HALTED'}`)
 
     const attestationMsgB = JSON.stringify({
       cycle: 2,
@@ -157,18 +157,18 @@ const main = async () => {
       .setMessage(attestationMsgB)
       .freezeWith(client)
     await msgTxB.execute(client)
-    console.log('[✅ ÉXITO] Alerta de Emergencia Anclada al Consenso de Hedera.')
+    console.log('[ÉXITO] Alerta de Emergencia Anclada al Consenso de Hedera.')
 
     updateState('POR_TOPIC_ID', porTopicId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Proof-of-Reserve transforma la transparencia en un sistema de defensa autónomo.')
     console.log('Al transmitir auditorías continuas a HCS, los emisores eliminan el pánico de')
     console.log('corridas bancarias y demuestran solvencia matemática en tiempo real.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la simulación del oráculo Proof-of-Reserve:', error.message)
+    console.error('\n[FALLO] Fallo en la simulación del oráculo Proof-of-Reserve:', error.message)
     process.exit(1)
   }
 }
@@ -177,7 +177,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,4 +1,4 @@
-# 🌐 Module 13: Cross-Ledger Protocol & Data Streams
+# Module 13: Cross-Ledger Protocol & Data Streams
 ## Bridgeless Interoperability, Fee Sponsorship, and Decentralized Block Lakes
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 In this module, we transition from single-ledger dApp engineering into cross-chain modular infrastructure and high-throughput data lakes.
 
@@ -21,7 +21,7 @@ In this module, we transition from single-ledger dApp engineering into cross-cha
 
 ---
 
-## 🔄 The CLPR Bridgeless Cross-Chain Settlement Flow
+## The CLPR Bridgeless Cross-Chain Settlement Flow
 
 ```mermaid
 %%{init: {
@@ -44,10 +44,10 @@ In this module, we transition from single-ledger dApp engineering into cross-cha
 }}%%
 sequenceDiagram
     autonumber
-    actor User as 👤 Gasless User / Agent
+    actor User as  Gasless User / Agent
     participant Hedera as ℏ Hedera Consensus
-    participant Solver as ⚡ Liquidity Solver (Sponsor)
-    participant DestChain as 🔷 Destination EVM (Arbitrum/Base)
+    participant Solver as  Liquidity Solver (Sponsor)
+    participant DestChain as  Destination EVM (Arbitrum/Base)
 
     Note over User,Solver: HIP-1068: Solver grants delegated fee allowance to User
     User->>Hedera: Publish Intent (HBAR -> USDC) [Gas Paid by Solver Allowance]
@@ -61,7 +61,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Cross-Ledger Protocol (CLPR / HIP-1535)
 Traditional cross-chain bridges require users to lock tokens in a smart contract monitored by an off-chain multisig committee. These contracts have become the multi-billion-dollar honeypots of crypto. Under **CLPR** (co-authored by Leemon Baird and Richard Bair in Linux Foundation Decentralized Trust), ledgers communicate using cryptographic state proofs and **Threshold Signature Schemes (TSS)**. A destination EVM contract verifies the inclusion proof directly, enabling bridgeless cross-chain operations.
@@ -77,7 +77,7 @@ To prevent state bloat, Hedera decouples high-speed transaction ordering from te
 
 ---
 
-## 📚 Official References
+## Official References
 - [HIP-1535: Cross-Ledger Protocol (CLPR), draft](https://hips.hedera.com/hip/hip-1535)
 - [HIP-1068: Native Delegated Fee Allowances](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1068.md)
 - [HIP-1056: Unified Block Streams](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1056.md)
@@ -87,4 +87,4 @@ To prevent state bloat, Hedera decouples high-speed transaction ordering from te
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. BRIDGES ARE DEAD. PROOFS ARE FOREVER.
+ 2026 **HEDERA FOR DUMMIES**. BRIDGES ARE DEAD. PROOFS ARE FOREVER.

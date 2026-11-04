@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Transacciones Programadas (Cron Nativo)
- * [ CONCEPTO ] Ejecución Diferida y Automatización de Capa 1
+ * [CONCEPTO] Ejecución Diferida y Automatización de Capa 1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Cron sin Servidor: La capacidad de programar transacciones para ejecución
@@ -49,13 +49,13 @@ const main = async () => {
   const targetId = getState('ACCOUNT_1_ID')
 
   if (!targetId) {
-    console.error('[❌ FALLO] Falta ACCOUNT_1_ID en el estado local. Verifica la configuración inicial.')
+    console.error('[FALLO] Falta ACCOUNT_1_ID en el estado local. Verifica la configuración inicial.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log('[⚙️ PROCESO] Definiendo transferencia diferida de 0.1 HBAR...')
+    console.log('[PROCESO] Definiendo transferencia diferida de 0.1 HBAR...')
 
     // 1. Transacción Interna (La que se ejecutará en el futuro)
     const innerTx = new TransferTransaction()
@@ -67,7 +67,7 @@ const main = async () => {
     const expiracion = new Date()
     expiracion.setMinutes(expiracion.getMinutes() + 5)
 
-    console.log('[⚙️ PROCESO] Creando Schedule en el ledger con ventana de 5 minutos...')
+    console.log('[PROCESO] Creando Schedule en el ledger con ventana de 5 minutos...')
     const scheduleTx = await new ScheduleCreateTransaction()
       .setScheduledTransaction(innerTx)
       .setPayerAccountId(AccountId.fromString(operatorId))
@@ -80,14 +80,14 @@ const main = async () => {
     const receipt = await response.getReceipt(client)
     const scheduleId = receipt.scheduleId.toString()
 
-    console.log(`\n[✅ ÉXITO] Transacción Programada con éxito: ${scheduleId}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
-    console.log('[ℹ️ INFO] La operación reside ahora en la sala de espera del ledger.')
+    console.log(`\n[ÉXITO] Transacción Programada con éxito: ${scheduleId}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log('[INFO] La operación reside ahora en la sala de espera del ledger.')
 
     // Sincronizar ID para auditorías posteriores
     updateState('SCHEDULE_ID', scheduleId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al programar la lógica directamente en el ledger, descentralizas')
     console.log('el tiempo de ejecución. El estado pendiente es público y')
     console.log('verificable, permitiendo auditorías de pagos futuros antes de')
@@ -96,7 +96,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El despliegue de la automatización cron falló:', error.message)
+    console.error('\n[FALLO] El despliegue de la automatización cron falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -105,7 +105,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

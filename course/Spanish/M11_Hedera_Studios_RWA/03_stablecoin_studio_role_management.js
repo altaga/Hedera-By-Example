@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Gobernanza Basada en Roles con Stablecoin Studio
- * [ CONCEPTO ] Segregación de Funciones en Stablecoins Respaldadas por Fiat
+ * [CONCEPTO] Segregación de Funciones en Stablecoins Respaldadas por Fiat
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Separación Criptográfica de Poderes: Las stablecoins centralizadas dependen de
@@ -46,19 +46,19 @@ const main = async () => {
 
   try {
     // 1. Generar llaves segregadas para los roles institucionales
-    console.log('[⚙️ PROCESO] Generando llaves criptográficas de roles segregados...')
+    console.log('[PROCESO] Generando llaves criptográficas de roles segregados...')
     const cashInKey = PrivateKey.generateECDSA()
     const burnKey = PrivateKey.generateECDSA()
     const freezeKey = PrivateKey.generateECDSA()
     const wipeKey = PrivateKey.generateECDSA()
     const kycKey = PrivateKey.generateECDSA()
 
-    console.log(`[📊 REGISTRO] Llave Rol Cash-In: ${cashInKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[📊 REGISTRO] Llave Rol Freeze:  ${freezeKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[📊 REGISTRO] Llave Rol Wipe:    ${wipeKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[REGISTRO] Llave Rol Cash-In: ${cashInKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[REGISTRO] Llave Rol Freeze:  ${freezeKey.publicKey.toStringDer().substring(0, 24)}...`)
+    console.log(`[REGISTRO] Llave Rol Wipe:    ${wipeKey.publicKey.toStringDer().substring(0, 24)}...`)
 
     // 2. Desplegar la Stablecoin Institucional en HTS con Llaves de Roles Dedicadas
-    console.log('\n[⚙️ PROCESO] Desplegando stablecoin institucional con arquitectura Stablecoin Studio...')
+    console.log('\n[PROCESO] Desplegando stablecoin institucional con arquitectura Stablecoin Studio...')
     const stablecoinTokenId = (await reuseToken('REUSE_M11_03_TOKEN', async () => {
       const tokenCreateTx = await new TokenCreateTransaction()
         .setTokenName('Hedera Digital Dollar')
@@ -78,11 +78,11 @@ const main = async () => {
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ ÉXITO] Stablecoin Institucional Creada: ${stablecoinTokenId}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
+    console.log(`[ÉXITO] Stablecoin Institucional Creada: ${stablecoinTokenId}`)
+    console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
 
     // 3. Ejercer Rol 1: Cash-In (Acuñar tras confirmación bancaria de $250,000 USD)
-    console.log('\n[⚙️ PROCESO] Rol Cash-In: Transferencia bancaria confirmada. Acuñando $250,000 USDD...')
+    console.log('\n[PROCESO] Rol Cash-In: Transferencia bancaria confirmada. Acuñando $250,000 USDD...')
     const mintAmount = 250000 * 1000000 // 250,000 con 6 decimales
     const mintTx = await new TokenMintTransaction()
       .setTokenId(stablecoinTokenId)
@@ -92,12 +92,12 @@ const main = async () => {
     const mintResponse = await mintTx.execute(client)
     const mintReceipt = await mintResponse.getReceipt(client)
 
-    console.log(`[✅ ÉXITO] Cash-In Completado: Nuevo Suministro Total = ${mintReceipt.totalSupply.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan: ${getHashscanUrl(mintResponse)}`)
+    console.log(`[ÉXITO] Cash-In Completado: Nuevo Suministro Total = ${mintReceipt.totalSupply.toString()}`)
+    console.log(`[EXPLORADOR] HashScan: ${getHashscanUrl(mintResponse)}`)
 
     // 4. Ejercer Rol 2 y 3: Cumplimiento Regulatorio (Simulación de Congelamiento e Incautación)
     console.log('\n===============================================================')
-    console.log('🛡️ EJERCICIO DE CUMPLIMIENTO REGULATORIO: SANCIONES Y AML')
+    console.log('EJERCICIO DE CUMPLIMIENTO REGULATORIO: SANCIONES Y AML')
     console.log('===============================================================')
     console.log('1. Monitor de AML detecta billetera sospechosa vinculada a un mixer.')
     console.log('2. Rol Freeze ejecuta TokenFreezeTransaction a nivel de consenso.')
@@ -107,7 +107,7 @@ const main = async () => {
     updateState('STABLECOIN_TOKEN_ID', stablecoinTokenId)
     updateState('STABLECOIN_MINT_TX_ID', mintResponse.transactionId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Stablecoin Studio conecta la banca tradicional con los ledgers distribuidos.')
     console.log('Los reguladores exigen mecanismos de congelamiento e incautación para activos')
     console.log('fiduciarios; Hedera los entrega de forma nativa en HTS sin requerir contratos')
@@ -115,7 +115,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la gobernanza de la stablecoin:', error.message)
+    console.error('\n[FALLO] Fallo en la gobernanza de la stablecoin:', error.message)
     process.exit(1)
   }
 }
@@ -124,7 +124,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

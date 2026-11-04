@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 10: Inmersión en Contratos del Sistema: Tasa de Cambio 0x168 y Precompilación HAS 0x16a
- * [ CONCEPTO ] Oráculos On-Chain Nativos y Autorización Universal de Cuentas
+ * [CONCEPTO] Oráculos On-Chain Nativos y Autorización Universal de Cuentas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La mayoría de las redes EVM requieren oráculos externos (Chainlink, Pyth) para
@@ -55,7 +55,7 @@ import { getClient, getHashscanUrl, getState, updateState, executeWithGas } from
 import solc from 'solc'
 
 const compileSystemContractsFacade = () => {
-  console.log('[⚙️ PROCESO] Compilando 10_system_contracts_exchange_and_has.sol con solc 0.8.20...')
+  console.log('[PROCESO] Compilando 10_system_contracts_exchange_and_has.sol con solc 0.8.20...')
   const contractPath = new URL('./10_system_contracts_exchange_and_has.sol', import.meta.url)
   const sourceCode = fs.readFileSync(contractPath, 'utf8')
 
@@ -105,12 +105,12 @@ const main = async () => {
 
     if (contractIdStr) {
       contractId = ContractId.fromString(contractIdStr)
-      console.log(`[✅ ÉXITO] Reutilizando contrato SystemContractsFacade ID: ${contractIdStr}`)
+      console.log(`[ÉXITO] Reutilizando contrato SystemContractsFacade ID: ${contractIdStr}`)
     } else {
       const { bytecode } = compileSystemContractsFacade()
-      console.log(`[✅ ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
+      console.log(`[ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
 
-      console.log('\n[⚙️ PROCESO] Paso 1: Desplegando SystemContractsFacade en Hedera EVM...')
+      console.log('\n[PROCESO] Paso 1: Desplegando SystemContractsFacade en Hedera EVM...')
       // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -123,13 +123,13 @@ const main = async () => {
       contractIdStr = contractId.toString()
       updateState('SYSTEM_CONTRACTS_FACADE_ID', contractIdStr)
 
-      console.log(`[✅ ÉXITO] SystemContractsFacade Desplegado con Contract ID: ${contractIdStr}`)
-      console.log(`[📊 LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
-      console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
+      console.log(`[ÉXITO] SystemContractsFacade Desplegado con Contract ID: ${contractIdStr}`)
+      console.log(`[LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
+      console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
     // 2. Consultar Precompilación de Tasa de Cambio (0x168)
-    console.log('\n[⚙️ PROCESO] Paso 2: Consultando Precompilación de Tasa de Cambio 0x168 directamente desde EVM...')
+    console.log('\n[PROCESO] Paso 2: Consultando Precompilación de Tasa de Cambio 0x168 directamente desde EVM...')
     const oneUsdTinycents = 100000000 // 1 USD = 10^8 tinycents
 
     // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
@@ -143,35 +143,35 @@ const main = async () => {
     const tinybarsPerDollar = functionResult.getUint256(0)
     const hbarPriceUsd = (1e8 / Number(tinybarsPerDollar)).toFixed(4)
 
-    console.log('[✅ ÉXITO] ¡Consulta de Tasa de Cambio On-Chain Resuelta!')
-    console.log(`[📊 LOG] 1 USD ($1.00) en Tinybars: ${tinybarsPerDollar.toString()} tinybars`)
-    console.log(`[📊 LOG] Precio de Consenso Implícito:  $${hbarPriceUsd} USD / HBAR`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(execTx)}`)
-    console.log('[ℹ️ INFO] Precio obtenido directamente del estado de consenso en 1 llamada sin costo de oráculos.')
+    console.log('[ÉXITO] ¡Consulta de Tasa de Cambio On-Chain Resuelta!')
+    console.log(`[LOG] 1 USD ($1.00) en Tinybars: ${tinybarsPerDollar.toString()} tinybars`)
+    console.log(`[LOG] Precio de Consenso Implícito:  $${hbarPriceUsd} USD / HBAR`)
+    console.log(`[EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(execTx)}`)
+    console.log('[INFO] Precio obtenido directamente del estado de consenso en 1 llamada sin costo de oráculos.')
 
     // 3. Inspeccionar Capacidades del Servicio de Cuentas de Hedera (HAS 0x16a)
-    console.log('\n[⚙️ PROCESO] Paso 3: Verificando Capacidades de la Precompilación HAS (0x16a)...')
-    console.log('   Dirección de Precompilación: 0x000000000000000000000000000000000000016a')
-    console.log('   Especificaciones HIP:        HIP-632 & HIP-906')
-    console.log('   Funcionalidad:               Permite a contratos EVM verificar firmas de cualquier cuenta')
-    console.log('   Formatos Soportados:         ED25519, secp256k1 ECDSA y KeyLists de Umbral')
+    console.log('\n[PROCESO] Paso 3: Verificando Capacidades de la Precompilación HAS (0x16a)...')
+    console.log('Dirección de Precompilación: 0x000000000000000000000000000000000000016a')
+    console.log('Especificaciones HIP:        HIP-632 & HIP-906')
+    console.log('Funcionalidad:               Permite a contratos EVM verificar firmas de cualquier cuenta')
+    console.log('Formatos Soportados:         ED25519, secp256k1 ECDSA y KeyLists de Umbral')
 
     updateState('EXCHANGE_RATE_TINYBARS_PER_USD', tinybarsPerDollar.toString())
     updateState('EXCHANGE_RATE_IMPLIED_PRICE_USD', hbarPriceUsd)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Precompilaciones de Consenso Nativas: Los contratos Hedera EVM están enlazados')
     console.log('directamente al estado subyacente de la red. Pueden leer tasas de cambio nativas (0x168),')
     console.log('verificar firmas de cuentas multi-curva (0x16a) y ejecutar operaciones de tokens nativos (0x167).')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Cero Manipulaciones de Oráculos: Los protocolos construidos con 0x168 son inmunes')
     console.log('a la manipulación de precios de pools de liquidez descentralizados, ya que la tasa de cambio')
     console.log('está gobernada por la mediana ponderada de los nodos de consenso del Consejo de Gobierno de Hedera.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución de Contratos del Sistema:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución de Contratos del Sistema:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -182,7 +182,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

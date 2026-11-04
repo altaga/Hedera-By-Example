@@ -1,4 +1,4 @@
-# 🧠 Module 14: Advanced HCS Standards & Autonomous AI
+# Module 14: Advanced HCS Standards & Autonomous AI
 ## Inscriptions, Trust Scores, Agent Skills, Merkle Logs, and Encrypted Swarms
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 In this module, we transition Hedera Consensus Service from a simple message queue into a global decentralized operating system for autonomous machine intelligence.
 
@@ -25,7 +25,7 @@ In this module, we transition Hedera Consensus Service from a simple message que
 
 ---
 
-## 🔄 The Encrypted Autonomous Agent Swarm Architecture
+## The Encrypted Autonomous Agent Swarm Architecture
 
 ```mermaid
 %%{init: {
@@ -48,10 +48,10 @@ In this module, we transition Hedera Consensus Service from a simple message que
 }}%%
 sequenceDiagram
     autonumber
-    actor AgentA as 🤖 Agent Alpha (Oracle)
+    actor AgentA as  Agent Alpha (Oracle)
     participant HCS as ℏ Hedera Consensus (Public Topic)
-    actor AgentB as 🤖 Agent Beta (Arbitrageur)
-    participant Mirror as 🔍 Mirror Node (Public Observer)
+    actor AgentB as  Agent Beta (Arbitrageur)
+    participant Mirror as  Mirror Node (Public Observer)
 
     Note over AgentA,AgentB: 1. ECDH Key Exchange over Consensus
     AgentA->>HCS: Publish Ephemeral ECDH Public Key A
@@ -73,7 +73,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Inscription-Based Accounting (HCS-20)
 Traditional tokens require EVM contract state storage or HTS token associations for each recipient. **HCS-20** introduces deterministic JSON inscription semantics directly into consensus messages. By ordering `deploy`, `mint`, `transfer`, and `burn` events with sub-second timestamps, indexers compute user balances deterministically off-chain with zero contract vulnerability.
@@ -95,7 +95,7 @@ Public ledgers provide transparency and ordering, but leak confidential business
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hashgraph Online Standards Registry](https://standards.hashgraphonline.com/)
 - [HCS-20 Specification: Inscriptions & Auditable Points](https://docs.hashgraphonline.com/hcs-20)
 - [HCS-25 Specification: AI Trust Score Methodology](https://docs.hashgraphonline.com/hcs-25)
@@ -106,4 +106,4 @@ Public ledgers provide transparency and ordering, but leak confidential business
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. MACHINES NEED TRUST. TRUST NEEDS HASHGRAPH.
+ 2026 **HEDERA FOR DUMMIES**. MACHINES NEED TRUST. TRUST NEEDS HASHGRAPH.

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Agente de Mercado Autónomo (El Ciclo Completo)
- * [ CONCEPTO ] Descubrimiento, Evaluación y Liquidación Autónoma
+ * [CONCEPTO] Descubrimiento, Evaluación y Liquidación Autónoma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Soberanía Económica Extremo a Extremo: La culminación de la Web Agéntica es una IA
@@ -22,7 +22,7 @@
  * - Actual:   M10 Lab 06: Agente de Mercado Autónomo
  * - Siguiente: M10 Lab 07: Pasarela Proxy de Streaming de IA
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Agente -> Registro: Buscar proveedores y cotizaciones
  * Nota Agente: Elige el mejor puntaje precio/calidad
  * Agente -> Oráculo: GET de la señal de sentimiento
@@ -31,7 +31,7 @@
  * Agente -> Oráculo: Reintentar con la prueba de pago
  * Oráculo -> Agente: 200 OK + señal
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Los tres proveedores y sus cotizaciones son simulados. El pago es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -84,12 +84,12 @@ const main = async () => {
   const { client, operatorId, operatorKey, network } = getClient()
 
   try {
-    console.log('[🤖 AGENTE] Objetivo: Adquirir señal de sentimiento macroeconómico de mercado.')
-    console.log('[🤖 AGENTE] Política de Gasto: Máximo 1.0 HBAR por consulta.\n')
+    console.log('[AGENTE] Objetivo: Adquirir señal de sentimiento macroeconómico de mercado.')
+    console.log('[AGENTE] Política de Gasto: Máximo 1.0 HBAR por consulta.\n')
 
     // 1. Descubrimiento y Comparación de Servicios
-    console.log('[⚙️ PROCESO] Escaneando registro descentralizado de proveedores elegibles...')
-    console.log(`[📊 REGISTRO] ${MARKETPLACE_PROVIDERS.length} proveedores encontrados. Evaluando cotizaciones:\n`)
+    console.log('[PROCESO] Escaneando registro descentralizado de proveedores elegibles...')
+    console.log(`[REGISTRO] ${MARKETPLACE_PROVIDERS.length} proveedores encontrados. Evaluando cotizaciones:\n`)
 
     const evaluatedProviders = MARKETPLACE_PROVIDERS.map((provider) => {
       const withinBudget = provider.quotedPriceHbar <= 1.0
@@ -104,16 +104,16 @@ const main = async () => {
     eligibleProviders.sort((a, b) => b.utilityScore - a.utilityScore)
     const selectedProvider = eligibleProviders[0]
 
-    console.log(`\n[✅ ÉXITO] Proveedor Óptimo Seleccionado: ${selectedProvider.name}`)
-    console.log(`[📊 REGISTRO] Mejor Puntaje de Utilidad: ${selectedProvider.utilityScore.toFixed(3)} (Precio: ${selectedProvider.quotedPriceHbar} HBAR)`)
+    console.log(`\n[ÉXITO] Proveedor Óptimo Seleccionado: ${selectedProvider.name}`)
+    console.log(`[REGISTRO] Mejor Puntaje de Utilidad: ${selectedProvider.utilityScore.toFixed(3)} (Precio: ${selectedProvider.quotedPriceHbar} HBAR)`)
 
     // 2. Solicitar Recurso y Recibir Desafío HTTP 402
-    console.log(`\n[⚙️ PROCESO] Enviando petición no autenticada a ${selectedProvider.name}...`)
+    console.log(`\n[PROCESO] Enviando petición no autenticada a ${selectedProvider.name}...`)
     const challengeNonce = crypto.randomBytes(16).toString('hex')
-    console.log(`[📊 REGISTRO] Servidor respondió: HTTP 402 Payment Required (Nonce: ${challengeNonce})`)
+    console.log(`[REGISTRO] Servidor respondió: HTTP 402 Payment Required (Nonce: ${challengeNonce})`)
 
     // 3. Firma Criptográfica Autónoma
-    console.log('\n[⚙️ PROCESO] Agente generando firma criptográfica de pago...')
+    console.log('\n[PROCESO] Agente generando firma criptográfica de pago...')
     const signerKey = PrivateKey.fromStringDer(operatorKey)
     const paymentIntent = {
       payer: operatorId.toString(),
@@ -127,10 +127,10 @@ const main = async () => {
     const serialized = JSON.stringify(paymentIntent)
     const signatureBytes = signerKey.sign(Buffer.from(serialized, 'utf8'))
     const signatureHex = Buffer.from(signatureBytes).toString('hex')
-    console.log(`[✅ ÉXITO] Firma generada: ${signatureHex.substring(0, 32)}...`)
+    console.log(`[ÉXITO] Firma generada: ${signatureHex.substring(0, 32)}...`)
 
     // 4. Facilitador con Cero Gas Transmitiendo y Liquidando en Hedera
-    console.log('\n[⚙️ PROCESO] Transmitiendo pago a la red Hedera para liquidación por consenso...')
+    console.log('\n[PROCESO] Transmitiendo pago a la red Hedera para liquidación por consenso...')
     const transferTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-selectedProvider.quotedPriceHbar))
       .addHbarTransfer(operatorId, new Hbar(selectedProvider.quotedPriceHbar))
@@ -141,13 +141,13 @@ const main = async () => {
     const receipt = await txResponse.getReceipt(client)
     const hashscanUrl = getHashscanUrl(txResponse)
 
-    console.log('\n[✅ ÉXITO] Liquidación On-Chain Finalizada:')
-    console.log(`[📊 REGISTRO] Estado de Consenso: ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción:  ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan:         ${hashscanUrl}`)
+    console.log('\n[ÉXITO] Liquidación On-Chain Finalizada:')
+    console.log(`[REGISTRO] Estado de Consenso: ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción:  ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] HashScan:         ${hashscanUrl}`)
 
     // 5. Ingerir Inteligencia Desbloqueada
-    console.log('\n[⚙️ PROCESO] Servidor verificó prueba de pago. Ingestionando payload de datos desbloqueado...')
+    console.log('\n[PROCESO] Servidor verificó prueba de pago. Ingestionando payload de datos desbloqueado...')
     const intelligencePayload = {
       source: selectedProvider.name,
       macroIndicator: 'INFLATION_COOLING_EXPANSIONARY',
@@ -156,20 +156,20 @@ const main = async () => {
       timestamp: new Date().toISOString()
     }
 
-    console.log('\n[📊 REGISTRO] PAYLOAD DE INTELIGENCIA RECIBIDO:')
+    console.log('\n[REGISTRO] PAYLOAD DE INTELIGENCIA RECIBIDO:')
     console.dir(intelligencePayload, { depth: null })
 
     updateState('X402_MARKET_AGENT_TX_ID', txResponse.transactionId.toString())
     updateState('X402_MARKET_AGENT_PROVIDER', selectedProvider.name)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Esto completa la visión de la Economía de Máquinas: agentes de IA que')
     console.log('descubren servicios, evalúan alternativas, pagan micro-liquidaciones on-chain')
     console.log('a través de Hedera, y entregan inteligencia de alto nivel sin intervención humana.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la ejecución del agente autónomo:', error.message)
+    console.error('\n[FALLO] Fallo en la ejecución del agente autónomo:', error.message)
     process.exit(1)
   }
 }
@@ -178,7 +178,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

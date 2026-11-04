@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Autonomous Agent Payment Signature
- * [ CONCEPT ] Cryptographic Intent-to-Pay Signatures
+ * [CONCEPT] Cryptographic Intent-to-Pay Signatures
  * ============================================================================
  * [ KEY CONCEPT ]
  * Replay-Protected Authorization: When an AI agent agrees to pay for an API
@@ -21,7 +21,7 @@
  * - Previous: M10 Lab 01: Server 402 Challenge
  * - Next:     M10 Lab 03: Facilitator Settlement
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Server -> Agent: 402 challenge (0.5 ℏ, payee, nonce)
  * Note Agent: Checks its budget policy (max 1 ℏ)
  * Note Agent: Signs the payment authorization with its key
@@ -69,20 +69,20 @@ const main = async () => {
     const nonce = getState('X402_CHALLENGE_NONCE') || crypto.randomBytes(16).toString('hex')
     const expiresAt = Number(getState('X402_CHALLENGE_EXPIRES')) || (Date.now() + 120000)
 
-    console.log('[⚙️ PROCESS] Agent parsing HTTP 402 challenge parameters...')
-    console.log(`[📊 LOG] Target Resource: ${resource}`)
-    console.log(`[📊 LOG] Quoted Price:   ${amount} HBAR`)
-    console.log(`[📊 LOG] Payee Account:  ${payee}`)
-    console.log(`[📊 LOG] Challenge Nonce:${nonce}`)
+    console.log('[PROCESS] Agent parsing HTTP 402 challenge parameters...')
+    console.log(`[LOG] Target Resource: ${resource}`)
+    console.log(`[LOG] Quoted Price:   ${amount} HBAR`)
+    console.log(`[LOG] Payee Account:  ${payee}`)
+    console.log(`[LOG] Challenge Nonce:${nonce}`)
 
     // 2. Autonomous Policy Evaluation (Budget Guardrail)
     const MAX_PRICE_PER_CALL_HBAR = 1.0 // Agent's internal limit
-    console.log(`\n[⚙️ PROCESS] Evaluating internal budget policy (Max Allowed: ${MAX_PRICE_PER_CALL_HBAR} HBAR)...`)
+    console.log(`\n[PROCESS] Evaluating internal budget policy (Max Allowed: ${MAX_PRICE_PER_CALL_HBAR} HBAR)...`)
 
     if (amount > MAX_PRICE_PER_CALL_HBAR) {
       throw new Error(`Quoted price (${amount} HBAR) exceeds agent policy ceiling (${MAX_PRICE_PER_CALL_HBAR} HBAR).`)
     }
-    console.log('[✅ SUCCESS] Quoted price is within autonomous spending limit. Approving payment intent.')
+    console.log('[SUCCESS] Quoted price is within autonomous spending limit. Approving payment intent.')
 
     // 3. Construct deterministic payment authorization payload
     const paymentPayload = {
@@ -100,26 +100,26 @@ const main = async () => {
     }
 
     // 4. Cryptographically sign the intent using the agent's private key
-    console.log('\n[⚙️ PROCESS] Signing payment authorization proof with agent key...')
+    console.log('\n[PROCESS] Signing payment authorization proof with agent key...')
     const signerKey = PrivateKey.fromStringDer(operatorKey)
     const signedProof = signPaymentIntent(signerKey, paymentPayload)
 
     // Encode into standard x402 header value
     const paymentHeaderValue = Buffer.from(JSON.stringify(signedProof)).toString('base64')
 
-    console.log('\n[✅ SUCCESS] Cryptographic Payment Proof Generated:')
-    console.log(`[📊 LOG] Payer Account:    ${paymentPayload.payer}`)
-    console.log(`[📊 LOG] Public Key (DER): ${signedProof.publicKey.substring(0, 32)}...`)
-    console.log(`[📊 LOG] Signature (Hex):  ${signedProof.signature.substring(0, 32)}...`)
-    console.log(`[📊 LOG] Header Size:      ${paymentHeaderValue.length} bytes (base64)`)
-    console.log(`[📊 LOG] PAYMENT-SIGNATURE: ${paymentHeaderValue.substring(0, 48)}...`)
+    console.log('\n[SUCCESS] Cryptographic Payment Proof Generated:')
+    console.log(`[LOG] Payer Account:    ${paymentPayload.payer}`)
+    console.log(`[LOG] Public Key (DER): ${signedProof.publicKey.substring(0, 32)}...`)
+    console.log(`[LOG] Signature (Hex):  ${signedProof.signature.substring(0, 32)}...`)
+    console.log(`[LOG] Header Size:      ${paymentHeaderValue.length} bytes (base64)`)
+    console.log(`[LOG] PAYMENT-SIGNATURE: ${paymentHeaderValue.substring(0, 48)}...`)
 
     // Persist for Lab 03 Facilitator Settlement
     updateState('X402_PAYMENT_PAYLOAD', JSON.stringify(paymentPayload))
     updateState('X402_PAYMENT_SIGNATURE', signedProof.signature)
     updateState('X402_PAYMENT_HEADER', paymentHeaderValue)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The agent signs proof of authorization, NOT raw gas or network plumbing.')
     console.log('The signature proves that the owner authorized a transfer of 0.5 HBAR')
     console.log('specifically for nonce ' + nonce + '. Intermediaries cannot modify the amount')
@@ -127,7 +127,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Failed to sign payment intent:', error.message)
+    console.error('\n[ERROR] Failed to sign payment intent:', error.message)
     process.exit(1)
   }
 }
@@ -136,7 +136,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

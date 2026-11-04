@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 11: Encrypted A2A Communication (HCS-10)
- * [ CONCEPT ] Hybrid Encryption & Privacy over Public Ledger
+ * [CONCEPT] Hybrid Encryption & Privacy over Public Ledger
  * ============================================================================
  * [ KEY CONCEPT ]
  * Layered Defense: Encryption provides Confidentiality, but it does NOT
@@ -21,9 +21,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 10: Secure with Attack
- * - Next:     🏁 GRADUATION: Curriculum Complete
+ * - Next:      GRADUATION: Curriculum Complete
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent A -> Agent B Inbox: Request encrypted with Agent B RSA public key
  * Note Agent B: Only Agent B private key can decrypt it
  * Agent B -> Agent A Inbox: Reply encrypted with Agent A public key
@@ -63,7 +63,7 @@ const main = async () => {
   const agentB_Inbox = getState('HCS11_AGENT_B_INBOUND')
 
   if (!agentA_Id || !agentB_Id || !agentA_Inbox || !agentB_Inbox) {
-    console.error('[❌ FAILED] Missing Agent data or Inbox Topics in configuration.')
+    console.error('[FAILED] Missing Agent data or Inbox Topics in configuration.')
     process.exitCode = 1
     return
   }
@@ -79,7 +79,7 @@ const main = async () => {
     if (fs.existsSync(privateKeyPath)) {
       return { privateKey: fs.readFileSync(privateKeyPath, 'utf8'), publicKey: fs.readFileSync(publicKeyPath, 'utf8') }
     }
-    console.log(`[⚙️ PROCESS] Generating RSA Keypair for ${agentAlias}...`)
+    console.log(`[PROCESS] Generating RSA Keypair for ${agentAlias}...`)
     const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } })
     fs.writeFileSync(privateKeyPath, privateKey); fs.writeFileSync(publicKeyPath, publicKey)
     return { privateKey, publicKey }
@@ -100,18 +100,18 @@ const main = async () => {
 
     handlerB_Listen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text) {
-        console.log('\n--- 📥 [📊 LOG] AGENT B: DECRYPTED INBOUND ---')
-        console.log(`[✅ SUCCESS] Decrypted message: "${message.text}"`)
+        console.log('\n---  [LOG] AGENT B: DECRYPTED INBOUND ---')
+        console.log(`[SUCCESS] Decrypted message: "${message.text}"`)
 
         await sleep(3000)
 
         const replyPayload = { text: `World ${message.round}!` }
-        console.log('[⚙️ PROCESS] Routing RSA-encrypted reply to Agent A\'s Inbox...')
+        console.log('[PROCESS] Routing RSA-encrypted reply to Agent A\'s Inbox...')
         await handlerB_Speak.sendMessage(replyPayload, agentA_Id)
       }
     })
 
-    console.log(`🛡️  [ℹ️ INFO] Agent B Live: Monitoring lane ${agentB_Inbox}`)
+    console.log(`[INFO] Agent B Live: Monitoring lane ${agentB_Inbox}`)
     handlerB_Listen.monitorConnectionMessages()
   }
 
@@ -127,23 +127,23 @@ const main = async () => {
     const handlerA_Speak = new AgentCommunicationHandler(client_A_Speaker, agentB_Inbox, agentA_Id, keysA.privateKey, pubKeys, [])
 
     const sendPing = async (round) => {
-      console.log('\n--- 📤 [⚙️ PROCESS] AGENT A: OUTBOUND DISPATCH ---')
-      console.log('[⚙️ PROCESS] Routing RSA-encrypted request to Agent B\'s Inbox...')
+      console.log('\n---  [PROCESS] AGENT A: OUTBOUND DISPATCH ---')
+      console.log('[PROCESS] Routing RSA-encrypted request to Agent B\'s Inbox...')
       await handlerA_Speak.sendMessage({ text: `Hello ${round}`, round }, agentB_Id)
     }
 
     handlerA_Listen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text?.includes(`World ${currentRound}`)) {
-        console.log('\n--- 📥 [📊 LOG] AGENT A: DECRYPTED INBOUND ---')
-        console.log(`[✅ SUCCESS] Valid response received: "${message.text}"`)
+        console.log('\n---  [LOG] AGENT A: DECRYPTED INBOUND ---')
+        console.log(`[SUCCESS] Valid response received: "${message.text}"`)
 
         if (currentRound < 3) {
           currentRound++
           await sleep(4000)
           await sendPing(currentRound)
         } else {
-          console.log('\n🏁 [✅ SUCCESS] Full-Duplex Encrypted Orchestration Complete.')
-          console.log('\n💡 KEY CONCEPT:')
+          console.log('\n [SUCCESS] Full-Duplex Encrypted Orchestration Complete.')
+          console.log('\n KEY CONCEPT:')
           console.log('Layered Defense: Encryption provides Confidentiality, but it does')
           console.log('NOT provide Authenticity on its own. In this lab, we layered Hybrid')
           console.log('Encryption on top of ECDSA session validation to create the gold')
@@ -154,7 +154,7 @@ const main = async () => {
       }
     })
 
-    console.log(`🤖 [ℹ️ INFO] Agent A Live: Monitoring lane ${agentA_Inbox}`)
+    console.log(`[INFO] Agent A Live: Monitoring lane ${agentA_Inbox}`)
     handlerA_Listen.monitorConnectionMessages()
 
     await sleep(2000)
@@ -169,7 +169,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

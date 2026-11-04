@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Descubrimiento de Registros HCS-2
- * [ CONCEPTO ] Resolución de Estado mediante Mirror Nodes
+ * [CONCEPTO] Resolución de Estado mediante Mirror Nodes
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Filtrado Descentralizado: Los registros en el ledger son logs de solo
@@ -47,13 +47,13 @@ const main = async () => {
   const registryTopicId = getState('HCS2_REGISTRY_TOPIC_ID')
 
   if (!registryTopicId) {
-    console.error('[❌ FALLO] No se encontró el ID del Registro HCS-2. Ejecuta Lab 02 primero.')
+    console.error('[FALLO] No se encontró el ID del Registro HCS-2. Ejecuta Lab 02 primero.')
     process.exitCode = 1
     return
   }
 
-  console.log(`[⚙️ PROCESO] Buscando Agentes Verificados en el Registro: ${registryTopicId}`)
-  console.log('[ℹ️ INFO] Conectando al stream del Nodo Espejo para indexación local...\n')
+  console.log(`[PROCESO] Buscando Agentes Verificados en el Registro: ${registryTopicId}`)
+  console.log('[INFO] Conectando al stream del Nodo Espejo para indexación local...\n')
 
   let agentsFound = 0
 
@@ -63,7 +63,7 @@ const main = async () => {
     .setStartTime(0)
     .subscribe(
       client,
-      (error) => { console.error(`[❌ FALLO] Nodo Espejo: ${error.message}`); process.exit(1) },
+      (error) => { console.error(`[FALLO] Nodo Espejo: ${error.message}`); process.exit(1) },
       (message) => {
         try {
           // 1. Decodificación del mensaje HCS
@@ -74,11 +74,11 @@ const main = async () => {
           if (entry.h === 'hcs-2' && entry.cat === 'ANTI_CHEAT_ORACLE') {
             agentsFound++
 
-            console.log(`🎯 --- [✅ ÉXITO] AGENTE ENCONTRADO #${agentsFound} ---`)
-            console.log(`   [ℹ️ INFO] ${entry.r}`)
-            console.log(`   [📊 REGISTRO]  ${entry.tid} (Referencia HCS-1)`)
-            console.log(`   [ℹ️ INFO]     ${entry.status}`)
-            console.log(`   [ℹ️ INFO]      ${new Date(entry.ts).toLocaleString()}`)
+            console.log(`--- [ÉXITO] AGENTE ENCONTRADO #${agentsFound} ---`)
+            console.log(`[INFO] ${entry.r}`)
+            console.log(`[REGISTRO]  ${entry.tid} (Referencia HCS-1)`)
+            console.log(`[INFO]     ${entry.status}`)
+            console.log(`[INFO]      ${new Date(entry.ts).toLocaleString()}`)
             console.log('--------------------------------------------------')
           }
         } catch (parseError) {
@@ -89,8 +89,8 @@ const main = async () => {
 
   // El script escucha en tiempo real. Esperamos 5 segundos para fines de demostración.
   setTimeout(() => {
-    console.log('\n[✅ ÉXITO] Búsqueda finalizada. Stream de descubrimiento cerrado.')
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n[ÉXITO] Búsqueda finalizada. Stream de descubrimiento cerrado.')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Así funcionan las aplicaciones frontend descentralizadas. Un cliente de juego Web3')
     console.log('no necesita una API key para hallar reglas: simplemente lee el stream del registro')
     console.log('público y descubre los agentes activos automáticamente.')
@@ -103,7 +103,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

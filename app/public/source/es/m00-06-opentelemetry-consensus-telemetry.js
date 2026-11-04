@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Telemetría de Consenso con OpenTelemetry
- * [ CONCEPTO ] Trazado Distribuido y Observabilidad APM de Alta Precisión
+ * [CONCEPTO] Trazado Distribuido y Observabilidad APM de Alta Precisión
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En arquitecturas bancarias y fintech de misión crítica, las operaciones
@@ -93,7 +93,7 @@ class W3CTracer {
   }
 
   printSpanSummary () {
-    console.log('\n--- 🔭 RESUMEN DE TRAZAS OPENTELEMETRY (W3C TRACECONTEXT) ---')
+    console.log('\n---  RESUMEN DE TRAZAS OPENTELEMETRY (W3C TRACECONTEXT) ---')
     console.table(this.spans.map(s => ({
       'Nombre del Span': s.name,
       'Duración (ms)': `${s.durationMs} ms`,
@@ -111,8 +111,8 @@ const main = async () => {
   const tracer = new W3CTracer('Hedera-Fintech-Gateway')
   const traceContext = tracer.createTraceContext()
 
-  console.log(`[📡 APM] TraceParent W3C Activo: ${traceContext.traceparent}`)
-  console.log(`[📊 REGISTRO] Cuenta Operadora:    ${operatorId.toString()}`)
+  console.log(`[APM] TraceParent W3C Activo: ${traceContext.traceparent}`)
+  console.log(`[REGISTRO] Cuenta Operadora:    ${operatorId.toString()}`)
 
   try {
     let transaction
@@ -121,7 +121,7 @@ const main = async () => {
 
     // SPAN 1: Ensamblado de Transacción e Inyección de Contexto W3C
     await tracer.startSpan('hedera.tx.build', traceContext, async ({ spanId }) => {
-      console.log('\n[⚙️ PROCESO] Span [hedera.tx.build]: Construyendo transferencia con tag W3C...')
+      console.log('\n[PROCESO] Span [hedera.tx.build]: Construyendo transferencia con tag W3C...')
       // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
       transaction = await new TransferTransaction()
         .addHbarTransfer(operatorId, new Hbar(0))
@@ -138,7 +138,7 @@ const main = async () => {
 
     // SPAN 2: Transmisión y Ordenamiento de Consenso en Gossip
     await tracer.startSpan('hedera.consensus.submit', traceContext, async () => {
-      console.log('[⚙️ PROCESO] Span [hedera.consensus.submit]: Transmitiendo a los nodos de consenso...')
+      console.log('[PROCESO] Span [hedera.consensus.submit]: Transmitiendo a los nodos de consenso...')
       response = await transaction.execute(client)
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       receipt = await response.getReceipt(client)
@@ -153,7 +153,7 @@ const main = async () => {
 
     // SPAN 3: Sonda de Latencia de Ingesta en Mirror Node
     await tracer.startSpan('hedera.mirrornode.sync', traceContext, async () => {
-      console.log('[⚙️ PROCESO] Span [hedera.mirrornode.sync]: Sondeando ingesta de estado en Mirror Node...')
+      console.log('[PROCESO] Span [hedera.mirrornode.sync]: Sondeando ingesta de estado en Mirror Node...')
       const mirrorBase = getMirrorNodeBaseUrl()
       const formattedTxId = `${response.transactionId.accountId}-${response.transactionId.validStart.seconds}-${response.transactionId.validStart.nanos}`
 
@@ -180,14 +180,14 @@ const main = async () => {
       }
     })
 
-    console.log('\n[✅ ÉXITO] ¡Consenso Verificado en Hedera Testnet!')
-    console.log(`[📊 REGISTRO] ID de Transacción: ${response.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] HashScan:         ${getHashscanUrl(response)}`)
+    console.log('\n[ÉXITO] ¡Consenso Verificado en Hedera Testnet!')
+    console.log(`[REGISTRO] ID de Transacción: ${response.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] HashScan:         ${getHashscanUrl(response)}`)
 
     // Imprimir Tabla APM de OpenTelemetry
     tracer.printSpanSummary()
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Integración APM de Producción: Al enlazar traceparents W3C en los memos')
     console.log('de transacción, los equipos de DevOps y SRE pueden correlacionar peticiones')
     console.log('web de microservicios con registros de consenso on-chain en Datadog o Jaeger.')
@@ -195,7 +195,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Fallo en Telemetría: ${error.message}`)
+    console.error(`\n[ERROR] Fallo en Telemetría: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -206,7 +206,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

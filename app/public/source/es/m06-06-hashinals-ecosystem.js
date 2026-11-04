@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: El Ecosistema Hashinals
- * [ CONCEPTO ] Máxima Soberanía y NFTs Nativos del Ledger
+ * [CONCEPTO] Máxima Soberanía y NFTs Nativos del Ledger
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Resiliencia Total: Un "Hashinal" representa el grado máximo de
@@ -51,7 +51,7 @@ const main = async () => {
   const hfsFileId = getState('HFS_FILE_ID')
 
   if (!hfsFileId) {
-    console.error('[❌ FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01 o 02 primero.')
+    console.error('[FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01 o 02 primero.')
     process.exitCode = 1
     return
   }
@@ -64,7 +64,7 @@ const main = async () => {
     const readmeContent = fs.existsSync(metaPath) ? fs.readFileSync(metaPath, 'utf8') : 'Metadatos de Syllabus'
 
     // 1. Crear la Colección de NFT Hashinal
-    console.log("[⚙️ PROCESO] Creando la colección de grado institucional 'Hedera Syllabus Hashinal'...")
+    console.log("[PROCESO] Creando la colección de grado institucional 'Hedera Syllabus Hashinal'...")
     const tokenId = await reuseToken('REUSE_M6_06_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenTx = await new TokenCreateTransaction()
@@ -85,7 +85,7 @@ const main = async () => {
       return tokenReceipt.tokenId
     })
 
-    console.log(`[✅ ÉXITO] Colección Hashinal anclada: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] Colección Hashinal anclada: ${tokenId.toString()}`)
 
     // 2. Definir Metadatos con Protocolo Nativo (HIP-412)
     const metadataJSON = {
@@ -101,11 +101,11 @@ const main = async () => {
       format: 'HIP412@2.0.0'
     }
 
-    console.log('\n--- 📊 [REGISTRO] Manifiesto de Metadatos Generado ---')
+    console.log('\n---  [REGISTRO] Manifiesto de Metadatos Generado ---')
     console.log(JSON.stringify(metadataJSON, null, 2))
 
     // 3. Emitir (Mint) el Serial vinculando el puntero HFS
-    console.log(`\n[⚙️ PROCESO] Realizando Mint del Serial #1 para el Hashinal ${tokenId.toString()}...`)
+    console.log(`\n[PROCESO] Realizando Mint del Serial #1 para el Hashinal ${tokenId.toString()}...`)
 
     // El puntero indica que los datos están en la red 1 (Mainnet=0, Testnet=1) bajo el File ID dado
     const pointer = `hedera://1/${hfsFileId}`
@@ -119,11 +119,11 @@ const main = async () => {
     const mintResponse = await mintTx.execute(client)
     const mintReceipt = await mintResponse.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Serial de Hashinal Emitido: ${mintReceipt.serials[0].toString()}`)
-    console.log(`[📊 REGISTRO] Ver Emisión: ${getHashscanUrl(mintResponse)}`)
-    console.log(`[ℹ️ INFO] El NFT ahora reside perpetuamente en el ledger apuntando al Archivo HFS ${hfsFileId}`)
+    console.log(`\n[ÉXITO] Serial de Hashinal Emitido: ${mintReceipt.serials[0].toString()}`)
+    console.log(`[REGISTRO] Ver Emisión: ${getHashscanUrl(mintResponse)}`)
+    console.log(`[INFO] El NFT ahora reside perpetuamente en el ledger apuntando al Archivo HFS ${hfsFileId}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Un Hashinal es la expresión máxima de un activo digital.')
     console.log('Al eliminar dependencias de servidores externos (como AWS o')
     console.log('gateways de IPFS), garantizas que el valor del activo sea tan')
@@ -132,7 +132,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La emisión del Hashinal falló:', error.message)
+    console.error('\n[FALLO] La emisión del Hashinal falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -141,7 +141,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

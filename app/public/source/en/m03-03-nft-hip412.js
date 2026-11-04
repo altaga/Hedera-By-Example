@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: HIP-412 NFT Metadata & On-Chain Storage (HFS)
- * [ CONCEPT ] Verifiable Digital Ownership & Immutable Files
+ * [CONCEPT] Verifiable Digital Ownership & Immutable Files
  * ============================================================================
  * [ KEY CONCEPT ]
  * HIP-412 is the "Gold Standard" for Hedera NFTs. By following it, your
@@ -80,7 +80,7 @@ const main = async () => {
     }
 
     const imageBuffer = fs.readFileSync(imagePath)
-    console.log(`[⚙️ PROCESS] Uploading image (${imageBuffer.length} bytes) to HFS in 4KB segments...`)
+    console.log(`[PROCESS] Uploading image (${imageBuffer.length} bytes) to HFS in 4KB segments...`)
 
     // A. CREATE THE FILE (Initial 4KB)
     const CHUNK_SIZE = 4096
@@ -96,12 +96,12 @@ const main = async () => {
     const fileReceipt = await fileResponse.getReceipt(client)
     const fileId = fileReceipt.fileId
 
-    console.log(`[ℹ️ INFO] File Object Initialized: ${fileId.toString()}`)
+    console.log(`[INFO] File Object Initialized: ${fileId.toString()}`)
 
     // B. APPEND REMAINING BYTES
     for (let i = CHUNK_SIZE; i < imageBuffer.length; i += CHUNK_SIZE) {
       const chunk = imageBuffer.slice(i, i + CHUNK_SIZE)
-      console.log(`[⚙️ PROCESS] Appending bytes ${i} to ${i + chunk.length}...`)
+      console.log(`[PROCESS] Appending bytes ${i} to ${i + chunk.length}...`)
 
       const appendTx = await new FileAppendTransaction()
         .setFileId(fileId)
@@ -112,11 +112,11 @@ const main = async () => {
       await appendResponse.getReceipt(client)
     }
 
-    console.log(`[✅ SUCCESS] Image Upload Complete: ${fileId.toString()}`)
-    console.log(`[📊 LOG] HashScan View: https://hashscan.io/testnet/file/${fileId.toString()}`)
+    console.log(`[SUCCESS] Image Upload Complete: ${fileId.toString()}`)
+    console.log(`[LOG] HashScan View: https://hashscan.io/testnet/file/${fileId.toString()}`)
 
     // 2. Create the NFT Collection
-    console.log("\n[⚙️ PROCESS] Initializing the 'Hedera Syllabus NFT' collection...")
+    console.log("\n[PROCESS] Initializing the 'Hedera Syllabus NFT' collection...")
     const tokenId = await reuseToken('REUSE_M3_03_TOKEN', async () => {
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Hedera Syllabus NFT')
@@ -135,7 +135,7 @@ const main = async () => {
       return tokenReceipt.tokenId
     })
 
-    console.log(`[✅ SUCCESS] NFT Collection Created: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] NFT Collection Created: ${tokenId.toString()}`)
 
     // Automatically sync for use in future labs
     updateState('NFT_TOKEN_ID', tokenId.toString())
@@ -151,10 +151,10 @@ const main = async () => {
       { rarity: 'Legendary', storage: 'On-Chain HFS' }
     )
 
-    console.log('\n[📊 LOG] Generated HIP-412 V2 Metadata:')
+    console.log('\n[LOG] Generated HIP-412 V2 Metadata:')
     console.log(JSON.stringify(metadataJSON, null, 2))
 
-    console.log('\n[⚙️ PROCESS] Uploading Metadata JSON to HFS as an immutable file...')
+    console.log('\n[PROCESS] Uploading Metadata JSON to HFS as an immutable file...')
     const metadataStr = JSON.stringify(metadataJSON)
     const metadataFileTx = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
@@ -166,10 +166,10 @@ const main = async () => {
     const metadataFileReceipt = await metadataFileRes.getReceipt(client)
     const metadataFileId = metadataFileReceipt.fileId
 
-    console.log(`[✅ SUCCESS] Metadata Stored On-Chain: ${metadataFileId.toString()}`)
+    console.log(`[SUCCESS] Metadata Stored On-Chain: ${metadataFileId.toString()}`)
 
     // 4. Batch Mint 5 NFT Serials pointing to the Metadata File
-    console.log(`\n[⚙️ PROCESS] Minting Serials #1 through #5 for Token ${tokenId.toString()}...`)
+    console.log(`\n[PROCESS] Minting Serials #1 through #5 for Token ${tokenId.toString()}...`)
     const metadataPointer = `hedera://1/${metadataFileId.toString()}`
 
     const mintTx = await new TokenMintTransaction()
@@ -189,12 +189,12 @@ const main = async () => {
     const [accountId, timestamp] = rawTxId.split('@')
     const txId = `${accountId}-${timestamp.replace('.', '-')}`
 
-    console.log(`[📊 LOG] View Mint Transaction: https://hashscan.io/testnet/transaction/${txId}`)
+    console.log(`[LOG] View Mint Transaction: https://hashscan.io/testnet/transaction/${txId}`)
 
-    console.log(`\n[✅ SUCCESS] Success! Minted Serials: ${mintReceipt.serials.join(', ')}`)
-    console.log(`[📊 LOG] Metadata File: ${metadataFileId.toString()}`)
+    console.log(`\n[SUCCESS] Success! Minted Serials: ${mintReceipt.serials.join(', ')}`)
+    console.log(`[LOG] Metadata File: ${metadataFileId.toString()}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HIP-412 is the "Gold Standard" for Hedera NFTs. By following it, your')
     console.log('NFTs automatically become compatible with all Hedera wallets and')
     console.log('marketplaces (like HashPack and SentX).')
@@ -202,7 +202,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] NFT Operation Failed:', error.message)
+    console.error('\n[FAILED] NFT Operation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -211,7 +211,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

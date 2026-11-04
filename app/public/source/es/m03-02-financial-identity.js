@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Identidad Financiera y Cumplimiento Regulatorio
- * [ CONCEPTO ] Controles de Acceso Nativos (KYC y Freeze)
+ * [CONCEPTO] Controles de Acceso Nativos (KYC y Freeze)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Cumplimiento Nativo: Las finanzas reguladas requieren controles de acceso
@@ -54,7 +54,7 @@ const main = async () => {
   const targetKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!targetId || !targetKey) {
-    console.error('[❌ FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
+    console.error('[FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
     process.exitCode = 1
     return
   }
@@ -65,12 +65,12 @@ const main = async () => {
 
   try {
     // 1. Verificar la Identidad de la Billetera Hija
-    console.log(`[ℹ️ INFO] Verificando cuenta del usuario ${userId.toString()}...`)
+    console.log(`[INFO] Verificando cuenta del usuario ${userId.toString()}...`)
     const balance = await new MirrorNodeAccountBalanceQuery().setAccountId(userId).execute(client)
-    console.log(`[✅ ÉXITO] Usuario Activo (Saldo: ${balance.hbars.toString()})`)
+    console.log(`[ÉXITO] Usuario Activo (Saldo: ${balance.hbars.toString()})`)
 
     // 2. Crear un Token regulado por KYC
-    console.log('\n[⚙️ PROCESO] Emitiendo Token Financiero con reglas KYC/Freeze (RFT)...')
+    console.log('\n[PROCESO] Emitiendo Token Financiero con reglas KYC/Freeze (RFT)...')
     const tokenId = await reuseToken('REUSE_M3_02_TOKEN', async () => {
       const tokenTx = await new TokenCreateTransaction()
         .setTokenName('Regulated Financial Token')
@@ -85,10 +85,10 @@ const main = async () => {
       return (await (await tokenTx.execute(client)).getReceipt(client)).tokenId
     })
 
-    console.log(`[✅ ÉXITO] Token RFT creado exitosamente: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] Token RFT creado exitosamente: ${tokenId.toString()}`)
 
     // 3. Asociación (Opt-in)
-    console.log(`\n[⚙️ PROCESO] Solicitando asociación (Opt-in) del usuario ${targetId}...`)
+    console.log(`\n[PROCESO] Solicitando asociación (Opt-in) del usuario ${targetId}...`)
     const associateTx = await new TokenAssociateTransaction()
       .setAccountId(userId)
       .setTokenIds([tokenId])
@@ -100,14 +100,14 @@ const main = async () => {
     try {
       const assocResponse = await associateTx.execute(client)
       await assocResponse.getReceipt(client)
-      console.log('[✅ ÉXITO] El usuario ya está asociado al token.')
+      console.log('[ÉXITO] El usuario ya está asociado al token.')
     } catch (error) {
       if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
-      console.log('[ℹ️ INFO] Ya estaba asociada desde una ejecución anterior: no hay nada que hacer.')
+      console.log('[INFO] Ya estaba asociada desde una ejecución anterior: no hay nada que hacer.')
     }
 
     // 4. Otorgar KYC
-    console.log('\n[⚙️ PROCESO] Evaluando identidad y otorgando autorización KYC...')
+    console.log('\n[PROCESO] Evaluando identidad y otorgando autorización KYC...')
     const kycTx = await new TokenGrantKycTransaction()
       .setAccountId(userId)
       .setTokenId(tokenId)
@@ -115,10 +115,10 @@ const main = async () => {
 
     const kycResponse = await kycTx.execute(client)
     await kycResponse.getReceipt(client)
-    console.log(`[✅ ÉXITO] Flag KYC activo para la cuenta ${targetId}.`)
+    console.log(`[ÉXITO] Flag KYC activo para la cuenta ${targetId}.`)
 
     // 5. Demostrar Control de Activos (Freeze)
-    console.log('\n[⚙️ PROCESO] Bloqueando activos del token (Freeze) por sospecha...')
+    console.log('\n[PROCESO] Bloqueando activos del token (Freeze) por sospecha...')
     const freezeTx = await new TokenFreezeTransaction()
       .setAccountId(userId)
       .setTokenId(tokenId)
@@ -126,10 +126,10 @@ const main = async () => {
 
     const freezeResponse = await freezeTx.execute(client)
     await freezeResponse.getReceipt(client)
-    console.log('[✅ ÉXITO] Cuenta congelada preventivamente.')
+    console.log('[ÉXITO] Cuenta congelada preventivamente.')
 
     // 6. Restaurar Acceso (Unfreeze)
-    console.log('\n[⚙️ PROCESO] Restaurando acceso (Unfreeze) tras auditoría exitosa...')
+    console.log('\n[PROCESO] Restaurando acceso (Unfreeze) tras auditoría exitosa...')
     const unfreezeTx = await new TokenUnfreezeTransaction()
       .setAccountId(userId)
       .setTokenId(tokenId)
@@ -137,9 +137,9 @@ const main = async () => {
 
     const unfreezeResponse = await unfreezeTx.execute(client)
     await unfreezeResponse.getReceipt(client)
-    console.log('[✅ ÉXITO] Cuenta desbloqueada. Acceso financiero restaurado.')
+    console.log('[ÉXITO] Cuenta desbloqueada. Acceso financiero restaurado.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El cumplimiento normativo en Hedera es predecible y seguro.')
     console.log('Al usar llaves nativas (KycKey / FreezeKey), eliminas el factor')
     console.log('de "error humano" o "vulnerabilidad de código" en Smart Contracts,')
@@ -148,7 +148,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El flujo de cumplimiento falló:', error.message)
+    console.error('\n[FALLO] El flujo de cumplimiento falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -157,7 +157,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

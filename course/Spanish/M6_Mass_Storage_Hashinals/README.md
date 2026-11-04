@@ -1,4 +1,4 @@
-# 📦 Módulo 6: Almacenamiento Masivo y Hashinals
+# Módulo 6: Almacenamiento Masivo y Hashinals
 ## Datos Inmutables a Escala Global
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
@@ -23,7 +23,7 @@
 
 ---
 
-## 🏗️ Arquitectura HCS-1 (Hashinals)
+## Arquitectura HCS-1 (Hashinals)
 
 A diferencia de HFS, HCS-1 fragmenta un archivo y lo inyecta en un Topic de HCS. Esto es más económico y permite una inmutabilidad total sin necesidad de llaves de administración.
 
@@ -63,7 +63,7 @@ graph TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Hedera File Service (HFS)
 HFS actúa como un sistema de archivos tradicional en la red. Es ideal para archivos que necesitan ser actualizados o que requieren permisos específicos de administración.
@@ -76,7 +76,7 @@ Mientras que almacenar 1GB en una blockchain tradicional puede costar miles de d
 
 ---
 
-## 💎 El Estándar hcs:// (NFT Recursivo)
+## El Estándar hcs:// (NFT Recursivo)
 
 El protocolo `hcs://` es un formato de URI impulsado por la comunidad que permite la resolución recursiva de activos. En lugar de apuntar a un CID (IPFS) o una URL, el NFT apunta a un Topic de HCS.
 
@@ -89,11 +89,11 @@ El protocolo `hcs://` es un formato de URI impulsado por la comunidad que permit
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Hedera File Service (HFS) Guide](https://docs.hedera.com/hedera/core-concepts/file-service)
 - [HCS-1: Atomic Storage Standard](https://hashinals.com/)
 - [Cost Comparison: HFS vs HCS Storage](https://hedera.com/fees)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. LOS DATOS SON PARA SIEMPRE.
+ 2026 **HEDERA PARA DUMMIES**. LOS DATOS SON PARA SIEMPRE.

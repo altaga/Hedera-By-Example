@@ -1,4 +1,4 @@
-# 📡 Module 5: Hedera Consensus Service (HCS)
+# Module 5: Hedera Consensus Service (HCS)
 ## Decentralized Trust for Arbitrary Data
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -21,7 +21,7 @@
 
 ---
 
-## 🚦 Messaging Flow in HCS
+## Messaging Flow in HCS
 
 HCS does not store message content permanently on consensus nodes; it only guarantees order and validity. Mirror Nodes handle persistence for subscribers.
 
@@ -61,24 +61,24 @@ graph LR
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Topics
 A Topic is like a cryptographic chat channel. It can be public (anyone can read/write) or private (requires signing keys to send messages).
 
 ### 2. Consensus Timestamp
-Each message in HCS receives a unique "Consensus Timestamp." This allows for the creation of unforgeable audit logs where exactly when an event occurred in relation to all others is known.
+Each message in HCS receives a unique "Consensus Timestamp."This allows for the creation of unforgeable audit logs where exactly when an event occurred in relation to all others is known.
 
 ### 3. Chunking
 The size limit of a message in Hedera is 1024 bytes. To send larger files or data, the SDK allows for fragmenting the message into multiple parts that the subscriber can reconstruct automatically.
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
 - [Working with Topics and Messages](https://docs.hedera.com/hedera/core-concepts/consensus-service)
 - [HCS Message Chunking Logic](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. THE TRUTH IS DECENTRALIZED.
+ 2026 **HEDERA FOR DUMMIES**. THE TRUTH IS DECENTRALIZED.

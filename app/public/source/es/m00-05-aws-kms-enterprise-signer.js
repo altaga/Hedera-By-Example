@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Firmador Enterprise con AWS KMS
- * [ CONCEPTO ] Módulos de Seguridad de Hardware (HSM) y Custodia Air-Gapped
+ * [CONCEPTO] Módulos de Seguridad de Hardware (HSM) y Custodia Air-Gapped
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En la banca corporativa, exchanges y custodia institucional (Fireblocks,
@@ -26,7 +26,7 @@
  * - Anterior:  Lab 04: Creación de Cuenta Nativa
  * - Siguiente: Lab 06: Telemetría de Consenso con OpenTelemetry
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El enclave de AWS KMS se simula en memoria salvo que configures credenciales de AWS y AWS_KMS_KEY_ARN. La transacción que firma es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -115,7 +115,7 @@ class EnterpriseKmsAdapter {
     const { KeyId, Message, MessageType, SigningAlgorithm } = commandInput
 
     if (this.isLiveAws) {
-      console.log(`[☁️ AWS KMS LIVE] Transmitiendo SignCommand al HSM de AWS KMS (${this.region})...`)
+      console.log(`[ AWS KMS LIVE] Transmitiendo SignCommand al HSM de AWS KMS (${this.region})...`)
       const { KMSClient, SignCommand } = await import('@aws-sdk/client-kms')
       const kms = new KMSClient({ region: this.region })
       const res = await kms.send(new SignCommand(commandInput))
@@ -127,8 +127,8 @@ class EnterpriseKmsAdapter {
     }
 
     // Simulación de Enclave Seguro en Memoria (Cero configuración Cloud requerida)
-    console.log(`[🔒 ENCLAVE HSM] Simulando Enclave de Hardware AWS KMS para Clave: ${KeyId.substring(0, 36)}...`)
-    console.log(`[📊 REGISTRO] Algoritmo: ${SigningAlgorithm} | MessageType: ${MessageType} | Carga: ${Message.length} bytes`)
+    console.log(`[ ENCLAVE HSM] Simulando Enclave de Hardware AWS KMS para Clave: ${KeyId.substring(0, 36)}...`)
+    console.log(`[REGISTRO] Algoritmo: ${SigningAlgorithm} | MessageType: ${MessageType} | Carga: ${Message.length} bytes`)
 
     let derSig
     if (this._isolatedKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')) {
@@ -168,23 +168,23 @@ const main = async () => {
   const custodyKey = PrivateKey.fromStringDer(operatorKey)
   const isECDSA = custodyKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')
 
-  console.log('[🔐 SEGURIDAD] Modo de Custodia: Firmador KMS Air-Gapped')
-  console.log(`[📊 REGISTRO] ID de Cuenta:        ${operatorId.toString()}`)
-  console.log(`[📊 REGISTRO] Llave Pública (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
-  console.log(`[📊 REGISTRO] Algoritmo de Llave:   ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
+  console.log('[SEGURIDAD] Modo de Custodia: Firmador KMS Air-Gapped')
+  console.log(`[REGISTRO] ID de Cuenta:        ${operatorId.toString()}`)
+  console.log(`[REGISTRO] Llave Pública (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
+  console.log(`[REGISTRO] Algoritmo de Llave:   ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
 
   // Inicializar adaptador AWS KMS (Cero programas externos; soporta AWS KMS real sin fricción)
   const kmsAdapter = new EnterpriseKmsAdapter({ isolatedKey: custodyKey })
 
   try {
-    console.log('\n[⚙️ PROCESO] Paso 1: Construyendo transacción en crudo sin firmar...')
+    console.log('\n[PROCESO] Paso 1: Construyendo transacción en crudo sin firmar...')
 
     // Transacción inocua de verificación de estado (0 HBAR hacia sí mismo)
     const transaction = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(0))
       .freezeWith(client)
 
-    console.log('[⚙️ PROCESO] Paso 2: Delegando callback de firma al Enclave HSM de AWS KMS...')
+    console.log('[PROCESO] Paso 2: Delegando callback de firma al Enclave HSM de AWS KMS...')
 
     // Firmar utilizando el callback asíncrono signWith de Hedera
     await transaction.signWith(custodyKey.publicKey, async (transactionBodyBytes) => {
@@ -199,22 +199,22 @@ const main = async () => {
       // Convertir firma DER al formato esperado por Hedera
       if (isECDSA) {
         const rawSignature = unpackDerToRaw(kmsResponse.Signature)
-        console.log(`[✅ ÉXITO] Firma DER decodificada a 64 bytes canónicos: ${rawSignature.toString('hex').substring(0, 24)}...`)
+        console.log(`[ÉXITO] Firma DER decodificada a 64 bytes canónicos: ${rawSignature.toString('hex').substring(0, 24)}...`)
         return rawSignature
       }
 
       return kmsResponse.Signature
     })
 
-    console.log('\n[⚙️ PROCESO] Paso 3: Transmitiendo transacción firmada con KMS a los nodos de Hedera...')
+    console.log('\n[PROCESO] Paso 3: Transmitiendo transacción firmada con KMS a los nodos de Hedera...')
     const txResponse = await transaction.execute(client)
     const receipt = await txResponse.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Estado de Consenso:    ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan:  ${getHashscanUrl(txResponse)}`)
+    console.log(`\n[ÉXITO] Estado de Consenso:    ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan:  ${getHashscanUrl(txResponse)}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Cero Exposición de Claves: El entorno de la aplicación NUNCA posee la clave privada.')
     console.log('Los bytes de la transacción se enviaron a un módulo de seguridad de hardware (HSM),')
     console.log('se firmaron en hardware y se verificaron en Hedera. Esta es la arquitectura obligatoria')
@@ -223,7 +223,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Error en Firma KMS: ${error.message}`)
+    console.error(`\n[ERROR] Error en Firma KMS: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -234,7 +234,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

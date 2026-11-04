@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
- * [ CONCEPTO ] Negociación Confidencial Peer-to-Peer de Agentes sobre Consenso Público
+ * [CONCEPTO] Negociación Confidencial Peer-to-Peer de Agentes sobre Consenso Público
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Comunicación Confidencial de Enjambres: Cuando agentes de IA autónomos colaboran
@@ -29,7 +29,7 @@
  * - Anterior:  M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
  * - Siguiente: M14 Lab 07: Enjambres Botánicos HCS-15..18
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Alpha -> Hedera: Publicar llave pública ECDH (handshake)
  * Beta -> Hedera: Publicar llave pública ECDH (handshake)
  * Nota Alpha: Deriva la llave AES compartida
@@ -99,17 +99,17 @@ const main = async () => {
 
   try {
     // 1. Crear Tópico de Consenso Público para el Canal Encriptado
-    console.log('[⚙️ PROCESO] Desplegando Tópico de Comunicación Segura en HCS...')
+    console.log('[PROCESO] Desplegando Tópico de Comunicación Segura en HCS...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS:A2A:ENCRYPTED:SWARM:CHANNEL')
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico de Chat en Consenso Público Creado: ${topicId}`)
+    console.log(`[ÉXITO] Tópico de Chat en Consenso Público Creado: ${topicId}`)
 
     // 2. Inicializar Pares de Claves ECDH de los Agentes (Curva: prime256v1)
-    console.log('\n[⚙️ PROCESO] Inicializando pares de claves ECDH de Agentes (Curva: prime256v1)...')
+    console.log('\n[PROCESO] Inicializando pares de claves ECDH de Agentes (Curva: prime256v1)...')
     const agentOracleECDH = crypto.createECDH('prime256v1')
     agentOracleECDH.generateKeys()
 
@@ -119,11 +119,11 @@ const main = async () => {
     const oraclePubKeyHex = agentOracleECDH.getPublicKey('hex')
     const arbitrageurPubKeyHex = agentArbitrageurECDH.getPublicKey('hex')
 
-    console.log(`[🤖 AGENTE 1] Nombre: Agente Alfa (Oráculo)     | Clave Pública: ${oraclePubKeyHex.slice(0, 24)}...`)
-    console.log(`[🤖 AGENTE 2] Nombre: Agente Beta  (Arbitrajista) | Clave Pública: ${arbitrageurPubKeyHex.slice(0, 24)}...`)
+    console.log(`[ AGENTE 1] Nombre: Agente Alfa (Oráculo)     | Clave Pública: ${oraclePubKeyHex.slice(0, 24)}...`)
+    console.log(`[ AGENTE 2] Nombre: Agente Beta  (Arbitrajista) | Clave Pública: ${arbitrageurPubKeyHex.slice(0, 24)}...`)
 
     // 2.5 Publicar Claves Públicas Efímeras ECDH en el Tópico HCS (Handshake On-Chain)
-    console.log('\n[⚙️ PROCESO] Publicando Claves Públicas Efímeras ECDH en el Tópico HCS (Handshake)...')
+    console.log('\n[PROCESO] Publicando Claves Públicas Efímeras ECDH en el Tópico HCS (Handshake)...')
     for (const [agentName, pubKey] of [['Agente Alfa (Oráculo)', oraclePubKeyHex], ['Agente Beta (Arbitrajista)', arbitrageurPubKeyHex]]) {
       const handshakeTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -137,11 +137,11 @@ const main = async () => {
         }))
         .execute(client)
       const hsReceipt = await handshakeTx.getReceipt(client)
-      console.log(`[🤝 HANDSHAKE] Clave Pública ECDH de ${agentName} anclada en Secuencia #${hsReceipt.topicSequenceNumber}`)
+      console.log(`[HANDSHAKE] Clave Pública ECDH de ${agentName} anclada en Secuencia #${hsReceipt.topicSequenceNumber}`)
     }
 
     // 3. Ejecutar Intercambio de Claves Diffie-Hellman para Derivar Clave Simétrica
-    console.log('\n[⚙️ PROCESO] Ejecutando derivación Diffie-Hellman en Curvas Elípticas...')
+    console.log('\n[PROCESO] Ejecutando derivación Diffie-Hellman en Curvas Elípticas...')
     const sharedSecretOracle = agentOracleECDH.computeSecret(agentArbitrageurECDH.getPublicKey())
     const sharedSecretArbitrageur = agentArbitrageurECDH.computeSecret(agentOracleECDH.getPublicKey())
 
@@ -151,8 +151,8 @@ const main = async () => {
     const keyFingerprint = crypto.createHash('sha256').update(aesKeyOracle).digest('hex')
 
     const keysMatch = aesKeyOracle.equals(aesKeyArbitrageur)
-    console.log(`[✅ ÉXITO] Secreto Simétrico Compartido Establecido: ${keysMatch ? 'COINCIDENCIA (100% SEGURO)' : 'DISCREPANCIA'}`)
-    console.log(`[🔑 CLAVE] Huella No Reversible SHA-256 de la Clave: ${keyFingerprint.slice(0, 32)}...`)
+    console.log(`[ÉXITO] Secreto Simétrico Compartido Establecido: ${keysMatch ? 'COINCIDENCIA (100% SEGURO)' : 'DISCREPANCIA'}`)
+    console.log(`[CLAVE] Huella No Reversible SHA-256 de la Clave: ${keyFingerprint.slice(0, 32)}...`)
 
     // 4. Negociación OTC Encriptada en Vivo
     const dialogue = [
@@ -174,7 +174,7 @@ const main = async () => {
     ]
 
     console.log('\n═════════════════════════════════════════════════════════════════════════')
-    console.log('             AUDITORÍA DE CONVERSACIÓN ENCRIPTADA EN CONSENSO            ')
+    console.log('AUDITORÍA DE CONVERSACIÓN ENCRIPTADA EN CONSENSO            ')
     console.log('═════════════════════════════════════════════════════════════════════════')
 
     for (let i = 0; i < dialogue.length; i++) {
@@ -207,36 +207,36 @@ const main = async () => {
       // Desencriptar mensaje en el receptor
       const decryptedText = decryptMessage(encryptedPacket, decryptionKey)
 
-      console.log(`\n💬 [MENSAJE #${seq}] Emisor: ${step.sender}`)
-      console.log(`   ├─ 🔒 Lo que ve el Mirror Node (Cifrado): ${encryptedPacket.ciphertext.slice(0, 32)}... [Tag: ${encryptedPacket.tag.slice(0, 16)}]`)
-      console.log(`   └─ 🔓 Texto Plano Descifrado por Receptor: "${decryptedText}"`)
+      console.log(`\n [MENSAJE #${seq}] Emisor: ${step.sender}`)
+      console.log(`├─  Lo que ve el Mirror Node (Cifrado): ${encryptedPacket.ciphertext.slice(0, 32)}... [Tag: ${encryptedPacket.tag.slice(0, 16)}]`)
+      console.log(`└─  Texto Plano Descifrado por Receptor: "${decryptedText}"`)
     }
 
     console.log('\n═════════════════════════════════════════════════════════════════════════')
-    console.log('                 INFORME DE AUDITORÍA DE CONFIDENCIALIDAD               ')
+    console.log('INFORME DE AUDITORÍA DE CONFIDENCIALIDAD               ')
     console.log('═════════════════════════════════════════════════════════════════════════')
-    console.log(`[📊 REGISTRO] Tópico de Hedera:       ${topicId}`)
-    console.log('[📊 REGISTRO] Algoritmo Cifrado:      AES-256-GCM (Etiqueta Autenticada NIST SP 800-38D GMAC)')
-    console.log('[📊 REGISTRO] Visibilidad Pública:    CERO filtración de texto plano en exploradores')
-    console.log('[📊 REGISTRO] Orden de Consenso:      Números de secuencia 100% justos en Hedera')
+    console.log(`[REGISTRO] Tópico de Hedera:       ${topicId}`)
+    console.log('[REGISTRO] Algoritmo Cifrado:      AES-256-GCM (Etiqueta Autenticada NIST SP 800-38D GMAC)')
+    console.log('[REGISTRO] Visibilidad Pública:    CERO filtración de texto plano en exploradores')
+    console.log('[REGISTRO] Orden de Consenso:      Números de secuencia 100% justos en Hedera')
 
     // Persistir estado (¡jamás guardar la clave de cifrado cruda, solo la huella SHA-256!)
     updateState('ENCRYPTED_CHAT_TOPIC_ID', topicId)
     updateState('ENCRYPTED_CHAT_CIPHER_ALGO', 'AES-256-GCM')
     updateState('ENCRYPTED_CHAT_SHARED_KEY_DIGEST', keyFingerprint)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Esta arquitectura es el Santo Grial para empresas y agentes de IA:')
     console.log('Se obtiene el orden inmutable y descentralizado de Hedera Consensus Service,')
     console.log('mientras se preserva privacidad militar en los datos mediante criptografía en cliente.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La privacidad real no proviene de ocultar la blockchain, sino de asegurar')
     console.log('que solo los destinatarios autorizados posean las claves de descifrado.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en el Chat Encriptado:', error.message)
+    console.error('\n[ERROR] Fallo en el Chat Encriptado:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -247,7 +247,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

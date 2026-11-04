@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Registro de Identidad ERC-3643 y Reglas de Transferencia
- * [ CONCEPTO ] Restricciones de Transferencia en RWAs Permisionados
+ * [CONCEPTO] Restricciones de Transferencia en RWAs Permisionados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Filtro Regulatorio: Los activos institucionales no pueden transferirse libremente.
@@ -95,7 +95,7 @@ const main = async () => {
     const compliance = new Erc3643ComplianceEngine()
 
     // 1. Registrar Inversores en el Registro de Identidad On-Chain
-    console.log('[⚙️ PROCESO] Registrando Inversores Institucionales y Minoristas en el Registro...')
+    console.log('[PROCESO] Registrando Inversores Institucionales y Minoristas en el Registro...')
 
     const investorA = operatorId.toString()
     const investorB = '0.0.700101'
@@ -107,10 +107,10 @@ const main = async () => {
     compliance.registerInvestor(investorC, { isKycVerified: false, countryCode: 'IND', isAccredited: false }) // Sin KYC
     compliance.registerInvestor(investorD, { isKycVerified: true, countryCode: 'PRK', isAccredited: false }) // País Sancionado
 
-    console.log(`[📊 REGISTRO] Inversor A (${investorA}): USA | KYC: OK | Acreditado: SÍ`)
-    console.log(`[📊 REGISTRO] Inversor B (${investorB}): CHE | KYC: OK | Acreditado: SÍ`)
-    console.log(`[📊 REGISTRO] Inversor C (${investorC}): IND | KYC: NO | Acreditado: NO`)
-    console.log(`[📊 REGISTRO] Inversor D (${investorD}): PRK | KYC: OK | Acreditado: NO\n`)
+    console.log(`[REGISTRO] Inversor A (${investorA}): USA | KYC: OK | Acreditado: SÍ`)
+    console.log(`[REGISTRO] Inversor B (${investorB}): CHE | KYC: OK | Acreditado: SÍ`)
+    console.log(`[REGISTRO] Inversor C (${investorC}): IND | KYC: NO | Acreditado: NO`)
+    console.log(`[REGISTRO] Inversor D (${investorD}): PRK | KYC: OK | Acreditado: NO\n`)
 
     // 2. Evaluar Escenarios de Transferencia
     console.log('--- VALIDANDO TRANSFERENCIA 1: Inversor A -> Inversor B ($50,000 Equity) ---')
@@ -126,7 +126,7 @@ const main = async () => {
     console.log(`[RESULTADO] Permitida: ${t3.allowed} | Código de Rechazo: ${t3.error}`)
 
     // 3. Anclar Eventos a HCS para Auditoría Regulatoria
-    console.log('\n[⚙️ PROCESO] Anclando Evento de Verificación ERC-3643 a HCS...')
+    console.log('\n[PROCESO] Anclando Evento de Verificación ERC-3643 a HCS...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('erc3643:compliance_registry_v1')
@@ -153,17 +153,17 @@ const main = async () => {
       .freezeWith(client)
     await msgTx.execute(client)
 
-    console.log(`[✅ ÉXITO] Evento de Auditoría Registrado en Tópico HCS: ${complianceTopicId}`)
+    console.log(`[ÉXITO] Evento de Auditoría Registrado en Tópico HCS: ${complianceTopicId}`)
     updateState('ATS_COMPLIANCE_TOPIC_ID', complianceTopicId)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('ERC-3643 convierte el cumplimiento normativo en una garantía criptográfica on-chain.')
     console.log('El contrato del token jamás procesa una transferencia ilícita, blindando al emisor')
     console.log('frente a penalidades y contingencias de entes reguladores.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en la validación ERC-3643:', error.message)
+    console.error('\n[FALLO] Fallo en la validación ERC-3643:', error.message)
     process.exit(1)
   }
 }
@@ -172,7 +172,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

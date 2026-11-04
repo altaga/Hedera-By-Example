@@ -27,7 +27,7 @@ export const updateEnv = (key, value) => {
   }
 
   fs.writeFileSync(envPath, envContent, 'utf8')
-  console.log(`\n✅ .env Synchronized: ${key}=${value}`)
+  console.log(`\n .env Synchronized: ${key}=${value}`)
 }
 
 // course/state.json is shared by every module, so a lab can read what an earlier
@@ -64,7 +64,7 @@ export const updateState = (key, value) => {
     state[key] = value
     writeJsonAtomic(file, state)
   }
-  console.log(`\n✅ State Synchronized: ${key}=${value}`)
+  console.log(`\n State Synchronized: ${key}=${value}`)
 }
 
 /**

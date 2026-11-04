@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 08: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
- * [ CONCEPTO ] Ensamblajes UI On-Chain Componibles y Adaptadores Verificados
+ * [CONCEPTO] Ensamblajes UI On-Chain Componibles y Adaptadores Verificados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Hashgraph Online (hol.org) introduce dos estándares clave que conectan a los
@@ -60,7 +60,7 @@ const main = async () => {
 
   try {
     // 1. HCS-21: Desplegar un Tópico Oficial de Registro de Adaptadores (`hcs-21:0:86400:0`)
-    console.log('[⚙️ PROCESO] Paso 1 [HCS-21]: Desplegando Tópico de Registro de Adaptadores Verificados...')
+    console.log('[PROCESO] Paso 1 [HCS-21]: Desplegando Tópico de Registro de Adaptadores Verificados...')
     const adapterRegistryTx = buildHcs21CreateRegistryTx({
       ttl: 86400,
       indexed: 0,
@@ -69,10 +69,10 @@ const main = async () => {
     }).setAutoRenewAccountId(operatorId.toString())
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const adapterTopicId = (await (await adapterRegistryTx.execute(client)).getReceipt(client)).topicId.toString()
-    console.log(`[✅ HCS-21] Tópico de Registro de Adaptadores Creado: ${adapterTopicId}`)
+    console.log(`[HCS-21] Tópico de Registro de Adaptadores Creado: ${adapterTopicId}`)
 
     // 2. HCS-21: Publicar una Declaración de Adaptador con Huella Criptográfica SHA-256
-    console.log('\n[⚙️ PROCESO] Paso 2 [HCS-21]: Registrando Adaptador de Oráculo Verificado...')
+    console.log('\n[PROCESO] Paso 2 [HCS-21]: Registrando Adaptador de Oráculo Verificado...')
     // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
     const artifactDigest = crypto.createHash('sha256')
       .update('@hol-org/pyth-saucer-adapter@1.4.0:dist/index.mjs')
@@ -103,20 +103,20 @@ const main = async () => {
       transactionMemo: 'hcs-21:op:register'
     })
     const hcs21Receipt = await (await hcs21MsgTx.execute(client)).getReceipt(client)
-    console.log(`[🛡️ HCS-21] ¡Adaptador Registrado en Secuencia #${hcs21Receipt.topicSequenceNumber}!`)
-    console.log(`[📊 HUELLA] Integridad del Paquete: sha256-${artifactDigest.slice(0, 32)}...`)
+    console.log(`[HCS-21] ¡Adaptador Registrado en Secuencia #${hcs21Receipt.topicSequenceNumber}!`)
+    console.log(`[HUELLA] Integridad del Paquete: sha256-${artifactDigest.slice(0, 32)}...`)
 
     // 3. HCS-12: Crear un Tópico de Ensamblaje HashLinks y Componer una Micro-App Interactiva
-    console.log('\n[⚙️ PROCESO] Paso 3 [HCS-12]: Creando Tópico de Ensamblaje HashLinks (`hcs-12:0:86400:2`)...')
+    console.log('\n[PROCESO] Paso 3 [HCS-12]: Creando Tópico de Ensamblaje HashLinks (`hcs-12:0:86400:2`)...')
     const assemblyTopicTx = buildHcs12CreateRegistryTopicTx({
       registry: 'assembly',
       ttl: 86400
     }).setAutoRenewAccountId(operatorId.toString())
     const assemblyTopicId = (await (await assemblyTopicTx.execute(client)).getReceipt(client)).topicId.toString()
-    console.log(`[✅ HCS-12] Tópico de Ensamblaje HashLinks Creado: ${assemblyTopicId}`)
+    console.log(`[HCS-12] Tópico de Ensamblaje HashLinks Creado: ${assemblyTopicId}`)
 
     // Registrar metadatos raíz del Ensamblaje
-    console.log('[⚙️ PROCESO] Paso 4 [HCS-12]: Componiendo Micro-App HashLink (Register ➔ Add Action ➔ Add UI Block)...')
+    console.log('[PROCESO] Paso 4 [HCS-12]: Componiendo Micro-App HashLink (Register ➔ Add Action ➔ Add UI Block)...')
     const registerAssemblyTx = buildHcs12RegisterAssemblyTx({
       assemblyTopicId,
       registration: {
@@ -158,7 +158,7 @@ const main = async () => {
           onSwapClick: 'execute_atomic_swap'
         },
         data: {
-          title: '⚡ Swap Instantáneo HBAR ➔ USDC',
+          title: 'Swap Instantáneo HBAR ➔ USDC',
           buttonLabel: 'Intercambiar 100 HBAR Ahora',
           theme: 'swiss-dark'
         }
@@ -167,27 +167,27 @@ const main = async () => {
     const blockReceipt = await (await addBlockTx.execute(client)).getReceipt(client)
 
     const hashLinkUri = `hcs://12/${assemblyTopicId}`
-    console.log(`[✅ HCS-12] ¡Micro-App HashLink Ensamblada en Secuencia #${blockReceipt.topicSequenceNumber}!`)
-    console.log(`[🔗 HASHLINK] URI Interactivo Compartible: ${hashLinkUri}`)
+    console.log(`[HCS-12] ¡Micro-App HashLink Ensamblada en Secuencia #${blockReceipt.topicSequenceNumber}!`)
+    console.log(`[HASHLINK] URI Interactivo Compartible: ${hashLinkUri}`)
 
     updateState('HCS21_ADAPTER_REGISTRY_TOPIC_ID', adapterTopicId)
     updateState('HCS21_PACKAGE_INTEGRITY', `sha256-${artifactDigest}`)
     updateState('HCS12_ASSEMBLY_TOPIC_ID', assemblyTopicId)
     updateState('HCS12_HASHLINK_URI', hashLinkUri)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los HashLinks HCS-12 empaquetan bloques visuales y acciones ejecutables en un')
     console.log('único URI on-chain (`hcs://12/<topicId>`), mientras que HCS-21 garantiza que el')
     console.log('adaptador subyacente coincida con su huella criptográfica SHA-256 en consenso.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Cuando un agente de IA presenta una tarjeta de transacción interactiva vía HCS-12,')
     console.log('verificar el adaptador mediante HCS-21 elimina tanto la suplantación de interfaz')
     console.log('como el envenenamiento de paquetes de software en un mismo flujo.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución HCS-12 / HCS-21:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución HCS-12 / HCS-21:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -198,7 +198,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

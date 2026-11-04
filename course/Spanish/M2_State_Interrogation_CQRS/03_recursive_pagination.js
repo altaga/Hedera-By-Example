@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Paginación Recursiva y Transformación de Datos
- * [ CONCEPTO ] Gestión de Grandes Conjuntos de Datos (Big Data)
+ * [CONCEPTO] Gestión de Grandes Conjuntos de Datos (Big Data)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * No satures el hilo de ejecución: Para evitar la sobrecarga, los Mirror
@@ -43,11 +43,11 @@ const getCompleteAccountHistory = async (accountId) => {
   let nextPath = `/api/v1/transactions?account.id=${accountId}&limit=10`
   let allTransactions = []
 
-  console.log(`[ℹ️ INFO] Extrayendo historial transaccional para: ${accountId}`)
+  console.log(`[INFO] Extrayendo historial transaccional para: ${accountId}`)
 
   while (nextPath) {
     const targetUrl = nextPath.startsWith('http') ? nextPath : `${baseUrl}${nextPath}`
-    console.log(`[⚙️ PROCESO] Pagina detectada. Descargando lote: ${targetUrl.substring(0, 75)}...`)
+    console.log(`[PROCESO] Pagina detectada. Descargando lote: ${targetUrl.substring(0, 75)}...`)
 
     const response = await fetch(targetUrl)
     if (!response.ok) {
@@ -65,7 +65,7 @@ const getCompleteAccountHistory = async (accountId) => {
 
     // Parada de seguridad para fines demostrativos: máximo 3 páginas
     if (allTransactions.length > 30) {
-      console.log('[ℹ️ INFO] Parada de seguridad activada (Límite de demo alcanzado).')
+      console.log('[INFO] Parada de seguridad activada (Límite de demo alcanzado).')
       break
     }
   }
@@ -82,8 +82,8 @@ const main = async () => {
   try {
     const history = await getCompleteAccountHistory(targetAccount)
 
-    console.log('\n[✅ ÉXITO] Paginación de red completada con éxito.')
-    console.log(`[📊 REGISTRO] Registros totales recuperados: ${history.length}`)
+    console.log('\n[ÉXITO] Paginación de red completada con éxito.')
+    console.log(`[REGISTRO] Registros totales recuperados: ${history.length}`)
 
     if (history.length > 0) {
       // Análisis de datos asíncrono
@@ -91,21 +91,21 @@ const main = async () => {
       const totalFeesPaid = successfulTxs.reduce((sum, tx) => sum + parseInt(tx.charged_tx_fee), 0)
       const latestTimestamp = successfulTxs[0]?.consensus_timestamp
 
-      console.log(`[📊 REGISTRO] Transacciones Exitosas: ${successfulTxs.length}`)
-      console.log(`[📊 REGISTRO] Inversión en Comisiones: ${totalFeesPaid} tinybars (${(totalFeesPaid / 100000000).toFixed(6)} ℏ)`)
-      console.log(`[📊 REGISTRO] Timestamp más reciente: ${latestTimestamp}`)
+      console.log(`[REGISTRO] Transacciones Exitosas: ${successfulTxs.length}`)
+      console.log(`[REGISTRO] Inversión en Comisiones: ${totalFeesPaid} tinybars (${(totalFeesPaid / 100000000).toFixed(6)} ℏ)`)
+      console.log(`[REGISTRO] Timestamp más reciente: ${latestTimestamp}`)
     } else {
-      console.log('[ℹ️ INFO] No se encontró actividad on-chain para esta cuenta.')
+      console.log('[INFO] No se encontró actividad on-chain para esta cuenta.')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La paginación basada en cursor te permite construir aplicaciones')
     console.log('financieras robustas que no colapsan al manejar miles de eventos,')
     console.log('manteniendo la interfaz fluida y eficiente.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La obtención recursiva de datos falló:', error.message)
+    console.error('\n[FALLO] La obtención recursiva de datos falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -114,7 +114,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

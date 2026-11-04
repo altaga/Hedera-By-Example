@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Motor de Ingesta Masiva de Lotes con Árboles Merkle y Pruebas de Inclusión en L1
- * [ CONCEPTO ] Compresión de Flujos Masivos de Eventos en Anclajes de Consenso Sub-Centavo
+ * [CONCEPTO] Compresión de Flujos Masivos de Eventos en Anclajes de Consenso Sub-Centavo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En arquitecturas empresariales (telemetría IoT, trazabilidad logística, auditoría
@@ -110,7 +110,7 @@ const main = async () => {
 
   try {
     // 1. Desplegar un Tópico de Auditoría HCS
-    console.log('[⚙️ PROCESO] Paso 1: Desplegando Tópico de Auditoría Inmutable en HCS...')
+    console.log('[PROCESO] Paso 1: Desplegando Tópico de Auditoría Inmutable en HCS...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('ENTERPRISE:MERKLE_BATCH_ANCHOR:V1')
@@ -119,11 +119,11 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId
-    console.log(`[✅ ÉXITO] Tópico Ancla HCS Creado: ${topicId.toString()}`)
+    console.log(`[ÉXITO] Tópico Ancla HCS Creado: ${topicId.toString()}`)
 
     // 2. Simular Flujo de Telemetría Masiva (1,024 Registros de Alta Frecuencia)
     const BATCH_SIZE = 1024
-    console.log(`\n[⚙️ PROCESO] Paso 2: Ingestando Flujo de ${BATCH_SIZE} Registros en Memoria...`)
+    console.log(`\n[PROCESO] Paso 2: Ingestando Flujo de ${BATCH_SIZE} Registros en Memoria...`)
     const rawEvents = []
     const sampleTargetIndex = 427
 
@@ -136,19 +136,19 @@ const main = async () => {
         ts: Date.now() - (BATCH_SIZE - i) * 10
       }))
     }
-    console.log(`[📊 REGISTRO] Búfer de ingesta lleno: ${rawEvents.length} paquetes de telemetría procesados.`)
-    console.log(`[🔍 OBJETIVO] Designando Evento de Auditoría #${sampleTargetIndex}:`)
-    console.log(`   ${rawEvents[sampleTargetIndex]}`)
+    console.log(`[REGISTRO] Búfer de ingesta lleno: ${rawEvents.length} paquetes de telemetría procesados.`)
+    console.log(`[OBJETIVO] Designando Evento de Auditoría #${sampleTargetIndex}:`)
+    console.log(`${rawEvents[sampleTargetIndex]}`)
 
     // 3. Calcular Árbol Merkle Criptográfico
-    console.log('\n[⚙️ PROCESO] Paso 3: Calculando Árbol Merkle Binario Keccak-256...')
+    console.log('\n[PROCESO] Paso 3: Calculando Árbol Merkle Binario Keccak-256...')
     const merkleEngine = new MerkleTreeEngine(rawEvents)
     const merkleRoot = merkleEngine.getRoot()
-    console.log(`[🔐 RAÍZ CRIPTO] Raíz Merkle del Lote: ${merkleRoot}`)
-    console.log(`[📊 MÉTRICAS] Profundidad: ${merkleEngine.layers.length} niveles | Hojas: ${BATCH_SIZE}`)
+    console.log(`[ RAÍZ CRIPTO] Raíz Merkle del Lote: ${merkleRoot}`)
+    console.log(`[MÉTRICAS] Profundidad: ${merkleEngine.layers.length} niveles | Hojas: ${BATCH_SIZE}`)
 
     // 4. Anclar la Raíz Merkle a HCS
-    console.log('\n[⚙️ PROCESO] Paso 4: Anclando Compromiso de Raíz Merkle a la Capa de Consenso...')
+    console.log('\n[PROCESO] Paso 4: Anclando Compromiso de Raíz Merkle a la Capa de Consenso...')
     const anchorPayload = {
       protocol: 'hcs-merkle-batch-v1',
       merkle_root: merkleRoot,
@@ -166,35 +166,35 @@ const main = async () => {
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Raíz Merkle Anclada en Secuencia de Consenso #${submitReceipt.topicSequenceNumber}!`)
-    console.log('[📊 EFICIENCIA] 1,024 Eventos Certificados en 1 Transacción (~$0.0001 tarifa total)')
+    console.log(`[ÉXITO] ¡Raíz Merkle Anclada en Secuencia de Consenso #${submitReceipt.topicSequenceNumber}!`)
+    console.log('[EFICIENCIA] 1,024 Eventos Certificados en 1 Transacción (~$0.0001 tarifa total)')
 
     // 5. Generar y Verificar Prueba de Inclusión para el Evento Objetivo
-    console.log(`\n[⚙️ PROCESO] Paso 5: Generando Prueba de Inclusión Compacta O(log N) para Evento #${sampleTargetIndex}...`)
+    console.log(`\n[PROCESO] Paso 5: Generando Prueba de Inclusión Compacta O(log N) para Evento #${sampleTargetIndex}...`)
     const inclusionProof = merkleEngine.getProof(sampleTargetIndex)
-    console.log(`[📊 COMPRESIÓN] Tamaño de Prueba: ¡Solo ${inclusionProof.length} hashes de 32 bytes para ${BATCH_SIZE} eventos!`)
+    console.log(`[COMPRESIÓN] Tamaño de Prueba: ¡Solo ${inclusionProof.length} hashes de 32 bytes para ${BATCH_SIZE} eventos!`)
 
-    console.log('[⚙️ PROCESO] Verificación Independiente del Cliente Ligero:')
+    console.log('[PROCESO] Verificación Independiente del Cliente Ligero:')
     const isValid = MerkleTreeEngine.verifyProof(rawEvents[sampleTargetIndex], inclusionProof, merkleRoot)
     show.merkle({ title: 'Prueba de inclusión de un evento del lote', leafCount: rawEvents.length, leafIndex: sampleTargetIndex, root: merkleRoot, proof: inclusionProof.map((p) => p.hash.toString('hex')) })
-    console.log(`[🛡️ PRUEBA CRIPTO] Resultado de Verificación: ${isValid ? 'VÁLIDA (Coincidencia Criptográfica)' : 'RECHAZADA'}`)
+    console.log(`[ PRUEBA CRIPTO] Resultado de Verificación: ${isValid ? 'VÁLIDA (Coincidencia Criptográfica)' : 'RECHAZADA'}`)
 
     updateState('MERKLE_BATCH_TOPIC_ID', topicId.toString())
     updateState('MERKLE_BATCH_ROOT', merkleRoot)
     updateState('MERKLE_BATCH_SIZE', BATCH_SIZE.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El Motor de Ingesta Masiva con Árboles Merkle permite escalabilidad horizontal infinita.')
     console.log('Al asentar una sola raíz Merkle Keccak-256 en HCS, miles de eventos heredan el')
     console.log('sellado de tiempo inmutable y ordenamiento justo del consenso de Hedera.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Los clientes externos solo requieren una rama logarítmica O(log N) (10 hashes para 1,024 eventos)')
     console.log('para demostrar matemáticamente su inclusión inalterable ante el registro público de consenso.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Motor Merkle Batcher:', error.message)
+    console.error('\n[ERROR] Fallo en Motor Merkle Batcher:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -205,7 +205,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

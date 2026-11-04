@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laboratorio 08: Precompilados HTS Avanzados
- * [ CONCEPTO ] Contratos Inteligentes EVM Controlando Activos Nativos
+ * [CONCEPTO] Contratos Inteligentes EVM Controlando Activos Nativos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Los Contratos Inteligentes en Hedera pueden interactuar con el Hedera Token
@@ -43,7 +43,7 @@ import fs from 'fs'
 import { getClient, executeWithGas, reuseContract, reuseToken } from '../M99_Utilities/index.js'
 
 const compile = (contractName, source) => {
-  console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol...`)
+  console.log(`[PROCESO] Compilando ${contractName}.sol...`)
   const input = {
     language: 'Solidity',
     sources: { [`${contractName}.sol`]: { content: source } },
@@ -65,7 +65,7 @@ const main = async () => {
     const sourceCode = fs.readFileSync(new URL('./08_hts_precompiles_advanced.sol', import.meta.url), 'utf8')
     const bytecode = compile('AdvancedHTS', sourceCode)
 
-    console.log('[⚙️ PROCESO] Desplegando el Contrato AdvancedHTS en la EVM...')
+    console.log('[PROCESO] Desplegando el Contrato AdvancedHTS en la EVM...')
     const contractId = await reuseContract('REUSE_M8_08_CONTRACT', bytecode, async () => {
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -74,10 +74,10 @@ const main = async () => {
       const receipt = await contractTx.getReceipt(client)
       return receipt.contractId
     })
-    console.log(`[✅ ÉXITO] Contrato desplegado con ID: ${contractId.toString()}`)
+    console.log(`[ÉXITO] Contrato desplegado con ID: ${contractId.toString()}`)
 
     // 2. Crear un Token HTS y establecer el Contrato como Llave de Suministro
-    console.log('\n[⚙️ PROCESO] Creando Token Nativo con el Contrato como Llave de Suministro...')
+    console.log('\n[PROCESO] Creando Token Nativo con el Contrato como Llave de Suministro...')
     // La supply key del token es este contrato: el token se reutiliza solo junto con él.
     const tokenId = await reuseToken(`REUSE_M8_08_TOKEN_${contractId}`, async () => {
       const tokenTx = await new TokenCreateTransaction()
@@ -95,10 +95,10 @@ const main = async () => {
       const tokenReceipt = await submitTx.getReceipt(client)
       return tokenReceipt.tokenId
     })
-    console.log(`[✅ ÉXITO] Token creado: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] Token creado: ${tokenId.toString()}`)
 
     // 3. Ejecutar la función del Contrato Inteligente para MINTEAR tokens nativamente
-    console.log('\n[⚙️ PROCESO] Llamando al Contrato Inteligente para Mintear 1000 Tokens (Precompilado 0x167)...')
+    console.log('\n[PROCESO] Llamando al Contrato Inteligente para Mintear 1000 Tokens (Precompilado 0x167)...')
     const mintAmount = 1000
 
     const execTx = await executeWithGas((gas) => new ContractExecuteTransaction()
@@ -113,15 +113,15 @@ const main = async () => {
 
     // El código de respuesta 22 significa ÉXITO (SUCCESS) en HTS
     const responseCode = Number(execRecord.contractFunctionResult.getInt256(0)) // BigNumber -> number
-    console.log(`[📊 REGISTRO] Código de Respuesta del Precompilado: ${responseCode} (22 = ÉXITO)`)
+    console.log(`[REGISTRO] Código de Respuesta del Precompilado: ${responseCode} (22 = ÉXITO)`)
 
     if (responseCode === 22) {
-      console.log('[✅ ÉXITO] ¡El Contrato Inteligente minteó tokens nativos exitosamente!')
+      console.log('[ÉXITO] ¡El Contrato Inteligente minteó tokens nativos exitosamente!')
     } else {
-      console.log('[❌ FALLO] El Contrato Inteligente falló al mintear tokens.')
+      console.log('[FALLO] El Contrato Inteligente falló al mintear tokens.')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al establecer un ContractId como llave en una entidad nativa de Hedera, le')
     console.log('das a ese contrato EVM autorización directa sobre las operaciones de capa base,')
     console.log('fusionando la lógica EVM con velocidades nativas.')
@@ -129,7 +129,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    console.error('\n[FALLO] Error de Ejecución:', error.message)
     process.exitCode = 1
   }
 }
@@ -138,7 +138,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

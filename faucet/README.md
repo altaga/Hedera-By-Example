@@ -6,8 +6,8 @@ Autonomous, high-throughput Faucet engine built specifically for **Hedera by Exa
 
 ## ⚡ Architecture Highlights
 
-1. **Round-Robin Pool (100 Wallets)**:
-   - Eliminates EVM nonce bottlenecks and RPC rate-limits by distributing disbursement traffic across a pool of 100 pre-funded accounts.
+1. **Round-Robin Pool (`FAUCET_POOL_SIZE`, default 25)**:
+   - Eliminates EVM nonce bottlenecks and RPC rate-limits by distributing disbursement traffic across a pool of pre-funded accounts.
    - Initialized deterministically from BIP-39 `FAUCET_MNEMONIC` at derivation path `m/44'/60'/0'/0/${index}`.
 
 2. **Multi-RPC Failover Sequence**:
@@ -85,10 +85,10 @@ Returns live network status, active RPC sequence, pool size, operator balance, a
   ```bash
   npm run faucet:recover
   ```
-  Audits all 100 wallets and lists those below 20 ℏ.
+  Audits pool wallets and lists those below 20 ℏ.
 
 - **Generate & Top-up Pool**:
   ```bash
   npm run faucet:setup
   ```
-  Derives the 100 wallets from `FAUCET_MNEMONIC` and tops up any wallet below 100 ℏ from `OPERATOR_KEY`.
+  Derives `FAUCET_POOL_SIZE` wallets from `FAUCET_MNEMONIC` and tops up any wallet below `TARGET_HBAR_PER_WALLET` from `OPERATOR_KEY`.

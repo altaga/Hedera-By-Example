@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Transferencias de Tokens Fungibles
- * [ CONCEPTO ] Arquitectura de Asociación y Protección Anti-Spam
+ * [CONCEPTO] Arquitectura de Asociación y Protección Anti-Spam
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Blindaje contra Spam: En Hedera, no puedes recibir un token si no estás
@@ -46,13 +46,13 @@ const main = async () => {
   const tokenId = getState('FT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[❌ FALLO] Falta FT_TOKEN_ID en el estado o ACCOUNT_1 en el .env.')
+    console.error('[FALLO] Falta FT_TOKEN_ID en el estado o ACCOUNT_1 en el .env.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log(`[⚙️ PROCESO] Transfiriendo 10 HSC (Token: ${tokenId}) a ${targetId}...`)
+    console.log(`[PROCESO] Transfiriendo 10 HSC (Token: ${tokenId}) a ${targetId}...`)
 
     // Hedera permite agrupar múltiples transferencias de activos en la misma transacción
     const transaction = await new TransferTransaction()
@@ -62,14 +62,14 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] Transferencia confirmada por la red. Estado: ${receipt.status.toString()}`)
+    console.log(`\n[ÉXITO] Transferencia confirmada por la red. Estado: ${receipt.status.toString()}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La "Asociación" es una declaración de consentimiento. Al estar')
     console.log('integrada en el protocolo, garantiza que el usuario siempre tenga')
     console.log('el control sobre qué activos residen en su billetera, a diferencia')
@@ -79,11 +79,11 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     if (error.message.includes('TOKEN_NOT_ASSOCIATED_TO_ACCOUNT')) {
-      console.error('\n[❌ FALLO] Fallo por falta de Asociación: La cuenta receptora no acepta este token.')
+      console.error('\n[FALLO] Fallo por falta de Asociación: La cuenta receptora no acepta este token.')
       process.exitCode = 1
       console.log('[TIP] Asegúrate de haber ejecutado el M0 Lab 03 o una asociación manual.')
     } else {
-      console.error('\n[❌ FALLO] La transferencia de tokens falló:', error.message)
+      console.error('\n[FALLO] La transferencia de tokens falló:', error.message)
       process.exitCode = 1
     }
   }
@@ -93,7 +93,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

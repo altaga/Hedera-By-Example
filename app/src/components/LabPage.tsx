@@ -11,7 +11,13 @@ import type { WalletStore } from '../lib/wallets'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
-import { buildLabFileTabs, type LabCodeFile, type ExtractedCompanionModule } from '../lib/labTabs'
+import {
+  buildLabFileTabs,
+  isCompactWalkSegment,
+  type LabCodeFile,
+  type ExtractedCompanionModule,
+  type LabWalkthroughSegment,
+} from '../lib/labTabs'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source'
@@ -41,50 +47,110 @@ interface Props {
 const isImage = (name: string) => /\.(png|jpe?g|gif|webp|svg)$/i.test(name)
 
 /** The files a lab reads, with a preview and the option to use your own. */
-function LabFiles ({ t, files, overrides, onReplace }: { t: Strings; files: { name: string; url: string }[]; overrides: Record<string, File>; onReplace: (name: string, file: File | null) => void }) {
+function LabFiles ({
+  t,
+  files,
+  overrides,
+  onReplace,
+  embedded = false,
+}: {
+  t: Strings
+  files: { name: string; url: string }[]
+  overrides: Record<string, File>
+  onReplace: (name: string, file: File | null) => void
+  /** When true, omit outer section chrome (parent already provides title). */
+  embedded?: boolean
+}) {
   const previewUrl = (f: { name: string; url: string }) => (overrides[f.name] ? URL.createObjectURL(overrides[f.name]) : f.url)
+  const list = (
+    <ul className='file-list'>
+      {files.map((f) => (
+        <li key={f.name} className='file-item'>
+          {isImage(f.name)
+            ? <img className='file-thumb' src={previewUrl(f)} alt='' />
+            : <span className='file-thumb file-thumb-ext' aria-hidden='true'>{f.name.split('.').pop()}</span>}
+          <span className='file-meta'>
+            <code>{f.name}</code>
+            <span className='muted'>{overrides[f.name] ? `${t.yourFile}: ${overrides[f.name].name}` : t.courseFile}</span>
+          </span>
+          {overrides[f.name]
+            ? <button type='button' className='btn btn-ghost btn-sm' onClick={() => onReplace(f.name, null)}>{t.revertFile}</button>
+            : (
+              <label className='btn btn-ghost btn-sm file-pick'>
+                {t.useOwnFile}
+                <input type='file' accept={isImage(f.name) ? 'image/*' : undefined} onChange={(e) => onReplace(f.name, e.target.files?.[0] || null)} />
+              </label>
+              )}
+        </li>
+      ))}
+    </ul>
+  )
+  if (embedded) return list
   return (
     <section className='lab-files' aria-labelledby='lab-files-title' data-testid='lab-files'>
       <h2 id='lab-files-title' className='section-title'>{t.filesTitle}</h2>
       <p className='muted'>{t.filesIntro}</p>
-      <ul className='file-list'>
-        {files.map((f) => (
-          <li key={f.name} className='file-item'>
-            {isImage(f.name)
-              ? <img className='file-thumb' src={previewUrl(f)} alt='' />
-              : <span className='file-thumb file-thumb-ext' aria-hidden='true'>{f.name.split('.').pop()}</span>}
-            <span className='file-meta'>
-              <code>{f.name}</code>
-              <span className='muted'>{overrides[f.name] ? `${t.yourFile}: ${overrides[f.name].name}` : t.courseFile}</span>
-            </span>
-            {overrides[f.name]
-              ? <button type='button' className='btn btn-ghost btn-sm' onClick={() => onReplace(f.name, null)}>{t.revertFile}</button>
-              : (
-                <label className='btn btn-ghost btn-sm file-pick'>
-                  {t.useOwnFile}
-                  <input type='file' accept={isImage(f.name) ? 'image/*' : undefined} onChange={(e) => onReplace(f.name, e.target.files?.[0] || null)} />
-                </label>
-                )}
-          </li>
-        ))}
-      </ul>
+      {list}
     </section>
   )
 }
 
 // ---------- small helpers ----------
 
-/** Render `code` spans and bare URLs inside annotation prose. */
+/** Render `code` spans, **bold**, and bare URLs inside annotation prose. */
 function Inline ({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`|https?:\/\/[^\s)]+)/g)
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|https?:\/\/[^\s)]+)/g)
   return (
     <>
       {parts.map((p, i) => {
         if (/^`[^`]+`$/.test(p)) return <code key={i}>{p.slice(1, -1)}</code>
+        if (/^\*\*[^*]+\*\*$/.test(p)) return <strong key={i}>{p.slice(2, -2)}</strong>
         if (/^https?:\/\//.test(p)) return <a key={i} href={p} target='_blank' rel='noopener noreferrer'>{p}</a>
         return <React.Fragment key={i}>{p}</React.Fragment>
       })}
     </>
+  )
+}
+
+function shortFileLabel (name: string) {
+  // Prefer the class/util stem over the long lab filename in the tab strip.
+  if (name.length <= 28) return name
+  const stem = name.replace(/\.[^.]+$/, '')
+  if (stem.length <= 26) return name
+  return `${stem.slice(0, 22)}…${name.includes('.') ? name.slice(name.lastIndexOf('.')) : ''}`
+}
+
+function CompanionStrip ({
+  modules,
+  lang,
+  onOpen,
+}: {
+  modules: ExtractedCompanionModule[]
+  lang: Lang
+  onOpen: (id: string) => void
+}) {
+  return (
+    <div className='walk-modules-strip' role='group' aria-label={lang === 'es' ? 'Módulos extraídos' : 'Extracted modules'}>
+      <p className='walk-modules-label'>
+        {lang === 'es' ? 'Definiciones en pestañas' : 'Defined in tabs'}
+      </p>
+      <ul className='walk-modules-list'>
+        {modules.map((m) => (
+          <li key={m.id}>
+            <button
+              type='button'
+              className='walk-module-chip'
+              onClick={() => onOpen(m.id)}
+              title={m.description}
+            >
+              <span className={`file-badge file-badge-${m.kind}`}>{m.badge}</span>
+              <span className='walk-module-chip-name'>{m.name}.js</span>
+              <Icon name='arrowRight' size={12} />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -221,7 +287,7 @@ export function LabPage (props: Props) {
   }, [body.files, fileOverrides])
 
   // Build multi-file tabs
-  const { tabs: fileTabs, modules } = useMemo(() => {
+  const { tabs: fileTabs } = useMemo(() => {
     return buildLabFileTabs({
       code,
       entry,
@@ -231,25 +297,31 @@ export function LabPage (props: Props) {
     })
   }, [code, entry, body, lang, auxiliaryTexts])
 
+  const primaryFileTabs = useMemo(() => fileTabs.filter((f) => !f.secondary), [fileTabs])
+  const depFileTabs = useMemo(() => fileTabs.filter((f) => f.secondary), [fileTabs])
+
   // Fallback to main if activeFileId not found
   const currentActiveTab: LabCodeFile = fileTabs.find((ft) => ft.id === activeFileId) || fileTabs[0]
+  const depsActive = depFileTabs.some((f) => f.id === activeFileId)
 
-  // W3C WAI-ARIA keyboard navigation for file tabs
+  // W3C WAI-ARIA keyboard navigation for primary file tabs
   const handleFileTabKey = (e: React.KeyboardEvent, index: number) => {
+    const navTabs = primaryFileTabs
+    if (navTabs.length === 0) return
     if (e.key === 'ArrowRight') {
       e.preventDefault()
-      const nextIdx = (index + 1) % fileTabs.length
-      setActiveFileId(fileTabs[nextIdx].id)
+      const nextIdx = (index + 1) % navTabs.length
+      setActiveFileId(navTabs[nextIdx].id)
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault()
-      const prevIdx = (index - 1 + fileTabs.length) % fileTabs.length
-      setActiveFileId(fileTabs[prevIdx].id)
+      const prevIdx = (index - 1 + navTabs.length) % navTabs.length
+      setActiveFileId(navTabs[prevIdx].id)
     } else if (e.key === 'Home') {
       e.preventDefault()
-      setActiveFileId(fileTabs[0].id)
+      setActiveFileId(navTabs[0].id)
     } else if (e.key === 'End') {
       e.preventDefault()
-      setActiveFileId(fileTabs[fileTabs.length - 1].id)
+      setActiveFileId(navTabs[navTabs.length - 1].id)
     }
   }
 
@@ -273,50 +345,66 @@ export function LabPage (props: Props) {
       </header>
 
       {body.concept.length > 0 && (
-        <div className='prose'>
-          {body.concept.map((p, i) => <p key={i}><Inline text={p} /></p>)}
+        <div className='prose lab-concept'>
+          <p><Inline text={body.concept[0]} /></p>
+          {body.concept.length > 1 && (
+            <details className='lab-more'>
+              <summary>{lang === 'es' ? 'Más contexto' : 'More context'}</summary>
+              {body.concept.slice(1).map((p, i) => <p key={i}><Inline text={p} /></p>)}
+            </details>
+          )}
         </div>
       )}
 
-      <dl className='lab-meta'>
-        <div>
-          <dt>{t.file}</dt>
-          <dd><a href={fileUrl} target='_blank' rel='noopener noreferrer'><code>course/{path}</code></a></dd>
-        </div>
-        {body.sdk.length > 0 && (
+      <div className='lab-context'>
+        <dl className='lab-meta'>
           <div>
-            <dt>{t.sdkUsed}</dt>
-            <dd className='sdk-list'>{body.sdk.map((s) => <code key={s}>{s}</code>)}</dd>
+            <dt>{t.file}</dt>
+            <dd><a href={fileUrl} target='_blank' rel='noopener noreferrer'><code>{lab.file}</code></a></dd>
           </div>
-        )}
-      </dl>
+          {body.sdk.length > 0 && (
+            <div>
+              <dt>{t.sdkUsed}</dt>
+              <dd className='sdk-list'>
+                {body.sdk.slice(0, 5).map((s) => <code key={s}>{s}</code>)}
+                {body.sdk.length > 5 && (
+                  <span className='sdk-more' title={body.sdk.slice(5).join(', ')}>
+                    +{body.sdk.length - 5}
+                  </span>
+                )}
+              </dd>
+            </div>
+          )}
+        </dl>
 
-      {body.before && body.before.length > 0 && (
-        <aside className='before-run' aria-labelledby='before-title' data-testid='before-run'>
-          <h2 id='before-title' className='before-run-title'>{t.beforeTitle}</h2>
-          <dl>
-            {body.before.map((item, i) => (
-              <div key={i}>
-                {item.label && <dt>{item.label}</dt>}
-                <dd><LabRefs text={item.text} onSelect={onSelect} /></dd>
-              </div>
-            ))}
-          </dl>
-        </aside>
-      )}
-
-      {body.simulated && (
-        <aside className='simulated' aria-label={t.simulatedTitle} data-testid='simulated-note'>
-          <span className='simulated-tag'>{t.simulatedTitle}</span>
-          <p>{body.simulated}</p>
-        </aside>
-      )}
+        {(body.before?.length || body.simulated) ? (
+          <details className='lab-prep' data-testid='before-run'>
+            <summary>{t.beforeTitle}</summary>
+            {body.before && body.before.length > 0 && (
+              <dl className='before-run-list'>
+                {body.before.map((item, i) => (
+                  <div key={i}>
+                    {item.label && <dt>{item.label}</dt>}
+                    <dd><LabRefs text={item.text} onSelect={onSelect} /></dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {body.simulated && (
+              <aside className='simulated' aria-label={t.simulatedTitle} data-testid='simulated-note'>
+                <span className='simulated-tag'>{t.simulatedTitle}</span>
+                <p>{body.simulated}</p>
+              </aside>
+            )}
+          </details>
+        ) : null}
+      </div>
 
       {body.sequence && (
-        <section className='lab-sequence' aria-labelledby='seq-title'>
-          <h2 id='seq-title' className='section-title'>{t.sequenceTitle}</h2>
+        <details className='lab-sequence' aria-labelledby='seq-title'>
+          <summary id='seq-title' className='section-title'>{t.sequenceTitle}</summary>
           <SequenceDiagram spec={body.sequence} title={t.sequenceTitle} />
-        </section>
+        </details>
       )}
 
       {body.nodeOnly?.length > 0 && (
@@ -379,13 +467,13 @@ export function LabPage (props: Props) {
           </div>
         </div>
 
-        {fileTabs.length > 1 && (
+        {(primaryFileTabs.length > 1 || depFileTabs.length > 0) && (
           <nav
             className='file-tabs-strip'
             role='tablist'
             aria-label={lang === 'es' ? 'Archivos del laboratorio' : 'Lab files'}
           >
-            {fileTabs.map((f, i) => (
+            {primaryFileTabs.map((f, i) => (
               <button
                 key={f.id}
                 type='button'
@@ -400,63 +488,90 @@ export function LabPage (props: Props) {
                 title={f.description}
               >
                 <span className={`file-badge file-badge-${f.kind}`}>{f.badge}</span>
-                <span className='file-name'>{f.name}</span>
+                <span className='file-name'>{shortFileLabel(f.name)}</span>
               </button>
             ))}
+            {depFileTabs.length > 0 && (
+              <details className={`file-deps ${depsActive ? 'is-active' : ''}`}>
+                <summary
+                  className={`file-tab-btn file-deps-summary ${depsActive ? 'is-active' : ''}`}
+                  title={lang === 'es' ? 'Dependencias del curso' : 'Course dependencies'}
+                >
+                  <span className='file-badge file-badge-deps'>DEPS</span>
+                  <span className='file-name'>
+                    {depsActive
+                      ? shortFileLabel(currentActiveTab.name)
+                      : lang === 'es' ? 'Deps' : 'Deps'}
+                  </span>
+                </summary>
+                <ul className='file-deps-menu' role='list'>
+                  {depFileTabs.map((f) => (
+                    <li key={f.id}>
+                      <button
+                        type='button'
+                        role='tab'
+                        id={`file-tab-${f.id}`}
+                        aria-selected={activeFileId === f.id}
+                        className={`file-deps-item ${activeFileId === f.id ? 'is-active' : ''}`}
+                        onClick={(e) => {
+                          setActiveFileId(f.id)
+                          const details = (e.currentTarget as HTMLElement).closest('details')
+                          if (details) details.open = false
+                        }}
+                        title={f.description}
+                      >
+                        <span className='file-name'>{f.name}</span>
+                        {f.description && <span className='file-deps-desc'>{f.description}</span>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
           </nav>
         )}
 
         {tab === 'walkthrough' && (
           <div className='walk' role='tabpanel' id='panel-walkthrough' aria-labelledby='tab-walkthrough'>
             {currentActiveTab.segments && currentActiveTab.segments.length > 0 ? (
-              currentActiveTab.segments.map((seg, i) =>
-                seg.companionModule ? (
-                  <div key={i} className='walk-row walk-row-companion'>
-                    <div className='walk-doc'>
-                      {seg.doc.map((d, j) => (
-                        <p key={j}><Inline text={d} /></p>
-                      ))}
+              currentActiveTab.segments.map((seg, i) => {
+                const stripModules = seg.companionModules?.length
+                  ? seg.companionModules
+                  : seg.companionModule
+                    ? [seg.companionModule]
+                    : null
+
+                if (stripModules) {
+                  return (
+                    <div key={i} className='walk-row walk-row-modules'>
+                      <CompanionStrip
+                        modules={stripModules}
+                        lang={lang}
+                        onOpen={setActiveFileId}
+                      />
                     </div>
-                    <div className='walk-code'>
-                      <div className='companion-callout-card'>
-                        <div className='companion-callout-header'>
-                          <span className={`file-badge file-badge-${seg.companionModule.kind}`}>
-                            {seg.companionModule.badge}
-                          </span>
-                          <code className='companion-callout-name'>
-                            {seg.companionModule.name}.js
-                          </code>
-                        </div>
-                        <p className='companion-callout-desc'>
-                          {seg.companionModule.description}
-                        </p>
-                        <button
-                          type='button'
-                          className='btn btn-secondary btn-sm'
-                          onClick={() => setActiveFileId(seg.companionModule.id)}
-                          title={lang === 'es' ? `Examinar archivo ${seg.companionModule.name}.js` : `Inspect ${seg.companionModule.name}.js`}
-                        >
-                          <Icon name='forward' size={12} />
-                          <span>
-                            {lang === 'es'
-                              ? `Abrir ${seg.companionModule.name}.js →`
-                              : `Open ${seg.companionModule.name}.js →`}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div key={i} className={`walk-row ${seg.doc.length ? '' : 'walk-row-bare'}`}>
+                  )
+                }
+
+                const compact = isCompactWalkSegment(seg as LabWalkthroughSegment)
+                return (
+                  <div
+                    key={i}
+                    className={[
+                      'walk-row',
+                      seg.doc.length ? '' : 'walk-row-bare',
+                      compact ? 'walk-row-compact' : '',
+                    ].filter(Boolean).join(' ')}
+                  >
                     <div className='walk-doc'>
                       {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
                     </div>
                     <div className='walk-code'>
-                      {seg.code ? <CodeLines text={seg.code} start={seg.start} sdk={sdk} /> : null}
+                      {seg.code ? <CodeLines text={seg.code} start={seg.start ?? 1} sdk={sdk} /> : null}
                     </div>
                   </div>
                 )
-              )
+              })
             ) : (
               <div className='walk-companion'>
                 {currentActiveTab.description && (
@@ -546,7 +661,19 @@ export function LabPage (props: Props) {
 
       {lab.slug === 'm15-04-passkeys-webauthn-p256-authenticator' && <PasskeyDemo lang={lang} wallet={wallet} />}
 
-      {body.files?.length > 0 && <LabFiles t={t} files={body.files} overrides={fileOverrides} onReplace={onReplaceFile} />}
+      {body.files?.length > 0 && (
+        <details className='lab-files' data-testid='lab-files'>
+          <summary className='section-title'>{t.filesTitle}</summary>
+          <p className='muted'>{t.filesIntro}</p>
+          <LabFiles
+            t={t}
+            files={body.files}
+            overrides={fileOverrides}
+            onReplace={onReplaceFile}
+            embedded
+          />
+        </details>
+      )}
 
       {body.moment && (
         <aside className='note' aria-label={t.goodToKnow}>
@@ -555,8 +682,8 @@ export function LabPage (props: Props) {
         </aside>
       )}
 
-      <section className='run-local' aria-labelledby='run-local-title'>
-        <h2 id='run-local-title' className='section-title'>{t.runLocally}</h2>
+      <details className='run-local' aria-labelledby='run-local-title'>
+        <summary id='run-local-title' className='section-title'>{t.runLocally}</summary>
         <p>{t.runLocallyIntro}</p>
         <ol className='cmd-steps'>
           <CommandBlock
@@ -578,11 +705,11 @@ export function LabPage (props: Props) {
             copiedLabel={t.copied}
           />
         </ol>
-      </section>
+      </details>
 
       {body.refs.length > 0 && (
-        <section className='refs' aria-labelledby='refs-title'>
-          <h2 id='refs-title' className='section-title'>{t.references}</h2>
+        <details className='refs' aria-labelledby='refs-title'>
+          <summary id='refs-title' className='section-title'>{t.references}</summary>
           <ul>
             {body.refs.map((r) => (
               <li key={r}>
@@ -590,7 +717,7 @@ export function LabPage (props: Props) {
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       )}
 
       <nav className='pager' aria-label={`${t.previous} / ${t.next}`}>

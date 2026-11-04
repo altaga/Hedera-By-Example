@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Registros de Temas HCS-2
- * [ CONCEPTO ] Descubrimiento de Servicios Descentralizados
+ * [CONCEPTO] Descubrimiento de Servicios Descentralizados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Páginas Amarillas Descentralizadas: HCS-2 define un estándar de metadatos
@@ -61,14 +61,14 @@ const main = async () => {
   const targetAgentTopicId = getState('HCS1_TOPIC_ID')
 
   if (!targetAgentTopicId) {
-    console.error('[❌ FALLO] No se encontró el ID del Agente HCS-1 en el estado. Ejecuta Lab 01 primero.')
+    console.error('[FALLO] No se encontró el ID del Agente HCS-1 en el estado. Ejecuta Lab 01 primero.')
     process.exitCode = 1
     return
   }
 
   try {
     // 1. Crear el Tema para el Directorio de Esports Verificados
-    console.log(`[⚙️ PROCESO] Desplegando Registro de eSports Verificados en ${network}...`)
+    console.log(`[PROCESO] Desplegando Registro de eSports Verificados en ${network}...`)
     const registryTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-2: Verified_Esports_Registry_V1')
       .setSubmitKey(client.operatorPublicKey)
@@ -78,12 +78,12 @@ const main = async () => {
     const registryReceipt = await registryResponse.getReceipt(client)
     const registryTopicId = registryReceipt.topicId.toString()
 
-    console.log(`[✅ ÉXITO] Directorio HCS-2 anclado: ${registryTopicId}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(registryResponse)}`)
+    console.log(`[ÉXITO] Directorio HCS-2 anclado: ${registryTopicId}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(registryResponse)}`)
     updateState('HCS2_REGISTRY_TOPIC_ID', registryTopicId)
 
     // 2. Registrar el Agente Anti-Cheat en el Directorio
-    console.log(`\n[⚙️ PROCESO] Publicando ficha de descubrimiento para el Agente ${targetAgentTopicId}...`)
+    console.log(`\n[PROCESO] Publicando ficha de descubrimiento para el Agente ${targetAgentTopicId}...`)
     const discoveryPayload = buildHcs2RegistryMessage(
       'Official Tournament Agent Registry',
       targetAgentTopicId,
@@ -99,12 +99,12 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Entrada HCS-2 publicada con éxito. Estado: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Ver publicación: ${getHashscanUrl(submitResponse)}`)
-    console.log('\n--- 📊 [REGISTRO] Mensaje de Descubrimiento (Payload) ---')
+    console.log(`\n[ÉXITO] Entrada HCS-2 publicada con éxito. Estado: ${submitReceipt.status.toString()}`)
+    console.log(`[REGISTRO] Ver publicación: ${getHashscanUrl(submitResponse)}`)
+    console.log('\n---  [REGISTRO] Mensaje de Descubrimiento (Payload) ---')
     console.log(JSON.stringify(discoveryPayload, null, 2))
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al registrar tu agente en un directorio HCS-2, permites que')
     console.log('aplicaciones de terceros, auditores y tableros de resultados')
     console.log('descubran y verifiquen tus reglas automáticamente. Ya no')
@@ -114,7 +114,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El registro HCS-2 falló:', error.message)
+    console.error('\n[FALLO] El registro HCS-2 falló:', error.message)
     process.exitCode = 1
     client.close()
   }
@@ -124,7 +124,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Fragmentación de Mensajes y Suscripciones gRPC
- * [ CONCEPTO ] Chunking y Streaming de Datos Descentralizado
+ * [CONCEPTO] Chunking y Streaming de Datos Descentralizado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Superando Límites: Cada mensaje de HCS tiene un límite de ~4KB. Para enviar
@@ -44,7 +44,7 @@ import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
  * Publicador: Divide automáticamente los mensajes grandes de forma interna.
  */
 const publishLargePayload = async (client, topicId, message) => {
-  console.log(`[⚙️ PROCESO] Fragmentando payload (${message.length} bytes)...`)
+  console.log(`[PROCESO] Fragmentando payload (${message.length} bytes)...`)
 
   // El SDK maneja la fragmentación (chunking) automáticamente
   const transaction = await new TopicMessageSubmitTransaction()
@@ -62,22 +62,22 @@ const publishLargePayload = async (client, topicId, message) => {
  * Suscriptor: Utiliza gRPC para escuchar dinámicamente los mensajes entrantes.
  */
 const subscribeToTopic = (client, topicId) => {
-  console.log(`\n[ℹ️ INFO] gRPC: Suscribiéndose al canal de datos: ${topicId}`)
-  console.log('[ℹ️ INFO] Escuchando mensajes en vivo (Ctrl+C para salir)...\n')
+  console.log(`\n[INFO] gRPC: Suscribiéndose al canal de datos: ${topicId}`)
+  console.log('[INFO] Escuchando mensajes en vivo (Ctrl+C para salir)...\n')
 
   return new TopicMessageQuery()
     .setTopicId(topicId)
     .setStartTime(0) // Recuperar histórico + Escucha en vivo
     .subscribe(
       client,
-      (error) => { console.error('[❌ FALLO] Fallo en la suscripción gRPC:', error); process.exit(1) },
+      (error) => { console.error('[FALLO] Fallo en la suscripción gRPC:', error); process.exit(1) },
       (message) => {
         const payload = Buffer.from(message.contents).toString()
         const timestamp = message.consensusTimestamp.toDate().toLocaleTimeString()
 
         console.log(`--- [EVENTO] Mensaje Confirmado [${timestamp}] ---`)
-        console.log(`[📊 REGISTRO] Secuencia: ${message.sequenceNumber.toString()}`)
-        console.log(`[📊 REGISTRO] Frag.: ${message.chunks ? message.chunks.length : 1} | Contenido: ${payload.substring(0, 100)}${payload.length > 100 ? '...' : ''}`)
+        console.log(`[REGISTRO] Secuencia: ${message.sequenceNumber.toString()}`)
+        console.log(`[REGISTRO] Frag.: ${message.chunks ? message.chunks.length : 1} | Contenido: ${payload.substring(0, 100)}${payload.length > 100 ? '...' : ''}`)
         console.log('---------------------------------------------------\n')
       }
     )
@@ -92,7 +92,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FALLO] Falta HCS_TOPIC_ID en el estado local.')
+    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local.')
     process.exitCode = 1
     return
   }
@@ -102,15 +102,15 @@ const main = async () => {
     subscribeToTopic(client, topicId)
 
     // 2. Publicar un mensaje que obligue a la fragmentación
-    console.log('[⚙️ PROCESO] Preparando payload masivo para prueba de fragmentación...')
+    console.log('[PROCESO] Preparando payload masivo para prueba de fragmentación...')
     await new Promise(resolve => setTimeout(resolve, 3000))
 
     const largeMessage = 'Benchmark de fragmentación HCS. ' + 'Inyectando datos masivos... '.repeat(350)
     const status = await publishLargePayload(client, topicId, largeMessage)
 
-    console.log(`\n[✅ ÉXITO] Transmisión de fragmentos completada. Estado: ${status}`)
+    console.log(`\n[ÉXITO] Transmisión de fragmentos completada. Estado: ${status}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al combinar Chunking con gRPC, creas sistemas de distribución')
     console.log('de datos que no dependen de servidores web tradicionales,')
     console.log('garantizando que la información se entregue con un orden')
@@ -122,7 +122,7 @@ const main = async () => {
       process.exit()
     }, 12000)
   } catch (error) {
-    console.error('\n[❌ FALLO] El flujo de mensajería fragmentada falló:', error.message)
+    console.error('\n[FALLO] El flujo de mensajería fragmentada falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -131,7 +131,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
- * [ CONCEPT ] Pre-Distribution Dynamic Minting vs. Holder Immutability
+ * [CONCEPT] Pre-Distribution Dynamic Minting vs. Holder Immutability
  * ============================================================================
  * [ KEY CONCEPT ]
  * Before HIP-850, creators faced an all-or-nothing dilemma: either omit the
@@ -60,7 +60,7 @@ const main = async () => {
 
   try {
     // 1. Create an NFT Collection WITH SupplyKey ONLY (NO MetadataKey!)
-    console.log('[⚙️ PROCESS] Creating NFT Collection with SupplyKey ONLY (No MetadataKey)...')
+    console.log('[PROCESS] Creating NFT Collection with SupplyKey ONLY (No MetadataKey)...')
     // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
     const createTx = await new TokenCreateTransaction()
       .setTokenName('HIP-850 Mystery Vault')
@@ -77,10 +77,10 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const createReceipt = await createRes.getReceipt(client)
     const tokenId = createReceipt.tokenId
-    console.log(`[✅ SUCCESS] Collection Created: ${tokenId.toString()} (MetadataKey: NONE)`)
+    console.log(`[SUCCESS] Collection Created: ${tokenId.toString()} (MetadataKey: NONE)`)
 
     // 2. Mint Serial #1 with "Unrevealed Mystery Box" metadata in Treasury
-    console.log('\n[⚙️ PROCESS] Minting Serial #1 in Treasury (Unrevealed Mystery State)...')
+    console.log('\n[PROCESS] Minting Serial #1 in Treasury (Unrevealed Mystery State)...')
     const unrevealedMeta = Buffer.from('ipfs://bafkrei-mystery-box-unrevealed/box1.json')
     // Mint: only the supply key can create new units or NFT serials.
     const mintTx = await new TokenMintTransaction()
@@ -96,10 +96,10 @@ const main = async () => {
     let nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log(`[📊 LOG] Serial #${serialNum} Initial Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`[LOG] Serial #${serialNum} Initial Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
     // 3. HIP-850 In Action: Update Metadata in Treasury using ONLY SupplyKey!
-    console.log('\n[⚙️ PROCESS] [HIP-850] Updating Serial #1 in Treasury using SupplyKey...')
+    console.log('\n[PROCESS] [HIP-850] Updating Serial #1 in Treasury using SupplyKey...')
     const revealedMeta = Buffer.from('ipfs://bafkrei-genesis-dragon-revealed/dragon1.json')
     // Update NFT metadata: only the metadata key can do this (HIP-657).
     const updateTreasuryTx = await new TokenUpdateNftsTransaction()
@@ -115,11 +115,11 @@ const main = async () => {
     nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log('[✅ SUCCESS] HIP-850 Treasury Reveal Succeeded!')
-    console.log(`[📊 LOG] Serial #${serialNum} Revealed Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log('[SUCCESS] HIP-850 Treasury Reveal Succeeded!')
+    console.log(`[LOG] Serial #${serialNum} Revealed Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
     // 4. Transfer Serial #1 out of Treasury to a Collector Account
-    console.log('\n[⚙️ PROCESS] Creating Collector Account and transferring Serial #1 out of Treasury...')
+    console.log('\n[PROCESS] Creating Collector Account and transferring Serial #1 out of Treasury...')
     // Generate a key locally: the private key never leaves this process.
     const collectorKey = PrivateKey.generateED25519()
     // Create an account: its key controls it; the initial balance comes from the payer.
@@ -135,10 +135,10 @@ const main = async () => {
       .addNftTransfer(tokenId, serialNum, operatorId, collectorId)
       .execute(client)
     await transferRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Serial #${serialNum} delivered to Collector (${collectorId.toString()})!`)
+    console.log(`[SUCCESS] Serial #${serialNum} delivered to Collector (${collectorId.toString()})!`)
 
     // 5. Prove Post-Distribution Immutability Lock: SupplyKey can NO LONGER mutate it!
-    console.log('\n[⚙️ PROCESS] Attempting to mutate Serial #1 AFTER leaving Treasury (Should FAIL)...')
+    console.log('\n[PROCESS] Attempting to mutate Serial #1 AFTER leaving Treasury (Should FAIL)...')
     let lockedAsExpected = false
     try {
       const illegalUpdateTx = await new TokenUpdateNftsTransaction()
@@ -151,24 +151,24 @@ const main = async () => {
       await illegalRes.getReceipt(client)
     } catch (err) {
       lockedAsExpected = true
-      console.log(`[🛡️ IMMUTABILITY LOCKED] Consensus rejected post-distribution edit: ${err.message}`)
+      console.log(`[ IMMUTABILITY LOCKED] Consensus rejected post-distribution edit: ${err.message}`)
     }
 
     updateState('HIP850_TOKEN_ID', tokenId.toString())
     updateState('HIP850_COLLECTOR_ID', collectorId.toString())
     updateState('HIP850_IMMUTABILITY_VERIFIED', lockedAsExpected)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HIP-850 gives issuers pre-distribution flexibility in the Treasury Account')
     console.log('while guaranteeing 100% mathematical immutability once the NFT reaches the collector.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Security and UX do not have to be a trade-off. By tying mutability to Treasury')
     console.log('custody, Hedera eliminates the "rug-pullable metadataKey" risk for collectors.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HIP-850 Execution Failure:', error.message)
+    console.error('\n[ERROR] HIP-850 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -179,7 +179,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

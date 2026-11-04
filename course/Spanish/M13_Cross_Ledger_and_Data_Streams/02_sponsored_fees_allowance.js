@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-1068)
- * [ CONCEPTO ] Incorporación Gasless de Usuarios y Agentes Sin Bundlers ERC-4337
+ * [CONCEPTO] Incorporación Gasless de Usuarios y Agentes Sin Bundlers ERC-4337
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Patrocinio de Tarifas vs. Asignaciones: En cadenas EVM, patrocinar el gas
@@ -68,7 +68,7 @@ const queryBalance = async (accountId, network = 'testnet') => {
   const tinybars = Number(data?.balance?.balance ?? 0)
   return {
     tinybars,
-    formatted: (tinybars / 1e8).toFixed(4) + ' HBAR'
+    formatted: (tinybars / 1e8).toFixed(4) + 'HBAR'
   }
 }
 
@@ -83,7 +83,7 @@ const main = async () => {
 
   try {
     // 1. Crear una cuenta de Agente con literalmente 0.0000 HBAR
-    console.log('[⚙️ PROCESO] Paso 1: Creando Agente efímero con 0.0000 HBAR de saldo inicial...')
+    console.log('[PROCESO] Paso 1: Creando Agente efímero con 0.0000 HBAR de saldo inicial...')
     const zeroGasAgentKey = PrivateKey.generateED25519()
     const agentCreateTx = await new AccountCreateTransaction()
       .setKeyWithoutAlias(zeroGasAgentKey.publicKey)
@@ -92,17 +92,17 @@ const main = async () => {
 
     const agentReceipt = await agentCreateTx.getReceipt(client)
     const zeroGasAgentId = agentReceipt.accountId
-    console.log(`[✅ ÉXITO] Agente Cero-HBAR Creado: ${zeroGasAgentId.toString()} (Llave: ED25519)`)
+    console.log(`[ÉXITO] Agente Cero-HBAR Creado: ${zeroGasAgentId.toString()} (Llave: ED25519)`)
 
     await sleep(3500)
     const initZeroAgentBal = await queryBalance(zeroGasAgentId.toString(), network)
     const initSponsorBal = await queryBalance(operatorId.toString(), network)
-    console.log(`[📊 REGISTRO] Balance Inicial Agente 0-Gas:     ${initZeroAgentBal.formatted}`)
-    console.log(`[📊 REGISTRO] Balance Inicial del Patrocinador: ${initSponsorBal.formatted}`)
+    console.log(`[REGISTRO] Balance Inicial Agente 0-Gas:     ${initZeroAgentBal.formatted}`)
+    console.log(`[REGISTRO] Balance Inicial del Patrocinador: ${initSponsorBal.formatted}`)
 
     // 2. Primitivo A: Patrocinio Real de Gas 0-HBAR vía Pagador Designado en TransactionId
-    console.log(`\n[⚙️ PROCESO] Paso 2 (Patrocinio Gasless): Agente 0-HBAR (${zeroGasAgentId}) actualizando su estado on-chain...`)
-    console.log(`[ℹ️ INFO] El consenso exige la firma de ${zeroGasAgentId}, mientras el Patrocinador (${operatorId}) paga el 100% del gas.`)
+    console.log(`\n[PROCESO] Paso 2 (Patrocinio Gasless): Agente 0-HBAR (${zeroGasAgentId}) actualizando su estado on-chain...`)
+    console.log(`[INFO] El consenso exige la firma de ${zeroGasAgentId}, mientras el Patrocinador (${operatorId}) paga el 100% del gas.`)
 
     const gaslessUpdateTx = await new AccountUpdateTransaction()
       .setAccountId(zeroGasAgentId)
@@ -116,26 +116,26 @@ const main = async () => {
     const gaslessResponse = await signedByBoth.execute(client)
     const gaslessReceipt = await gaslessResponse.getReceipt(client)
 
-    console.log(`[✅ ÉXITO] ¡Mutación de Estado Sin Gas Finalizada! Tx: ${gaslessResponse.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Estado: ${gaslessReceipt.status.toString()}`)
+    console.log(`[ÉXITO] ¡Mutación de Estado Sin Gas Finalizada! Tx: ${gaslessResponse.transactionId.toString()}`)
+    console.log(`[REGISTRO] Estado: ${gaslessReceipt.status.toString()}`)
 
     await sleep(3500)
     const midZeroAgentBal = await queryBalance(zeroGasAgentId.toString(), network)
     const agentGasSpent = ((initZeroAgentBal.tinybars - midZeroAgentBal.tinybars) / 1e8).toFixed(8)
-    console.log(`[📊 REGISTRO] Balance Agente Tras Tx: ${midZeroAgentBal.formatted} (Gas Gastado: ${agentGasSpent} HBAR)`)
+    console.log(`[REGISTRO] Balance Agente Tras Tx: ${midZeroAgentBal.formatted} (Gas Gastado: ${agentGasSpent} HBAR)`)
 
     // 3. Primitivo B: Asignación Delegada de HBAR (Spender Autónomo de Tesorería)
     const allowanceAmount = new Hbar(2)
-    console.log(`\n[⚙️ PROCESO] Paso 3 (Asignación Delegada): Patrocinador (${operatorId}) aprobando ${allowanceAmount.toString()} al Operador (${delegateSpenderId})...`)
+    console.log(`\n[PROCESO] Paso 3 (Asignación Delegada): Patrocinador (${operatorId}) aprobando ${allowanceAmount.toString()} al Operador (${delegateSpenderId})...`)
 
     const allowanceTx = await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(sponsorAccountId, delegateSpenderId, allowanceAmount)
       .execute(client)
     const allowanceReceipt = await allowanceTx.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡Asignación Aprobada! Estado: ${allowanceReceipt.status.toString()}`)
+    console.log(`[ÉXITO] ¡Asignación Aprobada! Estado: ${allowanceReceipt.status.toString()}`)
 
     // El Operador transfiere 0.25 HBAR de la tesorería del Patrocinador al Agente 0-HBAR sin la firma del Patrocinador
-    console.log(`\n[⚙️ PROCESO] Operador (${delegateSpenderId}) debitando 0.25 HBAR de la asignación del Patrocinador hacia el Agente (${zeroGasAgentId})...`)
+    console.log(`\n[PROCESO] Operador (${delegateSpenderId}) debitando 0.25 HBAR de la asignación del Patrocinador hacia el Agente (${zeroGasAgentId})...`)
     // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
     await ensureFunded(client, delegateSpenderId, 1)
     const spenderClient = createClient()
@@ -149,17 +149,17 @@ const main = async () => {
     const transferReceipt = await allowanceTransfer.getReceipt(spenderClient)
     spenderClient.close()
 
-    console.log(`[✅ ÉXITO] ¡Transferencia por Asignación Delegada Ejecutada! Tx: ${allowanceTransfer.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Estado: ${transferReceipt.status.toString()}`)
+    console.log(`[ÉXITO] ¡Transferencia por Asignación Delegada Ejecutada! Tx: ${allowanceTransfer.transactionId.toString()}`)
+    console.log(`[REGISTRO] Estado: ${transferReceipt.status.toString()}`)
 
     await sleep(3500)
     const finalZeroAgentBal = await queryBalance(zeroGasAgentId.toString(), network)
     const finalSponsorBal = await queryBalance(operatorId.toString(), network)
 
-    console.log('\n[📊 REGISTRO] Auditoría Posterior a la Ejecución (Verificada por Mirror Node):')
-    console.log(`[📊 REGISTRO] Gas Gastado por Agente en Paso 2: ${agentGasSpent} HBAR (100% Patrocinado)`)
-    console.log(`[📊 REGISTRO] Balance Final del Agente:         ${finalZeroAgentBal.formatted} (Recibió 0.25 HBAR vía Allowance)`)
-    console.log(`[📊 REGISTRO] Balance Final del Patrocinador:   ${finalSponsorBal.formatted}`)
+    console.log('\n[REGISTRO] Auditoría Posterior a la Ejecución (Verificada por Mirror Node):')
+    console.log(`[REGISTRO] Gas Gastado por Agente en Paso 2: ${agentGasSpent} HBAR (100% Patrocinado)`)
+    console.log(`[REGISTRO] Balance Final del Agente:         ${finalZeroAgentBal.formatted} (Recibió 0.25 HBAR vía Allowance)`)
+    console.log(`[REGISTRO] Balance Final del Patrocinador:   ${finalSponsorBal.formatted}`)
 
     // Persistir estado
     updateState('SPONSORED_AGENT_ID', zeroGasAgentId.toString())
@@ -167,19 +167,19 @@ const main = async () => {
     updateState('SPONSORED_LAST_TX_ID', allowanceTransfer.transactionId.toString())
     updateState('SPONSORED_AGENT_GAS_SPENT', `${agentGasSpent} HBAR`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Hedera provee tanto patrocinio nativo de tarifas (vía co-firma del pagador en TransactionId)')
     console.log('como asignaciones nativas de tesorería (vía AccountAllowanceApproveTransaction), permitiendo')
     console.log('incorporación con 0 HBAR y delegación autónoma de presupuesto en la capa de consenso.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('En Hedera, `addApprovedHbarTransfer` verifica que el pagador del `TransactionId` sea el')
     console.log('spender autorizado, mientras `TransactionId.generate(sponsorId)` permite que cualquier')
     console.log('cuenta con 0 HBAR ejecute transacciones con el gas pagado 100% por un patrocinador.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de Tarifa Patrocinada:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de Tarifa Patrocinada:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -190,7 +190,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

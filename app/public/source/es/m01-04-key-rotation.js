@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Rotación de Llaves
- * [ CONCEPTO ] Desacoplamiento de Identidad y Credencial
+ * [CONCEPTO] Desacoplamiento de Identidad y Credencial
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Resiliencia de Identidad: En Hedera, tu Account ID (Identidad) es
@@ -45,7 +45,7 @@ const main = async () => {
   const targetKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!targetId || !targetKey) {
-    console.error('[❌ FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
+    console.error('[FALLO] Faltan credenciales de ACCOUNT_1 en el archivo .env.')
     process.exitCode = 1
     return
   }
@@ -54,40 +54,40 @@ const main = async () => {
     const oldPrivateKey = PrivateKey.fromString(targetKey)
 
     // 2. Generar la NUEVA llave de reemplazo
-    console.log(`[⚙️ PROCESO] Generando nueva clave criptográfica para ${targetId}...`)
+    console.log(`[PROCESO] Generando nueva clave criptográfica para ${targetId}...`)
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
     const newKeyStr = newPrivateKey.toStringDer()
 
     // 3. Preparar y Ejecutar la Transacción de Actualización
-    console.log('[⚙️ PROCESO] Construyendo AccountUpdateTransaction con Firma Dual...')
+    console.log('[PROCESO] Construyendo AccountUpdateTransaction con Firma Dual...')
     const transaction = await new AccountUpdateTransaction()
       .setAccountId(AccountId.fromString(targetId))
       .setKey(newPublicKey)
       .freezeWith(client)
 
     // Se requiere firma doble: Llave antigua (autoridad) + Llave nueva (prueba de propiedad)
-    console.log('[⚙️ PROCESO] Firmando con llave ANTIGUA (Autoridad actual)...')
+    console.log('[PROCESO] Firmando con llave ANTIGUA (Autoridad actual)...')
     await transaction.sign(oldPrivateKey)
-    console.log('[⚙️ PROCESO] Firmando con llave NUEVA (Prueba de posesión)...')
+    console.log('[PROCESO] Firmando con llave NUEVA (Prueba de posesión)...')
     await transaction.sign(newPrivateKey)
 
     const response = await transaction.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Estado de Rotación en el Ledger: ${receipt.status.toString()}`)
+    console.log(`\n[ÉXITO] Estado de Rotación en el Ledger: ${receipt.status.toString()}`)
 
     // 4. Verificar en la red que la cuenta ahora responde a la llave nueva
     const info = await new AccountInfoQuery().setAccountId(targetId).execute(client)
     if (info.key.toString() !== newPublicKey.toString()) {
       throw new Error('La red sigue reportando la llave anterior después de la rotación.')
     }
-    console.log(`[✅ ÉXITO] La red confirma la llave nueva: ${newPublicKey.toStringRaw().slice(0, 20)}...`)
+    console.log(`[ÉXITO] La red confirma la llave nueva: ${newPublicKey.toStringRaw().slice(0, 20)}...`)
 
     // 5. Rotar de vuelta para que ACCOUNT_1 siga coincidiendo con ACCOUNT_1_PRIVATE_KEY de tu .env.
     //    Aplica la misma regla de doble firma: llave actual (nueva) + llave entrante (original).
     //    En producción conservarías la llave nueva y la guardarías en tu gestor de secretos.
-    console.log('[⚙️ PROCESO] Rotando de vuelta a la llave original para poder repetir este lab...')
+    console.log('[PROCESO] Rotando de vuelta a la llave original para poder repetir este lab...')
     const restoreTx = await new AccountUpdateTransaction()
       .setAccountId(AccountId.fromString(targetId))
       .setKey(oldPrivateKey.publicKey)
@@ -95,10 +95,10 @@ const main = async () => {
     await restoreTx.sign(newPrivateKey)
     await restoreTx.sign(oldPrivateKey)
     const restoreReceipt = await (await restoreTx.execute(client)).getReceipt(client)
-    console.log(`[✅ ÉXITO] Llave original restaurada: ${restoreReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Llave temporal usada en la demo: ${newKeyStr.slice(0, 45)}...`)
+    console.log(`[ÉXITO] Llave original restaurada: ${restoreReceipt.status.toString()}`)
+    console.log(`[REGISTRO] Llave temporal usada en la demo: ${newKeyStr.slice(0, 45)}...`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al desacoplar la Identidad (0.0.X) de la Credencial (Key),')
     console.log('Hedera permite que las empresas mantengan sus direcciones')
     console.log('públicas permanentes mientras actualizan su seguridad de forma')
@@ -107,7 +107,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La rotación de llaves falló:', error.message)
+    console.error('\n[FALLO] La rotación de llaves falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -116,7 +116,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

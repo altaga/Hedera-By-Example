@@ -1,4 +1,4 @@
-# ⚖️ Módulo 7: Gobernanza y Automatización (Cron)
+# Módulo 7: Gobernanza y Automatización (Cron)
 ## Control Multi-Firma y Orquestación Descentralizada
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
@@ -21,7 +21,7 @@
 
 ---
 
-## 🔐 Gobernanza Multi-Firma (Threshold)
+## Gobernanza Multi-Firma (Threshold)
 
 En Hedera, puedes definir que una cuenta requiera, por ejemplo, 2 de 3 firmas para mover fondos. Esto elimina los puntos únicos de falla.
 
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Umbrales de Firma (Threshold Keys)
 A diferencia de un contrato inteligente complejo, Hedera permite definir listas de llaves con umbrales directamente en la cuenta. Es más seguro, más barato y más fácil de auditar.
@@ -74,11 +74,11 @@ Utilizando HCS, podemos anclar metadatos de identidad que permiten a los usuario
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Multi-signature Accounts (Hedera Docs)](https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#multi-signature-signing)
 - [Scheduled Transactions Documentation](https://docs.hedera.com/hedera/sdks-and-apis/sdks/scheduled-transactions)
 - [W3C Decentralized Identifiers (DID) Standard](https://www.w3.org/TR/did-core/)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. EL PODER ES COMPARTIDO.
+ 2026 **HEDERA PARA DUMMIES**. EL PODER ES COMPARTIDO.

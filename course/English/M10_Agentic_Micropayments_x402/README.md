@@ -1,4 +1,4 @@
-# ⚡ Module 10: Agentic Micropayments (x402 Protocol)
+# Module 10: Agentic Micropayments (x402 Protocol)
 ## Machine-to-Machine Autonomous Commerce on Hedera
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 In this module, we close the missing link between artificial intelligence and decentralized finance: autonomous micro-settlement without human intervention, credit cards, or API subscription paywalls.
 
@@ -23,7 +23,7 @@ In this module, we close the missing link between artificial intelligence and de
 
 ---
 
-## 🔄 Dual Architectural Topologies
+## Dual Architectural Topologies
 
 The official x402 standard on Hedera supports two operational topologies depending on the client's gas capabilities and decentralization requirements:
 
@@ -52,9 +52,9 @@ Ideal for gasless AI agents, web frontends, or microservices that do not hold na
 }}%%
 sequenceDiagram
     autonumber
-    actor Agent as 🤖 AI Agent (Buyer)
-    participant Server as 🌐 API Server (Seller)
-    participant Facilitator as ⚡ x402 Facilitator
+    actor Agent as  AI Agent (Buyer)
+    participant Server as  API Server (Seller)
+    participant Facilitator as  x402 Facilitator
     participant Hedera as ℏ Hedera Hashgraph
 
     Agent->>Server: GET /api/v1/alpha-inference (No Auth)
@@ -96,8 +96,8 @@ Completely trustless and decentralized; eliminates any dependency on third-party
 }}%%
 sequenceDiagram
     autonumber
-    actor Agent as 🤖 AI Agent (Buyer)
-    participant Server as 🌐 API Server (Seller)
+    actor Agent as  AI Agent (Buyer)
+    participant Server as  API Server (Seller)
     participant Hedera as ℏ Hedera Hashgraph
 
     Agent->>Server: GET /api/v1/derivatives-matrix (No Auth)
@@ -112,7 +112,7 @@ sequenceDiagram
 
 ---
 
-## ⚖️ Architectural Comparison: When to Use Which?
+## Architectural Comparison: When to Use Which?
 
 | Architectural Dimension | Direct P2P (Buyer + Seller) | Sponsored Facilitator (Buyer + Seller + Facilitator) |
 | :--- | :--- | :--- |
@@ -125,7 +125,7 @@ sequenceDiagram
 
 ---
 
-## 📚 Official References
+## Official References
 - [x402 on Hedera Documentation](https://docs.hedera.com/solutions/ai/x402)
 - [How x402 Works (Architecture Spec)](https://docs.hedera.com/solutions/ai/x402/how-it-works)
 - [x402 Foundation Protocol Repository](https://github.com/x402-foundation/x402)
@@ -135,4 +135,4 @@ sequenceDiagram
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. CODE IS CURRENCY. SETTLEMENT IS INSTANT.
+ 2026 **HEDERA FOR DUMMIES**. CODE IS CURRENCY. SETTLEMENT IS INSTANT.

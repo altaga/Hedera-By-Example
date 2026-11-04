@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: HCS-14 Universal Agent ID (UAID)
- * [ CONCEPT ] Deterministic Offline Identifiers
+ * [CONCEPT] Deterministic Offline Identifiers
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Mathematical Alias: A UAID is a deterministic, collision-resistant
@@ -41,7 +41,7 @@ const main = async () => {
   const agentId = getState('HCS11_AGENT_A_ID')
 
   if (!agentId) {
-    console.error('[❌ FAILED] HCS11_AGENT_ID not found. Run previous labs first.')
+    console.error('[FAILED] HCS11_AGENT_ID not found. Run previous labs first.')
     process.exitCode = 1
     return
   }
@@ -49,7 +49,7 @@ const main = async () => {
   try {
     const hcs14 = new HCS14Client()
 
-    console.log(`[⚙️ PROCESS] Generating Deterministic UAID for Agent: ${agentId}...`)
+    console.log(`[PROCESS] Generating Deterministic UAID for Agent: ${agentId}...`)
 
     // Create the UAID (AID format) based on the documentation
     const uaid = await hcs14.createUaid(
@@ -64,17 +64,17 @@ const main = async () => {
       { uid: 'fairplay-sentinel' }
     )
 
-    console.log('\n[✅ SUCCESS] UNIVERSAL AGENT ID (UAID) GENERATED')
+    console.log('\n[SUCCESS] UNIVERSAL AGENT ID (UAID) GENERATED')
     console.log('--------------------------------------------------')
-    console.log(`[📊 LOG] Local ID (Hedera):  ${agentId}`)
-    console.log(`[📊 LOG] Global UAID (HCS):  ${uaid}`)
+    console.log(`[LOG] Local ID (Hedera):  ${agentId}`)
+    console.log(`[LOG] Global UAID (HCS):  ${uaid}`)
     console.log('--------------------------------------------------')
 
     // Save it for future reference
-    console.log('[ℹ️ INFO] Synchronizing state.json with UAID fingerprint...')
+    console.log('[INFO] Synchronizing state.json with UAID fingerprint...')
     updateState('HCS14_UAID', uaid)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Notice how fast that was? There were no TopicCreateTransaction calls.')
     console.log('Because you used the Deterministic AID method, the SDK generated this')
     console.log('globally unique identifier locally. Any system in the world with the')
@@ -82,7 +82,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] UAID Generation Failed:', error.message)
+    console.error('\n[FAILED] UAID Generation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

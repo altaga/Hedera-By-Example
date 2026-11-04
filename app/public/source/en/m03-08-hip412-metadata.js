@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Lab 08: HIP-412 NFT Metadata
- * [ CONCEPT ] Standardized JSON Schema for NFTs
+ * [CONCEPT] Standardized JSON Schema for NFTs
  * ============================================================================
  * [ KEY CONCEPT ]
  * HIP-412 defines the standard JSON schema for NFT metadata on Hedera.
@@ -67,7 +67,7 @@ const main = async () => {
 
   try {
     // 1. Generate the JSON Metadata
-    console.log('\n[⚙️ PROCESS] Constructing HIP-412 Compliant JSON...')
+    console.log('\n[PROCESS] Constructing HIP-412 Compliant JSON...')
     const metadataObj = generateHIP412Metadata(
       'HIP-412 Master Sword',
       'ipfs://bafkreifh3q3wxgfbsfbs5tqybbg34z62tdcugnsvf7y3c7n66n7pzybyzi', // Example IPFS CID
@@ -79,7 +79,7 @@ const main = async () => {
       ]
     )
 
-    console.log('[📊 LOG] HIP-412 Payload:')
+    console.log('[LOG] HIP-412 Payload:')
     console.log(JSON.stringify(metadataObj, null, 2))
 
     // In a real production app, you would upload `metadataObj` to IPFS here
@@ -93,7 +93,7 @@ const main = async () => {
     const metadataBuffer = Buffer.from(mockCid)
 
     // 2. Create the NFT Collection
-    console.log('\n[⚙️ PROCESS] Creating NFT Collection...')
+    console.log('\n[PROCESS] Creating NFT Collection...')
     const tokenId = await reuseToken('REUSE_M3_08_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
         .setTokenName('HIP-412 Items')
@@ -108,10 +108,10 @@ const main = async () => {
       return (await (await signed.execute(client)).getReceipt(client)).tokenId
     })
     let tx, signTx, submitTx, receipt // reused by the steps below
-    console.log(`[✅ SUCCESS] Collection created: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] Collection created: ${tokenId.toString()}`)
 
     // 3. Mint the NFT with the HIP-412 URI
-    console.log('\n[⚙️ PROCESS] Minting NFT with HIP-412 Metadata URI...')
+    console.log('\n[PROCESS] Minting NFT with HIP-412 Metadata URI...')
     tx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([metadataBuffer])
@@ -121,23 +121,23 @@ const main = async () => {
     submitTx = await signTx.execute(client)
     receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
-    console.log(`[✅ SUCCESS] Minted Serial #${serialNum}`)
+    console.log(`[SUCCESS] Minted Serial #${serialNum}`)
 
     // 4. Verify
     const nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
 
-    console.log(`\n[📊 LOG] On-chain Metadata URI: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`\n[LOG] On-chain Metadata URI: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Without HIP-412, your NFTs will appear as blank squares in wallets.')
     console.log('Standardization is critical for ecosystem interoperability.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -146,7 +146,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

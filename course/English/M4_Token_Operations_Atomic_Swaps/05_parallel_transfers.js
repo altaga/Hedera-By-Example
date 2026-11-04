@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: High-Throughput Parallel Benchmarking
- * [ CONCEPT ] Horizontal Core Scalability
+ * [CONCEPT] Horizontal Core Scalability
  * ============================================================================
  * [ KEY CONCEPT ]
  * Horizontal Scalability: On a traditional blockchain, more transactions
@@ -37,7 +37,7 @@ import { getClient, show } from '../M99_Utilities/index.js'
  * Executes a batch of HBAR transfers in parallel and measures the duration.
  */
 const runParallelBatch = async (client, operatorId, targetId, batchSize) => {
-  console.log(`\n[ℹ️ INFO] Starting Batch: ${batchSize} Parallel Transactions...`)
+  console.log(`\n[INFO] Starting Batch: ${batchSize} Parallel Transactions...`)
 
   const tasks = []
   const amount = 0.01 // Small amount for benchmarking
@@ -57,12 +57,12 @@ const runParallelBatch = async (client, operatorId, targetId, batchSize) => {
   }
 
   // Wait for all consensus receipts in parallel
-  console.log(`[⚙️ PROCESS] Dispatching ${batchSize} transactions simultaneously...`)
+  console.log(`[PROCESS] Dispatching ${batchSize} transactions simultaneously...`)
   await Promise.all(tasks)
   const endTime = Date.now()
   const duration = endTime - startTime
 
-  console.log(`[✅ SUCCESS] Batch ${batchSize} complete in ${duration}ms`)
+  console.log(`[SUCCESS] Batch ${batchSize} complete in ${duration}ms`)
   return {
     batchSize,
     totalTime: duration,
@@ -77,7 +77,7 @@ const main = async () => {
   const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID in .env.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID in .env.')
     process.exitCode = 1
     return
   }
@@ -110,10 +110,10 @@ const main = async () => {
       console.log(`${sizeStr}| ${totalStr}| ${avgStr}`)
     })
     console.log('='.repeat(60))
-    console.log('[ℹ️ INFO] Observation: Hedera supports extreme horizontal scaling.')
+    console.log('[INFO] Observation: Hedera supports extreme horizontal scaling.')
     console.log('='.repeat(60))
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Horizontal Scalability: On a traditional blockchain, more transactions')
     console.log('usually mean more congestion. On Hedera, the "Gossip about Gossip"')
     console.log('protocol allows the network to handle thousands of transactions in')
@@ -122,7 +122,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Benchmark Failed:', error.message)
+    console.error('\n[FAILED] Benchmark Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -131,7 +131,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

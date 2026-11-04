@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Probando la Autoridad de la Multi-firma
- * [ CONCEPTO ] Capa de Permisos Aplicada Criptográficamente
+ * [CONCEPTO] Capa de Permisos Aplicada Criptográficamente
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * La Capa de Cumplimiento: En sistemas tradicionales, la lógica de permisos
@@ -51,7 +51,7 @@ const main = async () => {
   const bobKeyStr = getState('MULTISIG_KEY_BOB')
 
   if (!multisigId || !aliceKeyStr || !bobKeyStr) {
-    console.error('[❌ FALLO] No se encontró el ID de la cuenta multi-firma. Ejecuta el Lab 01 primero.')
+    console.error('[FALLO] No se encontró el ID de la cuenta multi-firma. Ejecuta el Lab 01 primero.')
     process.exitCode = 1
     return
   }
@@ -59,12 +59,12 @@ const main = async () => {
   const aliceKey = PrivateKey.fromString(aliceKeyStr)
   const bobKey = PrivateKey.fromString(bobKeyStr)
 
-  console.log(`[ℹ️ INFO] Aplicando auditoría sobre la cuenta corporativa: ${multisigId}`)
+  console.log(`[INFO] Aplicando auditoría sobre la cuenta corporativa: ${multisigId}`)
 
   try {
     // --- FASE 1: INTENTO CON FIRMA INSUFICIENTE (1 de 2) ---
-    console.log('\n--- 📊 [REGISTRO] Fase 1: Intento de Transferencia Insuficiente ---')
-    console.log('[⚙️ PROCESO] Firmando transferencia de 0.1 HBAR solo con la llave de Alice...')
+    console.log('\n---  [REGISTRO] Fase 1: Intento de Transferencia Insuficiente ---')
+    console.log('[PROCESO] Firmando transferencia de 0.1 HBAR solo con la llave de Alice...')
 
     const failTx = await new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
@@ -77,13 +77,13 @@ const main = async () => {
       await response.getReceipt(client)
       console.log('[ERROR] Crítico: La red permitió una transacción sin el quorum requerido.')
     } catch (e) {
-      console.log('   └─ [✅ ÉXITO] La red rechazó la transacción como se esperaba (INVALID_SIGNATURE).')
-      console.log(`   └─ Razón del consenso: ${e.message}`)
+      console.log('└─ [ÉXITO] La red rechazó la transacción como se esperaba (INVALID_SIGNATURE).')
+      console.log(`└─ Razón del consenso: ${e.message}`)
     }
 
     // --- FASE 2: INTENTO CON QUORUM ALCANZADO (2 de 2) ---
-    console.log('\n--- 📊 [REGISTRO] Fase 2: Intento de Transferencia con Quorum ---')
-    console.log('[⚙️ PROCESO] Recolectando firmas de Alice y Bob (Umbral 2-de-3 alcanzado)...')
+    console.log('\n---  [REGISTRO] Fase 2: Intento de Transferencia con Quorum ---')
+    console.log('[PROCESO] Recolectando firmas de Alice y Bob (Umbral 2-de-3 alcanzado)...')
 
     const successTx = await new TransferTransaction()
       .addHbarTransfer(AccountId.fromString(multisigId), new Hbar(-0.1))
@@ -94,14 +94,14 @@ const main = async () => {
     // Inyectamos la segunda firma requerida
     await successTx.sign(bobKey)
 
-    console.log('[⚙️ PROCESO] Enviando transacción multirmada al consenso de la red...')
+    console.log('[PROCESO] Enviando transacción multirmada al consenso de la red...')
     const response = await successTx.execute(client)
     const receipt = await response.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Transferencia autorizada y ejecutada. Estado: ${receipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Ver auditoría en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`\n[ÉXITO] Transferencia autorizada y ejecutada. Estado: ${receipt.status.toString()}`)
+    console.log(`[REGISTRO] Ver auditoría en HashScan: ${getHashscanUrl(response)}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Este es el "Escrow" más sencillo y seguro del mundo. Al estar')
     console.log('integrado en la capa de red, no hay riesgo de fallos en el')
     console.log('código del contrato; es el propio consenso del Hashgraph el')
@@ -110,7 +110,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo inesperado en el flujo de auditoría:', error.message)
+    console.error('\n[FALLO] Fallo inesperado en el flujo de auditoría:', error.message)
     process.exitCode = 1
   }
 }
@@ -119,7 +119,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

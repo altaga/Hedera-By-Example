@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Base Layer Royalties (Secondary Protection)
- * [ CONCEPT ] Protocol-Level Artist Protection
+ * [CONCEPT] Protocol-Level Artist Protection
  * ============================================================================
  * [ KEY CONCEPT ]
  * Protocol-Level Enforcement: On most other chains, royalties rely on "Marketplace
@@ -20,7 +20,7 @@
  * - Previous: M3 Lab 05: Custom Fees
  * - Next:     M4 Lab 01: HBAR Transfers
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback
  * Artist -> Hedera: Mint NFT #1
  * Buyer -> Artist: Pay 1 ℏ for NFT #1 (one atomic transfer)
@@ -74,8 +74,8 @@ const main = async () => {
     await ensureFunded(operatorClient, account1Id, 2)
     await ensureFunded(operatorClient, account2Id, 2)
 
-    console.log(`[ℹ️ INFO] Using ${account1Id} as Artist. Collector: ${operatorId}`)
-    console.log('[⚙️ PROCESS] Defining Artist Royalty (10% + 0.01 HBAR Fallback)...')
+    console.log(`[INFO] Using ${account1Id} as Artist. Collector: ${operatorId}`)
+    console.log('[PROCESS] Defining Artist Royalty (10% + 0.01 HBAR Fallback)...')
 
     // 1. Fallback Fee: 0.01 HBAR
     const fallbackFee = new CustomFixedFee()
@@ -90,7 +90,7 @@ const main = async () => {
       .setFeeCollectorAccountId(AccountId.fromString(operatorId))
 
     // 3. Create NFT Collection
-    console.log('[⚙️ PROCESS] Issuing Royalty-Protected NFT Collection (RPN)...')
+    console.log('[PROCESS] Issuing Royalty-Protected NFT Collection (RPN)...')
     const tokenId = await reuseToken('REUSE_M3_06_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
         .setTokenName('Royalty NFT')
@@ -105,10 +105,10 @@ const main = async () => {
         .freezeWith(operatorClient)
       return (await (await (await createTx.sign(account1PrivateKey)).execute(operatorClient)).getReceipt(operatorClient)).tokenId
     }, { treasury: account1Id, check: (t) => (t.custom_fees?.royalty_fees || []).length > 0 })
-    console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] Token Created: ${tokenId.toString()}`)
 
     // 4. Mint NFT #1
-    console.log(`[⚙️ PROCESS] Minting Serial #1 for Token ${tokenId.toString()}...`)
+    console.log(`[PROCESS] Minting Serial #1 for Token ${tokenId.toString()}...`)
     const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([Buffer.from('Asset #1')])
@@ -116,7 +116,7 @@ const main = async () => {
     await mintTx.getReceipt(client)
 
     // 5. Setup Investor (Account 2)
-    console.log(`[⚙️ PROCESS] Setting up Investor (${account2Id}) via association...`)
+    console.log(`[PROCESS] Setting up Investor (${account2Id}) via association...`)
     const associate2Tx = await new TokenAssociateTransaction()
       .setAccountId(account2Id)
       .setTokenIds([tokenId])
@@ -125,13 +125,13 @@ const main = async () => {
     // The collection is reused across runs, and an account can only be associated once.
     await (async () => (await associate2Tx.execute(client)).getReceipt(client))().catch((error) => {
       if (!/TOKEN_ALREADY_ASSOCIATED/.test(String(error?.status ?? error?.message))) throw error
-      console.log('[ℹ️ INFO] Already associated on an earlier run.')
+      console.log('[INFO] Already associated on an earlier run.')
     })
-    console.log('[ℹ️ INFO] Investor Associated.')
+    console.log('[INFO] Investor Associated.')
 
     // --- SCENARIO A: SECONDARY SALE (ROYALTY) ---
     console.log('\n--- Scenario A: Secondary Sale (10% Royalty Triggered) ---')
-    console.log('[⚙️ PROCESS] Account 1 (Artist) sells to Account 2 (Investor) for 1 HBAR...')
+    console.log('[PROCESS] Account 1 (Artist) sells to Account 2 (Investor) for 1 HBAR...')
 
     const saleTx = await new TransferTransaction()
       .addNftTransfer(tokenId, 1, account1Id, account2Id)
@@ -142,27 +142,27 @@ const main = async () => {
       .sign(account2PrivateKey)
 
     await (await saleTx.execute(client)).getReceipt(client)
-    console.log('[✅ SUCCESS] Sale Complete. Protocol enforced: Artist +0.9 | Collector +0.1')
+    console.log('[SUCCESS] Sale Complete. Protocol enforced: Artist +0.9 | Collector +0.1')
 
     // --- SCENARIO B: PRIVATE GIFT (FALLBACK FEE) ---
     console.log('\n--- Scenario B: Private Gift (Fallback Fee Triggered) ---')
-    console.log('[⚙️ PROCESS] Investor sends NFT back to Artist with 0 HBAR transfer value...')
+    console.log('[PROCESS] Investor sends NFT back to Artist with 0 HBAR transfer value...')
 
     const giftTx = await new TransferTransaction()
       .addNftTransfer(tokenId, 1, account2Id, account1Id)
       .freezeWith(client)
       .sign(account2PrivateKey)
     await (await giftTx.execute(client)).getReceipt(client)
-    console.log('[✅ SUCCESS] Gift Complete. Fallback Fee of 0.01 HBAR was protocol-assessed.')
+    console.log('[SUCCESS] Gift Complete. Fallback Fee of 0.01 HBAR was protocol-assessed.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Hedera forces royalties to be part of the atomic swap.')
     console.log('This ensures creators are mathematically guaranteed their cut.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Royalty Demonstration Failed:', error.message)
+    console.error('\n[FAILED] Royalty Demonstration Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -171,7 +171,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

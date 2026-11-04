@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: HCS-7 Smart Hashinals (EVM State + WASM Dynamic Inscriptions)
- * [ CONCEPT ] Programmable Zero-Gas Dynamic NFTs via Consensus Rules
+ * [CONCEPT] Programmable Zero-Gas Dynamic NFTs via Consensus Rules
  * ============================================================================
  * [ KEY CONCEPT ]
  * Standard Hashinals (HCS-1 / HCS-5) are static inscriptions. HCS-7 (published
@@ -55,7 +55,7 @@ const main = async () => {
 
   try {
     // 1. Deploy an Official HCS-7 Smart Hashinal Registry Topic (`hcs-7:indexed:86400`)
-    console.log('[⚙️ PROCESS] Step 1: Deploying HCS-7 Smart Hashinal Registry Topic via HOL Standards SDK...')
+    console.log('[PROCESS] Step 1: Deploying HCS-7 Smart Hashinal Registry Topic via HOL Standards SDK...')
     const registryTx = buildHcs7CreateRegistryTx({
       ttl: 86400,
       submitKey: submitKey.publicKey,
@@ -68,11 +68,11 @@ const main = async () => {
     const registryTopicId = (await registryRes.getReceipt(client)).topicId.toString()
 
     const topicInfo = await new TopicInfoQuery().setTopicId(registryTopicId).execute(client)
-    console.log(`[✅ SUCCESS] HCS-7 Registry Topic Created: ${registryTopicId}`)
-    console.log(`[📊 LOG] Official HOL Topic Memo: "${topicInfo.topicMemo}"`)
+    console.log(`[SUCCESS] HCS-7 Registry Topic Created: ${registryTopicId}`)
+    console.log(`[LOG] Official HOL Topic Memo: "${topicInfo.topicMemo}"`)
 
     // 2. Register an EVM State Reader Config (`t: "evm"`) via `buildHcs7EvmMessageTx`
-    console.log('\n[⚙️ PROCESS] Step 2: Inscribing EVM State Reader Config (HBAR Volatility Oracle)...')
+    console.log('\n[PROCESS] Step 2: Inscribing EVM State Reader Config (HBAR Volatility Oracle)...')
     const evmConfigTx = buildHcs7EvmMessageTx({
       topicId: registryTopicId,
       config: {
@@ -92,10 +92,10 @@ const main = async () => {
     const signedEvmTx = await (await evmConfigTx.freezeWith(client)).sign(submitKey)
     const evmRes = await signedEvmTx.execute(client)
     const evmReceipt = await evmRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] EVM State Config Inscribed at Sequence #${evmReceipt.topicSequenceNumber}!`)
+    console.log(`[SUCCESS] EVM State Config Inscribed at Sequence #${evmReceipt.topicSequenceNumber}!`)
 
     // 3. Register a WASM State Router Config (`t: "wasm"`) via `buildHcs7WasmMessageTx`
-    console.log('\n[⚙️ PROCESS] Step 3: Inscribing WASM Dynamic Renderer Config...')
+    console.log('\n[PROCESS] Step 3: Inscribing WASM Dynamic Renderer Config...')
     const wasmConfigTx = buildHcs7WasmMessageTx({
       topicId: registryTopicId,
       config: {
@@ -118,10 +118,10 @@ const main = async () => {
     const signedWasmTx = await (await wasmConfigTx.freezeWith(client)).sign(submitKey)
     const wasmRes = await signedWasmTx.execute(client)
     const wasmReceipt = await wasmRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] WASM Router Config Inscribed at Sequence #${wasmReceipt.topicSequenceNumber}!`)
+    console.log(`[SUCCESS] WASM Router Config Inscribed at Sequence #${wasmReceipt.topicSequenceNumber}!`)
 
     // 4. Bind Metadata Variants (Solar vs. Obsidian State Topics) with `buildHcs7SubmitMessageTx`
-    console.log('\n[⚙️ PROCESS] Step 4: Binding State-Driven Metadata Weight Tags (`op: register`)...')
+    console.log('\n[PROCESS] Step 4: Binding State-Driven Metadata Weight Tags (`op: register`)...')
     const registerMetadataPayload = {
       p: 'hcs-7',
       op: 'register',
@@ -146,24 +146,24 @@ const main = async () => {
     const signedMetaTx = await (await metaTx.freezeWith(client)).sign(submitKey)
     const metaRes = await signedMetaTx.execute(client)
     const metaReceipt = await metaRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Dynamic Metadata Binding Anchored at Sequence #${metaReceipt.topicSequenceNumber}!`)
-    console.log(`[🔗 POINTER] Smart Hashinal URI: hcs://7/${registryTopicId}`)
+    console.log(`[SUCCESS] Dynamic Metadata Binding Anchored at Sequence #${metaReceipt.topicSequenceNumber}!`)
+    console.log(`[POINTER] Smart Hashinal URI: hcs://7/${registryTopicId}`)
 
     updateState('HCS7_SMART_HASHINAL_TOPIC_ID', registryTopicId)
     updateState('HCS7_SMART_HASHINAL_URI', `hcs://7/${registryTopicId}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-7 Smart Hashinals combine EVM smart contract reads (`t: evm`) with')
     console.log('WASM deterministic routing (`t: wasm`) on HCS, creating living NFTs that')
     console.log('evolve with on-chain state without paying gas for metadata updates.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Instead of running cron jobs to mutate NFTs via `TokenUpdateNftsTransaction`,')
     console.log('inscribe the state machine rules once via HCS-7 and let indexers compute the view.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-7 Smart Hashinal Failure:', error.message)
+    console.error('\n[ERROR] HCS-7 Smart Hashinal Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -174,7 +174,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

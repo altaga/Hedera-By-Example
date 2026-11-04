@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Creación Nativa de Cuentas (Provisionamiento)
- * [ CONCEPTO ] Idempotencia y Orquestación del Entorno
+ * [CONCEPTO] Idempotencia y Orquestación del Entorno
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Independencia de la Tesorería: Usar cuentas secundarias permite observar
@@ -46,11 +46,11 @@ const main = async () => {
     const existingId = process.env[`${accountName}_ID`]
 
     if (existingId) {
-      console.log(`[✅ ÉXITO] ${accountName} ya configurada: ${existingId}.`)
+      console.log(`[ÉXITO] ${accountName} ya configurada: ${existingId}.`)
       return
     }
 
-    console.log(`[⚙️ PROCESO] Creando identidad para ${accountName}...`)
+    console.log(`[PROCESO] Creando identidad para ${accountName}...`)
     // Genera una llave localmente: la llave privada nunca sale de este proceso.
     const newPrivateKey = PrivateKey.generateECDSA()
     const newPublicKey = newPrivateKey.publicKey
@@ -68,12 +68,12 @@ const main = async () => {
     const newAccountId = receipt.accountId.toString()
     const evmAddress = '0x' + newPublicKey.toEvmAddress()
 
-    console.log(`[ℹ️ INFO] Sincronizando ${accountName} en el archivo .env...`)
+    console.log(`[INFO] Sincronizando ${accountName} en el archivo .env...`)
     updateEnv(`${accountName}_ID`, newAccountId)
     updateEnv(`${accountName}_EVM_ADDRESS`, evmAddress)
     updateEnv(`${accountName}_PRIVATE_KEY`, newPrivateKey.toStringDer())
 
-    console.log(`\n[✅ ÉXITO] ${accountName} Creada Exitosamente: ${newAccountId}`)
+    console.log(`\n[ÉXITO] ${accountName} Creada Exitosamente: ${newAccountId}`)
   }
 
   try {
@@ -81,7 +81,7 @@ const main = async () => {
     await provisionAccount('ACCOUNT_1')
     await provisionAccount('ACCOUNT_2')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Ahora tienes tres cuentas: Operador (Tesorería), Cuenta 1 y Cuenta 2.')
     console.log('Este entorno multicuenta es fundamental para probar atomismo,')
     console.log('tarifas de transferencia y gobernanza en los próximos módulos.')
@@ -89,7 +89,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El provisionamiento del entorno falló:', error.message)
+    console.error('\n[FALLO] El provisionamiento del entorno falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -98,7 +98,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,4 +1,4 @@
-# 📦 Module 6: Mass Storage and Hashinals
+# Module 6: Mass Storage and Hashinals
 ## Immutable Data at Global Scale
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -23,7 +23,7 @@
 
 ---
 
-## 🏗️ HCS-1 Architecture (Hashinals)
+## HCS-1 Architecture (Hashinals)
 
 Unlike HFS, HCS-1 fragments a file and injects it into an HCS Topic. This is more economical and allows for total immutability without the need for admin keys.
 
@@ -63,20 +63,20 @@ graph TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Hedera File Service (HFS)
 HFS acts like a traditional file system on the network. It is ideal for files that need to be updated or require specific administrative permissions.
 
 ### 2. Hashinals (HCS-1)
-Hashinals are Hedera's answer to Bitcoin "Ordinals." They use the consensus service to inscribe data permanently. It is the most economical method for storing large volumes of immutable data.
+Hashinals are Hedera's answer to Bitcoin "Ordinals."They use the consensus service to inscribe data permanently. It is the most economical method for storing large volumes of immutable data.
 
 ### 3. Economic Immutability
 While storing 1GB on a traditional blockchain can cost thousands of dollars, the strategic use of HCS-1 and compression allows these costs to be drastically reduced while maintaining the security of Hedera's consensus.
 
 ---
 
-## 💎 The hcs:// Standard (Recursive NFT)
+## The hcs:// Standard (Recursive NFT)
 
 The `hcs://` protocol is a community-driven URI format that enables recursive asset resolution. Instead of pointing to a CID (IPFS) or a URL, the NFT points to an HCS Topic.
 
@@ -89,11 +89,11 @@ The `hcs://` protocol is a community-driven URI format that enables recursive as
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera File Service (HFS) Guide](https://docs.hedera.com/hedera/core-concepts/file-service)
 - [HCS-1: Atomic Storage Standard](https://hashinals.com/)
 - [Cost Comparison: HFS vs HCS Storage](https://hedera.com/fees)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. DATA IS FOREVER.
+ 2026 **HEDERA FOR DUMMIES**. DATA IS FOREVER.

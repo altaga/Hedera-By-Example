@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Zero-Capital Flash Loans & Atomic Layer 1 Settlement
- * [ CONCEPT ] Single-Transaction Atomic Borrow, Arbitrage, and Repayment
+ * [CONCEPT] Single-Transaction Atomic Borrow, Arbitrage, and Repayment
  * ============================================================================
  * [ KEY CONCEPT ]
  * In Ethereum DeFi (Aave, Balancer, Uniswap), a flash loan requires deploying
@@ -36,7 +36,7 @@
  * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Clearing
  * - Next:     M5 Lab 01: Immutable Topics
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Borrower -> Hedera: One transaction: borrow + trade + repay
  * Note Hedera: Every leg checked against balances at consensus
  * Hedera -> Borrower: Settles only if the loan is repaid in the same transaction
@@ -93,17 +93,17 @@ const main = async () => {
       betaSpread
     )
 
-    console.log('[⚙️ PROCESS] Step 1: Analyzing Flash Loan Arbitrage Opportunity...')
-    console.log(`[📊 LOG] Flash Principal:      ${loanPrincipalTinybars} tinybars (${loanPrincipalTinybars / 1e8} ℏ)`)
-    console.log(`[📊 LOG] Flash Fee (0.09%):     ${flashFee} tinybars`)
-    console.log(`[📊 LOG] Gross Arbitrage Yield: ${grossReturn - loanPrincipalTinybars} tinybars`)
-    console.log(`[📊 LOG] Projected Net Profit:  ${netProfit} tinybars`)
+    console.log('[PROCESS] Step 1: Analyzing Flash Loan Arbitrage Opportunity...')
+    console.log(`[LOG] Flash Principal:      ${loanPrincipalTinybars} tinybars (${loanPrincipalTinybars / 1e8} ℏ)`)
+    console.log(`[LOG] Flash Fee (0.09%):     ${flashFee} tinybars`)
+    console.log(`[LOG] Gross Arbitrage Yield: ${grossReturn - loanPrincipalTinybars} tinybars`)
+    console.log(`[LOG] Projected Net Profit:  ${netProfit} tinybars`)
 
-    console.log('\n[⚙️ PROCESS] Step 2: Compiling 4-Leg Atomic L1 Flash Settlement Transaction...')
-    console.log('   Leg 1: Flash Vault ➔ Dispatches principal loan to Arbitrageur')
-    console.log('   Leg 2: Arbitrageur ➔ Executes synthetic liquidity swap on Market Alpha')
-    console.log('   Leg 3: Arbitrageur ➔ Executes settlement on Market Beta')
-    console.log('   Leg 4: Arbitrageur ➔ Repays principal + 90 tinybars fee to Flash Vault')
+    console.log('\n[PROCESS] Step 2: Compiling 4-Leg Atomic L1 Flash Settlement Transaction...')
+    console.log('Leg 1: Flash Vault ➔ Dispatches principal loan to Arbitrageur')
+    console.log('Leg 2: Arbitrageur ➔ Executes synthetic liquidity swap on Market Alpha')
+    console.log('Leg 3: Arbitrageur ➔ Executes settlement on Market Beta')
+    console.log('Leg 4: Arbitrageur ➔ Repays principal + 90 tinybars fee to Flash Vault')
 
     // Construct the single, unified atomic transaction on Hedera Layer 1
     // The transaction compiles all operations into a single immutable consensus payload.
@@ -115,32 +115,32 @@ const main = async () => {
       .setTransactionMemo('HEDERA:L1:FLASH_LOAN_ATOMIC_SETTLEMENT')
       .freezeWith(client)
 
-    console.log('\n[⚙️ PROCESS] Step 3: Broadcasting Atomic Flash Transaction to Consensus Nodes...')
+    console.log('\n[PROCESS] Step 3: Broadcasting Atomic Flash Transaction to Consensus Nodes...')
     const txResponse = await flashTx.execute(client)
     const receipt = await txResponse.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] Flash Loan Atomic Settlement Finalized! Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] Consensus Tx ID:    ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] View on HashScan: ${getHashscanUrl(txResponse)}`)
+    console.log(`\n[SUCCESS] Flash Loan Atomic Settlement Finalized! Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] Consensus Tx ID:    ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(txResponse)}`)
 
     updateState('FLASH_SETTLEMENT_TX_ID', txResponse.transactionId.toString())
     updateState('FLASH_PRINCIPAL_TINYBARS', loanPrincipalTinybars)
     updateState('FLASH_NET_PROFIT_TINYBARS', netProfit)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero-Smart-Contract Flash Loans: Unlike EVM protocols that require expensive')
     console.log('lending pool contracts and gas-guzzling callback hooks, Hedera supports atomic')
     console.log('multi-account settlements natively on Layer 1. If any single leg fails or violates')
     console.log('balance conservation, consensus nodes reject the entire transaction in < 3 seconds.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Because Hedera transaction fees are fixed at fractions of a cent ($0.0001), high-frequency')
     console.log('flash arbitrageurs can capitalize on micro-spreads that are completely unprofitable')
     console.log('on Ethereum or Layer-2 rollups where gas spikes would erase all profit.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Flash Loan Settlement Failure:', error.message)
+    console.error('\n[ERROR] Flash Loan Settlement Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -151,7 +151,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

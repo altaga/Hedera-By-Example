@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: HFS Nativo — Archivos Grandes (Patrón Anchor + Append)
- * [ CONCEPTO ] Carga Fragmentada y Expansión de Estado
+ * [CONCEPTO] Carga Fragmentada y Expansión de Estado
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Superando Límites Físicos: El ledger de Hedera limita el contenido de una
@@ -56,13 +56,13 @@ const main = async () => {
     }
 
     const fileBuffer = fs.readFileSync(filePath)
-    console.log(`[ℹ️ INFO] Archivo detectado: "${path.basename(filePath)}" (${fileBuffer.length} bytes)`)
+    console.log(`[INFO] Archivo detectado: "${path.basename(filePath)}" (${fileBuffer.length} bytes)`)
 
     // 1. CREAR EL ARCHIVO (Fragmento Inicial / Ancla)
     const CHUNK_SIZE = 4096 // Límite seguro por transacción en HFS
     const initialChunk = fileBuffer.slice(0, CHUNK_SIZE)
 
-    console.log(`[⚙️ PROCESO] Inicializando ancla de identidad HFS con ${initialChunk.length} bytes...`)
+    console.log(`[PROCESO] Inicializando ancla de identidad HFS con ${initialChunk.length} bytes...`)
     const createTx = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // El almacenamiento se cobra por tamaño x vigencia: en testnet, corta
       .setKeys([adminKey.publicKey])
@@ -73,10 +73,10 @@ const main = async () => {
     const createReceipt = await createRes.getReceipt(client)
     const fileId = createReceipt.fileId
 
-    console.log(`[✅ ÉXITO] Ancla de Archivo Creada: ${fileId.toString()}`)
+    console.log(`[ÉXITO] Ancla de Archivo Creada: ${fileId.toString()}`)
 
     // 2. ADJUNTAR BYTES RESTANTES (APPEND)
-    console.log('[⚙️ PROCESO] Iniciando flujo de expansión de datos (Append)...')
+    console.log('[PROCESO] Iniciando flujo de expansión de datos (Append)...')
     for (let i = CHUNK_SIZE; i < fileBuffer.length; i += CHUNK_SIZE) {
       const chunk = fileBuffer.slice(i, i + CHUNK_SIZE)
 
@@ -87,16 +87,16 @@ const main = async () => {
 
       const appendRes = await appendTx.execute(client)
       await appendRes.getReceipt(client)
-      console.log(`   └─ Fragmento ${i} al ${i + chunk.length} anclado exitosamente.`)
+      console.log(`└─ Fragmento ${i} al ${i + chunk.length} anclado exitosamente.`)
     }
 
-    console.log(`\n[✅ ÉXITO] Carga de archivo completa: ${fileId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver transacción inicial: ${getHashscanUrl(createRes)}`)
+    console.log(`\n[ÉXITO] Carga de archivo completa: ${fileId.toString()}`)
+    console.log(`[REGISTRO] Ver transacción inicial: ${getHashscanUrl(createRes)}`)
 
     // Sincronizar para uso en laboratorios posteriores
     updateState('HFS_FILE_ID', fileId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Este patrón es aplicable a cualquier dato persistente que supere')
     console.log('el límite de la red. Al usar un solo File ID para múltiples')
     console.log('transacciones, mantienes la integridad de la información bajo')
@@ -105,7 +105,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La carga fragmentada HFS falló:', error.message)
+    console.error('\n[FALLO] La carga fragmentada HFS falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -114,7 +114,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

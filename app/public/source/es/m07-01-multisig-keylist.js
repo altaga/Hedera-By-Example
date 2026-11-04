@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Gobernanza con Multi-firma (KeyList y Thresholds)
- * [ CONCEPTO ] Política Criptográfica Pura y Umbrales de Seguridad
+ * [CONCEPTO] Política Criptográfica Pura y Umbrales de Seguridad
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Gobernanza Nativa: Hedera permite distribuir la autoridad de una cuenta
@@ -42,7 +42,7 @@ const main = async () => {
   const { client } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Generando 3 llaves Ed25519 independientes para la gobernanza...')
+    console.log('[PROCESO] Generando 3 llaves Ed25519 independientes para la gobernanza...')
     const aliceKey = PrivateKey.generateED25519()
     const bobKey = PrivateKey.generateED25519()
     const charlieKey = PrivateKey.generateED25519()
@@ -54,11 +54,11 @@ const main = async () => {
     thresholdList.push(charlieKey.publicKey)
     thresholdList.setThreshold(2) // Definimos que 2 de 3 firmas son requeridas para autorizar.
 
-    console.log('[✅ ÉXITO] Política de Umbral definida: se requieren 2 de 3 firmas.')
-    console.log(`[📊 REGISTRO] Huella Criptográfica (KeyList): ${thresholdList.toString().slice(0, 32)}...`)
+    console.log('[ÉXITO] Política de Umbral definida: se requieren 2 de 3 firmas.')
+    console.log(`[REGISTRO] Huella Criptográfica (KeyList): ${thresholdList.toString().slice(0, 32)}...`)
 
     // 2. Desplegar la cuenta Multi-firma
-    console.log('\n[⚙️ PROCESO] Desplegando Cuenta Institucional con control multifirma...')
+    console.log('\n[PROCESO] Desplegando Cuenta Institucional con control multifirma...')
     const transaction = await new AccountCreateTransaction()
       .setKeyWithoutAlias(thresholdList)
       .setInitialBalance(new Hbar(0.5)) // Fondos iniciales para la tesorería corporativa
@@ -67,8 +67,8 @@ const main = async () => {
     const receipt = await transaction.getReceipt(client)
     const multisigAccountId = receipt.accountId.toString()
 
-    console.log(`\n[✅ ÉXITO] Cuenta Corporativa Creada: ${multisigAccountId}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(transaction)}`)
+    console.log(`\n[ÉXITO] Cuenta Corporativa Creada: ${multisigAccountId}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(transaction)}`)
 
     // 3. Persistir datos para el laboratorio de ejecución
     updateState('MULTISIG_ACCOUNT_ID', multisigAccountId)
@@ -76,7 +76,7 @@ const main = async () => {
     updateState('MULTISIG_KEY_BOB', bobKey.toString())
     updateState('MULTISIG_KEY_CHARLIE', charlieKey.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Gobernanza sin Gas: Debido a que la verificación ocurre en la')
     console.log('fase de validación de firma de los nodos, no hay código que')
     console.log('auditar ni riesgo de exploits de contratos inteligentes. Es')
@@ -85,7 +85,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El despliegue de la gobernanza multifirma falló:', error.message)
+    console.error('\n[FALLO] El despliegue de la gobernanza multifirma falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -94,7 +94,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

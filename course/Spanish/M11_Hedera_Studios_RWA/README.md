@@ -1,4 +1,4 @@
-# 🏛️ Módulo 11: Hedera Studios y Activos del Mundo Real (RWA)
+# Módulo 11: Hedera Studios y Activos del Mundo Real (RWA)
 ## Tokenización Institucional, Cumplimiento ERC-3643 y Gobernanza de Stablecoins
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 En este módulo dejamos atrás los coleccionables digitales básicos para entrar a los mercados de capitales institucionales: acciones reguladas, bonos tokenizados con cronogramas automáticos de cupones y stablecoins preparadas para cumplimiento normativo con Proof-of-Reserve (PoR).
 
@@ -23,7 +23,7 @@ En este módulo dejamos atrás los coleccionables digitales básicos para entrar
 
 ---
 
-## 🏛️ Ciclo de Vida del Activo Institucional (ERC-3643 / ATS)
+## Ciclo de Vida del Activo Institucional (ERC-3643 / ATS)
 
 ```mermaid
 %%{init: {
@@ -72,7 +72,7 @@ flowchart TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Por qué ERC-20 Falla para RWAs Institucionales
 Los tokens ERC-20 convencionales son permisionados por defecto: cualquiera puede transferirlos a cualquier dirección. Las normativas de valores (SEC, MiCA, FINMA) exigen que las acciones, bienes raíces o instrumentos de deuda solo puedan estar en manos de inversores acreditados, verificados por KYC y en países autorizados. El estándar **ERC-3643** logra esto condicionando cada transferencia a un Registro de Identidad.
@@ -92,7 +92,7 @@ Para evitar catástrofes de desanclaje estilo Terra/Luna, las stablecoins en Hed
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Hedera Asset Tokenization Studio (ATS)](https://docs.hedera.com/solutions/tokenization/ats)
 - [Repositorio GitHub de ATS](https://github.com/hashgraph/asset-tokenization-studio)
 - [Hedera Stablecoin Studio](https://docs.hedera.com/solutions/tokenization/stablecoin)
@@ -101,4 +101,4 @@ Para evitar catástrofes de desanclaje estilo Terra/Luna, las stablecoins en Hed
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. LIQUIDEZ REGULADA. CERO FRICCIÓN. SIN COMPROMISOS.
+ 2026 **HEDERA PARA DUMMIES**. LIQUIDEZ REGULADA. CERO FRICCIÓN. SIN COMPROMISOS.

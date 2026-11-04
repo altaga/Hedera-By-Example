@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
- * [ CONCEPTO ] Ingesta IoT de Misión Crítica y Agrupamiento en Consenso
+ * [CONCEPTO] Ingesta IoT de Misión Crítica y Agrupamiento en Consenso
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * DePIN (Redes de Infraestructura Física Descentralizada) conecta hardware físico
@@ -29,7 +29,7 @@
  * - Estándares de Temas HCS HIP-10: https://hips.hedera.com/hip/hip-10
  * - Validación de Módulos Criptográficos NIST SP 800-140C (Almacenes Hardware Ed25519)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El marcapasos y su flujo MQTTS son emulados. Las firmas del dispositivo, el lote de Merkle y los mensajes en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -115,13 +115,13 @@ function computeMerkleRoot (hashes) {
 
 async function main () {
   console.log('====================================================================')
-  console.log('🔬 DEPIN LAB 01: TELEMETRÍA CRÍTICA MQTTS DE ALTA VELOCIDAD (MARCAPASOS)')
+  console.log('DEPIN LAB 01: TELEMETRÍA CRÍTICA MQTTS DE ALTA VELOCIDAD (MARCAPASOS)')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
 
     // 1. Crear Tópico HCS para Telemetría Médica
     console.log('\n[1/5] Creando Tópico HCS Dedicado para Telemetría MedTech...')
@@ -131,14 +131,14 @@ async function main () {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TÓPICO CREADO] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TÓPICO CREADO] ID: ${topicId}`)
+    console.log(`[EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Inicializar Hardware Emulado del Marcapasos
     console.log('\n[2/5] Inicializando Dispositivo Marcapasos (Almacén de Claves Ed25519)...')
     const device = new PacemakerHardwareDevice()
-    console.log(`[🩺 ID DISPOSITIVO] ${device.deviceId}`)
-    console.log('[🔑 CLAVE HARDWARE] Par de claves Ed25519 de Secure Enclave generado.')
+    console.log(`[ ID DISPOSITIVO] ${device.deviceId}`)
+    console.log('[ CLAVE HARDWARE] Par de claves Ed25519 de Secure Enclave generado.')
 
     // 3. Emular Flujo de Telemetría MQTTS de Alta Frecuencia
     console.log('\n[3/5] Transmitiendo Marcos de Telemetría MQTTS de Alta Velocidad...')
@@ -169,10 +169,10 @@ async function main () {
       show.chart({ id: 'bpm', type: 'line', title: 'Ritmo cardiaco por trama de telemetría', unit: 'BPM', xLabel: 'Trama', yLabel: 'BPM', points: bpmSeries, threshold: { value: 120, label: 'taquicardia > 120' } })
 
       if (isCritical) {
-        console.log(`   🚨 [CUADRO #${frameIndex}] PARO/TAQUICARDIA CRÍTICA: ${frame.payload.metrics.bpm} BPM | Firma Hardware: Verificada ✅`)
+        console.log(`[CUADRO #${frameIndex}] PARO/TAQUICARDIA CRÍTICA: ${frame.payload.metrics.bpm} BPM | Firma Hardware: Verificada `)
         emergencyAlertFrame = frame
       } else {
-        console.log(`   💓 [CUADRO #${frameIndex}] Latido Normal: ${frame.payload.metrics.bpm} BPM | Hash: ${frameHash.substring(0, 16)}... | Firma: ✅`)
+        console.log(`[CUADRO #${frameIndex}] Latido Normal: ${frame.payload.metrics.bpm} BPM | Hash: ${frameHash.substring(0, 16)}... | Firma: `)
         routineBatch.push(frameHash)
       }
     }
@@ -197,9 +197,9 @@ async function main () {
       .execute(client)
 
     const batchReceipt = await batchSubmitTx.getReceipt(client)
-    console.log(`[✅ LOTE ANCLADO] Raíz Merkle: ${merkleRoot}`)
-    console.log(`[📊 CONSENSO] Secuencia #${batchReceipt.topicSequenceNumber} en HCS`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(batchSubmitTx.transactionId.toString())}`)
+    console.log(`[ LOTE ANCLADO] Raíz Merkle: ${merkleRoot}`)
+    console.log(`[CONSENSO] Secuencia #${batchReceipt.topicSequenceNumber} en HCS`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(batchSubmitTx.transactionId.toString())}`)
 
     // 5. Envío Inmediato de Alerta Crítica Fuera de Banda al Consenso
     console.log('\n[5/5] Enviando Alerta Crítica de Marcapasos de Alta Prioridad a HCS...')
@@ -219,26 +219,26 @@ async function main () {
       .execute(client)
 
     const emergencyReceipt = await emergencySubmitTx.getReceipt(client)
-    console.log(`[🚨 EMERGENCIA NOTARIZADA] Secuencia #${emergencyReceipt.topicSequenceNumber} verificada en Consenso!`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(emergencySubmitTx.transactionId.toString())}`)
+    console.log(`[ EMERGENCIA NOTARIZADA] Secuencia #${emergencyReceipt.topicSequenceNumber} verificada en Consenso!`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(emergencySubmitTx.transactionId.toString())}`)
 
     // Persistir Estado
     updateState('DEPIN_PACEMAKER_TOPIC_ID', topicId)
     updateState('DEPIN_PACEMAKER_DEVICE_ID', device.deviceId)
     updateState('DEPIN_PACEMAKER_MERKLE_ROOT', merkleRoot)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('DePIN combina criptografía de hardware IoT con el alto rendimiento de consenso de Hedera.')
     console.log('Las operaciones normales se agrupan fuera de la cadena para minimizar costos, mientras')
     console.log('que las alertas críticas logran ordenamiento inmutable de consenso en menos de 2 segundos.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Nunca publiques lecturas individuales de sensores si puedes agruparlas mediante pruebas Merkle.')
     console.log('Diseña siempre disyuntores dirigidos por eventos que prioricen las alertas de seguridad vital.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución de DePIN Marcapasos:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución de DePIN Marcapasos:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -249,7 +249,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

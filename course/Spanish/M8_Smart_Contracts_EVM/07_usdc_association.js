@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Asociación de Tokens (USDC Bridge)
- * [ CONCEPTO ] El Escudo Anti-Spam y Opt-In de Activos
+ * [CONCEPTO] El Escudo Anti-Spam y Opt-In de Activos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Seguridad del Estado: En Hedera, no es posible enviar tokens a una cuenta
@@ -46,7 +46,7 @@ const main = async () => {
   const USDC_TOKEN_ID = '0.0.429274' // ID de USDC en Testnet
 
   try {
-    console.log(`[⚙️ PROCESO] Ejecutando Opt-In oficial para USDC (${USDC_TOKEN_ID})...`)
+    console.log(`[PROCESO] Ejecutando Opt-In oficial para USDC (${USDC_TOKEN_ID})...`)
 
     // Asocia primero: una cuenta debe aceptar un token antes de poder tenerlo.
     const tx = await new TokenAssociateTransaction()
@@ -57,10 +57,10 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const receipt = await tx.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Asociación de USDC exitosa. Estado: ${receipt.status.toString()}`)
-    console.log('[ℹ️ INFO] El Operador está ahora autorizado para poseer y transferir USDC.')
+    console.log(`\n[ÉXITO] Asociación de USDC exitosa. Estado: ${receipt.status.toString()}`)
+    console.log('[INFO] El Operador está ahora autorizado para poseer y transferir USDC.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La asociación es una característica de seguridad única de Hedera.')
     console.log('Protege a los usuarios de "AirDrops de Spam" y ataques de phishing')
     console.log('basados en tokens maliciosos, asegurando que solo los activos')
@@ -70,9 +70,9 @@ const main = async () => {
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
     if (error.message.includes('TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT')) {
-      console.log('\n✔ [✅ ÉXITO] El Operador ya está asociado con USDC. Saltando paso.')
+      console.log('\n [ÉXITO] El Operador ya está asociado con USDC. Saltando paso.')
     } else {
-      console.error(`\n[❌ FALLO] El proceso de asociación falló: ${error.message}`)
+      console.error(`\n[FALLO] El proceso de asociación falló: ${error.message}`)
       process.exitCode = 1
     }
     client.close()
@@ -83,7 +83,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

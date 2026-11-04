@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Zero-Gas Facilitator Settlement
- * [ CONCEPT ] Sponsored On-Chain Execution & Settlement Proofs
+ * [CONCEPT] Sponsored On-Chain Execution & Settlement Proofs
  * ============================================================================
  * [ KEY CONCEPT ]
  * Fee Decoupling: In traditional Web3, the caller must always hold native gas
@@ -21,14 +21,14 @@
  * - Previous: M10 Lab 02: Agent Payment Signature
  * - Next:     M10 Lab 04: HTS USDC Micropayments
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent -> Server: Request with PAYMENT-SIGNATURE
  * Server -> Facilitator: Verify signature and single-use nonce
  * Facilitator -> Hedera: TransferTransaction 0.5 ℏ
  * Hedera -> Facilitator: Receipt SUCCESS
  * Server -> Agent: 200 OK + PAYMENT-RESPONSE (txId) + data
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * Payer and payee are the same account, so the settlement is a real transfer to yourself.
  *
  * [ BEFORE YOU RUN ]
@@ -73,22 +73,22 @@ const main = async () => {
       throw new Error('Missing X402_PAYMENT_HEADER in state.json. Run Lab 02 first.')
     }
 
-    console.log('[⚙️ PROCESS] Facilitator decoding PAYMENT-SIGNATURE header...')
+    console.log('[PROCESS] Facilitator decoding PAYMENT-SIGNATURE header...')
     const signedProof = JSON.parse(Buffer.from(headerValue, 'base64').toString('utf8'))
     const { payload } = signedProof
 
-    console.log(`[📊 LOG] Payer Account:    ${payload.payer}`)
-    console.log(`[📊 LOG] Payee Account:    ${payload.payee}`)
-    console.log(`[📊 LOG] Transfer Amount:  ${payload.amount} ${payload.asset}`)
-    console.log(`[📊 LOG] Target Nonce:     ${payload.nonce}`)
+    console.log(`[LOG] Payer Account:    ${payload.payer}`)
+    console.log(`[LOG] Payee Account:    ${payload.payee}`)
+    console.log(`[LOG] Transfer Amount:  ${payload.amount} ${payload.asset}`)
+    console.log(`[LOG] Target Nonce:     ${payload.nonce}`)
 
     // 2. Cryptographic and Replay Verification
-    console.log('\n[⚙️ PROCESS] Verifying cryptographic signature and single-use nonce...')
+    console.log('\n[PROCESS] Verifying cryptographic signature and single-use nonce...')
     const isValidSignature = verifyAgentSignature(signedProof)
     if (!isValidSignature) {
       throw new Error('CRYPTOGRAPHIC REJECTION: Payment signature does not match payer public key.')
     }
-    console.log('[✅ SUCCESS] Cryptographic signature valid.')
+    console.log('[SUCCESS] Cryptographic signature valid.')
 
     if (processedNonces.has(payload.nonce)) {
       throw new Error(`REPLAY REJECTION: Nonce ${payload.nonce} has already been settled.`)
@@ -97,11 +97,11 @@ const main = async () => {
       throw new Error('TIMEOUT REJECTION: Challenge signature has expired.')
     }
     processedNonces.add(payload.nonce)
-    console.log('[✅ SUCCESS] Anti-replay checks passed. Nonce registered as spent.')
+    console.log('[SUCCESS] Anti-replay checks passed. Nonce registered as spent.')
 
     // 3. Facilitator executes on-chain settlement on Hedera
-    console.log('\n[⚙️ PROCESS] Facilitator broadcasting settlement transaction to Hedera...')
-    console.log('[ℹ️ INFO] Facilitator sponsors network gas; agent only provides authorized balance.')
+    console.log('\n[PROCESS] Facilitator broadcasting settlement transaction to Hedera...')
+    console.log('[INFO] Facilitator sponsors network gas; agent only provides authorized balance.')
 
     const amountHbar = Number(payload.amount)
     const payerId = AccountId.fromString(payload.payer)
@@ -119,10 +119,10 @@ const main = async () => {
     const receipt = await txResponse.getReceipt(client)
     const hashscanUrl = getHashscanUrl(txResponse)
 
-    console.log('\n[✅ SUCCESS] Transaction Settled On-Chain:')
-    console.log(`[📊 LOG] Consensus Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] Transaction ID:  ${txResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] HashScan:    ${hashscanUrl}`)
+    console.log('\n[SUCCESS] Transaction Settled On-Chain:')
+    console.log(`[LOG] Consensus Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] Transaction ID:  ${txResponse.transactionId.toString()}`)
+    console.log(`[EXPLORER] HashScan:    ${hashscanUrl}`)
 
     // 4. Server issues HTTP 200 OK with PAYMENT-RESPONSE header
     const paymentResponseHeader = JSON.stringify({
@@ -133,22 +133,22 @@ const main = async () => {
       timestamp: Date.now()
     })
 
-    console.log('\n[✅ SUCCESS] Server Unlocks Resource: HTTP 200 OK')
-    console.log(`[📊 LOG] PAYMENT-RESPONSE: ${paymentResponseHeader}`)
-    console.log('[📊 LOG] Response Body:   {"alpha_signal": "BULLISH_CONVERGENCE", "confidence": 0.942, "depth": 14000}')
+    console.log('\n[SUCCESS] Server Unlocks Resource: HTTP 200 OK')
+    console.log(`[LOG] PAYMENT-RESPONSE: ${paymentResponseHeader}`)
+    console.log('[LOG] Response Body:   {"alpha_signal": "BULLISH_CONVERGENCE", "confidence": 0.942, "depth": 14000}')
 
     // Persist for tracking
     updateState('X402_SETTLED_TX_ID', txResponse.transactionId.toString())
     updateState('X402_SETTLED_HASHSCAN', hashscanUrl)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The settlement proof is indisputable. The merchant serves the data because')
     console.log('the transaction has already reached finality on Hedera (~2.5 seconds).')
     console.log('No chargebacks, no credit card processing fees, no unpaid invoices.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Facilitator settlement failed:', error.message)
+    console.error('\n[ERROR] Facilitator settlement failed:', error.message)
     process.exit(1)
   }
 }
@@ -157,7 +157,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

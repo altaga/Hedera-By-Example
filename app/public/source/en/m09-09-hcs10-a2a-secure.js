@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Secure A2A Communication (HCS-10)
- * [ CONCEPT ] Zero Trust Cryptographic Validation
+ * [CONCEPT] Zero Trust Cryptographic Validation
  * ============================================================================
  * [ KEY CONCEPT ]
  * Intrusion Detection (IDS): This script demonstrates a "Zero Trust"
@@ -24,7 +24,7 @@
  * - Previous: M9 Lab 08: Impersonation Attack
  * - Next:     M9 Lab 10: Secure with Attack
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent A -> Agent B Inbox: Payload + hash + signature (session key)
  * Note Agent B: Verifies the signature against Agent A key
  * Agent B -> Agent A Inbox: Signed reply
@@ -66,7 +66,7 @@ const main = async () => {
   if (!sessionPrivStr) {
     sessionPrivStr = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivStr)
-    console.log('[ℹ️ INFO] Generated a new ECDSA session key for Agent A ↔ Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
+    console.log('[INFO] Generated a new ECDSA session key for Agent A  Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
   const sessionPub = sessionPriv.publicKey
@@ -77,7 +77,7 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
 
     let lastProcessedRound = 0
-    console.log(`🛡️  [ℹ️ INFO] Agent B Listening on ${inbox} (Secure Protocol)`)
+    console.log(`[INFO] Agent B Listening on ${inbox} (Secure Protocol)`)
 
     new TopicMessageQuery()
       .setTopicId(inbox)
@@ -89,8 +89,8 @@ const main = async () => {
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
           if (data?.verified_payload) {
-            console.log('\n--- 🛡️  [ℹ️ INFO] INTRUSION DETECTION SYSTEM (IDS) TRACE ---')
-            console.log(`[⚙️ PROCESS] Validating packet received from ${inbox}...`)
+            console.log('\n---   [INFO] INTRUSION DETECTION SYSTEM (IDS) TRACE ---')
+            console.log(`[PROCESS] Validating packet received from ${inbox}...`)
 
             const payload = JSON.parse(data.verified_payload)
 
@@ -101,29 +101,29 @@ const main = async () => {
             )
 
             if (!isAuthentic) {
-              console.log('[✅ SUCCESS] ECDSA Signature: ❌ INVALID')
-              console.log('[ℹ️ INFO] FORGERY DETECTED. Dropping malicious packet.')
+              console.log('[SUCCESS] ECDSA Signature:  INVALID')
+              console.log('[INFO] FORGERY DETECTED. Dropping malicious packet.')
               return
             }
-            console.log('[✅ SUCCESS] ECDSA Signature: ✅ VERIFIED')
+            console.log('[SUCCESS] ECDSA Signature:  VERIFIED')
 
             // STAGE 2: SEQUENCE/NONCE FRESHNESS
             if (payload.round <= lastProcessedRound) {
-              console.log(`[✅ SUCCESS] Sequence Nonce: ❌ STALE (Expected > ${lastProcessedRound})`)
-              console.log('[ℹ️ INFO] REPLAY ATTACK DETECTED. Dropping packet.')
+              console.log(`[SUCCESS] Sequence Nonce:  STALE (Expected > ${lastProcessedRound})`)
+              console.log('[INFO] REPLAY ATTACK DETECTED. Dropping packet.')
               return
             }
-            console.log(`[✅ SUCCESS] Sequence Nonce: ✅ FRESH (Round ${payload.round})`)
+            console.log(`[SUCCESS] Sequence Nonce:  FRESH (Round ${payload.round})`)
 
             // EXECUTION
-            console.log(`[📊 LOG] Result: Packet Trusted. Processing "${payload.text}"...`)
+            console.log(`[LOG] Result: Packet Trusted. Processing "${payload.text}"...`)
             lastProcessedRound = payload.round
 
             await sleep(5000)
             await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentA_Id })
-            console.log('[✅ SUCCESS] Response dispatched.')
+            console.log('[SUCCESS] Response dispatched.')
           }
-        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
+        } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
       })
   }
 
@@ -133,14 +133,14 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
 
     let currentRound = 1
-    console.log(`🤖 [ℹ️ INFO] Agent A Monitoring Outbox [${outbox}]`)
+    console.log(`[INFO] Agent A Monitoring Outbox [${outbox}]`)
 
     const sendPing = async (round) => {
-      console.log('\n--- 🤖 [⚙️ PROCESS] AGENT A: OUTBOUND ASSEMBLY ---')
+      console.log('\n---  [PROCESS] AGENT A: OUTBOUND ASSEMBLY ---')
       const payloadObj = { text: `Hello ${round}`, round, ts: Date.now() }
       const payloadString = JSON.stringify(payloadObj)
 
-      console.log(`[⚙️ PROCESS] Hashing and Signing Payload Round ${round}...`)
+      console.log(`[PROCESS] Hashing and Signing Payload Round ${round}...`)
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
 
       await hcs10.sendMessage(inbox, {
@@ -148,7 +148,7 @@ const main = async () => {
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })
-      console.log('[✅ SUCCESS] Secure Message Published to Ledger.')
+      console.log('[SUCCESS] Secure Message Published to Ledger.')
     }
 
     new TopicMessageQuery()
@@ -156,14 +156,14 @@ const main = async () => {
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
-          console.log(`\n[📊 LOG] 📥 AGENT A Received response for Round ${currentRound}.`)
+          console.log(`\n[LOG]  AGENT A Received response for Round ${currentRound}.`)
           if (currentRound < 3) {
             currentRound++
             await sleep(5000)
             await sendPing(currentRound)
           } else {
-            console.log('\n🏁 [✅ SUCCESS] All security checks passed.')
-            console.log('\n💡 KEY CONCEPT:')
+            console.log('\n [SUCCESS] All security checks passed.')
+            console.log('\n KEY CONCEPT:')
             console.log('Intrusion Detection (IDS): This script demonstrates a "Zero Trust"')
             console.log('architecture. By layering ECDSA verification and nonce checks,')
             console.log('you transform a public HCS topic into a secure, tamper-proof')
@@ -185,7 +185,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

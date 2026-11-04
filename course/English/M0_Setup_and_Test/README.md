@@ -1,4 +1,4 @@
-# 🚀 Module 0: Setup and Initial Testing
+# Module 0: Setup and Initial Testing
 ## First Steps in the Hedera Ecosystem
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 Before building, we must ensure we have the necessary tools and resources.
 
 | Lab | Topic | Description |
@@ -20,7 +20,7 @@ Before building, we must ensure we have the necessary tools and resources.
 
 ---
 
-## 🛠️ Account Configuration Flow
+## Account Configuration Flow
 
 ```mermaid
 %%{init: {
@@ -72,7 +72,7 @@ graph LR
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Testnet vs. Mainnet
 Hedera provides a free Testnet where you can obtain test HBAR to develop at no cost. Never use your Mainnet keys for these exercises.
@@ -85,11 +85,11 @@ In Hedera, to receive a token, you must first "associate" with it. However, with
 
 ---
 
-## 📚 Official References
+## Official References
 - [Hedera Developer Portal](https://portal.hedera.com/)
 - [Mirror Node API Reference](https://docs.hedera.com/hedera/sdks-and-apis/rest-api)
 - [HIP-23: Automatic Token Associations](https://hips.hedera.com/hip/hip-23)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. YOUR JOURNEY STARTS HERE.
+ 2026 **HEDERA FOR DUMMIES**. YOUR JOURNEY STARTS HERE.

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
- * [ CONCEPT ] Fractional Commercial Debt & Secondary Liquidity
+ * [CONCEPT] Fractional Commercial Debt & Secondary Liquidity
  * ============================================================================
  * [ KEY CONCEPT ]
  * Unlocking Illiquid Working Capital: Small and medium enterprises (SMEs) routinely
@@ -21,7 +21,7 @@
  * - Previous: M11 Lab 04: Proof-of-Reserve Oracle
  * - Next:     M11 Lab 06: RWA Multi-Asset Pool Tokens
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * Investor subscriptions and the debtor repayment are modeled with simple transfers. The tokens are real.
  *
  * [ BEFORE YOU RUN ]
@@ -62,16 +62,16 @@ const main = async () => {
     const upfrontPayoutToSmeUsd = INVOICE_METADATA.faceValueUsd - discountAmountUsd
     const annualizedRoiPercent = INVOICE_METADATA.annualDiscountRate * 100
 
-    console.log('[⚙️ PROCESS] Calculating Invoice Tokenization Economics...')
-    console.log(`[📊 LOG] Invoice ID:         ${INVOICE_METADATA.invoiceId}`)
-    console.log(`[📊 LOG] Debtor (Payer):     ${INVOICE_METADATA.debtor}`)
-    console.log(`[📊 LOG] SME Supplier:       ${INVOICE_METADATA.supplierSme}`)
-    console.log(`[📊 LOG] Face Value:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (60 Day Term)`)
-    console.log(`[📊 LOG] Upfront SME Cash:   $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Immediate Liquidity)`)
-    console.log(`[📊 LOG] Investor Yield:     $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
+    console.log('[PROCESS] Calculating Invoice Tokenization Economics...')
+    console.log(`[LOG] Invoice ID:         ${INVOICE_METADATA.invoiceId}`)
+    console.log(`[LOG] Debtor (Payer):     ${INVOICE_METADATA.debtor}`)
+    console.log(`[LOG] SME Supplier:       ${INVOICE_METADATA.supplierSme}`)
+    console.log(`[LOG] Face Value:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (60 Day Term)`)
+    console.log(`[LOG] Upfront SME Cash:   $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Immediate Liquidity)`)
+    console.log(`[LOG] Investor Yield:     $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
 
     // 2. Tokenize the Receivable on HTS
-    console.log('\n[⚙️ PROCESS] Minting 50,000 Fractional Invoice Tokens on Hedera Token Service...')
+    console.log('\n[PROCESS] Minting 50,000 Fractional Invoice Tokens on Hedera Token Service...')
     const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenCreateTx = await new TokenCreateTransaction()
@@ -91,11 +91,11 @@ const main = async () => {
       return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ SUCCESS] RWA Invoice Token Deployed: ${invoiceTokenId}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
+    console.log(`[SUCCESS] RWA Invoice Token Deployed: ${invoiceTokenId}`)
+    console.log(`[EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
 
     // 3. Simulate Investor Pool Subscription (Secondary Liquidity)
-    console.log('\n[⚙️ PROCESS] Liquidity Pool purchases 50,000 tokens for upfront working capital...')
+    console.log('\n[PROCESS] Liquidity Pool purchases 50,000 tokens for upfront working capital...')
     // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const subscriptionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulation of liquidity transfer
@@ -105,11 +105,11 @@ const main = async () => {
 
     const subResponse = await subscriptionTx.execute(client)
     await subResponse.getReceipt(client)
-    console.log('[✅ SUCCESS] Upfront Capital Transferred to SME Supplier.')
+    console.log('[SUCCESS] Upfront Capital Transferred to SME Supplier.')
 
     // 4. Day 60: Debtor Repayment & Automated Investor Payout
     console.log('\n===============================================================')
-    console.log('📅 MATURITY SETTLEMENT: DEBTOR SETTLES $50,000 USD FULL VALUE')
+    console.log('MATURITY SETTLEMENT: DEBTOR SETTLES $50,000 USD FULL VALUE')
     console.log('===============================================================')
 
     const payoutTx = await new TransferTransaction()
@@ -122,22 +122,22 @@ const main = async () => {
     const payoutReceipt = await payoutResponse.getReceipt(client)
     const payoutHashscanUrl = getHashscanUrl(payoutResponse)
 
-    console.log('[✅ SUCCESS] Final Yield Distribution Settled On-Chain:')
-    console.log(`[📊 LOG] Status:         ${payoutReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Transaction ID: ${payoutResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] HashScan:  ${payoutHashscanUrl}`)
+    console.log('[SUCCESS] Final Yield Distribution Settled On-Chain:')
+    console.log(`[LOG] Status:         ${payoutReceipt.status.toString()}`)
+    console.log(`[LOG] Transaction ID: ${payoutResponse.transactionId.toString()}`)
+    console.log(`[EXPLORER] HashScan:  ${payoutHashscanUrl}`)
 
     updateState('INVOICE_TOKEN_ID', invoiceTokenId)
     updateState('INVOICE_SETTLEMENT_TX_ID', payoutResponse.transactionId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('RWA Tokenization connects real-world commerce with decentralized finance.')
     console.log('Hedera eliminates reconciliation friction, allowing businesses to access')
     console.log('instant global liquidity at a fraction of traditional factoring costs.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Invoice factoring simulation failed:', error.message)
+    console.error('\n[ERROR] Invoice factoring simulation failed:', error.message)
     process.exit(1)
   }
 }
@@ -146,7 +146,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

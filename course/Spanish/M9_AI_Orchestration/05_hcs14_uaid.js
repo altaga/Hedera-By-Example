@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: HCS-14 UAID (Universal Agent ID)
- * [ CONCEPTO ] Identificadores Globales y Determinismo Criptográfico
+ * [CONCEPTO] Identificadores Globales y Determinismo Criptográfico
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Identidad Agnóstica: Un UAID es un identificador resistente a colisiones
@@ -44,7 +44,7 @@ const main = async () => {
   const agentId = getState('HCS11_AGENT_C_ID')
 
   if (!agentId) {
-    console.error('[❌ FALLO] HCS11_AGENT_C_ID no encontrado. Ejecuta Lab 04 primero.')
+    console.error('[FALLO] HCS11_AGENT_C_ID no encontrado. Ejecuta Lab 04 primero.')
     process.exitCode = 1
     return
   }
@@ -53,7 +53,7 @@ const main = async () => {
     // 2. Inicialización del Cliente HCS14
     const hcs14 = new HCS14Client()
 
-    console.log(`[⚙️ PROCESO] Generando UAID Determinista para el Agente: ${agentId}`)
+    console.log(`[PROCESO] Generando UAID Determinista para el Agente: ${agentId}`)
 
     // 3. Creación del UAID (Formato AID)
     // El UAID se construye a partir de metadatos fijos vinculados a la cuenta Hedera
@@ -69,15 +69,15 @@ const main = async () => {
       { uid: 'auditor-sentinel-v1' }
     )
 
-    console.log('\n✅ --- [✅ ÉXITO] UNIVERSAL AGENT ID (UAID) GENERADO ---')
-    console.log(`   [📊 REGISTRO] ${agentId}`)
-    console.log(`   [📊 REGISTRO] ${uaid}`)
+    console.log('\n --- [ÉXITO] UNIVERSAL AGENT ID (UAID) GENERADO ---')
+    console.log(`[REGISTRO] ${agentId}`)
+    console.log(`[REGISTRO] ${uaid}`)
     console.log('----------------------------------------------------------')
 
     // Persistir el UAID para referencia en logs de auditoría
     updateState('HCS14_UAID', uaid)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('¿Notaste la velocidad de respuesta? Al no realizar llamadas')
     console.log('a la red, la generación es instantánea y gratuita. Cualquier')
     console.log('sistema en el mundo con los mismos datos canónicos derivará')
@@ -86,7 +86,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La generación del UAID falló:', error.message)
+    console.error('\n[FALLO] La generación del UAID falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -95,7 +95,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: OpenTelemetry Consensus Telemetry
- * [ CONCEPT ] Distributed Tracing & High-Precision APM Observability
+ * [CONCEPT] Distributed Tracing & High-Precision APM Observability
  * ============================================================================
  * [ KEY CONCEPT ]
  * In mission-critical banking and fintech architectures, ledger operations
@@ -92,7 +92,7 @@ class W3CTracer {
   }
 
   printSpanSummary () {
-    console.log('\n--- 🔭 OPENTELEMETRY TRACE SUMMARY (W3C TRACECONTEXT) ---')
+    console.log('\n---  OPENTELEMETRY TRACE SUMMARY (W3C TRACECONTEXT) ---')
     console.table(this.spans.map(s => ({
       'Span Name': s.name,
       'Duration (ms)': `${s.durationMs} ms`,
@@ -110,8 +110,8 @@ const main = async () => {
   const tracer = new W3CTracer('Hedera-Fintech-Gateway')
   const traceContext = tracer.createTraceContext()
 
-  console.log(`[📡 APM] Active W3C TraceParent: ${traceContext.traceparent}`)
-  console.log(`[📊 LOG] Target Operator ID:    ${operatorId.toString()}`)
+  console.log(`[APM] Active W3C TraceParent: ${traceContext.traceparent}`)
+  console.log(`[LOG] Target Operator ID:    ${operatorId.toString()}`)
 
   try {
     let transaction
@@ -120,7 +120,7 @@ const main = async () => {
 
     // SPAN 1: Transaction Assembly & Memo Context Injection
     await tracer.startSpan('hedera.tx.build', traceContext, async ({ spanId }) => {
-      console.log('\n[⚙️ PROCESS] Span [hedera.tx.build]: Constructing transfer with W3C trace tag...')
+      console.log('\n[PROCESS] Span [hedera.tx.build]: Constructing transfer with W3C trace tag...')
       // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
       transaction = await new TransferTransaction()
         .addHbarTransfer(operatorId, new Hbar(0))
@@ -137,7 +137,7 @@ const main = async () => {
 
     // SPAN 2: Network Broadcast & Gossip Consensus Ordering
     await tracer.startSpan('hedera.consensus.submit', traceContext, async () => {
-      console.log('[⚙️ PROCESS] Span [hedera.consensus.submit]: Submitting to consensus nodes...')
+      console.log('[PROCESS] Span [hedera.consensus.submit]: Submitting to consensus nodes...')
       response = await transaction.execute(client)
       // Wait for consensus: the receipt says whether the network accepted the transaction.
       receipt = await response.getReceipt(client)
@@ -152,7 +152,7 @@ const main = async () => {
 
     // SPAN 3: Mirror Node Ingestion Latency Probe
     await tracer.startSpan('hedera.mirrornode.sync', traceContext, async () => {
-      console.log('[⚙️ PROCESS] Span [hedera.mirrornode.sync]: Probing mirror node state ingestion...')
+      console.log('[PROCESS] Span [hedera.mirrornode.sync]: Probing mirror node state ingestion...')
       const mirrorBase = getMirrorNodeBaseUrl()
       const formattedTxId = `${response.transactionId.accountId}-${response.transactionId.validStart.seconds}-${response.transactionId.validStart.nanos}`
 
@@ -179,14 +179,14 @@ const main = async () => {
       }
     })
 
-    console.log('\n[✅ SUCCESS] Consensus Verified on Hedera Testnet!')
-    console.log(`[📊 LOG] Transaction ID:  ${response.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] HashScan:    ${getHashscanUrl(response)}`)
+    console.log('\n[SUCCESS] Consensus Verified on Hedera Testnet!')
+    console.log(`[LOG] Transaction ID:  ${response.transactionId.toString()}`)
+    console.log(`[EXPLORER] HashScan:    ${getHashscanUrl(response)}`)
 
     // Print OpenTelemetry APM Table
     tracer.printSpanSummary()
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Production APM Integration: By binding W3C traceparents to transaction')
     console.log('memos, DevOps and SRE teams can correlate microservice web requests with')
     console.log('on-chain consensus logs in Datadog, Dynatrace, or Jaeger seamlessly.')
@@ -194,7 +194,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] Telemetry Tracing Failed: ${error.message}`)
+    console.error(`\n[FAILED] Telemetry Tracing Failed: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -205,7 +205,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

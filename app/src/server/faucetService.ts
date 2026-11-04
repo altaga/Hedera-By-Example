@@ -11,9 +11,46 @@
  *   - PostHog unique user tracking
  */
 
+import fs from 'fs'
+import path from 'path'
 import { ethers } from 'ethers';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { recordFaucetClaim, getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
+
+/** Load local secrets into process.env if Expo CLI did not inject them yet. */
+function loadLocalFaucetEnv (): void {
+  if (typeof process === 'undefined' || !process.cwd) return
+  const candidates = [
+    path.resolve(process.cwd(), '.env'),
+    path.resolve(process.cwd(), 'app', '.env'),
+    path.resolve(process.cwd(), 'faucet', '.env'),
+    path.resolve(process.cwd(), '..', 'faucet', '.env'),
+  ]
+  for (const envPath of candidates) {
+    try {
+      if (!fs.existsSync(envPath)) continue
+      for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) continue
+        const eq = trimmed.indexOf('=')
+        if (eq <= 0) continue
+        const key = trimmed.slice(0, eq).trim()
+        if (!key || process.env[key]) continue
+        let val = trimmed.slice(eq + 1).trim()
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
+          val = val.slice(1, -1)
+        }
+        process.env[key] = val
+      }
+      break
+    } catch (_) {}
+  }
+}
+
+loadLocalFaucetEnv()
 
 export const NETWORK = process.env.NEXT_PUBLIC_HEDERA_NETWORK || process.env.NETWORK || 'testnet';
 
@@ -102,22 +139,13 @@ export async function calculateHederaGasPrice(provider: ethers.JsonRpcProvider, 
   return withHeadroom > absoluteMin ? withHeadroom : absoluteMin;
 }
 
-export const POOL_SIZE = 100;
+export const POOL_SIZE = Math.max(1, parseInt(process.env.FAUCET_POOL_SIZE || '25', 10) || 25);
 
-let cachedRootWallet: ethers.HDNodeWallet | null = null;
 let cachedOperatorWallet: ethers.Wallet | null = null;
+const derivedWalletCache = new Map<number, { index: number; address: string; privateKey: string }>();
 
-function getRootNode(): ethers.HDNodeWallet | null {
-  if (cachedRootWallet) return cachedRootWallet;
-  const mnemonic = (process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
-  if (!mnemonic) return null;
-  try {
-    cachedRootWallet = ethers.HDNodeWallet.fromPhrase(mnemonic);
-    return cachedRootWallet;
-  } catch (err: any) {
-    console.warn('[FAUCET] Failed to parse mnemonic root:', err?.message || err);
-    return null;
-  }
+function getFaucetMnemonic (): string {
+  return (process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
 }
 
 function getOperatorWallet(): ethers.Wallet | null {
@@ -140,12 +168,21 @@ function getOperatorWallet(): ethers.Wallet | null {
   }
 }
 
+/**
+ * Derive pool wallet i at BIP-44 path (parity with faucet/src/faucet-service.mjs).
+ * ethers v6: pass the full path to fromPhrase — do NOT fromPhrase()+derivePath("m/...").
+ */
 export function getWalletAtIndex(index: number): { index: number; address: string; privateKey: string } | null {
-  const root = getRootNode();
-  if (root) {
+  const cached = derivedWalletCache.get(index);
+  if (cached) return cached;
+
+  const mnemonic = getFaucetMnemonic();
+  if (mnemonic) {
     try {
-      const child = root.derivePath(`m/44'/60'/0'/0/${index}`);
-      return { index, address: child.address, privateKey: child.privateKey };
+      const derived = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, `m/44'/60'/0'/0/${index}`);
+      const entry = { index, address: derived.address, privateKey: derived.privateKey };
+      derivedWalletCache.set(index, entry);
+      return entry;
     } catch (err: any) {
       console.warn(`[FAUCET] Error deriving child at index ${index}:`, err?.message || err);
     }

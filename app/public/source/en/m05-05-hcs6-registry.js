@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: HCS-6 Decentralized Registry
- * [ CONCEPT ] On-Chain Service Discovery
+ * [CONCEPT] On-Chain Service Discovery
  * ============================================================================
  * [ KEY CONCEPT ]
  * HCS-6 is a community standard for creating decentralized registries on top of
@@ -47,14 +47,14 @@ const main = async () => {
 
   try {
     // 1. Create a Topic to act as our decentralized Registry
-    console.log('[⚙️ PROCESS] Creating an HCS Topic for the Registry...')
+    console.log('[PROCESS] Creating an HCS Topic for the Registry...')
     let tx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-6 Global App Registry')
       .execute(client)
 
     let receipt = await tx.getReceipt(client)
     const topicId = receipt.topicId
-    console.log(`[✅ SUCCESS] Registry Topic created: ${topicId.toString()}`)
+    console.log(`[SUCCESS] Registry Topic created: ${topicId.toString()}`)
 
     // 2. Define the HCS-6 Compliant Payload
     // The HCS-6 standard dictates a specific JSON structure to register a service.
@@ -71,7 +71,7 @@ const main = async () => {
       }
     }
 
-    console.log('\n[⚙️ PROCESS] Submitting HCS-6 Registration Payload...')
+    console.log('\n[PROCESS] Submitting HCS-6 Registration Payload...')
     console.log(JSON.stringify(hcs6Payload, null, 2))
 
     tx = await new TopicMessageSubmitTransaction()
@@ -80,10 +80,10 @@ const main = async () => {
       .execute(client)
 
     receipt = await tx.getReceipt(client)
-    console.log(`[✅ SUCCESS] App registered on-chain! Sequence Number: ${receipt.topicSequenceNumber.toString()}`)
+    console.log(`[SUCCESS] App registered on-chain! Sequence Number: ${receipt.topicSequenceNumber.toString()}`)
 
     // 3. Subscribe to the Registry to discover apps
-    console.log('\n[⚙️ PROCESS] Subscribing to the Registry to discover new services...')
+    console.log('\n[PROCESS] Subscribing to the Registry to discover new services...')
 
     // We use a Promise to wait for the message to propagate through the mirror node
     await new Promise((resolve) => {
@@ -92,13 +92,13 @@ const main = async () => {
         .setStartTime(0)
         .subscribe(
           client,
-          (error) => { console.error('[❌ FAILED] Subscription Error:', error); process.exit(1) },
+          (error) => { console.error('[FAILED] Subscription Error:', error); process.exit(1) },
           (message) => {
             const content = Buffer.from(message.contents).toString('utf8')
             try {
               const parsed = JSON.parse(content)
               if (parsed.p === 'hcs-6' && parsed.op === 'register') {
-                console.log('\n[🔍 DISCOVERED] New dApp Registered!')
+                console.log('\n[DISCOVERED] New dApp Registered!')
                 console.log(`- Name: ${parsed.name}`)
                 console.log(`- Desc: ${parsed.description}`)
                 console.log(`- URL:  ${parsed.url}`)
@@ -108,13 +108,13 @@ const main = async () => {
                 resolve()
               }
             } catch (e) {
-              console.log('[ℹ️ INFO] Non-JSON message ignored.')
+              console.log('[INFO] Non-JSON message ignored.')
             }
           }
         )
     })
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-6 allows the ecosystem to build decentralized App Stores where no')
     console.log('single entity can de-platform a developer. It acts as a global,')
     console.log('censorship-resistant yellow pages for Web3 services.')
@@ -122,7 +122,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -131,7 +131,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

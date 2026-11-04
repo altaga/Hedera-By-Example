@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Manual Account Verification
- * [ CONCEPT ] Network-Stored Identity Discovery
+ * [CONCEPT] Network-Stored Identity Discovery
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Client object is your portal. By setting the "Operator," you tell the SDK
@@ -46,8 +46,8 @@ const main = async () => {
   const evmAddress = process.env.OPERATOR_EVM_ADDRESS
 
   if (!operatorKey) {
-    console.error('[❌ FAILED] Missing OPERATOR_PRIVATE_KEY in .env.')
-    console.error('[ℹ️ INFO] Did you run 01_generate_wallet.js first?')
+    console.error('[FAILED] Missing OPERATOR_PRIVATE_KEY in .env.')
+    console.error('[INFO] Did you run 01_generate_wallet.js first?')
     process.exit(1)
   }
 
@@ -56,7 +56,7 @@ const main = async () => {
   const isValidId = (id) => /^\d+\.\d+\.\d+$/.test(id || '')
   let accountId = isValidId(MANUAL_ACCOUNT_ID) ? MANUAL_ACCOUNT_ID : process.env.OPERATOR_ID
   if (!isValidId(accountId) && evmAddress) {
-    console.log(`[⚙️ PROCESS] Looking up the account created for ${evmAddress}...`)
+    console.log(`[PROCESS] Looking up the account created for ${evmAddress}...`)
     accountId = await waitForMirror(async () => {
       const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${evmAddress}`)
       return res.ok ? (await res.json()).account : null
@@ -64,9 +64,9 @@ const main = async () => {
   }
 
   if (!isValidId(accountId)) {
-    console.log(`[ℹ️ INFO] Checking Alias Account: ${evmAddress}`)
-    console.log(`[📊 LOG] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
-    console.error('\n[❌ FAILED] Error: MANUAL_ACCOUNT_ID is not set and OPERATOR_ID is missing from .env.')
+    console.log(`[INFO] Checking Alias Account: ${evmAddress}`)
+    console.log(`[LOG] HashScan: https://hashscan.io/testnet/account/${evmAddress}`)
+    console.error('\n[FAILED] Error: MANUAL_ACCOUNT_ID is not set and OPERATOR_ID is missing from .env.')
     process.exitCode = 1
     console.error('Paste the 0.0.X ID into the MANUAL_ACCOUNT_ID constant at the top of this file.')
     process.exit(1)
@@ -76,30 +76,30 @@ const main = async () => {
 
   try {
     const inputId = accountId
-    console.log(`[⚙️ PROCESS] Verifying Account ${inputId} on Hedera Testnet...`)
+    console.log(`[PROCESS] Verifying Account ${inputId} on Hedera Testnet...`)
 
     const operatorId = AccountId.fromString(inputId)
     client.setOperator(operatorId, PrivateKey.fromString(operatorKey))
 
     // Verify balance via Mirror Node Query
-    console.log('[⚙️ PROCESS] Executing Mirror Node Query for HBAR balance...')
+    console.log('[PROCESS] Executing Mirror Node Query for HBAR balance...')
     const query = new MirrorNodeAccountBalanceQuery()
       .setAccountId(operatorId)
 
     const balance = await query.execute(client)
 
-    console.log('\n[✅ SUCCESS] Network connection confirmed.')
-    console.log(`[📊 LOG] Account ID: ${operatorId.toString()}`)
-    console.log(`[📊 LOG] Balance:    ${balance.hbars.toString()}`)
+    console.log('\n[SUCCESS] Network connection confirmed.')
+    console.log(`[LOG] Account ID: ${operatorId.toString()}`)
+    console.log(`[LOG] Balance:    ${balance.hbars.toString()}`)
 
     // Update the .env with the verified ID
-    console.log('\n[ℹ️ INFO] Synchronizing .env file...')
+    console.log('\n[INFO] Synchronizing .env file...')
     updateEnv('OPERATOR_ID', operatorId.toString())
 
-    console.log('[✅ SUCCESS] OPERATOR_ID successfully saved.')
+    console.log('[SUCCESS] OPERATOR_ID successfully saved.')
     console.log('Ready for Lab 03.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Client object is your portal. By setting the "Operator," you tell')
     console.log('the SDK which account pays the fees for all subsequent queries and')
     console.log('transactions.')
@@ -107,7 +107,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Verification Failed:', error.message)
+    console.error('\n[FAILED] Verification Failed:', error.message)
     process.exit(1)
   }
 }
@@ -116,7 +116,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

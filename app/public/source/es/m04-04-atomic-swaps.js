@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Intercambios Atómicos Multi-Activo (Atomic Swaps)
- * [ CONCEPTO ] Intercambio Trustless de Capa 1
+ * [CONCEPTO] Intercambio Trustless de Capa 1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Finalidad Atómica: La naturaleza de "Suma Cero" de las transacciones en
@@ -23,7 +23,7 @@
  * - Actual:   M4 Lab 04: Swaps Atómicos
  * - Siguiente: M4 Lab 05: Transferencias en Paralelo
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Tesorería -> Comprador: NFT #1
  * Comprador -> Tesorería: Pago en HBAR
  * Nota Hedera: Ambas partes en UNA TransferTransaction firmada por los dos
@@ -52,7 +52,7 @@ const main = async () => {
   const nftTokenId = getState('NFT_TOKEN_ID')
 
   if (!userId || !userKey || !nftTokenId) {
-    console.error('[❌ FALLO] Faltan credenciales de ACCOUNT_1 o el NFT_TOKEN_ID en el estado.')
+    console.error('[FALLO] Faltan credenciales de ACCOUNT_1 o el NFT_TOKEN_ID en el estado.')
     process.exitCode = 1
     return
   }
@@ -63,13 +63,13 @@ const main = async () => {
     // El menor serial que el operador todavía tiene (el #1 puede haberse enviado en una ejecución anterior).
     const serial = await findOwnedSerial(nftTokenId, operatorId)
     if (!serial) {
-      console.error(`[❌ FALLO] ${operatorId} no tiene ningún serial de ${nftTokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
+      console.error(`[FALLO] ${operatorId} no tiene ningún serial de ${nftTokenId}. Ejecuta el Lab 03 de M3 para acuñar más.`)
       process.exitCode = 1
       return
     }
-    console.log('[⚙️ PROCESO] Iniciando Intercambio Atómico Peer-to-Peer:')
-    console.log(`   - Operador envía NFT Serial #${serial} -> Usuario`)
-    console.log('   - Usuario envía 1 HBAR -> Operador')
+    console.log('[PROCESO] Iniciando Intercambio Atómico Peer-to-Peer:')
+    console.log(`- Operador envía NFT Serial #${serial} -> Usuario`)
+    console.log('- Usuario envía 1 HBAR -> Operador')
 
     // Una sola TransferTransaction puede contener docenas de movimientos atómicos
     const transaction = await new TransferTransaction()
@@ -83,20 +83,20 @@ const main = async () => {
       .freezeWith(client)
 
     // AMBAS partes deben firmar porque ambas están entregando activos
-    console.log('[⚙️ PROCESO] Recolectando firmas de ambas partes en la misma transacción...')
+    console.log('[PROCESO] Recolectando firmas de ambas partes en la misma transacción...')
     await transaction.sign(userPrivKey)
     // El Operador firma implícitamente al ejecutar como pagador
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[REGISTRO] ID Transacción: ${response.transactionId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] Intercambio Atómico completado. Estado: ${receipt.status.toString()}`)
-    console.log('[ℹ️ INFO] La propiedad del NFT y el HBAR han sido cruzados simultáneamente.')
+    console.log(`\n[ÉXITO] Intercambio Atómico completado. Estado: ${receipt.status.toString()}`)
+    console.log('[INFO] La propiedad del NFT y el HBAR han sido cruzados simultáneamente.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al ser una operación atómica de Capa 1, no hay riesgo de')
     console.log('ejecución parcial. Si el usuario no tiene saldo, o el vendedor')
     console.log('no tiene el NFT, la red rechaza todo el bloque, protegiendo a')
@@ -105,7 +105,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El Intercambio Atómico falló:', error.message)
+    console.error('\n[FALLO] El Intercambio Atómico falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -114,7 +114,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

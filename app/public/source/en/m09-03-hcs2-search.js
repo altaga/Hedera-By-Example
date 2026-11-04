@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: HCS-2 Registry Discovery
- * [ CONCEPT ] Building a Local Index from a Stream
+ * [CONCEPT] Building a Local Index from a Stream
  * ============================================================================
  * [ KEY CONCEPT ]
  * Discovery over Search: Distributed ledgers are append-only logs, not
@@ -45,13 +45,13 @@ const main = async () => {
   const registryTopicId = getState('HCS2_REGISTRY_TOPIC_ID')
 
   if (!registryTopicId) {
-    console.error('[❌ FAILED] Missing Registry Topic ID. Please run Lab 02 first.')
+    console.error('[FAILED] Missing Registry Topic ID. Please run Lab 02 first.')
     process.exitCode = 1
     return
   }
 
-  console.log(`[⚙️ PROCESS] Scanning Registry (${registryTopicId}) for Game AI Agents...`)
-  console.log('[ℹ️ INFO] Streaming history from Mirror Node...\n')
+  console.log(`[PROCESS] Scanning Registry (${registryTopicId}) for Game AI Agents...`)
+  console.log('[INFO] Streaming history from Mirror Node...\n')
 
   let agentsFound = 0
 
@@ -62,7 +62,7 @@ const main = async () => {
     .subscribe(
       client,
       (error) => {
-        console.error(`\n[❌ FAILED] Mirror Node Subscription Failed: ${error.message}`)
+        console.error(`\n[FAILED] Mirror Node Subscription Failed: ${error.message}`)
         process.exitCode = 1
       },
       (message) => {
@@ -77,11 +77,11 @@ const main = async () => {
           if (entry.h === 'hcs-2' && entry.cat === 'ANTI_CHEAT_ORACLE') {
             agentsFound++
 
-            console.log(`🎯 [📊 LOG] MATCH FOUND: Verified Agent #${agentsFound}`)
-            console.log(`   Registry Name:   ${entry.r}`)
-            console.log(`   Agent Topic ID:  ${entry.tid} <-- (Linked to Lab 01)`)
-            console.log(`   Status:          ${entry.status}`)
-            console.log(`   Registered On:   ${new Date(entry.ts).toLocaleString()}`)
+            console.log(`[LOG] MATCH FOUND: Verified Agent #${agentsFound}`)
+            console.log(`Registry Name:   ${entry.r}`)
+            console.log(`Agent Topic ID:  ${entry.tid} <-- (Linked to Lab 01)`)
+            console.log(`Status:          ${entry.status}`)
+            console.log(`Registered On:   ${new Date(entry.ts).toLocaleString()}`)
             console.log('--------------------------------------------------')
 
             // In a real application, you would now take `entry.tid` and pass it
@@ -95,8 +95,8 @@ const main = async () => {
 
   // For this lab, we wait 5 seconds then exit automatically.
   setTimeout(() => {
-    console.log('\n[✅ SUCCESS] History scan complete.')
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n[SUCCESS] History scan complete.')
+    console.log('\n KEY CONCEPT:')
     console.log('This is how decentralized frontend applications work. A Web3 game client')
     console.log('doesn\'t need an API key to find the Anti-Cheat rules. It simply reads')
     console.log('the public registry stream and discovers the active Agents automatically.')
@@ -109,7 +109,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

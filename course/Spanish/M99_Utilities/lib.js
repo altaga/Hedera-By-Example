@@ -4,7 +4,7 @@ import { EventEmitter } from 'events'
 import * as fs from 'fs' // Requerido para funciones de utilidad en HybridEncryption
 
 // ============================================
-// 🔑 Clase Utilitaria HybridEncryption
+//  Clase Utilitaria HybridEncryption
 // ============================================
 
 class HybridEncryption {
@@ -209,7 +209,7 @@ class HybridEncryption {
 }
 
 // ============================================
-// 💻 Clase AgentCommunicationHandler
+//  Clase AgentCommunicationHandler
 // ============================================
 
 export class AgentCommunicationHandler extends EventEmitter {

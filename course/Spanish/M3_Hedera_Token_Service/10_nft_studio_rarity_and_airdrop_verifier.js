@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 10: Hedera NFT Studio — Inspector de Rareza y Verificador Previo de Airdrop
- * [ CONCEPTO ] Entropía de Rasgos, Auditoría de Esquema y Distribución HIP-904
+ * [CONCEPTO] Entropía de Rasgos, Auditoría de Esquema y Distribución HIP-904
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Hedera NFT Studio es la suite oficial orientada a creadores para el lanzamiento
@@ -200,7 +200,7 @@ class AirdropVerifier {
         eligible: true,
         maxAutomaticAssociations: maxSlots,
         deliveryMode,
-        balanceHbar: (data.balance ? data.balance.balance / 100000000 : 0) + ' HBAR'
+        balanceHbar: (data.balance ? data.balance.balance / 100000000 : 0) + 'HBAR'
       }
     } catch (err) {
       return {
@@ -215,7 +215,7 @@ class AirdropVerifier {
 
 const main = async () => {
   console.log('====================================================================')
-  console.log('🎨 HEDERA NFT STUDIO: INSPECTOR DE RAREZA Y VERIFICADOR DE AIRDROP')
+  console.log('HEDERA NFT STUDIO: INSPECTOR DE RAREZA Y VERIFICADOR DE AIRDROP')
   console.log('====================================================================\n')
 
   const { client, operatorId, operatorKey } = getClient()
@@ -272,33 +272,33 @@ const main = async () => {
   ]
 
   // Paso 1: Ejecutar validación de esquema HIP-412
-  console.log('[1/4] 🔍 Ejecutando auditoría de cumplimiento de metadatos HIP-412...')
+  console.log('[1/4]  Ejecutando auditoría de cumplimiento de metadatos HIP-412...')
   for (const item of rawCollection) {
     const audit = Hip412Validator.validate(item)
     if (!audit.valid) {
-      console.error(`❌ Validación fallida en ${item.name}: ${audit.error}`)
+      console.error(` Validación fallida en ${item.name}: ${audit.error}`)
       process.exit(1)
     }
   }
-  console.log(`✅ Auditoría de esquema HIP-412 aprobada: Los ${rawCollection.length} activos cumplen con el estándar HIP412@2.0.0.\n`)
+  console.log(`Auditoría de esquema HIP-412 aprobada: Los ${rawCollection.length} activos cumplen con el estándar HIP412@2.0.0.\n`)
 
   // Paso 2: Ejecutar Inspector de Rareza
-  console.log('[2/4] 📊 Ejecutando motor Inspector de Rareza de NFT Studio...')
+  console.log('[2/4]  Ejecutando motor Inspector de Rareza de NFT Studio...')
   const inspector = new RarityInspector(rawCollection)
   const rankedCollection = inspector.analyze()
 
   console.log('--------------------------------------------------------------------')
-  console.log('🏆 CLASIFICACIÓN DE RAREZA DE LA COLECCIÓN')
+  console.log('CLASIFICACIÓN DE RAREZA DE LA COLECCIÓN')
   console.log('--------------------------------------------------------------------')
   rankedCollection.forEach((item) => {
     console.log(`Puesto #${item.rank} [${item.tier}] - ${item.name}`)
-    console.log(`   Puntaje de Rareza: ${item.totalRarityScore}`)
-    console.log(`   Rasgos Distintivos: ${item.traits.map((t) => `${t.trait_type}: ${t.value} (${t.percentage})`).join(' | ')}`)
+    console.log(`Puntaje de Rareza: ${item.totalRarityScore}`)
+    console.log(`Rasgos Distintivos: ${item.traits.map((t) => `${t.trait_type}: ${t.value} (${t.percentage})`).join(' | ')}`)
   })
   console.log('--------------------------------------------------------------------\n')
 
   // Paso 3: Ejecutar Verificador Previo de Airdrop
-  console.log('[3/4] 🛰️ Ejecutando Verificador Previo de Airdrop en cuentas objetivo...')
+  console.log('[3/4]  Ejecutando Verificador Previo de Airdrop en cuentas objetivo...')
   const verifier = new AirdropVerifier(mirrorUrl)
   const targetAccounts = [
     process.env.ACCOUNT_1_ID || '0.0.11226623',
@@ -309,16 +309,16 @@ const main = async () => {
   for (const acc of targetAccounts) {
     const report = await verifier.verifyRecipient(acc)
     verifications.push(report)
-    console.log(`   Cuenta Objetivo: ${report.accountId}`)
-    console.log(`   Estado:          ${report.status}`)
-    console.log(`   Modo de Entrega: ${report.deliveryMode} (Slots: ${report.maxAutomaticAssociations})`)
-    console.log(`   Saldo:           ${report.balanceHbar}\n`)
+    console.log(`Cuenta Objetivo: ${report.accountId}`)
+    console.log(`Estado:          ${report.status}`)
+    console.log(`Modo de Entrega: ${report.deliveryMode} (Slots: ${report.maxAutomaticAssociations})`)
+    console.log(`Saldo:           ${report.balanceHbar}\n`)
   }
 
   // Paso 4: Creación de la Colección NFT en HTS y Ejecución de Airdrop en Testnet
-  console.log('[4/4] ⚡ Ejecutando acuñación on-chain y airdrop verificado en Testnet...')
+  console.log('[4/4]  Ejecutando acuñación on-chain y airdrop verificado en Testnet...')
 
-  console.log('   Creando clase de Token No Fungible Único...')
+  console.log('Creando clase de Token No Fungible Único...')
   const tokenId = await reuseToken('REUSE_M3_10_TOKEN', async () => {
     // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
     const createTx = await new TokenCreateTransaction()
@@ -338,8 +338,8 @@ const main = async () => {
     return createReceipt.tokenId
   })
 
-  console.log(`   ✅ Colección NFT Creada: ${tokenId.toString()}`)
-  console.log(`   🔗 Explorador: https://hashscan.io/${process.env.NETWORK || 'testnet'}/token/${tokenId.toString()}`)
+  console.log(`Colección NFT Creada: ${tokenId.toString()}`)
+  console.log(`Explorador: https://hashscan.io/${process.env.NETWORK || 'testnet'}/token/${tokenId.toString()}`)
 
   // Acuñar NFTs con números de serie (almacenando el URI de metadatos IPFS <= límite de 100 bytes)
   const metadataBytes = rawCollection.map((item) =>
@@ -354,7 +354,7 @@ const main = async () => {
   const mintSign = await mintTx.sign(supplyKey)
   const mintSubmit = await mintSign.execute(client)
   const mintReceipt = await mintSubmit.getReceipt(client)
-  console.log(`   ✅ Números de Serie Acuñados: [${mintReceipt.serials.map((s) => s.toString()).join(', ')}]`)
+  console.log(`Números de Serie Acuñados: [${mintReceipt.serials.map((s) => s.toString()).join(', ')}]`)
 
   // Ejecutar Airdrop Nativo Verificado (Serie #1 a la Cuenta Objetivo 1)
   const targetRecipient = AccountId.fromString(targetAccounts[0])
@@ -367,8 +367,8 @@ const main = async () => {
 
   const airdropSubmit = await airdropTx.execute(client)
   const airdropReceipt = await airdropSubmit.getReceipt(client)
-  console.log(`   ✅ Estado de la Transacción de Airdrop: ${airdropReceipt.status.toString()}`)
-  console.log(`   🔗 Hashscan Tx: ${getHashscanUrl(airdropSubmit.transactionId.toString())}`)
+  console.log(`Estado de la Transacción de Airdrop: ${airdropReceipt.status.toString()}`)
+  console.log(`Hashscan Tx: ${getHashscanUrl(airdropSubmit.transactionId.toString())}`)
 
   // Persistir Estado
   updateState('NFT_STUDIO_TOKEN_ID', tokenId.toString())
@@ -376,7 +376,7 @@ const main = async () => {
   updateState('NFT_STUDIO_AIRDROP_VERIFIED', true)
 
   console.log('\n====================================================================')
-  console.log('🎉 LABORATORIO NFT STUDIO COMPLETADO: METADATOS, RAREZA Y AIRDROP VERIFICADOS')
+  console.log('LABORATORIO NFT STUDIO COMPLETADO: METADATOS, RAREZA Y AIRDROP VERIFICADOS')
   console.log('====================================================================')
 
   client.close()
@@ -387,7 +387,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

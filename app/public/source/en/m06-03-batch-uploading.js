@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: HFS Batch Operations (Multi-Asset Append)
- * [ CONCEPT ] Composite On-Chain Asset Bundling
+ * [CONCEPT] Composite On-Chain Asset Bundling
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Composite Asset Pattern: Instead of creating 100 different File IDs
@@ -43,7 +43,7 @@ const main = async () => {
   const fileId = getState('HFS_FILE_ID')
 
   if (!fileId) {
-    console.error('[❌ FAILED] Missing HFS_FILE_ID in configuration.')
+    console.error('[FAILED] Missing HFS_FILE_ID in configuration.')
     process.exitCode = 1
     return
   }
@@ -54,8 +54,8 @@ const main = async () => {
     // Bundle the source documents only: largeFile.png went up in Lab 02 and reconstructed_* are outputs of Labs 05/08.
     const files = fs.readdirSync(assetsDir).filter((f) => !f.startsWith('reconstructed_') && f !== 'largeFile.png')
 
-    console.log(`[ℹ️ INFO] Scanning assets directory: ${assetsDir}`)
-    console.log(`[📊 LOG] Found ${files.length} files to anchor.`)
+    console.log(`[INFO] Scanning assets directory: ${assetsDir}`)
+    console.log(`[LOG] Found ${files.length} files to anchor.`)
 
     let combinedBuffer = Buffer.from('\n--- MULTI-ASSET MANIFEST START ---\n')
 
@@ -64,7 +64,7 @@ const main = async () => {
       const stats = fs.statSync(filePath)
       const content = fs.readFileSync(filePath)
 
-      console.log(`[⚙️ PROCESS] Packing ${file} (${stats.size} bytes)...`)
+      console.log(`[PROCESS] Packing ${file} (${stats.size} bytes)...`)
 
       combinedBuffer = Buffer.concat([
         combinedBuffer,
@@ -74,17 +74,17 @@ const main = async () => {
       ])
     }
 
-    console.log(`\n[ℹ️ INFO] Final Combined Payload: ${combinedBuffer.length} bytes`)
+    console.log(`\n[INFO] Final Combined Payload: ${combinedBuffer.length} bytes`)
 
     // Manual chunking to ensure stability for very large multi-asset bundles
     const CHUNK_SIZE = 4096
     let lastResponse
 
-    console.log(`[⚙️ PROCESS] Uploading in ${Math.ceil(combinedBuffer.length / CHUNK_SIZE)} shards...`)
+    console.log(`[PROCESS] Uploading in ${Math.ceil(combinedBuffer.length / CHUNK_SIZE)} shards...`)
 
     for (let i = 0; i < combinedBuffer.length; i += CHUNK_SIZE) {
       const chunk = combinedBuffer.slice(i, i + CHUNK_SIZE)
-      console.log(` └─ [APPEND] Shard ${Math.floor(i / CHUNK_SIZE) + 1}: ${chunk.length} bytes`)
+      console.log(`└─ [APPEND] Shard ${Math.floor(i / CHUNK_SIZE) + 1}: ${chunk.length} bytes`)
 
       // Append the next chunk: files grow one transaction at a time.
       const transaction = await new FileAppendTransaction()
@@ -97,10 +97,10 @@ const main = async () => {
       await lastResponse.getReceipt(client)
     }
 
-    console.log(`\n[✅ SUCCESS] Multi-Asset Bundle Appended to File: ${fileId}`)
-    console.log(`[📊 LOG] View Last Transaction: ${getHashscanUrl(lastResponse)}`)
+    console.log(`\n[SUCCESS] Multi-Asset Bundle Appended to File: ${fileId}`)
+    console.log(`[LOG] View Last Transaction: ${getHashscanUrl(lastResponse)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Composite Asset Pattern: This demonstrates how to package complex')
     console.log('decentralized applications where the UI, the logic, and the assets all')
     console.log('live inside a single, immutable ledger record.')
@@ -108,7 +108,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HFS Batch Operation Failed:', error.message)
+    console.error('\n[FAILED] HFS Batch Operation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -117,7 +117,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

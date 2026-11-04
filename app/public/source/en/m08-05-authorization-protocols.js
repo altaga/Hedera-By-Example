@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Authorization Protocols and Allowances
- * [ CONCEPT ] Native Delegate Permission Layer
+ * [CONCEPT] Native Delegate Permission Layer
  * ============================================================================
  * [ KEY CONCEPT ]
  * Granular Security: In traditional DeFi, you use `approve()` in an ERC-20
@@ -44,7 +44,7 @@ import { getClient, getState } from '../M99_Utilities/index.js'
  * Functional wrapper for establishing Spender allow-lists natively
  */
 const establishContractApproval = async (client, ownerId, ownerKey, spenderContractId) => {
-  console.log(`[⚙️ PROCESS] Approving 5 HBAR allowance for contract: ${spenderContractId}...`)
+  console.log(`[PROCESS] Approving 5 HBAR allowance for contract: ${spenderContractId}...`)
 
   // Approve an allowance: the spender may move up to this amount on the owner's behalf.
   const tx = await new AccountAllowanceApproveTransaction()
@@ -70,7 +70,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
+    console.error('[FAILED] Missing SC_STORAGE_ID in configuration. Run Lab 01 first.')
     process.exitCode = 1
     return
   }
@@ -83,11 +83,11 @@ const main = async () => {
       contractId
     )
 
-    console.log(`\n[✅ SUCCESS] Native Allowance Established (Status: ${receipt.status.toString()})`)
-    console.log(`[📊 LOG] Contract ${contractId} is now authorized to spend 5 HBAR.`)
-    console.log('[ℹ️ INFO] This is the professional alternative to EVM-side approvals.')
+    console.log(`\n[SUCCESS] Native Allowance Established (Status: ${receipt.status.toString()})`)
+    console.log(`[LOG] Contract ${contractId} is now authorized to spend 5 HBAR.`)
+    console.log('[INFO] This is the professional alternative to EVM-side approvals.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Granular Security: Native allowances on Hedera can be revoked')
     console.log('independently and are visible in any explorer. This provides a')
     console.log('"Permission Dashboard" for users to safely interact with complex DeFi')
@@ -96,7 +96,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Authorization Protocol Failed:', error.message)
+    console.error('\n[FAILED] Authorization Protocol Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -105,7 +105,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

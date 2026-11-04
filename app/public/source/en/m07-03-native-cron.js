@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Native Cron Services (On-chain Scheduling)
- * [ CONCEPT ] Asynchronous Transaction "Waiting Rooms"
+ * [CONCEPT] Asynchronous Transaction "Waiting Rooms"
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Decoupled Workflow: This is how corporate payroll or treasury management
@@ -45,13 +45,13 @@ const main = async () => {
   const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID in configuration.')
     process.exitCode = 1
     return
   }
 
   try {
-    console.log('[⚙️ PROCESS] Proposing a Scheduled Transfer of 0.1 HBAR from Child Wallet...')
+    console.log('[PROCESS] Proposing a Scheduled Transfer of 0.1 HBAR from Child Wallet...')
 
     // 1. Define the INNER transaction (Child -> Operator)
     const innerTx = new TransferTransaction()
@@ -72,19 +72,19 @@ const main = async () => {
 
     const response = await scheduleTx.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
     const scheduleId = receipt.scheduleId.toString()
 
-    console.log(`\n[✅ SUCCESS] Transaction Scheduled: ${scheduleId}`)
-    console.log('[ℹ️ INFO] The proposal is now pending on the ledger (15min window).')
+    console.log(`\n[SUCCESS] Transaction Scheduled: ${scheduleId}`)
+    console.log('[INFO] The proposal is now pending on the ledger (15min window).')
 
     // Sync for subsequent step
-    console.log('[ℹ️ INFO] Synchronizing state.json with Schedule ID...')
+    console.log('[INFO] Synchronizing state.json with Schedule ID...')
     updateState('SCHEDULE_ID', scheduleId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Decoupled Workflow: This is how corporate payroll or treasury')
     console.log('management works. One person proposes the payout, and the board')
     console.log('members sign it whenever they log in later that day. No smart contract')
@@ -93,7 +93,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Scheduling Prototyping Failed:', error.message)
+    console.error('\n[FAILED] Scheduling Prototyping Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -102,7 +102,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

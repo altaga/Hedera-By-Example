@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 11: Comunicación A2A Cifrada (Full-Duplex Hybrid)
- * [ CONCEPTO ] Privacidad Basada en Cifrado de Grado Militar (RSA + AES)
+ * [CONCEPTO] Privacidad Basada en Cifrado de Grado Militar (RSA + AES)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Privacidad por Diseño: En una infraestructura de IA profesional, la
@@ -26,7 +26,7 @@
  * - Actual:   M9 Lab 11: Comunicación Cifrada (Confidencialidad)
  * - Siguiente: [ FIN DEL CURSO - ¡FELICIDADES! ]
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Agente A -> Buzón del agente B: Solicitud cifrada con la llave pública RSA del agente B
  * Nota Agente B: Solo su llave privada puede descifrarla
  * Agente B -> Buzón del agente A: Respuesta cifrada con la llave pública del agente A
@@ -63,7 +63,7 @@ const main = async () => {
   const agentB_Inbox = getState('HCS11_AGENT_B_INBOUND')
 
   if (!agentA_Id || !agentB_Id || !agentA_Inbox || !agentB_Inbox) {
-    console.error('[❌ FALLO] Faltan identidades o canales para la orquestación cifrada.')
+    console.error('[FALLO] Faltan identidades o canales para la orquestación cifrada.')
     process.exitCode = 1
     return
   }
@@ -83,7 +83,7 @@ const main = async () => {
       }
     }
 
-    console.log(`[⚙️ PROCESO] Generando par de claves RSA-2048 para el ${agentAlias}...`)
+    console.log(`[PROCESO] Generando par de claves RSA-2048 para el ${agentAlias}...`)
     const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
       modulusLength: 2048,
       publicKeyEncoding: { type: 'spki', format: 'pem' },
@@ -111,18 +111,18 @@ const main = async () => {
 
     handlerB_Listen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text) {
-        console.log('\n--- 📥 AGENTE B: MENSAJE RECIBIDO Y DESCIFRADO ---')
-        console.log(`[📊 REGISTRO] Contenido Seguro: "${message.text}" (Ronda ${message.round})`)
+        console.log('\n---  AGENTE B: MENSAJE RECIBIDO Y DESCIFRADO ---')
+        console.log(`[REGISTRO] Contenido Seguro: "${message.text}" (Ronda ${message.round})`)
 
         await sleep(3000)
 
         const replyPayload = { text: `¡Confirmación Ronda ${message.round} Recibida!`, round: message.round }
-        console.log('[⚙️ PROCESO] Cifrando respuesta (AES-256) y enrutando al Inbox del Agente A...')
+        console.log('[PROCESO] Cifrando respuesta (AES-256) y enrutando al Inbox del Agente A...')
         await handlerB_Speak.sendMessage(replyPayload, agentA_Id)
       }
     })
 
-    console.log(`🛡️  [ℹ️ INFO] Bajo Cifrado: Escuchando carril privado [${agentB_Inbox}]`)
+    console.log(`[INFO] Bajo Cifrado: Escuchando carril privado [${agentB_Inbox}]`)
     handlerB_Listen.monitorConnectionMessages()
   }
 
@@ -139,24 +139,24 @@ const main = async () => {
     const handlerA_Speak = new AgentCommunicationHandler(client_A_Speaker, agentB_Inbox, agentA_Id, keysA.privateKey, pubKeys, [])
 
     const sendPing = async (round) => {
-      console.log('\n--- 📤 AGENTE A: ENVIANDO MENSAJE PRIVADO ---')
-      console.log(`[⚙️ PROCESO] Aplicando cifrado híbrido para la Ronda ${round}...`)
+      console.log('\n---  AGENTE A: ENVIANDO MENSAJE PRIVADO ---')
+      console.log(`[PROCESO] Aplicando cifrado híbrido para la Ronda ${round}...`)
       await handlerA_Speak.sendMessage({ text: `Secreto Agente A - Ronda ${round}`, round }, agentB_Id)
-      console.log('[ℹ️ INFO] Paquete cifrado inyectado en el Inbox de B.')
+      console.log('[INFO] Paquete cifrado inyectado en el Inbox de B.')
     }
 
     handlerA_Listen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text?.includes(`Ronda ${currentRound}`)) {
-        console.log('\n--- 📥 AGENTE A: RESPUESTA PRIVADA DESCIFRADA ---')
-        console.log(`[📊 REGISTRO] Recibido de B: "${message.text}"`)
+        console.log('\n---  AGENTE A: RESPUESTA PRIVADA DESCIFRADA ---')
+        console.log(`[REGISTRO] Recibido de B: "${message.text}"`)
 
         if (currentRound < 3) {
           currentRound++
           await sleep(4000)
           await sendPing(currentRound)
         } else {
-          console.log('\n🏁 --- [✅ ÉXITO] Orquestación Cifrada Finalizada con Éxito. ---')
-          console.log('\n💡 CONCEPTO CLAVE:')
+          console.log('\n --- [ÉXITO] Orquestación Cifrada Finalizada con Éxito. ---')
+          console.log('\n CONCEPTO CLAVE:')
           console.log('Defensa en Capas: El cifrado proporciona Confidencialidad, pero NO autenticidad')
           console.log('por sí solo. En este laboratorio unimos cifrado híbrido sobre validación de sesión')
           console.log('ECDSA para crear el estándar de oro en comunicación segura de agentes en Hedera.')
@@ -166,7 +166,7 @@ const main = async () => {
       }
     })
 
-    console.log(`🤖 [AGENTE A] Bajo Cifrado: Escuchando carril privado [${agentA_Inbox}]`)
+    console.log(`[AGENTE A] Bajo Cifrado: Escuchando carril privado [${agentA_Inbox}]`)
     handlerA_Listen.monitorConnectionMessages()
 
     await sleep(2000)
@@ -182,7 +182,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

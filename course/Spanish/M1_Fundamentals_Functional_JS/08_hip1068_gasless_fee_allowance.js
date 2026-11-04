@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Patrocinio de Gas y Concesión de Asignaciones Nativas (HIP-1068)
- * [ CONCEPTO ] Experiencia de Usuario Web3 Sin Gas mediante Asignaciones de Cuenta
+ * [CONCEPTO] Experiencia de Usuario Web3 Sin Gas mediante Asignaciones de Cuenta
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En las aplicaciones Web3 masivas, obligar a los usuarios finales a comprar
@@ -51,9 +51,9 @@ const main = async () => {
   const mirrorBase = getMirrorNodeBaseUrl()
 
   if (!spenderId || !spenderKeyStr) {
-    console.error('[❌ FALLO] Faltan ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en la configuración .env.')
+    console.error('[FALLO] Faltan ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en la configuración .env.')
     process.exitCode = 1
-    console.log('[ℹ️ INFO] Ejecuta M0 Lab 04 para aprovisionar cuentas secundarias primero.')
+    console.log('[INFO] Ejecuta M0 Lab 04 para aprovisionar cuentas secundarias primero.')
     return
   }
 
@@ -64,7 +64,7 @@ const main = async () => {
     const SPONSORED_TRANSFER_HBAR = 0.005
 
     // ETAPA 1: EL PATROCINADOR APRUEBA LA ASIGNACIÓN (O REUTILIZA ASIGNACIÓN ACTIVA ON-CHAIN)
-    console.log(`[⚙️ PROCESO] Etapa 1: Inspeccionando asignación on-chain activa del Patrocinador (${operatorId}) al Usuario (${spenderId})...`)
+    console.log(`[PROCESO] Etapa 1: Inspeccionando asignación on-chain activa del Patrocinador (${operatorId}) al Usuario (${spenderId})...`)
 
     let activeAllowanceHbar = 0
     try {
@@ -77,22 +77,22 @@ const main = async () => {
     } catch (_) {}
 
     if (activeAllowanceHbar >= SPONSORED_TRANSFER_HBAR) {
-      console.log(`[✅ ÉXITO] Asignación On-Chain Activa Detectada: ${activeAllowanceHbar} HBAR restantes.`)
-      console.log('[ℹ️ INFO] Reutilizando concesión existente (Cero tarifas de aprobación redundantes).')
+      console.log(`[ÉXITO] Asignación On-Chain Activa Detectada: ${activeAllowanceHbar} HBAR restantes.`)
+      console.log('[INFO] Reutilizando concesión existente (Cero tarifas de aprobación redundantes).')
     } else {
-      console.log(`[⚙️ PROCESO] Otorgando nueva asignación de ${ALLOWANCE_AMOUNT_HBAR} HBAR en el ledger...`)
+      console.log(`[PROCESO] Otorgando nueva asignación de ${ALLOWANCE_AMOUNT_HBAR} HBAR en el ledger...`)
       const approveTx = await new AccountAllowanceApproveTransaction()
         .approveHbarAllowance(operatorId, spenderId, Hbar.from(ALLOWANCE_AMOUNT_HBAR))
         .freezeWith(client)
 
       const approveResponse = await approveTx.execute(client)
       const approveReceipt = await approveResponse.getReceipt(client)
-      console.log(`[✅ ÉXITO] Asignación Concedida: Estado ${approveReceipt.status.toString()}`)
-      console.log(`[🔗 EXPLORADOR] Aprobación HashScan: ${getHashscanUrl(approveResponse)}`)
+      console.log(`[ÉXITO] Asignación Concedida: Estado ${approveReceipt.status.toString()}`)
+      console.log(`[EXPLORADOR] Aprobación HashScan: ${getHashscanUrl(approveResponse)}`)
     }
 
     // ETAPA 2: EL USUARIO EJECUTA TRANSFERENCIA PATROCINADA SIN FIRMA DEL PATROCINADOR
-    console.log(`\n[⚙️ PROCESO] Etapa 2: Usuario (${spenderId}) transfiriendo ${SPONSORED_TRANSFER_HBAR} HBAR debitados de la asignación del patrocinador...`)
+    console.log(`\n[PROCESO] Etapa 2: Usuario (${spenderId}) transfiriendo ${SPONSORED_TRANSFER_HBAR} HBAR debitados de la asignación del patrocinador...`)
 
     // Inicializar instancia de cliente del usuario (La clave del patrocinador NO está presente aquí)
     // Aquí ACCOUNT_1 paga las comisiones de sus transacciones; se mantiene con saldo.
@@ -108,12 +108,12 @@ const main = async () => {
     const transferResponse = await transferTx.execute(spenderClient)
     const transferReceipt = await transferResponse.getReceipt(spenderClient)
 
-    console.log(`[✅ ÉXITO] Transferencia Patrocinada Liquidada: Estado ${transferReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] ID de Transacción: ${transferResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Transferencia HashScan: ${getHashscanUrl(transferResponse)}`)
+    console.log(`[ÉXITO] Transferencia Patrocinada Liquidada: Estado ${transferReceipt.status.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción: ${transferResponse.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Transferencia HashScan: ${getHashscanUrl(transferResponse)}`)
 
     // ETAPA 3: INTERROGAR ASIGNACIONES RESTANTES DEL PATROCINADOR VÍA MIRROR NODE
-    console.log('\n[⚙️ PROCESO] Etapa 3: Verificando asignación restante en la API REST del Mirror Node...')
+    console.log('\n[PROCESO] Etapa 3: Verificando asignación restante en la API REST del Mirror Node...')
     const allowanceRes = await fetch(`${mirrorBase}/api/v1/accounts/${operatorId}/allowances/crypto`)
 
     if (allowanceRes.ok) {
@@ -121,7 +121,7 @@ const main = async () => {
       const grant = data.allowances?.find(a => a.spender === spenderId.toString())
       if (grant) {
         const remainingHbar = grant.amount / 1e8
-        console.log(`[📊 REGISTRO] Asignación Restante Verificada: ${remainingHbar} HBAR para usuario ${spenderId}`)
+        console.log(`[REGISTRO] Asignación Restante Verificada: ${remainingHbar} HBAR para usuario ${spenderId}`)
       }
     }
 
@@ -129,7 +129,7 @@ const main = async () => {
     updateState('HIP1068_SPENDER_ID', spenderId.toString())
     updateState('HIP1068_LAST_TRANSFER_TX_ID', transferResponse.transactionId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('UX Sin Gas y Sin Fricción: El usuario final firmó ÚNICAMENTE como usuario gestor.')
     console.log('Los fondos se debitaron directamente del patrocinador sin requerir co-firmas.')
     console.log('Esto permite que juegos, boletaje empresarial y dApps subsidien la actividad')
@@ -139,7 +139,7 @@ const main = async () => {
     spenderClient.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Falló la Ejecución de Asignación Sin Gas: ${error.message}`)
+    console.error(`\n[ERROR] Falló la Ejecución de Asignación Sin Gas: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -150,7 +150,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

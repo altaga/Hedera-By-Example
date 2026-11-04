@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Despliegue de Smart Contracts (HSCS)
- * [ CONCEPTO ] Compatibilidad EVM y Compilación en Tiempo Real
+ * [CONCEPTO] Compatibilidad EVM y Compilación en Tiempo Real
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Finalidad Inmediata: Hedera es 100% compatible con la Ethereum Virtual
@@ -63,7 +63,7 @@ contract SimpleStorage {
  * Compilador On-the-fly: Convierte Solidity a Bytecode de EVM
  */
 const compileContract = (contractName, source) => {
-  console.log(`[⚙️ PROCESO] Compilando ${contractName}.sol en tiempo real...`)
+  console.log(`[PROCESO] Compilando ${contractName}.sol en tiempo real...`)
 
   const input = {
     language: 'Solidity',
@@ -97,10 +97,10 @@ const main = async () => {
   try {
     // FASE A: Compilación
     const { bytecode } = compileContract('SimpleStorage', SOURCE_CODE)
-    console.log(`[✅ ÉXITO] Código compilado. Bytecode: ${bytecode.length} caracteres.`)
+    console.log(`[ÉXITO] Código compilado. Bytecode: ${bytecode.length} caracteres.`)
 
     // FASE B: Despliegue del Contrato
-    console.log('\n[⚙️ PROCESO] Desplegando Smart Contract en la EVM de Hedera...')
+    console.log('\n[PROCESO] Desplegando Smart Contract en la EVM de Hedera...')
     const contractId = await reuseContract('REUSE_M8_01_CONTRACT', bytecode, async () => {
       const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -111,21 +111,21 @@ const main = async () => {
       return contractReceipt.contractId
     })
 
-    console.log(`[✅ ÉXITO] Contrato anclado exitosamente: ${contractId}`)
+    console.log(`[ÉXITO] Contrato anclado exitosamente: ${contractId}`)
     updateState('SC_STORAGE_ID', contractId.toString())
 
     // FASE C: Interacción (Escritura de Estado)
-    console.log(`\n[⚙️ PROCESO] Ejecutando función 'set(42)' en el contrato ${contractId}...`)
+    console.log(`\n[PROCESO] Ejecutando función 'set(42)' en el contrato ${contractId}...`)
     const setTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
     await setTx.getReceipt(client)
-    console.log('[✅ ÉXITO] Estado del contrato actualizado a 42.')
+    console.log('[ÉXITO] Estado del contrato actualizado a 42.')
 
     // FASE D: Consulta (Lectura de Estado)
-    console.log("[⚙️ PROCESO] Consultando valor actual vía 'get()...'")
+    console.log("[PROCESO] Consultando valor actual vía 'get()...'")
     const getQuery = await withGasRetry((gas) => new ContractCallQuery()
       .setContractId(contractId)
       .setGas(gas)
@@ -133,9 +133,9 @@ const main = async () => {
       .execute(client), { gas: 2000000 })
 
     const value = getQuery.getUint256(0)
-    console.log(`\n🎉 [✅ ÉXITO] Valor recuperado del ledger: ${value}`)
+    console.log(`\n [ÉXITO] Valor recuperado del ledger: ${value}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('La compatibilidad EVM de Hedera permite reutilizar contratos')
     console.log('auditados y herramientas de Ethereum, pero con la potencia del')
     console.log('Hashgraph. Tu dApp ahora disfruta de finalidad inmediata,')
@@ -144,7 +144,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El despliegue o la interacción con el contrato falló:', error.message)
+    console.error('\n[FALLO] El despliegue o la interacción con el contrato falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -153,7 +153,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

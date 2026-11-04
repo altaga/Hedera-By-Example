@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Airdrop Cancellation & Anti-Spam Token Rejection (HIP-904)
- * [ CONCEPT ] Sender Clawback & User Wallet Sovereignty Against Spam Tokens
+ * [CONCEPT] Sender Clawback & User Wallet Sovereignty Against Spam Tokens
  * ============================================================================
  * [ KEY CONCEPT ]
  * HIP-904 did not just add `TokenAirdropTransaction`; it introduced a complete
@@ -56,7 +56,7 @@ const main = async () => {
 
   try {
     // 1. Create a Fungible Token for our Airdrop Lifecycle Test
-    console.log('[⚙️ PROCESS] Creating Fungible Token (SPAM / PROMO)...')
+    console.log('[PROCESS] Creating Fungible Token (SPAM / PROMO)...')
     const tokenId = await reuseToken('REUSE_M4_07_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenTx = await new TokenCreateTransaction()
@@ -73,10 +73,10 @@ const main = async () => {
       // Wait for consensus: the receipt says whether the network accepted the transaction.
       return (await tokenRes.getReceipt(client)).tokenId
     }, { minBalance: 1000 })
-    console.log(`[✅ SUCCESS] Token Created: ${tokenId.toString()} (Initial Supply: 10,000 PROMO)`)
+    console.log(`[SUCCESS] Token Created: ${tokenId.toString()} (Initial Supply: 10,000 PROMO)`)
 
     // 2. PART A: Sender Cancels an Unclaimed Pending Airdrop (`TokenCancelAirdropTransaction`)
-    console.log('\n[⚙️ PROCESS] Part A: Creating Dormant Account (0 Auto-Association Slots)...')
+    console.log('\n[PROCESS] Part A: Creating Dormant Account (0 Auto-Association Slots)...')
     // Generate a key locally: the private key never leaves this process.
     const dormantKey = PrivateKey.generateED25519()
     // Create an account: its key controls it; the initial balance comes from the payer.
@@ -86,9 +86,9 @@ const main = async () => {
       .setMaxAutomaticTokenAssociations(0) // Forces airdrop into PENDING state
       .execute(client)
     const dormantId = (await dormantRes.getReceipt(client)).accountId
-    console.log(`[👤 ACTOR] Dormant Receiver: ${dormantId.toString()}`)
+    console.log(`[ACTOR] Dormant Receiver: ${dormantId.toString()}`)
 
-    console.log(`[⚙️ PROCESS] Airdropping 500 PROMO to ${dormantId.toString()} (Enters Pending Queue)...`)
+    console.log(`[PROCESS] Airdropping 500 PROMO to ${dormantId.toString()} (Enters Pending Queue)...`)
     // Airdrop (HIP-904): delivered at once with a free auto-association slot, otherwise left pending until claimed.
     const pendingDropRes = await new TokenAirdropTransaction()
       .addTokenTransfer(tokenId, operatorId, -500)
@@ -97,18 +97,18 @@ const main = async () => {
     const pendingDropRecord = await pendingDropRes.getRecord(client)
     const pendingAirdropId = pendingDropRecord.newPendingAirdrops?.[0]?.airdropId ||
       new PendingAirdropId({ senderId: operatorId, receiverId: dormantId, tokenId })
-    console.log('[✅ SUCCESS] Airdrop is now PENDING on ledger.')
+    console.log('[SUCCESS] Airdrop is now PENDING on ledger.')
 
-    console.log('[⚙️ PROCESS] Sender executing `TokenCancelAirdropTransaction` to claw back unclaimed drop...')
+    console.log('[PROCESS] Sender executing `TokenCancelAirdropTransaction` to claw back unclaimed drop...')
     // Cancel: the sender takes back an airdrop that was never claimed.
     const cancelRes = await new TokenCancelAirdropTransaction()
       .addPendingAirdropId(pendingAirdropId)
       .execute(client)
     const cancelReceipt = await cancelRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Unclaimed Airdrop Cancelled! Status: ${cancelReceipt.status.toString()}`)
+    console.log(`[SUCCESS] Unclaimed Airdrop Cancelled! Status: ${cancelReceipt.status.toString()}`)
 
     // 3. PART B: Recipient Rejects an Auto-Associated Airdrop (`TokenRejectTransaction`)
-    console.log('\n[⚙️ PROCESS] Part B: Creating Sovereign User Account (With Auto-Associations Enabled)...')
+    console.log('\n[PROCESS] Part B: Creating Sovereign User Account (With Auto-Associations Enabled)...')
     const userKey = PrivateKey.generateED25519()
     const userRes = await new AccountCreateTransaction()
       .setKeyWithoutAlias(userKey.publicKey)
@@ -116,9 +116,9 @@ const main = async () => {
       .setMaxAutomaticTokenAssociations(5) // Airdrop lands immediately in wallet!
       .execute(client)
     const userId = (await userRes.getReceipt(client)).accountId
-    console.log(`[👤 ACTOR] Sovereign User: ${userId.toString()} (Auto-Association Slots: 5)`)
+    console.log(`[ACTOR] Sovereign User: ${userId.toString()} (Auto-Association Slots: 5)`)
 
-    console.log(`[⚙️ PROCESS] Airdropping 750 PROMO directly into ${userId.toString()}...`)
+    console.log(`[PROCESS] Airdropping 750 PROMO directly into ${userId.toString()}...`)
     const instantDropRes = await new TokenAirdropTransaction()
       .addTokenTransfer(tokenId, operatorId, -750)
       .addTokenTransfer(tokenId, userId, 750)
@@ -130,9 +130,9 @@ const main = async () => {
       .setAccountId(userId)
       .setTokenId(tokenId)
       .execute(client)
-    console.log(`[📊 LOG] User Token Balance Before Reject: ${userBalBefore.balance.toString()} PROMO`)
+    console.log(`[LOG] User Token Balance Before Reject: ${userBalBefore.balance.toString()} PROMO`)
 
-    console.log('[⚙️ PROCESS] User executing `TokenRejectTransaction` to purge unwanted tokens back to Treasury...')
+    console.log('[PROCESS] User executing `TokenRejectTransaction` to purge unwanted tokens back to Treasury...')
     // Reject: the holder sends unwanted tokens back to the treasury (anti-spam).
     const rejectTx = await new TokenRejectTransaction()
       .setOwnerId(userId)
@@ -141,30 +141,30 @@ const main = async () => {
     const signedReject = await rejectTx.sign(userKey)
     const rejectRes = await signedReject.execute(client)
     const rejectReceipt = await rejectRes.getReceipt(client)
-    console.log(`[✅ SUCCESS] Token Rejected by User! Status: ${rejectReceipt.status.toString()}`)
+    console.log(`[SUCCESS] Token Rejected by User! Status: ${rejectReceipt.status.toString()}`)
 
     await sleep(3500)
     const treasuryBalAfter = await new MirrorNodeTokenBalanceQuery()
       .setAccountId(operatorId)
       .setTokenId(tokenId)
       .execute(client)
-    console.log(`[📊 LOG] Treasury Balance Restored: ${treasuryBalAfter.balance.toString()} / 10000 PROMO`)
+    console.log(`[LOG] Treasury Balance Restored: ${treasuryBalAfter.balance.toString()} / 10000 PROMO`)
 
     updateState('HIP904_PROMO_TOKEN_ID', tokenId.toString())
     updateState('HIP904_REJECT_STATUS', rejectReceipt.status.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HIP-904 completes the token distribution circle: Senders can cancel unclaimed')
     console.log('pending drops, and receivers can reject unwanted tokens back to the treasury')
     console.log('with 100% immunity from predatory custom transfer fees.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Never burn or transfer spam tokens manually—doing so can trigger custom royalty')
     console.log('hooks. Always use `TokenRejectTransaction` to return them fee-free to the issuer.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HIP-904 Cancel/Reject Failure:', error.message)
+    console.error('\n[ERROR] HIP-904 Cancel/Reject Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -175,7 +175,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Lab 08: Advanced HTS Precompiles
- * [ CONCEPT ] EVM Smart Contracts Controlling Native Assets
+ * [CONCEPT] EVM Smart Contracts Controlling Native Assets
  * ============================================================================
  * [ KEY CONCEPT ]
  * Smart Contracts on Hedera can interact with the native Hedera Token Service
@@ -41,7 +41,7 @@ import fs from 'fs'
 import { getClient, executeWithGas, reuseContract, reuseToken } from '../M99_Utilities/index.js'
 
 const compile = (contractName, source) => {
-  console.log(`[⚙️ PROCESS] Compiling ${contractName}.sol...`)
+  console.log(`[PROCESS] Compiling ${contractName}.sol...`)
   const input = {
     language: 'Solidity',
     sources: { [`${contractName}.sol`]: { content: source } },
@@ -63,7 +63,7 @@ const main = async () => {
     const sourceCode = fs.readFileSync(new URL('./08_hts_precompiles_advanced.sol', import.meta.url), 'utf8')
     const bytecode = compile('AdvancedHTS', sourceCode)
 
-    console.log('[⚙️ PROCESS] Deploying AdvancedHTS Contract to the EVM...')
+    console.log('[PROCESS] Deploying AdvancedHTS Contract to the EVM...')
     const contractId = await reuseContract('REUSE_M8_08_CONTRACT', bytecode, async () => {
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -72,10 +72,10 @@ const main = async () => {
       const receipt = await contractTx.getReceipt(client)
       return receipt.contractId
     })
-    console.log(`[✅ SUCCESS] Contract deployed with ID: ${contractId.toString()}`)
+    console.log(`[SUCCESS] Contract deployed with ID: ${contractId.toString()}`)
 
     // 2. Create an HTS Token and set the Contract as the Supply Key
-    console.log('\n[⚙️ PROCESS] Creating Native Token with Contract as Supply Key...')
+    console.log('\n[PROCESS] Creating Native Token with Contract as Supply Key...')
     // The token's supply key is this contract: reuse the token only together with it.
     const tokenId = await reuseToken(`REUSE_M8_08_TOKEN_${contractId}`, async () => {
       const tokenTx = await new TokenCreateTransaction()
@@ -93,10 +93,10 @@ const main = async () => {
       const tokenReceipt = await submitTx.getReceipt(client)
       return tokenReceipt.tokenId
     })
-    console.log(`[✅ SUCCESS] Token created: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] Token created: ${tokenId.toString()}`)
 
     // 3. Execute the Smart Contract function to MINT tokens natively
-    console.log('\n[⚙️ PROCESS] Calling Smart Contract to Mint 1000 Tokens (0x167 Precompile)...')
+    console.log('\n[PROCESS] Calling Smart Contract to Mint 1000 Tokens (0x167 Precompile)...')
     const mintAmount = 1000
 
     const execTx = await executeWithGas((gas) => new ContractExecuteTransaction()
@@ -111,15 +111,15 @@ const main = async () => {
 
     // The responseCode 22 means SUCCESS in HTS
     const responseCode = Number(execRecord.contractFunctionResult.getInt256(0)) // BigNumber -> number
-    console.log(`[📊 LOG] Precompile Response Code: ${responseCode} (22 = SUCCESS)`)
+    console.log(`[LOG] Precompile Response Code: ${responseCode} (22 = SUCCESS)`)
 
     if (responseCode === 22) {
-      console.log('[✅ SUCCESS] Smart Contract successfully minted native tokens!')
+      console.log('[SUCCESS] Smart Contract successfully minted native tokens!')
     } else {
-      console.log('[❌ FAILED] Smart Contract failed to mint tokens.')
+      console.log('[FAILED] Smart Contract failed to mint tokens.')
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('By setting a ContractId as a key on a native Hedera entity, you')
     console.log('give that EVM contract direct authorization over base-layer operations,')
     console.log('merging EVM logic with native speeds.')
@@ -127,7 +127,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -136,7 +136,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

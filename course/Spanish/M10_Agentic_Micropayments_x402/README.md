@@ -1,4 +1,4 @@
-# ⚡ Módulo 10: Micropagos Agénticos (Protocolo x402)
+# Módulo 10: Micropagos Agénticos (Protocolo x402)
 ## Comercio Autónomo Máquina a Máquina en Hedera
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 En este módulo cerramos el eslabón perdido entre la inteligencia artificial y las finanzas descentralizadas: micro-liquidación autónoma sin intervención humana, tarjetas de crédito ni muros de pago por suscripción.
 
@@ -23,7 +23,7 @@ En este módulo cerramos el eslabón perdido entre la inteligencia artificial y 
 
 ---
 
-## 🔄 Topologías Arquitectónicas Duales
+## Topologías Arquitectónicas Duales
 
 El estándar oficial x402 en Hedera admite dos topologías operativas según las capacidades de gas del cliente y los requisitos de descentralización:
 
@@ -52,9 +52,9 @@ Ideal para agentes de IA sin gas, interfaces web o microservicios que no mantien
 }}%%
 sequenceDiagram
     autonumber
-    actor Agent as 🤖 Agente IA (Comprador)
-    participant Server as 🌐 Servidor API (Vendedor)
-    participant Facilitator as ⚡ Facilitador x402
+    actor Agent as  Agente IA (Comprador)
+    participant Server as  Servidor API (Vendedor)
+    participant Facilitator as  Facilitador x402
     participant Hedera as ℏ Hedera Hashgraph
 
     Agent->>Server: GET /api/v1/alpha-inference (Sin Autenticación)
@@ -96,8 +96,8 @@ Completamente descentralizado y sin confianza; elimina cualquier dependencia de 
 }}%%
 sequenceDiagram
     autonumber
-    actor Agent as 🤖 Agente IA (Comprador)
-    participant Server as 🌐 Servidor API (Vendedor)
+    actor Agent as  Agente IA (Comprador)
+    participant Server as  Servidor API (Vendedor)
     participant Hedera as ℏ Hedera Hashgraph
 
     Agent->>Server: GET /api/v1/derivatives-matrix (Sin Autenticación)
@@ -112,7 +112,7 @@ sequenceDiagram
 
 ---
 
-## ⚖️ Comparación Arquitectónica: ¿Cuándo usar cada una?
+## Comparación Arquitectónica: ¿Cuándo usar cada una?
 
 | Dimensión Arquitectónica | Directo P2P (Comprador + Vendedor) | Facilitador Patrocinado (Comprador + Vendedor + Facilitador) |
 | :--- | :--- | :--- |
@@ -125,7 +125,7 @@ sequenceDiagram
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Documentación de x402 en Hedera](https://docs.hedera.com/solutions/ai/x402)
 - [Cómo Funciona x402 (Especificación de Arquitectura)](https://docs.hedera.com/solutions/ai/x402/how-it-works)
 - [Repositorio del Protocolo de la Fundación x402](https://github.com/x402-foundation/x402)
@@ -135,4 +135,4 @@ sequenceDiagram
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. EL CÓDIGO ES MONEDA. LA LIQUIDACIÓN ES INSTANTÁNEA.
+ 2026 **HEDERA FOR DUMMIES**. EL CÓDIGO ES MONEDA. LA LIQUIDACIÓN ES INSTANTÁNEA.

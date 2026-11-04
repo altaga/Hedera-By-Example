@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 10: Zero-Trust Encrypted Vault (Enterprise Privacy over Public Consensus)
- * [ CONCEPT ] End-to-End Encrypted Sharding via Gzip, AES-256-GCM, and HCS-1
+ * [CONCEPT] End-to-End Encrypted Sharding via Gzip, AES-256-GCM, and HCS-1
  * ============================================================================
  * [ KEY CONCEPT ]
  * Public ledgers guarantee fair ordering and absolute immutability, but public
@@ -192,20 +192,20 @@ const main = async () => {
     }
 
     const rawBuffer = Buffer.from(JSON.stringify(sensitiveAuditReport, null, 2), 'utf-8')
-    console.log('[⚙️ PROCESS] Step 1: Encrypting Enterprise Document using Zero-Trust Architecture...')
-    console.log(`[📊 LOG] Raw Document Size: ${rawBuffer.length} bytes`)
+    console.log('[PROCESS] Step 1: Encrypting Enterprise Document using Zero-Trust Architecture...')
+    console.log(`[LOG] Raw Document Size: ${rawBuffer.length} bytes`)
 
     const enterpriseMasterSecret = 'ENTERPRISE_ROOT_KMS_KEY_SECRET_99420'
     const vault = encryptAndShardVaultPayload(rawBuffer, enterpriseMasterSecret)
 
-    console.log(`[📊 LOG] Gzip Compressed Size: ${vault.compressedSize} bytes (-${Math.round((1 - (vault.compressedSize / rawBuffer.length)) * 100)}% wire reduction)`)
-    console.log(`[📊 LOG] AES-256-GCM Ciphertext Size: ${vault.encryptedSize} bytes`)
-    console.log(`[📊 LOG] Document SHA-256 Fingerprint: 0x${vault.documentFingerprint}`)
-    console.log(`[📊 LOG] Authenticated GMAC Tag: 0x${vault.authTag.toString('hex')}`)
-    console.log(`[📊 LOG] Generated HCS-1 Shards: ${vault.shards.length} shards`)
+    console.log(`[LOG] Gzip Compressed Size: ${vault.compressedSize} bytes (-${Math.round((1 - (vault.compressedSize / rawBuffer.length)) * 100)}% wire reduction)`)
+    console.log(`[LOG] AES-256-GCM Ciphertext Size: ${vault.encryptedSize} bytes`)
+    console.log(`[LOG] Document SHA-256 Fingerprint: 0x${vault.documentFingerprint}`)
+    console.log(`[LOG] Authenticated GMAC Tag: 0x${vault.authTag.toString('hex')}`)
+    console.log(`[LOG] Generated HCS-1 Shards: ${vault.shards.length} shards`)
 
     // 2. Create Confidential Vault Topic on Hedera
-    console.log('\n[⚙️ PROCESS] Step 2: Provisioning Dedicated HCS Vault Topic on Hedera Consensus Service...')
+    console.log('\n[PROCESS] Step 2: Provisioning Dedicated HCS Vault Topic on Hedera Consensus Service...')
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1-ENCRYPTED-VAULT:v1.0.0')
       .setSubmitKey(submitKey.publicKey)
@@ -214,11 +214,11 @@ const main = async () => {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const vaultTopicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] HCS Vault Topic Provisioned: ${vaultTopicId}`)
-    console.log(`[📊 LOG] Topic Transaction on HashScan: ${getHashscanUrl(topicCreateTx)}`)
+    console.log(`[SUCCESS] HCS Vault Topic Provisioned: ${vaultTopicId}`)
+    console.log(`[LOG] Topic Transaction on HashScan: ${getHashscanUrl(topicCreateTx)}`)
 
     // 3. Inscribe Shards to Hedera Consensus Layer
-    console.log('\n[⚙️ PROCESS] Step 3: Inscribing Encrypted Shards into Consensus Stream...')
+    console.log('\n[PROCESS] Step 3: Inscribing Encrypted Shards into Consensus Stream...')
     const sequenceNumbers = []
 
     for (const shard of vault.shards) {
@@ -232,12 +232,12 @@ const main = async () => {
       const submitRes = await submitTx.execute(client)
       const receipt = await submitRes.getReceipt(client)
       sequenceNumbers.push(receipt.topicSequenceNumber.toNumber())
-      console.log(`[✅ SUCCESS] Inscribed Shard [${shard.i + 1}/${shard.t}] at Consensus Sequence #${receipt.topicSequenceNumber}`)
+      console.log(`[SUCCESS] Inscribed Shard [${shard.i + 1}/${shard.t}] at Consensus Sequence #${receipt.topicSequenceNumber}`)
     }
 
     // 4. Mirror Node Retrieval and Tamper-Proof Zero-Trust Reassembly
-    console.log('\n[⚙️ PROCESS] Step 4: Interrogating Mirror Node for Vault Stream Reassembly...')
-    console.log('[ℹ️ INFO] Awaiting Mirror Node ingestion (4 seconds)...')
+    console.log('\n[PROCESS] Step 4: Interrogating Mirror Node for Vault Stream Reassembly...')
+    console.log('[INFO] Awaiting Mirror Node ingestion (4 seconds)...')
     await sleep(4000)
 
     const mirrorUrl = `${getMirrorNodeBaseUrl()}/api/v1/topics/${vaultTopicId}/messages?order=asc`
@@ -247,7 +247,7 @@ const main = async () => {
     }
 
     const mirrorData = await mirrorRes.json()
-    console.log(`[📊 LOG] Mirror Node returned ${mirrorData.messages.length} messages for topic ${vaultTopicId}`)
+    console.log(`[LOG] Mirror Node returned ${mirrorData.messages.length} messages for topic ${vaultTopicId}`)
 
     const retrievedShards = mirrorData.messages
       .map(msg => {
@@ -260,21 +260,21 @@ const main = async () => {
       })
       .filter(parsed => parsed && parsed.h === 'hcs-1-vault' && parsed.fid === vault.documentFingerprint)
 
-    console.log(`[✅ SUCCESS] Successfully parsed and validated ${retrievedShards.length} vault shards from consensus records`)
+    console.log(`[SUCCESS] Successfully parsed and validated ${retrievedShards.length} vault shards from consensus records`)
 
     // 5. Decrypt and Verify Integrity
-    console.log('\n[⚙️ PROCESS] Step 5: Performing Authenticated GMAC Verification & Decryption...')
+    console.log('\n[PROCESS] Step 5: Performing Authenticated GMAC Verification & Decryption...')
     const reconstruction = reassembleAndDecryptVault(retrievedShards, enterpriseMasterSecret)
     const reconstructedDocument = JSON.parse(reconstruction.originalBuffer.toString('utf-8'))
 
-    console.log(`[✅ SUCCESS] Document Integrity Verified! SHA-256 Fingerprint: 0x${reconstruction.verifiedFingerprint}`)
-    console.log(`[📊 LOG] Reconstructed Vault ID: "${reconstructedDocument.vaultId}"`)
-    console.log(`[📊 LOG] Classification: "${reconstructedDocument.classification}"`)
-    console.log(`[📊 LOG] Number of Confidential Audit Records: ${reconstructedDocument.sensitiveRecords.length}`)
-    console.log(`[📊 LOG] Total HBAR in Audited Vaults: ${reconstructedDocument.sensitiveRecords.reduce((acc, r) => acc + r.vaultBalanceHbar, 0).toLocaleString()} HBAR`)
+    console.log(`[SUCCESS] Document Integrity Verified! SHA-256 Fingerprint: 0x${reconstruction.verifiedFingerprint}`)
+    console.log(`[LOG] Reconstructed Vault ID: "${reconstructedDocument.vaultId}"`)
+    console.log(`[LOG] Classification: "${reconstructedDocument.classification}"`)
+    console.log(`[LOG] Number of Confidential Audit Records: ${reconstructedDocument.sensitiveRecords.length}`)
+    console.log(`[LOG] Total HBAR in Audited Vaults: ${reconstructedDocument.sensitiveRecords.reduce((acc, r) => acc + r.vaultBalanceHbar, 0).toLocaleString()} HBAR`)
 
     // 6. Demonstrate Zero-Trust Cryptographic Tamper Defense
-    console.log('\n[⚙️ PROCESS] Step 6: Testing Zero-Trust Tamper Detection (Adversarial Simulation)...')
+    console.log('\n[PROCESS] Step 6: Testing Zero-Trust Tamper Detection (Adversarial Simulation)...')
     try {
       const tamperedShards = JSON.parse(JSON.stringify(retrievedShards))
       // Adversary tampers with 1 byte of the ciphertext on an unauthenticated mirror node
@@ -283,25 +283,25 @@ const main = async () => {
       tamperedShards[0].d = tamperedBytes.toString('base64')
 
       reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
-      console.error('[❌ ERROR] Security violation: Tampered ciphertext was accepted!')
+      console.error('[ERROR] Security violation: Tampered ciphertext was accepted!')
       process.exitCode = 1
     } catch (tamperErr) {
-      console.log(`[✅ SUCCESS] Adversarial tamper detected and blocked by AES-GCM GMAC: "${tamperErr.message}"`)
+      console.log(`[SUCCESS] Adversarial tamper detected and blocked by AES-GCM GMAC: "${tamperErr.message}"`)
     }
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero-Trust Vaults combine Hedera L1 fair ordering and consensus timestamps with')
     console.log('envelope AES-256-GCM encryption. The network secures the proof and order, while')
     console.log('confidentiality and cryptographic access remain strictly off-chain with the key holders.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Never store unencrypted enterprise data on a public ledger. By applying Gzip')
     console.log('before AES-GCM sharding, you minimize HCS consensus fees while ensuring that all')
     console.log('on-chain shards appear as uniform pseudorandom entropy to external observers.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Zero-Trust Vault Failure:', error.message)
+    console.error('\n[ERROR] Zero-Trust Vault Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -312,7 +312,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

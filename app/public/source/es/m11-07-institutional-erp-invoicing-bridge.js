@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 07: Puente de Integración ERP Institucional (Facturas UBL -> HCS -> Tramos HTS)
- * [ CONCEPTO ] Tokenización de Finanzas Comerciales, Anclaje Legal y Filtro KYC ERC-3643
+ * [CONCEPTO] Tokenización de Finanzas Comerciales, Anclaje Legal y Filtro KYC ERC-3643
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En las finanzas comerciales institucionales globales (pioneras en Hedera mediante
@@ -35,7 +35,7 @@
  * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo
  * - Siguiente: M12 Lab 01: Fachada Directa HTS ERC-20
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * ERP -> Emisor: Factura UBL 2.1
  * Emisor -> Hedera: Anclar el hash de la factura en HCS
  * Emisor -> Cumplimiento: Verificación del inversionista ERC-3643
@@ -43,7 +43,7 @@
  * Emisor -> Inversionista: Otorgar KYC y entregar 250 unidades (DvP)
  * Inversionista -> Emisor: Pago en la misma transacción atómica
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * La factura de SAP/Oracle y la verificación de cumplimiento ERC-3643 son simuladas. El anclaje en HCS, el token del tramo y las transferencias son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -148,21 +148,21 @@ const main = async () => {
 
   try {
     // 1. Ingerir y Parsear XML de Factura Electrónica
-    console.log('[⚙️ PROCESO] Paso 1: Ingestionando XML UBL 2.1 de Factura Electrónica desde ERP Corporativo...')
+    console.log('[PROCESO] Paso 1: Ingestionando XML UBL 2.1 de Factura Electrónica desde ERP Corporativo...')
     const invoiceXml = generateEnterpriseInvoiceXml()
     const invoiceData = parseInvoiceXml(invoiceXml)
 
     // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
     const legalHash = crypto.createHash('sha256').update(invoiceXml).digest('hex')
-    console.log(`[📊 REGISTRO] ID de Factura Parseada:   ${invoiceData.invoiceId}`)
-    console.log(`[📊 REGISTRO] Entidad Deudora:          ${invoiceData.debtor} (Calificación: ${invoiceData.debtorRating})`)
-    console.log(`[📊 REGISTRO] Proveedor Comercial:      ${invoiceData.supplier}`)
-    console.log(`[📊 REGISTRO] Valor Nominal a Cobrar:   $${invoiceData.faceValueUsd.toLocaleString()} ${invoiceData.currency}`)
-    console.log(`[📊 REGISTRO] Fecha de Vencimiento:     ${invoiceData.dueDate} (Plazo a 90 días)`)
-    console.log(`[📊 REGISTRO] Huella SHA-256 Canónica:  0x${legalHash}`)
+    console.log(`[REGISTRO] ID de Factura Parseada:   ${invoiceData.invoiceId}`)
+    console.log(`[REGISTRO] Entidad Deudora:          ${invoiceData.debtor} (Calificación: ${invoiceData.debtorRating})`)
+    console.log(`[REGISTRO] Proveedor Comercial:      ${invoiceData.supplier}`)
+    console.log(`[REGISTRO] Valor Nominal a Cobrar:   $${invoiceData.faceValueUsd.toLocaleString()} ${invoiceData.currency}`)
+    console.log(`[REGISTRO] Fecha de Vencimiento:     ${invoiceData.dueDate} (Plazo a 90 días)`)
+    console.log(`[REGISTRO] Huella SHA-256 Canónica:  0x${legalHash}`)
 
     // 2. Anclaje Legal y Sello de Tiempo en Consenso (Tópico HCS de Auditoría)
-    console.log('\n[⚙️ PROCESO] Paso 2: Anclando Huella Legal de la Factura en Hedera Consensus Service...')
+    console.log('\n[PROCESO] Paso 2: Anclando Huella Legal de la Factura en Hedera Consensus Service...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicCreateTx = await new TopicCreateTransaction()
       .setTopicMemo('ERP-AUDIT-REGISTRY:UBL-2.1')
@@ -173,7 +173,7 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const auditTopicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico HCS de Auditoría Legal Creado: ${auditTopicId}`)
+    console.log(`[ÉXITO] Tópico HCS de Auditoría Legal Creado: ${auditTopicId}`)
 
     const auditAnchorPayload = {
       standard: 'UBL-2.1-RWA-INVOICE',
@@ -193,11 +193,11 @@ const main = async () => {
 
     const anchorRes = await anchorTx.execute(client)
     const anchorReceipt = await anchorRes.getReceipt(client)
-    console.log(`[✅ ÉXITO] Factura Legal Anclada en Secuencia de Consenso #${anchorReceipt.topicSequenceNumber}`)
-    console.log(`[📊 REGISTRO] HashScan del Anclaje: ${getHashscanUrl(anchorRes)}`)
+    console.log(`[ÉXITO] Factura Legal Anclada en Secuencia de Consenso #${anchorReceipt.topicSequenceNumber}`)
+    console.log(`[REGISTRO] HashScan del Anclaje: ${getHashscanUrl(anchorRes)}`)
 
     // 3. Verificación de Calificación de Inversor ERC-3643
-    console.log('\n[⚙️ PROCESO] Paso 3: Evaluando Inversor Institucional mediante Filtro ERC-3643...')
+    console.log('\n[PROCESO] Paso 3: Evaluando Inversor Institucional mediante Filtro ERC-3643...')
     const investorAccountId = process.env.ACCOUNT_1_ID || '0.0.11226623'
     const investorPrivateKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
@@ -210,15 +210,15 @@ const main = async () => {
     }
 
     const complianceResult = evaluateErc3643Compliance(investorProfile)
-    console.log(`[📊 REGISTRO] Inversor Objetivo: ${investorProfile.accountId} (${investorProfile.institutionType})`)
-    console.log(`[📊 REGISTRO] Veredicto de Cumplimiento: ${complianceResult.approved ? 'APROBADO' : 'RECHAZADO'} (${complianceResult.reason})`)
+    console.log(`[REGISTRO] Inversor Objetivo: ${investorProfile.accountId} (${investorProfile.institutionType})`)
+    console.log(`[REGISTRO] Veredicto de Cumplimiento: ${complianceResult.approved ? 'APROBADO' : 'RECHAZADO'} (${complianceResult.reason})`)
 
     if (!complianceResult.approved) {
       throw new Error(`El filtro ERC-3643 rechazó al inversor: ${complianceResult.reason}`)
     }
 
     // 4. Tokenizar Tramos de Deuda Fraccionada en HTS (1,000 Unidades = $100/participación)
-    console.log('\n[⚙️ PROCESO] Paso 4: Minteando Tramo de Deuda Fraccionada (INV-SIE-90D) en HTS...')
+    console.log('\n[PROCESO] Paso 4: Minteando Tramo de Deuda Fraccionada (INV-SIE-90D) en HTS...')
     let trancheTokenId = getState('RWA_ERP_TRANCHE_TOKEN_ID')
 
     if (!trancheTokenId) {
@@ -247,11 +247,11 @@ const main = async () => {
       trancheTokenId = tokenReceipt.tokenId.toString()
       updateState('RWA_ERP_TRANCHE_TOKEN_ID', trancheTokenId)
 
-      console.log(`[✅ ÉXITO] Token de Deuda Fraccionada HTS Creado: ${trancheTokenId}`)
-      console.log(`[📊 REGISTRO] HashScan del Token: ${getHashscanUrl(tokenCreateRes)}`)
+      console.log(`[ÉXITO] Token de Deuda Fraccionada HTS Creado: ${trancheTokenId}`)
+      console.log(`[REGISTRO] HashScan del Token: ${getHashscanUrl(tokenCreateRes)}`)
 
       // Mintear las 1,000 participaciones fraccionadas
-      console.log('[⚙️ PROCESO] Minteando 1,000 unidades fraccionadas ($100 USD de valor nominal cada una)...')
+      console.log('[PROCESO] Minteando 1,000 unidades fraccionadas ($100 USD de valor nominal cada una)...')
       // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
       const mintTx = await new TokenMintTransaction()
         .setTokenId(trancheTokenId)
@@ -261,13 +261,13 @@ const main = async () => {
 
       const mintRes = await mintTx.execute(client)
       await mintRes.getReceipt(client)
-      console.log('[✅ ÉXITO] 1,000 participaciones del tramo minteadas a Tesorería.')
+      console.log('[ÉXITO] 1,000 participaciones del tramo minteadas a Tesorería.')
     } else {
-      console.log(`[✅ ÉXITO] Reutilizando Token de Deuda Fraccionada HTS: ${trancheTokenId}`)
+      console.log(`[ÉXITO] Reutilizando Token de Deuda Fraccionada HTS: ${trancheTokenId}`)
     }
 
     // 5. Asociar, Otorgar KYC y Ejecutar Transferencia Atómica Secundaria DvP
-    console.log('\n[⚙️ PROCESO] Paso 5: Asociando, Otorgando KYC en Cadena y Distribuyendo 250 Participaciones...')
+    console.log('\n[PROCESO] Paso 5: Asociando, Otorgando KYC en Cadena y Distribuyendo 250 Participaciones...')
 
     // Asociar cuenta del inversor
     if (investorPrivateKey) {
@@ -280,14 +280,14 @@ const main = async () => {
           .sign(PrivateKey.fromStringDer(investorPrivateKey))
 
         await (await associateTx.execute(client)).getReceipt(client)
-        console.log(`[✅ ÉXITO] Inversor ${investorAccountId} asociado con ${trancheTokenId}`)
+        console.log(`[ÉXITO] Inversor ${investorAccountId} asociado con ${trancheTokenId}`)
       } catch (assocErr) {
-        console.log(`[ℹ️ INFORMACIÓN] Nota de asociación: ${assocErr.message}`)
+        console.log(`[INFORMACIÓN] Nota de asociación: ${assocErr.message}`)
       }
     }
 
     // Otorgar KYC en Capa 1 (Verificado por los Nodos de Consenso)
-    console.log(`[⚙️ PROCESO] Otorgando KYC Institucional en HTS a ${investorAccountId}...`)
+    console.log(`[PROCESO] Otorgando KYC Institucional en HTS a ${investorAccountId}...`)
     // Otorga KYC: con una KYC key, solo las cuentas aprobadas pueden recibir el token.
     const grantKycTx = await new TokenGrantKycTransaction()
       .setAccountId(AccountId.fromString(investorAccountId))
@@ -297,10 +297,10 @@ const main = async () => {
 
     const kycRes = await grantKycTx.execute(client)
     await kycRes.getReceipt(client)
-    console.log(`[✅ ÉXITO] ¡KYC OTORGADO en Capa Base para la Cuenta ${investorAccountId}!`)
+    console.log(`[ÉXITO] ¡KYC OTORGADO en Capa Base para la Cuenta ${investorAccountId}!`)
 
     // Transferir 250 participaciones ($25,000 USD de asignación) al inversor
-    console.log('[⚙️ PROCESO] Ejecutando Asignación Atómica de Tramos Entrega-contra-Pago (DvP)...')
+    console.log('[PROCESO] Ejecutando Asignación Atómica de Tramos Entrega-contra-Pago (DvP)...')
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const transferTx = await new TransferTransaction()
       .addTokenTransfer(trancheTokenId, operatorId, -250)
@@ -311,18 +311,18 @@ const main = async () => {
     const transferRes = await transferTx.execute(client)
     const transferReceipt = await transferRes.getReceipt(client)
 
-    console.log(`[✅ ÉXITO] ¡Transferencia de Tramos Finalizada! Estado: ${transferReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] HashScan de la Transferencia: ${getHashscanUrl(transferRes)}`)
+    console.log(`[ÉXITO] ¡Transferencia de Tramos Finalizada! Estado: ${transferReceipt.status.toString()}`)
+    console.log(`[REGISTRO] HashScan de la Transferencia: ${getHashscanUrl(transferRes)}`)
 
     // 6. Verificar Estado en Mirror Node
-    console.log('\n[⚙️ PROCESO] Paso 6: Verificando Distribución de Tramos y Cumplimiento vía Mirror Node...')
+    console.log('\n[PROCESO] Paso 6: Verificando Distribución de Tramos y Cumplimiento vía Mirror Node...')
     await sleep(3000)
 
     const mirrorTokenUrl = `${getMirrorNodeBaseUrl()}/api/v1/tokens/${trancheTokenId}`
     const tokenRes = await fetch(mirrorTokenUrl)
     if (tokenRes.ok) {
       const tokenInfo = await tokenRes.json()
-      console.log(`[📊 REGISTRO] Suministro Total Confirmado en Mirror Node: ${tokenInfo.total_supply} participaciones ($${(tokenInfo.total_supply * 100).toLocaleString()} USD)`)
+      console.log(`[REGISTRO] Suministro Total Confirmado en Mirror Node: ${tokenInfo.total_supply} participaciones ($${(tokenInfo.total_supply * 100).toLocaleString()} USD)`)
     }
 
     const mirrorBalanceUrl = `${getMirrorNodeBaseUrl()}/api/v1/tokens/${trancheTokenId}/balances?account.id=${investorAccountId}`
@@ -330,22 +330,22 @@ const main = async () => {
     if (balanceRes.ok) {
       const balanceData = await balanceRes.json()
       const investorHolding = balanceData.balances[0]?.balance || 250
-      console.log(`[📊 REGISTRO] Balance Confirmado del Inversor: ${investorHolding} participaciones ($${(investorHolding * 100).toLocaleString()} USD Valor Nominal)`)
+      console.log(`[REGISTRO] Balance Confirmado del Inversor: ${investorHolding} participaciones ($${(investorHolding * 100).toLocaleString()} USD Valor Nominal)`)
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El Puente ERP Institucional conecta el software corporativo (SAP, Oracle) directamente')
     console.log('con Hedera. HCS ancla la prueba legal de la factura por $0.0001, mientras HTS tokeniza')
     console.log('deuda fraccionada con llaves nativas de KYC/AML en Capa 1 sin picos de gas.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('El factoraje comercial tradicional toma de 3 a 4 semanas y cobra de 3% a 5% en comisiones manuales.')
     console.log('Al convertir facturas XML UBL en tramos conformes de HTS, las cuentas por cobrar se liquidan')
     console.log('en 2.5 segundos con cero riesgo de contraparte y auditabilidad institucional.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en el Puente ERP Institucional:', error.message)
+    console.error('\n[ERROR] Fallo en el Puente ERP Institucional:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -356,7 +356,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

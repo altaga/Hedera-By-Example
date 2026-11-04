@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 08: Liquidación x402 Directa P2P (Buyer y Seller - Arquitectura de 2 Actores)
- * [ CONCEPTO ] Verificación de Pagos en Cadena Autónoma Sin Facilitadores
+ * [CONCEPTO] Verificación de Pagos en Cadena Autónoma Sin Facilitadores
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El protocolo x402 admite dos topologías operativas distintas:
@@ -28,7 +28,7 @@
  * - Anterior: M10 Lab 07: Pasarela de Streaming de IA en Vivo
  * - Fin de Módulo: Suite Completa de Arquitectura x402 de Doble Variante
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Comprador -> Vendedor: GET /api/v1/quantum-pricing/derivatives-matrix
  * Vendedor -> Comprador: 402 (0.02 ℏ, memo x402:direct:<nonce>)
  * Comprador -> Hedera: Pagar 0.02 ℏ con el memo
@@ -120,13 +120,13 @@ async function verifyDirectPaymentOnHedera (client, txResponse, challenge, selle
 
 async function main () {
   console.log('====================================================================')
-  console.log('⚡ X402 LAB 08: LIQUIDACIÓN DIRECTA P2P (BUYER Y SELLER - 2 ACTORES)')
+  console.log('X402 LAB 08: LIQUIDACIÓN DIRECTA P2P (BUYER Y SELLER - 2 ACTORES)')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 ACTOR] Ejecutando como Operador/Pagador ${operatorId} en Hedera ${network.toUpperCase()}`)
+    console.log(`[ACTOR] Ejecutando como Operador/Pagador ${operatorId} en Hedera ${network.toUpperCase()}`)
 
     // 1. Solicitud no autenticada y desafío 402 del servidor
     const targetResource = '/api/v1/quantum-pricing/derivatives-matrix'
@@ -134,19 +134,19 @@ async function main () {
     const sellerAccountId = operatorId.toString() // Operador actúa como punto final vendedor
 
     console.log(`[1/5] El comprador solicita el recurso protegido: ${targetResource}`)
-    console.log('[⚙️ PROCESO] El interceptor bloquea la petición: Generando Desafío HTTP 402 Directo P2P...')
+    console.log('[PROCESO] El interceptor bloquea la petición: Generando Desafío HTTP 402 Directo P2P...')
 
     const challenge = generateDirect402Challenge(targetResource, queryPriceHbar, sellerAccountId, network)
-    console.log('\n[📋 DESAFÍO 402 EMITIDO]')
-    console.log(`   • Arquitectura:   ${challenge.body.architecture}`)
-    console.log(`   • Tarifa Exigida: ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
-    console.log(`   • Destinatario:   ${challenge.headers['x402-payee']}`)
-    console.log(`   • Nonce Único:    ${challenge.headers['x402-nonce']}`)
-    console.log(`   • Memo Exigida:   ${challenge.headers['x402-memo-format']}`)
+    console.log('\n[ DESAFÍO 402 EMITIDO]')
+    console.log(`• Arquitectura:   ${challenge.body.architecture}`)
+    console.log(`• Tarifa Exigida: ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
+    console.log(`• Destinatario:   ${challenge.headers['x402-payee']}`)
+    console.log(`• Nonce Único:    ${challenge.headers['x402-nonce']}`)
+    console.log(`• Memo Exigida:   ${challenge.headers['x402-memo-format']}`)
 
     // 2. Decisión Autónoma del Comprador y Ejecución en Cadena Directa
     console.log('\n[2/5] El Agente Comprador evalúa el precio y paga directamente en Hedera...')
-    console.log('[ℹ️ INFO] En modo Directo P2P, el comprador asume la comisión de red ($0.0001) de forma autónoma.')
+    console.log('[INFO] En modo Directo P2P, el comprador asume la comisión de red ($0.0001) de forma autónoma.')
 
     const paymentAmount = new Hbar(queryPriceHbar)
     const requiredMemo = challenge.headers['x402-memo-format']
@@ -158,8 +158,8 @@ async function main () {
       .setTransactionMemo(requiredMemo)
       .execute(client)
 
-    console.log(`[📤 TRANSACCIÓN TRANSMITIDA] Tx ID: ${directTransferTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(directTransferTx.transactionId.toString())}`)
+    console.log(`[ TRANSACCIÓN TRANSMITIDA] Tx ID: ${directTransferTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(directTransferTx.transactionId.toString())}`)
 
     // 3. El Comprador Reintenta con el Encabezado PAYMENT-TXID
     console.log('\n[3/5] El comprador reintenta la petición adjuntando el encabezado PAYMENT-TXID...')
@@ -168,7 +168,7 @@ async function main () {
       'PAYMENT-TXID': directTransferTx.transactionId.toString(),
       'X-Challenge-Nonce': challenge.headers['x402-nonce']
     }
-    console.log(`[📊 LOG] Encabezado Inyectado: PAYMENT-TXID: ${requestHeaders['PAYMENT-TXID']}`)
+    console.log(`[LOG] Encabezado Inyectado: PAYMENT-TXID: ${requestHeaders['PAYMENT-TXID']}`)
 
     // 4. Motor de Verificación del Servidor (Auditoría Cero-Intermediarios)
     console.log('\n[4/5] Servidor validando recibo de transacción en cadena y memo nonce de un solo uso...')
@@ -178,11 +178,11 @@ async function main () {
       throw new Error(`El servidor rechazó la prueba de pago: ${verification.reason}`)
     }
 
-    console.log('[✅ PAGO VERIFICADO EN CADENA]')
-    console.log('   • Estado: Válido y Liquidado')
-    console.log(`   • Monto Confirmado: ${verification.settledAmount} HBAR`)
-    console.log(`   • Destinatario:     ${verification.payee}`)
-    console.log(`   • Anti-Repetición:  Nonce ${verification.nonce} marcado como gastado`)
+    console.log('[ PAGO VERIFICADO EN CADENA]')
+    console.log('• Estado: Válido y Liquidado')
+    console.log(`• Monto Confirmado: ${verification.settledAmount} HBAR`)
+    console.log(`• Destinatario:     ${verification.payee}`)
+    console.log(`• Anti-Repetición:  Nonce ${verification.nonce} marcado como gastado`)
 
     // 5. El Servidor Entrega el Recurso: HTTP 200 OK
     console.log('\n[5/5] Servidor desbloqueando payload: HTTP 200 OK')
@@ -203,25 +203,25 @@ async function main () {
       }
     }
 
-    console.log('[📦 CUERPO DE RESPUESTA]')
+    console.log('[ CUERPO DE RESPUESTA]')
     console.log(JSON.stringify(responsePayload, null, 2))
 
     // Persistir Estado
     updateState('X402_DIRECT_TX_ID', directTransferTx.transactionId.toString())
     updateState('X402_DIRECT_NONCE', challenge.headers['x402-nonce'])
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('x402 Directo P2P crea comercio máquina a máquina sin intermediarios.')
     console.log('A diferencia del modelo con Facilitador (que aporta abstracción sin gas),')
     console.log('el Directo P2P no depende de relés externos: el comprador paga en cadena y lo demuestra por memo.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Aplica siempre nonces vinculados en la memo (`x402:direct:<nonce>`) en modo Directo P2P.')
     console.log('Sin validación de memo, un cliente malicioso podría reusar el txId de una transferencia no relacionada.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Liquidación x402 Directa:', error.message)
+    console.error('\n[ERROR] Fallo en la Liquidación x402 Directa:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -232,7 +232,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,4 +1,4 @@
-# 🧠 Módulo 14: Estándares Avanzados de HCS e IA Autónoma
+# Módulo 14: Estándares Avanzados de HCS e IA Autónoma
 ## Inscripciones, Puntuación de Confianza, Habilidades, Registros Merkle y Enjambres Encriptados
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 En este módulo, transformamos a Hedera Consensus Service de una cola de mensajería básica en un sistema operativo descentralizado global para la inteligencia artificial autónoma.
 
@@ -25,7 +25,7 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 
 ---
 
-## 🔄 Arquitectura del Enjambre de Agentes de IA Encriptado
+## Arquitectura del Enjambre de Agentes de IA Encriptado
 
 ```mermaid
 %%{init: {
@@ -48,10 +48,10 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 }}%%
 sequenceDiagram
     autonumber
-    actor AgentA as 🤖 Agente Alfa (Oráculo)
+    actor AgentA as  Agente Alfa (Oráculo)
     participant HCS as ℏ Consenso de Hedera (Tópico Público)
-    actor AgentB as 🤖 Agente Beta (Arbitrajista)
-    participant Mirror as 🔍 Mirror Node (Observador Público)
+    actor AgentB as  Agente Beta (Arbitrajista)
+    participant Mirror as  Mirror Node (Observador Público)
 
     Note over AgentA,AgentB: 1. Intercambio de Claves ECDH en Consenso
     AgentA->>HCS: Publica Clave Pública Efímera ECDH A
@@ -73,7 +73,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Contabilidad Basada en Inscripciones (HCS-20)
 Los tokens tradicionales exigen almacenamiento de estado en contratos EVM o asociaciones de tokens HTS por cada receptor. **HCS-20** introduce semántica JSON determinista directamente en los mensajes de consenso. Al ordenar eventos `deploy`, `mint`, `transfer` y `burn` con marcas de tiempo sub-segundo, los indexadores calculan los balances de los usuarios de manera determinista off-chain sin vulnerabilidades de contratos.
@@ -95,7 +95,7 @@ Los ledgers públicos proveen transparencia y orden, pero exponen estrategias co
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Registro de Estándares de Hashgraph Online](https://standards.hashgraphonline.com/)
 - [Especificación HCS-20: Inscripciones y Puntos Auditables](https://docs.hashgraphonline.com/hcs-20)
 - [Especificación HCS-25: Metodología de Puntuación de Confianza de IA](https://docs.hashgraphonline.com/hcs-25)
@@ -106,4 +106,4 @@ Los ledgers públicos proveen transparencia y orden, pero exponen estrategias co
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. LAS MÁQUINAS NECESITAN CONFIANZA. LA CONFIANZA NECESITA HASHGRAPH.
+ 2026 **HEDERA PARA DUMMIES**. LAS MÁQUINAS NECESITAN CONFIANZA. LA CONFIANZA NECESITA HASHGRAPH.

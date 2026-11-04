@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Cryptography and Signature Delegation (KMS / HSM)
- * [ CONCEPT ] Signer-Agnostic Transaction Authority
+ * [CONCEPT] Signer-Agnostic Transaction Authority
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Hedera SDK is "Signer-Agnostic". It doesn't care *how* a signature is
@@ -20,7 +20,7 @@
  * - Previous: M1 Lab 02: Account Rent
  * - Next:     M1 Lab 04: Key Rotation
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The HSM / vault is an in-memory mock. The signatures are real.
  *
  * [ BEFORE YOU RUN ]
@@ -53,7 +53,7 @@ class RemoteHSMVault {
    * The private key NEVER leaves this function.
    */
   async signPayload (payloadBuffer) {
-    console.log('[⚙️ PROCESS] Vault: Signing payload securely inside HSM enclave...')
+    console.log('[PROCESS] Vault: Signing payload securely inside HSM enclave...')
     return new Promise((resolve) => {
       setTimeout(() => {
         const signature = this._privateKey.sign(payloadBuffer)
@@ -73,35 +73,35 @@ const main = async () => {
   const vault = new RemoteHSMVault()
   const vaultPubKey = vault.getPublicKey()
 
-  console.log(`[ℹ️ INFO] Vault initialized. Public Identity: ${vaultPubKey.toStringDer().substring(0, 30)}...`)
+  console.log(`[INFO] Vault initialized. Public Identity: ${vaultPubKey.toStringDer().substring(0, 30)}...`)
 
   // 2. Create a transaction that needs a signature
-  console.log('[⚙️ PROCESS] Constructing a native TransferTransaction...')
+  console.log('[PROCESS] Constructing a native TransferTransaction...')
   const transaction = new TransferTransaction()
     .addHbarTransfer(AccountId.fromString('0.0.1001'), Hbar.fromTinybars(-100))
     .addHbarTransfer(AccountId.fromString('0.0.1002'), Hbar.fromTinybars(100))
 
   try {
     // 3. Delegation: We freeze the transaction and extract the bytes
-    console.log('[ℹ️ INFO] Freezing transaction to extract raw bytes for signing...')
+    console.log('[INFO] Freezing transaction to extract raw bytes for signing...')
     transaction.setTransactionId(TransactionId.generate(AccountId.fromString('0.0.2')))
     transaction.setNodeAccountIds([AccountId.fromString('0.0.3')])
     transaction.freeze()
 
     const transactionBytes = transaction.toBytes()
 
-    console.log('[⚙️ PROCESS] Sending bytes to the Vault for remote signing...')
+    console.log('[PROCESS] Sending bytes to the Vault for remote signing...')
     const signature = await vault.signPayload(transactionBytes)
 
     // 4. Inject the signature back into the SDK object
-    console.log('[ℹ️ INFO] Injecting external signature back into SDK Transaction object...')
+    console.log('[INFO] Injecting external signature back into SDK Transaction object...')
     transaction.addSignature(vaultPubKey, signature)
 
-    console.log('\n[✅ SUCCESS] Transaction is now signed by the remote Vault.')
-    console.log(`[📊 LOG] Signatures in object: ${transaction.getSignatures().size}`)
-    console.log('[ℹ️ INFO] This transaction is now safe to submit to the network.')
+    console.log('\n[SUCCESS] Transaction is now signed by the remote Vault.')
+    console.log(`[LOG] Signatures in object: ${transaction.getSignatures().size}`)
+    console.log('[INFO] This transaction is now safe to submit to the network.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log("The Hedera SDK is \"Signer-Agnostic\". It doesn't care *how* a signature")
     console.log("is generated, as long as it's cryptographically valid. This")
     console.log('flexibility allows for enterprise-level key management where')
@@ -109,7 +109,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Signing Delegation Failed:', error.message)
+    console.error('\n[FAILED] Signing Delegation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -118,7 +118,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

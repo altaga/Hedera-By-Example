@@ -1,4 +1,4 @@
-# 🌐 Módulo 13: Protocolo Cross-Ledger y Flujos de Datos
+# Módulo 13: Protocolo Cross-Ledger y Flujos de Datos
 ## Interoperabilidad Sin Puentes, Patrocinio de Tarifas y Lagos de Bloques Descentralizados
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 En este módulo, trascendemos la ingeniería de dApps en un solo ledger hacia infraestructura modular cross-chain y lagos de datos de alto rendimiento.
 
@@ -21,7 +21,7 @@ En este módulo, trascendemos la ingeniería de dApps en un solo ledger hacia in
 
 ---
 
-## 🔄 Flujo de Liquidación Cross-Chain Sin Puentes CLPR
+## Flujo de Liquidación Cross-Chain Sin Puentes CLPR
 
 ```mermaid
 %%{init: {
@@ -44,10 +44,10 @@ En este módulo, trascendemos la ingeniería de dApps en un solo ledger hacia in
 }}%%
 sequenceDiagram
     autonumber
-    actor User as 👤 Usuario / Agente Sin Gas
+    actor User as  Usuario / Agente Sin Gas
     participant Hedera as ℏ Consenso de Hedera
-    participant Solver as ⚡ Solver de Liquidez (Patrocinador)
-    participant DestChain as 🔷 EVM de Destino (Arbitrum/Base)
+    participant Solver as  Solver de Liquidez (Patrocinador)
+    participant DestChain as  EVM de Destino (Arbitrum/Base)
 
     Note over User,Solver: HIP-1068: Solver aprueba asignación de tarifas delegadas al Usuario
     User->>Hedera: Publica Intención (HBAR -> USDC) [Gas Pagado por Asignación del Solver]
@@ -61,7 +61,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Protocolo Cross-Ledger (CLPR / HIP-1535)
 Los puentes cross-chain tradicionales obligan a los usuarios a depositar fondos en un contrato inteligente vigilado por un comité multi-firma off-chain. Estos depósitos se han convertido en los blancos favoritos de los atacantes en Web3. Con **CLPR** (co-diseñado por Leemon Baird y Richard Bair en Linux Foundation Decentralized Trust), los ledgers se comunican utilizando pruebas de inclusión criptográfica y **Esquemas de Firma Umbral (TSS)**. Un contrato inteligente en la cadena de destino verifica la prueba matemáticamente, eliminando la necesidad de puentes de custodia.
@@ -77,7 +77,7 @@ Para evitar la saturación de los validadores, Hedera desacopla el ordenamiento 
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [HIP-1535: Cross-Ledger Protocol (CLPR), borrador](https://hips.hedera.com/hip/hip-1535)
 - [HIP-1068: Asignaciones Nativas de Tarifas Delegadas](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1068.md)
 - [HIP-1056: Flujos de Bloques Unificados](https://github.com/hashgraph/hedera-improvement-proposals/blob/main/HIP/hip-1056.md)
@@ -87,4 +87,4 @@ Para evitar la saturación de los validadores, Hedera desacopla el ordenamiento 
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. LOS PUENTES ESTÁN MUERTOS. LAS PRUEBAS SON PARA SIEMPRE.
+ 2026 **HEDERA PARA DUMMIES**. LOS PUENTES ESTÁN MUERTOS. LAS PRUEBAS SON PARA SIEMPRE.

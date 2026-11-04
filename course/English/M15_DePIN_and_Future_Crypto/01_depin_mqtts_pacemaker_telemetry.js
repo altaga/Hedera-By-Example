@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
- * [ CONCEPT ] Mission-Critical IoT Ingestion & Consensus Batching
+ * [CONCEPT] Mission-Critical IoT Ingestion & Consensus Batching
  * ============================================================================
  * [ KEY CONCEPT ]
  * DePIN (Decentralized Physical Infrastructure Networks) connects physical
@@ -29,7 +29,7 @@
  * - HIP-10 Zero-Fee HCS Topic Standards: https://hips.hedera.com/hip/hip-10
  * - NIST SP 800-140C Cryptographic Module Validation (Ed25519 Hardware Keystores)
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The pacemaker and its MQTTS stream are emulated. The device signatures, the Merkle batch and the HCS messages are real.
  *
  * [ BEFORE YOU RUN ]
@@ -115,13 +115,13 @@ function computeMerkleRoot (hashes) {
 
 async function main () {
   console.log('====================================================================')
-  console.log('🔬 DEPIN LAB 01: MQTTS HIGH-SPEED CRITICAL TELEMETRY (PACEMAKER)')
+  console.log('DEPIN LAB 01: MQTTS HIGH-SPEED CRITICAL TELEMETRY (PACEMAKER)')
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[📡 OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERATOR] Authenticated as ${operatorId} on Hedera ${network.toUpperCase()}`)
 
     // 1. Provision HCS Telemetry Topic
     console.log('\n[1/5] Creating Dedicated MedTech HCS Telemetry Topic...')
@@ -131,14 +131,14 @@ async function main () {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TOPIC CREATED] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TOPIC CREATED] ID: ${topicId}`)
+    console.log(`[EXPLORER] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Initialize Emulated Pacemaker Hardware
     console.log('\n[2/5] Initializing Implantable Pacemaker Device (Ed25519 Keystore)...')
     const device = new PacemakerHardwareDevice()
-    console.log(`[🩺 DEVICE ID] ${device.deviceId}`)
-    console.log('[🔑 HARDWARE KEY] Secure Enclave Ed25519 Keypair generated.')
+    console.log(`[ DEVICE ID] ${device.deviceId}`)
+    console.log('[ HARDWARE KEY] Secure Enclave Ed25519 Keypair generated.')
 
     // 3. Emulate High-Frequency MQTTS Telemetry Stream
     console.log('\n[3/5] Streaming High-Speed MQTTS Telemetry Frames...')
@@ -169,10 +169,10 @@ async function main () {
       show.chart({ id: 'bpm', type: 'line', title: 'Heart rate per telemetry frame', unit: 'BPM', xLabel: 'Frame', yLabel: 'BPM', points: bpmSeries, threshold: { value: 120, label: 'tachycardia > 120' } })
 
       if (isCritical) {
-        console.log(`   🚨 [FRAME #${frameIndex}] CRITICAL ARREST/TACHYCARDIA: ${frame.payload.metrics.bpm} BPM | Hardware Sig: Verified ✅`)
+        console.log(`[FRAME #${frameIndex}] CRITICAL ARREST/TACHYCARDIA: ${frame.payload.metrics.bpm} BPM | Hardware Sig: Verified `)
         emergencyAlertFrame = frame
       } else {
-        console.log(`   💓 [FRAME #${frameIndex}] Normal Heartbeat: ${frame.payload.metrics.bpm} BPM | Hash: ${frameHash.substring(0, 16)}... | Sig: ✅`)
+        console.log(`[FRAME #${frameIndex}] Normal Heartbeat: ${frame.payload.metrics.bpm} BPM | Hash: ${frameHash.substring(0, 16)}... | Sig: `)
         routineBatch.push(frameHash)
       }
     }
@@ -197,9 +197,9 @@ async function main () {
       .execute(client)
 
     const batchReceipt = await batchSubmitTx.getReceipt(client)
-    console.log(`[✅ BATCH ANCHORED] Merkle Root: ${merkleRoot}`)
-    console.log(`[📊 CONSENSUS] Sequence #${batchReceipt.topicSequenceNumber} on HCS`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(batchSubmitTx.transactionId.toString())}`)
+    console.log(`[ BATCH ANCHORED] Merkle Root: ${merkleRoot}`)
+    console.log(`[CONSENSUS] Sequence #${batchReceipt.topicSequenceNumber} on HCS`)
+    console.log(`[EXPLORER] ${getHashscanUrl(batchSubmitTx.transactionId.toString())}`)
 
     // 5. Immediate Out-of-Band Critical Arrhythmia Consensus Submission
     console.log('\n[5/5] Submitting Emergency High-Priority Pacemaker Alert to HCS...')
@@ -219,26 +219,26 @@ async function main () {
       .execute(client)
 
     const emergencyReceipt = await emergencySubmitTx.getReceipt(client)
-    console.log(`[🚨 EMERGENCY NOTARIZED] Sequence #${emergencyReceipt.topicSequenceNumber} verified in Consensus!`)
-    console.log(`[🔗 EXPLORER] ${getHashscanUrl(emergencySubmitTx.transactionId.toString())}`)
+    console.log(`[ EMERGENCY NOTARIZED] Sequence #${emergencyReceipt.topicSequenceNumber} verified in Consensus!`)
+    console.log(`[EXPLORER] ${getHashscanUrl(emergencySubmitTx.transactionId.toString())}`)
 
     // Persist State
     updateState('DEPIN_PACEMAKER_TOPIC_ID', topicId)
     updateState('DEPIN_PACEMAKER_DEVICE_ID', device.deviceId)
     updateState('DEPIN_PACEMAKER_MERKLE_ROOT', merkleRoot)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('DePIN combines IoT hardware cryptography with Hedera high-throughput consensus.')
     console.log('Normal operations are batched off-chain to minimize overhead, while life-critical')
     console.log('alerts achieve immutable consensus ordering in under 2 seconds.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Never post individual raw sensor frames if you can batch via Merkle proofs.')
     console.log('Always design event-driven circuit breakers that prioritize life-safety alerts.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Pacemaker DePIN Execution Failure:', error.message)
+    console.error('\n[ERROR] Pacemaker DePIN Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -249,7 +249,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

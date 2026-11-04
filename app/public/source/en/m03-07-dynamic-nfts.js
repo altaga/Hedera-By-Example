@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Lab 07: Dynamic NFTs (HIP-765)
- * [ CONCEPT ] Mutable Metadata on HTS
+ * [CONCEPT] Mutable Metadata on HTS
  * ============================================================================
  * [ KEY CONCEPT ]
  * Historically, NFTs on Hedera were strictly immutable once minted.
@@ -52,7 +52,7 @@ const main = async () => {
 
   try {
     // 1. Create an NFT Collection WITH a Metadata Key
-    console.log('[⚙️ PROCESS] Creating Dynamic NFT Collection...')
+    console.log('[PROCESS] Creating Dynamic NFT Collection...')
     const tokenId = await reuseToken('REUSE_M3_07_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
         .setTokenName('Dynamic Swords')
@@ -70,10 +70,10 @@ const main = async () => {
     }, { check: (t) => !!t.metadata_key })
     let tx, signTx, submitTx, receipt // reused by the steps below
 
-    console.log(`[✅ SUCCESS] Collection created! Token ID: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] Collection created! Token ID: ${tokenId.toString()}`)
 
     // 2. Mint a static Level 1 NFT
-    console.log('\n[⚙️ PROCESS] Minting a Level 1 Sword...')
+    console.log('\n[PROCESS] Minting a Level 1 Sword...')
     const metadataLevel1 = Buffer.from('ipfs://bafkreihq.../level1.json')
 
     tx = await new TokenMintTransaction()
@@ -86,16 +86,16 @@ const main = async () => {
     receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
 
-    console.log(`[✅ SUCCESS] Minted Serial #${serialNum}`)
+    console.log(`[SUCCESS] Minted Serial #${serialNum}`)
 
     // 3. Query the current metadata
     let nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log(`[📊 LOG] Initial Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`[LOG] Initial Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
     // 4. Update the NFT metadata (Level Up!)
-    console.log('\n[⚙️ PROCESS] Player defeated boss. Leveling up Sword to Level 2...')
+    console.log('\n[PROCESS] Player defeated boss. Leveling up Sword to Level 2...')
     const metadataLevel2 = Buffer.from('ipfs://bafybeig.../level2.json')
 
     tx = await new TokenUpdateNftsTransaction()
@@ -109,15 +109,15 @@ const main = async () => {
     submitTx = await signTx.execute(client)
     await submitTx.getReceipt(client)
 
-    console.log('[✅ SUCCESS] NFT Metadata mutated on-ledger!')
+    console.log('[SUCCESS] NFT Metadata mutated on-ledger!')
 
     // 5. Query to prove the metadata changed
     nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-    console.log(`[📊 LOG] New Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`[LOG] New Metadata: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Dynamic NFTs open up entirely new paradigms for gaming, supply chain,')
     console.log('and ticketing. Hedera achieves this securely at the base layer without')
     console.log('relying on external, hackable smart contracts to manage metadata states.')
@@ -125,7 +125,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Execution Error:', error.message)
+    console.error('\n[FAILED] Execution Error:', error.message)
     process.exitCode = 1
   }
 }
@@ -134,7 +134,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

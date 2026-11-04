@@ -1,4 +1,4 @@
-# ⚖️ Module 7: Governance and Automation (Cron)
+# Module 7: Governance and Automation (Cron)
 ## Multi-signature Control and Decentralized Orchestration
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
@@ -21,7 +21,7 @@
 
 ---
 
-## 🔐 Multi-signature Governance (Threshold)
+## Multi-signature Governance (Threshold)
 
 In Hedera, you can define that an account requires, for example, 2 out of 3 signatures to move funds. This eliminates single points of failure.
 
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. Signature Thresholds (Threshold Keys)
 Unlike a complex smart contract, Hedera allows you to define key lists with thresholds directly on the account. It is more secure, cheaper, and easier to audit.
@@ -74,11 +74,11 @@ Using HCS, we can anchor identity metadata that allows users to prove who they a
 
 ---
 
-## 📚 Official References
+## Official References
 - [Multi-signature Accounts (Hedera Docs)](https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#multi-signature-signing)
 - [Scheduled Transactions Documentation](https://docs.hedera.com/hedera/sdks-and-apis/sdks/scheduled-transactions)
 - [W3C Decentralized Identifiers (DID) Standard](https://www.w3.org/TR/did-core/)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. POWER IS SHARED.
+ 2026 **HEDERA FOR DUMMIES**. POWER IS SHARED.

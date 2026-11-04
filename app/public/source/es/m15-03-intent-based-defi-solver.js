@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Laboratorio 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
- * [ CONCEPTO ] Declaraciones Criptográficas Fuera de Cadena y Ejecución Atómica Multi-Pata
+ * [CONCEPTO] Declaraciones Criptográficas Fuera de Cadena y Ejecución Atómica Multi-Pata
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En los creadores de mercado automatizados (AMM) tradicionales, los usuarios transmiten
@@ -30,14 +30,14 @@
  * - Documentación de Transferencias Atómicas en Hedera: https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  * - Arquitectura del Protocolo CoW: https://docs.cow.fi/overview/introduction
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Alice -> Solver: Intención firmada: USD por HBAR
  * Bob -> Solver: Intención firmada: HBAR por USD
  * Nota Solver: Empareja las intenciones fuera de la cadena
  * Solver -> Hedera: Una transferencia atómica liquida a ambos
  * Solver -> Hedera: Registro de liquidación en HCS
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. La transferencia de liquidación y el registro en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -141,13 +141,13 @@ class IntentSolverEngine {
 
 async function main () {
   console.log('====================================================================')
-  console.log('⚡ DEFI LAB 03: SOLVER DE LIQUIDACIÓN BASADO EN INTENCIONES (ERC-7683 / COW)')
+  console.log('DEFI LAB 03: SOLVER DE LIQUIDACIÓN BASADO EN INTENCIONES (ERC-7683 / COW)')
   console.log('====================================================================\n')
 
   const { client, operatorId, operatorKey, network } = getClient()
 
   try {
-    console.log(`[📡 OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
+    console.log(`[OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
 
     // 1. Crear Tópico HCS para Auditoría de Liquidaciones del Solver
     console.log('\n[1/5] Creando Tópico HCS Dedicado para Liquidaciones de Intenciones...')
@@ -157,8 +157,8 @@ async function main () {
 
     const topicReceipt = await topicCreateTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ TÓPICO CREADO] ID: ${topicId}`)
-    console.log(`[🔗 EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
+    console.log(`[ TÓPICO CREADO] ID: ${topicId}`)
+    console.log(`[EXPLORADOR] https://hashscan.io/${network}/topic/${topicId}`)
 
     // 2. Configurar Participantes: Alice (Operador) y Bob (Contraparte Generada)
     console.log('\n[2/5] Inicializando Participantes del Mercado de Intenciones...')
@@ -169,8 +169,8 @@ async function main () {
     const bobKey = PrivateKey.generateED25519()
     const bobId = AccountId.fromString(process.env.ACCOUNT_1_ID || '0.0.11226623')
 
-    console.log(`[👤 EMISOR A (Alice)] Cuenta: ${aliceId} | Desea: HBAR_STABLE_USD a cambio de HBAR`)
-    console.log(`[👤 EMISOR B (Bob)]   Cuenta: ${bobId} | Desea: HBAR a cambio de HBAR_STABLE_USD`)
+    console.log(`[ EMISOR A (Alice)] Cuenta: ${aliceId} | Desea: HBAR_STABLE_USD a cambio de HBAR`)
+    console.log(`[ EMISOR B (Bob)]   Cuenta: ${bobId} | Desea: HBAR a cambio de HBAR_STABLE_USD`)
 
     // 3. Las Contrapartes Firman Intenciones Fuera de Cadena (Cero Gas en Cadena)
     console.log('\n[3/5] Generando Intenciones de Intercambio Firmadas...')
@@ -182,7 +182,7 @@ async function main () {
       'HBAR_STABLE_USD',
       '1.50'
     )
-    console.log(`[📝 INTENCIÓN ALICE] Hash: ${aliceOrder.intentHash.substring(0, 24)}... | Firma: ✅ Verificada`)
+    console.log(`[ INTENCIÓN ALICE] Hash: ${aliceOrder.intentHash.substring(0, 24)}... | Firma:  Verificada`)
 
     const bobOrder = createSignedIntent(
       bobId,
@@ -192,7 +192,7 @@ async function main () {
       'HBAR',
       '1.50'
     )
-    console.log(`[📝 INTENCIÓN BOB]   Hash: ${bobOrder.intentHash.substring(0, 24)}... | Firma: ✅ Verificada`)
+    console.log(`[ INTENCIÓN BOB]   Hash: ${bobOrder.intentHash.substring(0, 24)}... | Firma:  Verificada`)
 
     // 4. Ingesta del Solver y Emparejamiento de Coincidencia de Deseos (CoW)
     console.log('\n[4/5] Motor Solver Emparejando Coincidencia de Deseos (CoW)...')
@@ -205,10 +205,10 @@ async function main () {
       throw new Error('El Solver no pudo encontrar órdenes CoW emparejables')
     }
 
-    console.log('[🎯 COINCIDENCIA COW HALLADA] Orden Alice 🔁 Orden Bob emparejadas 1:1 con CERO deslizamiento!')
-    console.log('   • Pata Venta 1: Alice transfiere 1.50 HBAR equivalente')
-    console.log('   • Pata Venta 2: Bob transfiere liquidez coincidente')
-    console.log('   • Comisión de Protocolo Solver: 0.0001 HBAR')
+    console.log('[ COINCIDENCIA COW HALLADA] Orden Alice  Orden Bob emparejadas 1:1 con CERO deslizamiento!')
+    console.log('• Pata Venta 1: Alice transfiere 1.50 HBAR equivalente')
+    console.log('• Pata Venta 2: Bob transfiere liquidez coincidente')
+    console.log('• Comisión de Protocolo Solver: 0.0001 HBAR')
 
     // 5. Ejecutar Liquidación Atómica en el Consenso de Hedera
     console.log('\n[5/5] Ejecutando Liquidación Atómica Multi-Pata en Hedera...')
@@ -221,8 +221,8 @@ async function main () {
       .execute(client)
 
     const settlementReceipt = await settlementTx.getReceipt(client)
-    console.log(`[✅ LIQUIDACIÓN ATÓMICA] Estado: ${settlementReceipt.status.toString()}`)
-    console.log(`[🔗 EXPLORADOR] ${getHashscanUrl(settlementTx.transactionId.toString())}`)
+    console.log(`[ LIQUIDACIÓN ATÓMICA] Estado: ${settlementReceipt.status.toString()}`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(settlementTx.transactionId.toString())}`)
 
     // Notarizar Registro de Auditoría de Liquidación en HCS
     const auditRecord = {
@@ -243,25 +243,25 @@ async function main () {
       .execute(client)
 
     const auditReceipt = await auditSubmitTx.getReceipt(client)
-    console.log(`[📜 AUDITORÍA REGISTRADA] Secuencia de Consenso HCS #${auditReceipt.topicSequenceNumber}`)
+    console.log(`[ AUDITORÍA REGISTRADA] Secuencia de Consenso HCS #${auditReceipt.topicSequenceNumber}`)
 
     // Persistir Estado
     updateState('INTENT_SOLVER_TOPIC_ID', topicId)
     updateState('INTENT_SOLVER_ALICE_HASH', aliceOrder.intentHash)
     updateState('INTENT_SOLVER_BOB_HASH', bobOrder.intentHash)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Los solvers de intenciones eliminan el MEV, los ataques sandwich y el deslizamiento de precios.')
     console.log('Los emisores firman declaraciones sin gas; los solvers descentralizados emparejan intereses')
     console.log('mutuos y ejecutan intercambios multipartitas en una TransferTransaction atómica de Hedera.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Las TransferTransactions de Hedera exigen una suma atómica neta de cero en todas sus patas.')
     console.log('Esta capacidad nativa convierte a Hedera en el motor L1 ideal para solvers ERC-7683.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en la Ejecución del Solver de Intenciones:', error.message)
+    console.error('\n[ERROR] Fallo en la Ejecución del Solver de Intenciones:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -272,7 +272,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

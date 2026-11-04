@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Arquitectura Full-Stack con Scaffold-HBAR
- * [ CONCEPTO ] Integración de Next.js, RainbowKit, Wagmi v2 y Hedera
+ * [CONCEPTO] Integración de Next.js, RainbowKit, Wagmi v2 y Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Arma Definitiva para Hackathons: Construir una dApp full-stack desde cero
@@ -66,44 +66,44 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
 
   try {
-    console.log('[⚙️ PROCESO] Inicializando verificación arquitectónica de Scaffold-HBAR...')
+    console.log('[PROCESO] Inicializando verificación arquitectónica de Scaffold-HBAR...')
 
     // 1. Validar Parámetros de Red para Wagmi / Viem
-    console.log('\n[⚙️ PROCESO] Validando Definición de Cadena para Wagmi v2:')
-    console.log(`[📊 REGISTRO] Chain ID:          ${HEDERA_TESTNET_CHAIN_DEFINITION.id}`)
-    console.log(`[📊 REGISTRO] Nombre de Red:     ${HEDERA_TESTNET_CHAIN_DEFINITION.name}`)
-    console.log(`[📊 REGISTRO] Moneda Nativa:     ${HEDERA_TESTNET_CHAIN_DEFINITION.nativeCurrency.symbol} (${HEDERA_TESTNET_CHAIN_DEFINITION.nativeCurrency.decimals} decimales)`)
-    console.log(`[📊 REGISTRO] RPC Principal:     ${HEDERA_TESTNET_CHAIN_DEFINITION.rpcUrls.default.http[0]}`)
-    console.log(`[📊 REGISTRO] URL Explorador:    ${HEDERA_TESTNET_CHAIN_DEFINITION.blockExplorers.default.url}`)
+    console.log('\n[PROCESO] Validando Definición de Cadena para Wagmi v2:')
+    console.log(`[REGISTRO] Chain ID:          ${HEDERA_TESTNET_CHAIN_DEFINITION.id}`)
+    console.log(`[REGISTRO] Nombre de Red:     ${HEDERA_TESTNET_CHAIN_DEFINITION.name}`)
+    console.log(`[REGISTRO] Moneda Nativa:     ${HEDERA_TESTNET_CHAIN_DEFINITION.nativeCurrency.symbol} (${HEDERA_TESTNET_CHAIN_DEFINITION.nativeCurrency.decimals} decimales)`)
+    console.log(`[REGISTRO] RPC Principal:     ${HEDERA_TESTNET_CHAIN_DEFINITION.rpcUrls.default.http[0]}`)
+    console.log(`[REGISTRO] URL Explorador:    ${HEDERA_TESTNET_CHAIN_DEFINITION.blockExplorers.default.url}`)
 
     // 2. Probar Conectividad RPC en Vivo mediante Ethers Provider
     const provider = new ethers.JsonRpcProvider(HEDERA_TESTNET_CHAIN_DEFINITION.rpcUrls.default.http[0])
     const blockNumber = await provider.getBlockNumber()
-    console.log(`\n[✅ ÉXITO] Gateway RPC de Scaffold-HBAR Verificado: Último Bloque #${blockNumber}`)
+    console.log(`\n[ÉXITO] Gateway RPC de Scaffold-HBAR Verificado: Último Bloque #${blockNumber}`)
 
     // 3. Mostrar Comando Rápido para Hackathon Builders
     console.log('\n===============================================================')
-    console.log('⚡ QUICKSTART: GENERAR DAPP FULL-STACK EN HEDERA')
+    console.log('QUICKSTART: GENERAR DAPP FULL-STACK EN HEDERA')
     console.log('===============================================================')
     console.log('Ejecuta en tu terminal:')
-    console.log('  npx create-scaffold-hbar@latest')
+    console.log('npx create-scaffold-hbar@latest')
     console.log('\nLo que obtienes listo para usar:')
-    console.log('  1. packages/nextjs   -> Next.js 14 App Router + TailwindCSS + DaisyUI')
-    console.log('  2. packages/hardhat  -> Smart contracts, scripts y TypeScript bindings')
-    console.log('  3. Web3 Connectors  -> MetaMask, Coinbase Wallet, WalletConnect con RainbowKit')
-    console.log('  4. Debug Contract UI -> Frontend en tiempo real para leer y escribir contratos')
+    console.log('1. packages/nextjs   -> Next.js 14 App Router + TailwindCSS + DaisyUI')
+    console.log('2. packages/hardhat  -> Smart contracts, scripts y TypeScript bindings')
+    console.log('3. Web3 Connectors  -> MetaMask, Coinbase Wallet, WalletConnect con RainbowKit')
+    console.log('4. Debug Contract UI -> Frontend en tiempo real para leer y escribir contratos')
     console.log('===============================================================')
 
     updateState('SCAFFOLD_HBAR_VERIFIED', true)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Scaffold-HBAR es el acelerador definitivo de hackathons. Los equipos que')
     console.log('arrancan con Scaffold-HBAR tienen una UI funcional conectada a MetaMask y')
     console.log('Hedera Testnet en 5 minutos, enfocándose 100% en la lógica de su bounty.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo en el diagnóstico de Scaffold-HBAR:', error.message)
+    console.error('\n[FALLO] Fallo en el diagnóstico de Scaffold-HBAR:', error.message)
     process.exit(1)
   }
 }
@@ -112,7 +112,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

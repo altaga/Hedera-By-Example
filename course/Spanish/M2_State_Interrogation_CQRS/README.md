@@ -1,4 +1,4 @@
-# 🔍 Módulo 2: Interrogación de Estado y CQRS
+# Módulo 2: Interrogación de Estado y CQRS
 ## Consultas Eficientes y Escalables en la Red
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
@@ -20,7 +20,7 @@
 
 ---
 
-## ⚡ El Patrón CQRS en Hedera
+## El Patrón CQRS en Hedera
 
 En Hedera, la arquitectura ideal separa las responsabilidades de comandos (cambios de estado) y consultas (lectura de estado).
 
@@ -70,7 +70,7 @@ graph TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. ¿Por qué evitar Consultas Sincrónicas?
 Consultar a un nodo de consenso requiere que este detenga su trabajo principal (validar transacciones) para responderte. Esto es caro (tarifas más altas) y no escala.
@@ -83,11 +83,11 @@ Cuando solicitas una lista larga (ej. todos los tokens de una cuenta), el Mirror
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Mirror Node API Documentation](https://mainnet-public.mirrornode.hedera.com/api/v1/docs/)
 - [Patrón CQRS en Arquitecturas Distribuidas](https://martinfowler.com/bliki/CQRS.html)
 - [Hedera Mirror Node Architecture](https://docs.hedera.com/hedera/core-concepts/mirror-nodes)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. ESCALA SIN LÍMITES.
+ 2026 **HEDERA PARA DUMMIES**. ESCALA SIN LÍMITES.

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: HCS-20 Auditable Points & Inscription Ledgers
- * [ CONCEPT ] High-Throughput Event-Sourced Accounting over Consensus
+ * [CONCEPT] High-Throughput Event-Sourced Accounting over Consensus
  * ============================================================================
  * [ KEY CONCEPT ]
  * Event-Sourced Inscription Accounting: Rather than storing user balances in
@@ -149,7 +149,7 @@ const main = async () => {
 
   try {
     // 1. Create dedicated HCS-20 Inscription Topic
-    console.log('[⚙️ PROCESS] Creating dedicated HCS-20 Inscription Ledger Topic...')
+    console.log('[PROCESS] Creating dedicated HCS-20 Inscription Ledger Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-20:AUDITABLE:POINTS:V1')
@@ -158,13 +158,13 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] HCS-20 Point Ledger Created: Topic ID ${topicId}`)
+    console.log(`[SUCCESS] HCS-20 Point Ledger Created: Topic ID ${topicId}`)
 
     const stateEngine = new HCS20StateEngine()
     const recipientAgent = '0.0.8707881'
 
     // 2. Inscribe Deploy Action (Validated via HCS20DeployMessageSchema)
-    console.log('\n[⚙️ PROCESS] Inscribing HCS-20 Token Deployment: Ticker [aipnt] (Max: 1,000,000)...')
+    console.log('\n[PROCESS] Inscribing HCS-20 Token Deployment: Ticker [aipnt] (Max: 1,000,000)...')
     const deployMsg = HCS20.deploy('AI Reputation Points', 'aipnt', 1000000)
     // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const deployTx = await new TopicMessageSubmitTransaction()
@@ -173,10 +173,10 @@ const main = async () => {
       .execute(client)
     const deployReceipt = await deployTx.getReceipt(client)
     stateEngine.processMessage(deployMsg, deployReceipt.topicSequenceNumber)
-    console.log(`[✅ SUCCESS] Deployed AIPNT at Consensus Sequence #${deployReceipt.topicSequenceNumber}`)
+    console.log(`[SUCCESS] Deployed AIPNT at Consensus Sequence #${deployReceipt.topicSequenceNumber}`)
 
     // 3. Inscribe Mint Action (Validated via HCS20MintMessageSchema)
-    console.log(`\n[⚙️ PROCESS] Inscribing Mint of 50,000 AIPNT to Operator (${operatorId})...`)
+    console.log(`\n[PROCESS] Inscribing Mint of 50,000 AIPNT to Operator (${operatorId})...`)
     const mintMsg = HCS20.mint('aipnt', operatorId.toString(), 50000)
     const mintTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -184,10 +184,10 @@ const main = async () => {
       .execute(client)
     const mintReceipt = await mintTx.getReceipt(client)
     stateEngine.processMessage(mintMsg, mintReceipt.topicSequenceNumber)
-    console.log(`[✅ SUCCESS] Minted 50,000 AIPNT at Consensus Sequence #${mintReceipt.topicSequenceNumber}`)
+    console.log(`[SUCCESS] Minted 50,000 AIPNT at Consensus Sequence #${mintReceipt.topicSequenceNumber}`)
 
     // 4. Inscribe Transfer Action (Validated via HCS20TransferMessageSchema)
-    console.log(`\n[⚙️ PROCESS] Inscribing Transfer of 12,500 AIPNT from Operator to Agent (${recipientAgent})...`)
+    console.log(`\n[PROCESS] Inscribing Transfer of 12,500 AIPNT from Operator to Agent (${recipientAgent})...`)
     const transferMsg = HCS20.transfer('aipnt', operatorId.toString(), recipientAgent, 12500)
     const transferTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -195,12 +195,12 @@ const main = async () => {
       .execute(client)
     const transferReceipt = await transferTx.getReceipt(client)
     stateEngine.processMessage(transferMsg, transferReceipt.topicSequenceNumber)
-    console.log(`[✅ SUCCESS] Transferred 12,500 AIPNT at Consensus Sequence #${transferReceipt.topicSequenceNumber}`)
+    console.log(`[SUCCESS] Transferred 12,500 AIPNT at Consensus Sequence #${transferReceipt.topicSequenceNumber}`)
 
     // 5. Indexer State Reconstruction & Audit
-    console.log('\n[📊 AUDIT] Reconstructed HCS-20 Ledger State:')
-    console.log(`[📊 LOG] Operator (${operatorId}) Balance:       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
-    console.log(`[📊 LOG] Recipient Agent (${recipientAgent}) Balance: ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
+    console.log('\n[AUDIT] Reconstructed HCS-20 Ledger State:')
+    console.log(`[LOG] Operator (${operatorId}) Balance:       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
+    console.log(`[LOG] Recipient Agent (${recipientAgent}) Balance: ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
 
     // Persist state
     updateState('HCS20_TOPIC_ID', topicId)
@@ -208,18 +208,18 @@ const main = async () => {
     updateState('HCS20_OPERATOR_BALANCE', stateEngine.getBalance('AIPNT', operatorId.toString()))
     updateState('HCS20_AGENT_BALANCE', stateEngine.getBalance('AIPNT', recipientAgent))
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-20 is pure event-sourcing on Hedera. Any third-party indexer reading')
     console.log(`Topic ${topicId} will arrive at the exact same mathematical balances`)
     console.log('without executing a single smart contract bytecode instruction.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('EVM storage slots are expensive; HCS consensus ordering is fractionally priced.')
     console.log('Separating immutable data sequencing from off-chain indexing scales to millions of users.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-20 Execution Failure:', error.message)
+    console.error('\n[ERROR] HCS-20 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -230,7 +230,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

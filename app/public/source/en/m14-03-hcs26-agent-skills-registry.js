@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: HCS-26 Decentralized Agent Skills & Tool Manifest Registry
- * [ CONCEPT ] Permissionless Discovery of AI Capabilities & MCP Tools
+ * [CONCEPT] Permissionless Discovery of AI Capabilities & MCP Tools
  * ============================================================================
  * [ KEY CONCEPT ]
  * Decentralized Capability Discovery: Instead of relying on centralized app stores
@@ -25,7 +25,7 @@
  * - Previous: M14 Lab 02: HCS-25 Portable AI Trust Score
  * - Next:     M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The peer agent that discovers the skills is simulated. The registry on HCS is real.
  *
  * [ BEFORE YOU RUN ]
@@ -75,7 +75,7 @@ const main = async () => {
 
   try {
     // 1. Create HCS-26 Registry Topic
-    console.log('[⚙️ PROCESS] Initializing HCS-26 Decentralized Agent Skills Registry Topic...')
+    console.log('[PROCESS] Initializing HCS-26 Decentralized Agent Skills Registry Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-26:AGENT:SKILLS:REGISTRY')
@@ -84,10 +84,10 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ SUCCESS] HCS-26 Skills Registry Topic Created: ${topicId}`)
+    console.log(`[SUCCESS] HCS-26 Skills Registry Topic Created: ${topicId}`)
 
     // 2. Define an Advanced Autonomous Skill Manifest (Real Estate / RWA Valuation Engine)
-    console.log('\n[⚙️ PROCESS] Authoring HCS-26 Skill Manifest with Model Context Protocol (MCP) Tooling...')
+    console.log('\n[PROCESS] Authoring HCS-26 Skill Manifest with Model Context Protocol (MCP) Tooling...')
     const skillManifest = buildHCS26Manifest({
       skillId: 'hedera-rwa-appraiser-v2',
       name: 'Hedera RWA Automated Appraisal & NAV Estimator',
@@ -123,14 +123,14 @@ const main = async () => {
       ]
     })
 
-    console.log('[📊 LOG] Skill Manifest Assembled:')
-    console.log(`[📊 LOG] Skill ID:     ${skillManifest.skillId} (v${skillManifest.semver})`)
-    console.log(`[📊 LOG] Provider:     ${skillManifest.provider}`)
-    console.log(`[📊 LOG] MCP Tools:    ${skillManifest.mcpTools.map(t => t.name).join(', ')}`)
-    console.log(`[📊 LOG] Unit Pricing: ${skillManifest.pricing.cost} ${skillManifest.pricing.asset} per query`)
+    console.log('[LOG] Skill Manifest Assembled:')
+    console.log(`[LOG] Skill ID:     ${skillManifest.skillId} (v${skillManifest.semver})`)
+    console.log(`[LOG] Provider:     ${skillManifest.provider}`)
+    console.log(`[LOG] MCP Tools:    ${skillManifest.mcpTools.map(t => t.name).join(', ')}`)
+    console.log(`[LOG] Unit Pricing: ${skillManifest.pricing.cost} ${skillManifest.pricing.asset} per query`)
 
     // 3. Register Manifest on Consensus Topic
-    console.log('\n[⚙️ PROCESS] Broadcast-registering skill to HCS-26 registry topic...')
+    console.log('\n[PROCESS] Broadcast-registering skill to HCS-26 registry topic...')
     // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -139,19 +139,19 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seq = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ SUCCESS] Skill Registered! Consensus Sequence #${seq}`)
+    console.log(`[SUCCESS] Skill Registered! Consensus Sequence #${seq}`)
 
     // 4. Client Agent Discovery & Validation Simulation
-    console.log('\n[⚙️ PROCESS] Simulating peer AI Agent performing semantic discovery...')
+    console.log('\n[PROCESS] Simulating peer AI Agent performing semantic discovery...')
     const searchFilterTag = 'rwa'
     const isTagMatched = skillManifest.tags.includes(searchFilterTag)
-    console.log(`[🔍 DISCOVERY] Querying skills matching tag: '${searchFilterTag}' ➔ ${isTagMatched ? 'MATCH FOUND' : 'NO MATCH'}`)
+    console.log(`[DISCOVERY] Querying skills matching tag: '${searchFilterTag}' ➔ ${isTagMatched ? 'MATCH FOUND' : 'NO MATCH'}`)
 
     if (isTagMatched) {
-      console.log(`[✅ DISCOVERED] Found Skill: ${skillManifest.name}`)
-      console.log(`[📋 SCHEMA] Available Tool: ${skillManifest.mcpTools[0].name}`)
-      console.log(`[📋 SCHEMA] Parameters Required: ${JSON.stringify(skillManifest.mcpTools[0].parameters.required)}`)
-      console.log(`[💳 PRICING] Execution Fee: ${skillManifest.pricing.cost} ${skillManifest.pricing.asset}`)
+      console.log(`[DISCOVERED] Found Skill: ${skillManifest.name}`)
+      console.log(`[SCHEMA] Available Tool: ${skillManifest.mcpTools[0].name}`)
+      console.log(`[SCHEMA] Parameters Required: ${JSON.stringify(skillManifest.mcpTools[0].parameters.required)}`)
+      console.log(`[PRICING] Execution Fee: ${skillManifest.pricing.cost} ${skillManifest.pricing.asset}`)
     }
 
     // Persist state
@@ -159,18 +159,18 @@ const main = async () => {
     updateState('HCS26_SKILL_ID', skillManifest.skillId)
     updateState('HCS26_TOOL_COUNT', skillManifest.mcpTools.length)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('HCS-26 allows any autonomous agent in the world to announce its tools and')
     console.log('price lists to an immutable bulletin board. Swarms can form, discover peers,')
     console.log('and negotiate multi-agent pipelines without a human engineer writing API bindings.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('By standardizing skill manifests under the Model Context Protocol (MCP) on Hedera,')
     console.log('any LLM (Claude, GPT, DeepSeek, Gemini) can natively discover and invoke Web3 tools.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] HCS-26 Execution Failure:', error.message)
+    console.error('\n[ERROR] HCS-26 Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -181,7 +181,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

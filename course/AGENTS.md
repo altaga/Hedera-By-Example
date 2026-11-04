@@ -1,11 +1,11 @@
-# 🤖 AGENTS.md — Autonomous Agent Operating Directives
+# AGENTS.md — Autonomous Agent Operating Directives
 ### Hedera Hashgraph Developer Curriculum & Enterprise Reference Architecture
 
 > **TARGET AUDIENCE:** Autonomous Coding Agents (Antigravity, Cursor, Claude Code, Trae, Codex, Copilot) and AI-Assisted Engineers contributing to, debugging, or extending this codebase.
 
 ---
 
-## 🧭 1. Repository Identity & Mission
+## 1. Repository Identity & Mission
 
 This repository (**Hedera for Dummies**) is an enterprise-grade, pedagogically standardized JavaScript curriculum covering the entire Hedera Hashgraph ecosystem across **16 modules** and **131 distinct production labs** (262 files total across mirrored English and Spanish trees).
 
@@ -16,7 +16,7 @@ This repository (**Hedera for Dummies**) is an enterprise-grade, pedagogically s
 
 ---
 
-## ⚙️ 2. Environment & Prerequisites
+## 2. Environment & Prerequisites
 
 ### Runtime & Dependencies
 - **Node.js:** `>= 20.0.0` (ESM mode: `"type": "module"` in `package.json`).
@@ -26,24 +26,15 @@ This repository (**Hedera for Dummies**) is an enterprise-grade, pedagogically s
 ### Environment Configuration (`.env`)
 The root `.env` must provide the following keys:
 ```ini
-NETWORK="testnet"
-OPERATOR_ID="0.0.xxxxxxx"
-OPERATOR_PRIVATE_KEY="3030020100300706052b8104000a04220420..."
-OPERATOR_EVM_ADDRESS="0x..."
+NETWORK="testnet"OPERATOR_ID="0.0.xxxxxxx"OPERATOR_PRIVATE_KEY="3030020100300706052b8104000a04220420..."OPERATOR_EVM_ADDRESS="0x..."
 
 # Secondary test accounts for multi-party flows (Atomic Swaps, CoW Intents, Allowances)
-ACCOUNT_1_ID="0.0.xxxxxxx"
-ACCOUNT_1_PRIVATE_KEY="3030020100300706052b8104000a04220420..."
-ACCOUNT_1_EVM_ADDRESS="0x..."
-
-ACCOUNT_2_ID="0.0.xxxxxxx"
-ACCOUNT_2_PRIVATE_KEY="3030020100300706052b8104000a04220420..."
-ACCOUNT_2_EVM_ADDRESS="0x..."
+ACCOUNT_1_ID="0.0.xxxxxxx"ACCOUNT_1_PRIVATE_KEY="3030020100300706052b8104000a04220420..."ACCOUNT_1_EVM_ADDRESS="0x..."ACCOUNT_2_ID="0.0.xxxxxxx"ACCOUNT_2_PRIVATE_KEY="3030020100300706052b8104000a04220420..."ACCOUNT_2_EVM_ADDRESS="0x..."
 ```
 
 ---
 
-## 🚀 3. Execution Commands & Directives
+## 3. Execution Commands & Directives
 
 ### Running Individual Labs
 Any lab can be executed directly from the project root using Node:
@@ -71,7 +62,7 @@ npm run lint:fix         # Auto-formats JavaScript files to StandardJS rules
 
 ---
 
-## 📐 4. Mandatory Rules for Adding or Modifying Code
+## 4. Mandatory Rules for Adding or Modifying Code
 
 Whenever you modify, refactor, or create files, **YOU MUST ADHERE TO THESE 5 RULES WITHOUT EXCEPTION**:
 
@@ -87,7 +78,7 @@ Every lab file header **MUST** contain the standardized header block:
 /**
  * ============================================================================
  * Lab XX: <Lab Title>
- * [ CONCEPT ] <Concept Subtitle>
+ * [CONCEPT] <Concept Subtitle>
  * ============================================================================
  * [ KEY CONCEPT ]
  * <Detailed theoretical explanation of the underlying distributed ledger mechanism>
@@ -124,7 +115,7 @@ To prevent hanging gRPC channels or dangling event loops:
      main().then(() => {
        process.exit(0)
      }).catch((error) => {
-       console.error('[❌ ERROR] Execution Failure:', error.message)
+       console.error('[ERROR] Execution Failure:', error.message)
        process.exit(1)
      })
    }
@@ -145,7 +136,7 @@ Labs communicate sequentially via state variables stored in `state.json`:
 
 ---
 
-## 🏛️ 5. Key Architecture & Duality Directory
+## 5. Key Architecture & Duality Directory
 
 When designing or debugging modules, always recognize the dual operational patterns native to Hedera:
 
@@ -165,7 +156,7 @@ When designing or debugging modules, always recognize the dual operational patte
 
 ---
 
-## ⚠️ 6. Common Traps & Antipatterns (The "Never Do" List)
+## 6. Common Traps & Antipatterns (The "Never Do"List)
 
 1. **NEVER use `.plus()` or `.negated()` on Hbar objects:** Hedera SDK `Hbar` objects are immutable value representations without BigNumber arithmetic methods. To compute dynamic balances, use native `BigInt` tinybars: `BigInt(hbar.toTinybars())`.
 2. **NEVER exceed 100 bytes in NFT metadata on HTS:** `TokenMintTransaction` limits metadata bytes to 100 bytes per serial. Store standard IPFS URIs (`ipfs://.../<id>.json`), not raw stringified JSON payloads.
@@ -174,4 +165,4 @@ When designing or debugging modules, always recognize the dual operational patte
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. CODE IS CURRENCY. SETTLEMENT IS INSTANT.
+ 2026 **HEDERA FOR DUMMIES**. CODE IS CURRENCY. SETTLEMENT IS INSTANT.

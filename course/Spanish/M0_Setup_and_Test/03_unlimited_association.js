@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Habilitar Auto-Asociaciones Ilimitadas
- * [ CONCEPTO ] Optimización de UX y Escudo Anti-Spam
+ * [CONCEPTO] Optimización de UX y Escudo Anti-Spam
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El Valor Mágico: Hedera protege las cuentas contra el "spam de tokens"
@@ -43,10 +43,10 @@ const main = async () => {
   const { client, operatorId: opId } = getClient()
 
   try {
-    console.log(`[ℹ️ INFO] Cuenta Objetivo: ${opId}`)
+    console.log(`[INFO] Cuenta Objetivo: ${opId}`)
 
     // Preparar la Transacción de Actualización
-    console.log('[⚙️ PROCESO] Construyendo AccountUpdateTransaction...')
+    console.log('[PROCESO] Construyendo AccountUpdateTransaction...')
 
     // setMaxAutomaticTokenAssociations(-1) habilita la auto-asociación "Ilimitada"
     const transaction = await new AccountUpdateTransaction()
@@ -55,17 +55,17 @@ const main = async () => {
       .freezeWith(client)
 
     // Firmar y Ejecutar
-    console.log('[⚙️ PROCESO] Firmando transacción con la llave del operador...')
+    console.log('[PROCESO] Firmando transacción con la llave del operador...')
     const response = await transaction.execute(client)
 
-    console.log('[ℹ️ INFO] Esperando confirmación de la red...')
+    console.log('[INFO] Esperando confirmación de la red...')
     const receipt = await response.getReceipt(client)
 
-    console.log('\n[✅ ÉXITO] Auto-Asociaciones Ilimitadas Activas.')
-    console.log(`[📊 REGISTRO] Estado Final: ${receipt.status.toString()}`)
-    console.log('\n[ℹ️ INFO] Tu billetera ahora puede recibir cualquier token (FT o NFT) automáticamente.')
+    console.log('\n[ÉXITO] Auto-Asociaciones Ilimitadas Activas.')
+    console.log(`[REGISTRO] Estado Final: ${receipt.status.toString()}`)
+    console.log('\n[INFO] Tu billetera ahora puede recibir cualquier token (FT o NFT) automáticamente.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El valor `-1` habilitado permite que cualquier activo sea recibido')
     console.log('sin intervencion manual. En entornos DeFi o Gaming, esto es crucial')
     console.log('para reducir la fricción en el intercambio de activos digitales.')
@@ -73,7 +73,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La actualización de cuenta falló:', error.message)
+    console.error('\n[FALLO] La actualización de cuenta falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -82,7 +82,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

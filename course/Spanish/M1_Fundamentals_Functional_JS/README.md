@@ -1,4 +1,4 @@
-# 🧱 Módulo 1: Fundamentos y Criptografía
+# Módulo 1: Fundamentos y Criptografía
 ## Arquitectura de Consenso y Soberanía Digital
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Mapa del Módulo
+## Mapa del Módulo
 Este módulo cubre los pilares de la red Hedera: desde el algoritmo Hashgraph hasta la gestión de claves.
 
 | Lab | Tema | Descripción |
@@ -22,7 +22,7 @@ Este módulo cubre los pilares de la red Hedera: desde el algoritmo Hashgraph ha
 
 ---
 
-## 🌀 El Algoritmo Hashgraph (Gossip-about-Gossip)
+## El Algoritmo Hashgraph (Gossip-about-Gossip)
 
 A diferencia de las blockchains tradicionales, Hedera utiliza un DAG (Gráfico Acíclico Dirigido) para alcanzar el consenso de forma asíncrona.
 
@@ -63,7 +63,7 @@ graph TD
 
 ---
 
-## 🔑 Conceptos Clave
+## Conceptos Clave
 
 ### 1. Gossip-about-Gossip
 Los nodos no solo comparten transacciones, sino también el historial de con quién han hablado. Esto crea un registro inmutable de la propagación de la información.
@@ -76,11 +76,11 @@ En Hedera, el almacenamiento no es gratuito para siempre. Las cuentas deben paga
 
 ---
 
-## 📚 Referencias Oficiales
+## Referencias Oficiales
 - [Whitepaper de Hedera Hashgraph](https://hedera.com/whitepaper)
 - [Documentación de Cuentas (Hedera Docs)](https://docs.hedera.com/hedera/networks/mainnet/account-rent)
 - [Estándares de Criptografía (HIP-32)](https://hips.hedera.com/hip/hip-32)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. DISEÑADO PARA LA RESISTENCIA.
+ 2026 **HEDERA PARA DUMMIES**. DISEÑADO PARA LA RESISTENCIA.

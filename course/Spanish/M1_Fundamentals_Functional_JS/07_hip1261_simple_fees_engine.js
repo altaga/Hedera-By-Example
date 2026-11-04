@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Motor de Tarifas Simples y Precios Deterministas HIP-1261
- * [ CONCEPTO ] Modelado de Tarifas Predecibles en Hedera (Node, Network, Service)
+ * [CONCEPTO] Modelado de Tarifas Predecibles en Hedera (Node, Network, Service)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * A diferencia de las subastas de gas de Ethereum, donde los precios se
@@ -84,16 +84,16 @@ const main = async () => {
   const mirrorBase = getMirrorNodeBaseUrl()
 
   try {
-    console.log('[⚙️ PROCESO] Paso 1: Interrogando tipo de cambio de red en vivo desde Mirror Node...')
+    console.log('[PROCESO] Paso 1: Interrogando tipo de cambio de red en vivo desde Mirror Node...')
     const rateInfo = await fetchExchangeRate(mirrorBase)
 
-    console.log('\n--- 💱 TIPO DE CAMBIO ON-CHAIN EN HEDERA ---')
-    console.log(`🔹 Tasa USD por HBAR:   $${rateInfo.rateUsdPerHbar.toFixed(4)}`)
-    console.log(`🔹 Equivalente HBAR:    ${rateInfo.hbarEquiv} ℏ`)
-    console.log(`🔹 Equivalente Céntimos: ${rateInfo.cents} ¢`)
-    console.log(`🔹 Vencimiento de Tasa: ${rateInfo.expiration}`)
+    console.log('\n---  TIPO DE CAMBIO ON-CHAIN EN HEDERA ---')
+    console.log(`Tasa USD por HBAR:   $${rateInfo.rateUsdPerHbar.toFixed(4)}`)
+    console.log(`Equivalente HBAR:    ${rateInfo.hbarEquiv} ℏ`)
+    console.log(`Equivalente Céntimos: ${rateInfo.cents} ¢`)
+    console.log(`Vencimiento de Tasa: ${rateInfo.expiration}`)
 
-    console.log('\n[⚙️ PROCESO] Paso 2: Descomponiendo esquema de tarifas HIP-1261 para CryptoTransfer...')
+    console.log('\n[PROCESO] Paso 2: Descomponiendo esquema de tarifas HIP-1261 para CryptoTransfer...')
 
     // Constantes en USD de la tabla de tarifas estándar de Hedera para CryptoTransfer
     const NODE_FEE_USD = 0.0001
@@ -106,13 +106,13 @@ const main = async () => {
     const serviceFeeTinybars = calculateTinybars(SERVICE_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
     const totalPredictedTinybars = nodeFeeTinybars + networkFeeTinybars + serviceFeeTinybars
 
-    console.log('\n--- 📊 DESGLOSE PREDICTIVO DE TARIFAS (HIP-1261) ---')
-    console.log(`🔹 Node Fee:     $${NODE_FEE_USD.toFixed(4)} USD -> ${nodeFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Network Fee:  $${NETWORK_FEE_USD.toFixed(4)} USD -> ${networkFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Service Fee:  $${SERVICE_FEE_USD.toFixed(4)} USD -> ${serviceFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`🔹 Cotización:   $${TOTAL_STANDARD_FEE_USD.toFixed(4)} USD -> ${totalPredictedTinybars.toLocaleString()} tinybars (~${(totalPredictedTinybars / 1e8).toFixed(6)} ℏ)`)
+    console.log('\n---  DESGLOSE PREDICTIVO DE TARIFAS (HIP-1261) ---')
+    console.log(`Node Fee:     $${NODE_FEE_USD.toFixed(4)} USD -> ${nodeFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Network Fee:  $${NETWORK_FEE_USD.toFixed(4)} USD -> ${networkFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Service Fee:  $${SERVICE_FEE_USD.toFixed(4)} USD -> ${serviceFeeTinybars.toLocaleString()} tinybars`)
+    console.log(`Cotización:   $${TOTAL_STANDARD_FEE_USD.toFixed(4)} USD -> ${totalPredictedTinybars.toLocaleString()} tinybars (~${(totalPredictedTinybars / 1e8).toFixed(6)} ℏ)`)
 
-    console.log('\n[⚙️ PROCESO] Paso 3: Ejecutando CryptoTransfer en vivo para verificar facturación de consenso...')
+    console.log('\n[PROCESO] Paso 3: Ejecutando CryptoTransfer en vivo para verificar facturación de consenso...')
 
     // Transacción de prueba: transferir 0 HBAR a sí mismo
     const transaction = await new TransferTransaction()
@@ -124,19 +124,19 @@ const main = async () => {
     const actualFeeTinybars = record.transactionFee.toTinybars().toNumber()
     const actualFeeUsd = (actualFeeTinybars / 1e8) * rateInfo.rateUsdPerHbar
 
-    console.log('\n--- 🎯 VERIFICACIÓN DE FACTURACIÓN EN CONSENSO ---')
-    console.log(`🔹 Estado de Consenso:  ${record.receipt.status.toString()}`)
-    console.log(`🔹 ID de Transacción:   ${response.transactionId.toString()}`)
-    console.log(`🔹 Tarifa Real Cobrada: ${actualFeeTinybars.toLocaleString()} tinybars (${record.transactionFee.toString()})`)
-    console.log(`🔹 Tarifa Real en USD:  $${actualFeeUsd.toFixed(6)} USD`)
-    console.log(`🔹 Variación vs Cuota:  ${Math.abs(actualFeeTinybars - totalPredictedTinybars).toLocaleString()} tinybars`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(response)}`)
+    console.log('\n---  VERIFICACIÓN DE FACTURACIÓN EN CONSENSO ---')
+    console.log(`Estado de Consenso:  ${record.receipt.status.toString()}`)
+    console.log(`ID de Transacción:   ${response.transactionId.toString()}`)
+    console.log(`Tarifa Real Cobrada: ${actualFeeTinybars.toLocaleString()} tinybars (${record.transactionFee.toString()})`)
+    console.log(`Tarifa Real en USD:  $${actualFeeUsd.toFixed(6)} USD`)
+    console.log(`Variación vs Cuota:  ${Math.abs(actualFeeTinybars - totalPredictedTinybars).toLocaleString()} tinybars`)
+    console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     updateState('HIP1261_LAST_TX_ID', response.transactionId.toString())
     updateState('HIP1261_ACTUAL_FEE_TINYBARS', actualFeeTinybars)
     updateState('HIP1261_RATE_USD_PER_HBAR', rateInfo.rateUsdPerHbar)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Cero Subastas de Gas: En Hedera, las tarifas son fijas en USD y deterministas.')
     console.log('Las empresas presupuestan sus costos de ledger con 100% de previsibilidad financiera,')
     console.log('sabiendo que una transferencia cuesta exactamente $0.001 USD sin importar el volumen de red.')
@@ -144,7 +144,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Falló el Cálculo del Motor de Tarifas: ${error.message}`)
+    console.error(`\n[ERROR] Falló el Cálculo del Motor de Tarifas: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -155,7 +155,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

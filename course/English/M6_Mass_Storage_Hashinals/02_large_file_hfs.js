@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Native Hedera File Service (HFS) - Large Files
- * [ CONCEPT ] Anchor and Append Pattern
+ * [CONCEPT] Anchor and Append Pattern
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Multi-Transaction Bridge: Hedera transactions are limited in size to
@@ -52,14 +52,14 @@ const main = async () => {
     }
 
     const fileBuffer = fs.readFileSync(filePath)
-    console.log(`[ℹ️ INFO] Reading "${path.basename(filePath)}" (${fileBuffer.length} bytes)...`)
+    console.log(`[INFO] Reading "${path.basename(filePath)}" (${fileBuffer.length} bytes)...`)
 
     // 1. CREATE THE FILE (Initial Chunk)
     // 4KB is a safe limit for Hedera transactions
     const CHUNK_SIZE = 4096
     const initialChunk = fileBuffer.slice(0, CHUNK_SIZE)
 
-    console.log(`[⚙️ PROCESS] Initializing file anchor with ${initialChunk.length} bytes...`)
+    console.log(`[PROCESS] Initializing file anchor with ${initialChunk.length} bytes...`)
     const createTx = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
       .setKeys([adminKey.publicKey])
@@ -70,12 +70,12 @@ const main = async () => {
     const createReceipt = await createRes.getReceipt(client)
     const fileId = createReceipt.fileId
 
-    console.log(`\n[✅ SUCCESS] File Anchor Created: ${fileId.toString()}`)
+    console.log(`\n[SUCCESS] File Anchor Created: ${fileId.toString()}`)
 
     // 2. APPEND REMAINING BYTES
     for (let i = CHUNK_SIZE; i < fileBuffer.length; i += CHUNK_SIZE) {
       const chunk = fileBuffer.slice(i, i + CHUNK_SIZE)
-      console.log(`[⚙️ PROCESS] Transmitting bytes ${i} to ${i + chunk.length}...`)
+      console.log(`[PROCESS] Transmitting bytes ${i} to ${i + chunk.length}...`)
 
       const appendTx = await new FileAppendTransaction()
         .setFileId(fileId)
@@ -86,13 +86,13 @@ const main = async () => {
       await appendRes.getReceipt(client)
     }
 
-    console.log(`\n[✅ SUCCESS] Large File Upload Complete: ${fileId.toString()}`)
-    console.log(`[📊 LOG] View Initial Transaction: ${getHashscanUrl(createRes)}`)
+    console.log(`\n[SUCCESS] Large File Upload Complete: ${fileId.toString()}`)
+    console.log(`[LOG] View Initial Transaction: ${getHashscanUrl(createRes)}`)
 
     // Automatically sync for subsequent steps
     updateState('HFS_FILE_ID', fileId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The Multi-Transaction Bridge: Understanding chunking is essential for')
     console.log('production. This script shows how to programmatically split data into')
     console.log('4KB "Shards" and stream them to the ledger node safely.')
@@ -100,7 +100,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HFS Large File Upload Failed:', error.message)
+    console.error('\n[FAILED] HFS Large File Upload Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -109,7 +109,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

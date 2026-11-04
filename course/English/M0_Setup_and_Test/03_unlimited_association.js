@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Activate Unlimited Auto-Associations
- * [ CONCEPT ] Frictionless Token Reception
+ * [CONCEPT] Frictionless Token Reception
  * ============================================================================
  * [ KEY CONCEPT ]
  * The value `-1` in `setMaxAutomaticTokenAssociations` is the magic number
@@ -42,8 +42,8 @@ const main = async () => {
 
   try {
     // 3. Prepare the Update Transaction
-    console.log('[⚙️ PROCESS] Constructing AccountUpdateTransaction...')
-    console.log('[ℹ️ INFO] Setting MaxAutomaticTokenAssociations to -1 (Unlimited)...')
+    console.log('[PROCESS] Constructing AccountUpdateTransaction...')
+    console.log('[INFO] Setting MaxAutomaticTokenAssociations to -1 (Unlimited)...')
 
     const transaction = await new AccountUpdateTransaction()
       .setAccountId(opId)
@@ -51,25 +51,25 @@ const main = async () => {
       .freezeWith(client)
 
     // 4. Sign and Execute
-    console.log('[⚙️ PROCESS] Signing with Operator Key and executing transaction...')
+    console.log('[PROCESS] Signing with Operator Key and executing transaction...')
     const response = await transaction.execute(client)
 
-    console.log('[ℹ️ INFO] Waiting for network consensus receipt...')
+    console.log('[INFO] Waiting for network consensus receipt...')
     const receipt = await response.getReceipt(client)
 
-    console.log('\n[✅ SUCCESS] Unlimited Auto-Associations Active.')
-    console.log(`[📊 LOG] Receipt Status: ${receipt.status.toString()}`)
-    console.log('\n[ℹ️ INFO] Wallet can now receive any token (FT or NFT) automatically.')
+    console.log('\n[SUCCESS] Unlimited Auto-Associations Active.')
+    console.log(`[LOG] Receipt Status: ${receipt.status.toString()}`)
+    console.log('\n[INFO] Wallet can now receive any token (FT or NFT) automatically.')
     console.log('Ready for Lab 04.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The value `-1` in `setMaxAutomaticTokenAssociations` is the magic')
     console.log('number for "Unlimited". This simplifies UX for your future dApp users.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Operation Failed:', error.message)
+    console.error('\n[FAILED] Operation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -78,7 +78,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

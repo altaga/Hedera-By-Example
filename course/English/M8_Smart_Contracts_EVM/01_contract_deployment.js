@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Smart Contract Deployment (Integrated Compiler)
- * [ CONCEPT ] EVM Bytecode & Direct Deployment
+ * [CONCEPT] EVM Bytecode & Direct Deployment
  * ============================================================================
  * [ KEY CONCEPT ]
  * Direct Bytecode: Unlike some environments that require the SDK to "bundle"
@@ -59,7 +59,7 @@ contract SimpleStorage {
 
 // --- 2. COMPILATION HELPER ---
 const compileContract = (contractName, source) => {
-  console.log(`[⚙️ PROCESS] Compiling ${contractName}.sol live...`)
+  console.log(`[PROCESS] Compiling ${contractName}.sol live...`)
 
   const input = {
     language: 'Solidity',
@@ -103,10 +103,10 @@ const main = async () => {
   try {
     // Step A: Compilation
     const { bytecode } = compileContract('SimpleStorage', SOURCE_CODE)
-    console.log(`[✅ SUCCESS] Compiled Successfully! Bytecode Length: ${bytecode.length} chars`)
+    console.log(`[SUCCESS] Compiled Successfully! Bytecode Length: ${bytecode.length} chars`)
 
     // Step B: Direct Bytecode Deployment
-    console.log('\n[⚙️ PROCESS] Deploying to Hedera Consensus Nodes (Direct Bytecode)...')
+    console.log('\n[PROCESS] Deploying to Hedera Consensus Nodes (Direct Bytecode)...')
     const contractId = await reuseContract('REUSE_M8_01_CONTRACT', bytecode, async () => {
       const contractResponse = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
@@ -117,31 +117,31 @@ const main = async () => {
       return contractReceipt.contractId
     })
 
-    console.log(`\n[✅ SUCCESS] Contract Created: ${contractId}`)
+    console.log(`\n[SUCCESS] Contract Created: ${contractId}`)
 
-    console.log('[ℹ️ INFO] Synchronizing state.json with Contract ID...')
+    console.log('[INFO] Synchronizing state.json with Contract ID...')
     updateState('SC_STORAGE_ID', contractId.toString())
 
     // Step C: Interact (Set)
-    console.log("\n[⚙️ PROCESS] Calling 'set(42)' via native HAPI call...")
+    console.log("\n[PROCESS] Calling 'set(42)' via native HAPI call...")
     const setTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
     await setTx.getReceipt(client)
-    console.log('[✅ SUCCESS] State updated to 42.')
+    console.log('[SUCCESS] State updated to 42.')
 
     // Step D: Query (Get)
-    console.log("\n[⚙️ PROCESS] Querying 'get()' value from on-chain state...")
+    console.log("\n[PROCESS] Querying 'get()' value from on-chain state...")
     const getQuery = await withGasRetry((gas) => new ContractCallQuery()
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('get')
       .execute(client), { gas: 2000000 })
     const value = getQuery.getUint256(0)
-    console.log(`[📊 LOG] Retrieved Value: ${value}`)
+    console.log(`[LOG] Retrieved Value: ${value}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Direct Bytecode: Unlike some environments that require the SDK to')
     console.log('"bundle" your contract, here we are interacting with the ledger at the')
     console.log('byte level. This gives you absolute control over the deployment cost')
@@ -150,7 +150,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Deployment Lifecycle Failed:', error.message)
+    console.error('\n[FAILED] Deployment Lifecycle Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -159,7 +159,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

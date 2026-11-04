@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: JSON-RPC Relay with Pure Ethers.js v6
- * [ CONCEPT ] Standard Ethereum Web3 Interfaces on Hedera
+ * [CONCEPT] Standard Ethereum Web3 Interfaces on Hedera
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Ethereum Developer Illusion: You do not need the Hedera SDK to interact
@@ -42,7 +42,7 @@ const main = async () => {
 
   try {
     // 1. Initialize Standard Ethers v6 JsonRpcProvider
-    console.log(`[⚙️ PROCESS] Connecting to Hedera JSON-RPC Relay: ${HEDERA_TESTNET_RPC}...`)
+    console.log(`[PROCESS] Connecting to Hedera JSON-RPC Relay: ${HEDERA_TESTNET_RPC}...`)
     const provider = new ethers.JsonRpcProvider(HEDERA_TESTNET_RPC, HEDERA_TESTNET_CHAIN_ID, {
       staticNetwork: true
     })
@@ -52,27 +52,27 @@ const main = async () => {
     const blockNumber = await provider.getBlockNumber()
     const feeData = await provider.getFeeData()
 
-    console.log('[✅ SUCCESS] Connected to Network:')
-    console.log(`[📊 LOG] Chain ID:          ${network.chainId.toString()} (Hedera Testnet)`)
-    console.log(`[📊 LOG] Latest EVM Block:  #${blockNumber}`)
-    console.log(`[📊 LOG] Gas Price:         ${ethers.formatUnits(feeData.gasPrice || 0, 'gwei')} Gwei`)
+    console.log('[SUCCESS] Connected to Network:')
+    console.log(`[LOG] Chain ID:          ${network.chainId.toString()} (Hedera Testnet)`)
+    console.log(`[LOG] Latest EVM Block:  #${blockNumber}`)
+    console.log(`[LOG] Gas Price:         ${ethers.formatUnits(feeData.gasPrice || 0, 'gwei')} Gwei`)
 
     // 3. Connect Ethereum Signer (Wallet)
-    console.log('\n[⚙️ PROCESS] Initializing Ethers.js Wallet from operator private key...')
+    console.log('\n[PROCESS] Initializing Ethers.js Wallet from operator private key...')
     // Normalize private key for ethers (32-byte hex)
     const rawKeyHex = operatorKey.startsWith('0x') ? operatorKey : `0x${operatorKey.slice(-64)}`
     const wallet = new ethers.Wallet(rawKeyHex, provider)
 
-    console.log(`[📊 LOG] Derived EVM Address: ${wallet.address}`)
+    console.log(`[LOG] Derived EVM Address: ${wallet.address}`)
 
     // 4. Query Balance using standard eth_getBalance
-    console.log('\n[⚙️ PROCESS] Querying account balance via JSON-RPC eth_getBalance...')
+    console.log('\n[PROCESS] Querying account balance via JSON-RPC eth_getBalance...')
     const balanceWei = await provider.getBalance(wallet.address)
     const balanceHbar = ethers.formatEther(balanceWei)
-    console.log(`[✅ SUCCESS] EVM Account Balance: ${balanceHbar} HBAR (Tinybars converted: ${balanceWei.toString()})`)
+    console.log(`[SUCCESS] EVM Account Balance: ${balanceHbar} HBAR (Tinybars converted: ${balanceWei.toString()})`)
 
     // 5. Construct Standard EVM Transaction
-    console.log('\n[⚙️ PROCESS] Simulating standard EVM transaction payload structure...')
+    console.log('\n[PROCESS] Simulating standard EVM transaction payload structure...')
     const txPayload = {
       to: wallet.address, // Self-transfer
       value: ethers.parseEther('0.01'),
@@ -81,7 +81,7 @@ const main = async () => {
       gasPrice: feeData.gasPrice
     }
 
-    console.log('[📊 LOG] Standard EIP-155 Transaction Parameters:')
+    console.log('[LOG] Standard EIP-155 Transaction Parameters:')
     console.dir({
       to: txPayload.to,
       value: `${ethers.formatEther(txPayload.value)} HBAR`,
@@ -92,14 +92,14 @@ const main = async () => {
     updateState('ETHERS_EVM_ADDRESS', wallet.address)
     updateState('ETHERS_LATEST_BLOCK', blockNumber)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero Hedera SDK code was required in this script. Tooling such as MetaMask,')
     console.log('WalletConnect, Hardhat, and Foundry speak standard Ethereum JSON-RPC.')
     console.log('Hashio transparently translates these into native Hedera consensus transactions.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] JSON-RPC Relay interaction failed:', error.message)
+    console.error('\n[ERROR] JSON-RPC Relay interaction failed:', error.message)
     process.exit(1)
   }
 }
@@ -108,7 +108,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

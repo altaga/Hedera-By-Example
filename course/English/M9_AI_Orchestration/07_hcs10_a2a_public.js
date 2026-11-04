@@ -2,11 +2,11 @@
 /**
  * ============================================================================
  * Lab 07: Autonomous Agent Orchestration
- * [ CONCEPT ] Stateful Parallel Communication
+ * [CONCEPT] Stateful Parallel Communication
  * ============================================================================
  * [ KEY CONCEPT ]
  * Cooperative Autonomy: This lab demonstrates fundamental orchestration where
- * two agents act as a "Swarm." Agent A initiates a work item, and Agent B
+ * two agents act as a "Swarm."Agent A initiates a work item, and Agent B
  * reacts, processes the data, and replies. This establishes a reactive loop
  * where agents monitor specific topics and respond based on internal state.
  * By decoupling the agents and using the ledger as a coordination layer,
@@ -22,7 +22,7 @@
  * - Previous: M9 Lab 06: HCS-10 U2A Public
  * - Next:     M9 Lab 08: Impersonation Attack
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent A -> Agent B Inbox: Round 1 message
  * Agent B -> Agent A Inbox: Reply
  * Agent A -> Agent B Inbox: Round 2 message
@@ -62,7 +62,7 @@ const main = async () => {
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
   if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
-    console.error('[❌ FAILED] Missing Agent IDs or Topic configurations in state.')
+    console.error('[FAILED] Missing Agent IDs or Topic configurations in state.')
     process.exitCode = 1
     return
   }
@@ -73,7 +73,7 @@ const main = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
     const processedMessages = new Set()
 
-    console.log(`📡 [ℹ️ INFO] Agent B monitoring Inbox [${inbox}]...`)
+    console.log(`[INFO] Agent B monitoring Inbox [${inbox}]...`)
 
     // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
@@ -91,23 +91,23 @@ const main = async () => {
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
           if (data?.text?.includes('Hello')) {
-            console.log('\n--- 📥 [📊 LOG] AGENT B: EVENT RECEIVED ---')
-            console.log(`[ℹ️ INFO] Observed message on topic: ${inbox}`)
-            console.log(`[📊 LOG] Content: "${data.text}"`)
+            console.log('\n---  [LOG] AGENT B: EVENT RECEIVED ---')
+            console.log(`[INFO] Observed message on topic: ${inbox}`)
+            console.log(`[LOG] Content: "${data.text}"`)
 
             const roundMatch = data.text.match(/\d+/)
             const round = roundMatch ? roundMatch[0] : 'unknown'
 
-            console.log(`[⚙️ PROCESS] Agent B processing logic for Round ${round}...`)
+            console.log(`[PROCESS] Agent B processing logic for Round ${round}...`)
             await sleep(5000)
 
-            console.log('[✅ SUCCESS] Sending response to Outbox...')
+            console.log('[SUCCESS] Sending response to Outbox...')
             await hcs10.sendMessage(outbox, {
               text: `World ${round}!`,
               target: agentA_Id
             })
           }
-        } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
+        } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
       })
   }
 
@@ -120,17 +120,17 @@ const main = async () => {
     let currentRound = 1
     const maxRounds = 3
 
-    console.log(`🤖 [ℹ️ INFO] Agent A monitoring Outbox [${outbox}]...`)
+    console.log(`[INFO] Agent A monitoring Outbox [${outbox}]...`)
 
     const sendPing = async (round) => {
-      console.log('\n--- 🤖 [⚙️ PROCESS] AGENT A: STATE UPDATE ---')
-      console.log(`[⚙️ PROCESS] Initiating Round ${round}...`)
+      console.log('\n---  [PROCESS] AGENT A: STATE UPDATE ---')
+      console.log(`[PROCESS] Initiating Round ${round}...`)
 
       await hcs10.sendMessage(inbox, {
         operator_id: agentA_Id,
         text: `Hello ${round}`
       })
-      console.log(`[✅ SUCCESS] Published "Hello ${round}" to Inbox.`)
+      console.log(`[SUCCESS] Published "Hello ${round}" to Inbox.`)
     }
 
     new TopicMessageQuery()
@@ -145,18 +145,18 @@ const main = async () => {
 
         try {
           if (content.includes(`World ${currentRound}`)) {
-            console.log('\n--- 📥 [📊 LOG] AGENT A: RESPONSE CONFIRMED ---')
-            console.log(`[✅ SUCCESS] Received valid reply for Round ${currentRound}.`)
+            console.log('\n---  [LOG] AGENT A: RESPONSE CONFIRMED ---')
+            console.log(`[SUCCESS] Received valid reply for Round ${currentRound}.`)
 
             if (currentRound < maxRounds) {
               currentRound++
               await sleep(5000)
               await sendPing(currentRound)
             } else {
-              console.log('\n🏁 [✅ SUCCESS] Communication sequence complete.')
-              console.log('\n💡 KEY CONCEPT:')
+              console.log('\n [SUCCESS] Communication sequence complete.')
+              console.log('\n KEY CONCEPT:')
               console.log('Cooperative Autonomy: This lab demonstrates fundamental orchestration')
-              console.log('where two agents act as a "Swarm." By decoupling the agents and using')
+              console.log('where two agents act as a "Swarm."By decoupling the agents and using')
               console.log('the ledger as a coordination layer, you create a system that is')
               console.log('fault-tolerant and easily auditable.')
               console.log('\n--- SESSION COMPLETE ---\n')
@@ -164,7 +164,7 @@ const main = async () => {
             }
           }
         } catch (e) {
-          console.error('\n[❌ FAILED] Reactor failure:', e.message)
+          console.error('\n[FAILED] Reactor failure:', e.message)
           process.exitCode = 1
         }
       })
@@ -180,7 +180,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

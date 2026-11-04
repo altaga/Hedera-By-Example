@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: Indexador de Subgrafos GraphQL para Mirror Node
- * [ CONCEPTO ] Motor Unificado de Consultas en Grafo sobre el Estado de Hedera
+ * [CONCEPTO] Motor Unificado de Consultas en Grafo sobre el Estado de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En las APIs REST convencionales, ensamblar el portafolio completo de un usuario
@@ -108,7 +108,7 @@ const main = async () => {
   const indexer = new HederaSubgraphIndexer(mirrorBase)
 
   try {
-    console.log('[⚙️ PROCESO] Paso 1: Compilando definición de esquema del Subgrafo GraphQL...')
+    console.log('[PROCESO] Paso 1: Compilando definición de esquema del Subgrafo GraphQL...')
 
     const sampleGraphQLQuery = `
       query GetAccountPortfolio($accountId: ID!) {
@@ -131,21 +131,21 @@ const main = async () => {
     `
     console.log(sampleGraphQLQuery)
 
-    console.log(`[⚙️ PROCESO] Paso 2: Ejecutando resolvedor de Subgrafo para la Cuenta: ${operatorId}...`)
+    console.log(`[PROCESO] Paso 2: Ejecutando resolvedor de Subgrafo para la Cuenta: ${operatorId}...`)
     const result = await indexer.resolveAccountPortfolio({
       accountId: operatorId.toString(),
       includeTokens: true,
       txLimit: 3
     })
 
-    console.log(`\n[✅ ÉXITO] ¡Entidad Unificada Resuelta en ${result.metadata.resolverDurationMs} ms!`)
-    console.log('\n--- 📦 CARGA JSON GRAPHQL RESUELTA ---')
+    console.log(`\n[ÉXITO] ¡Entidad Unificada Resuelta en ${result.metadata.resolverDurationMs} ms!`)
+    console.log('\n---  CARGA JSON GRAPHQL RESUELTA ---')
     console.log(JSON.stringify(result.data, null, 2))
 
     updateState('GRAPHQL_LAST_RESOLVER_MS', result.metadata.resolverDurationMs)
     updateState('GRAPHQL_INDEXED_ACCOUNT', operatorId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Eliminando Cascadas REST: En lugar de disparar múltiples peticiones HTTP')
     console.log('desde el frontend, el indexador de subgrafos resuelve relaciones complejas')
     console.log('en paralelo, entregando paneles de producción con tiempos sub-100ms.')
@@ -153,7 +153,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Falló el Indexador GraphQL: ${error.message}`)
+    console.error(`\n[ERROR] Falló el Indexador GraphQL: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -164,7 +164,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

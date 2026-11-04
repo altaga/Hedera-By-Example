@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Almacenamiento Económico con HCS-1 (Hashinals)
- * [ CONCEPTO ] Fragmentación (Sharding) y Ordenamiento Cronológico como Datos
+ * [CONCEPTO] Fragmentación (Sharding) y Ordenamiento Cronológico como Datos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Eficiencia Extrema: Mientras que el HFS ofrece disponibilidad garantizada
@@ -80,10 +80,10 @@ const main = async () => {
     }
 
     const fileBuffer = fs.readFileSync(filePath)
-    console.log(`[ℹ️ INFO] Procesando archivo binario: ${fileBuffer.length} bytes.`)
+    console.log(`[INFO] Procesando archivo binario: ${fileBuffer.length} bytes.`)
 
     // 1. Crear el Topic ancla para HCS-1
-    console.log('[⚙️ PROCESO] Creando Tema de Consenso (Topic) dedicado para HCS-1...')
+    console.log('[PROCESO] Creando Tema de Consenso (Topic) dedicado para HCS-1...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1 Asset Anchor')
@@ -94,17 +94,17 @@ const main = async () => {
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
 
-    console.log(`[✅ ÉXITO] Canal de almacenamiento HCS-1 activado: ${topicId.toString()}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(topicRes)}`)
+    console.log(`[ÉXITO] Canal de almacenamiento HCS-1 activado: ${topicId.toString()}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(topicRes)}`)
 
     const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-    console.log(`[📊 REGISTRO] Huella Digital (SHA-256): ${fileHash}`)
+    console.log(`[REGISTRO] Huella Digital (SHA-256): ${fileHash}`)
 
     const payloads = constructHcs1Payloads(fileBuffer, topicId.toString())
-    console.log(`[ℹ️ INFO] Archivo fragmentado en ${payloads.length} mensajes compatibles.\n`)
+    console.log(`[INFO] Archivo fragmentado en ${payloads.length} mensajes compatibles.\n`)
 
     // 2. Enviar fragmentos (Shards)
-    console.log('[⚙️ PROCESO] Anclando fragmentos al ledger de consenso...')
+    console.log('[PROCESO] Anclando fragmentos al ledger de consenso...')
     for (const payload of payloads) {
       show.shards({ id: 'hcs1-upload', title: 'Fragmentos HCS-1 enviados', total: payload.t, done: payload.i + 1 })
       // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
@@ -114,15 +114,15 @@ const main = async () => {
         .execute(client)
 
       await submitTx.getReceipt(client)
-      console.log(`   └─ Fragmento (Shard) ${payload.i + 1}/${payload.t} confirmado.`)
+      console.log(`└─ Fragmento (Shard) ${payload.i + 1}/${payload.t} confirmado.`)
     }
 
-    console.log('\n[✅ ÉXITO] Ciclo de vida de almacenamiento HCS-1 completado.')
+    console.log('\n[ÉXITO] Ciclo de vida de almacenamiento HCS-1 completado.')
 
     // Persistir el Topic ID para el laboratorio de reconstrucción
     updateState('HCS_TOPIC_ID', topicId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-1 es el estándar detrás de los "Hashinals". Al usar el')
     console.log('consenso para el ordenamiento, garantizas la integridad de')
     console.log('los datos por una fracción del costo de almacenamiento directo,')
@@ -131,7 +131,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El flujo de almacenamiento HCS-1 falló:', error.message)
+    console.error('\n[FALLO] El flujo de almacenamiento HCS-1 falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -140,7 +140,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

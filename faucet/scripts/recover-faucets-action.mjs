@@ -125,7 +125,7 @@ function parseArgs(argv) {
   const opts = {
     dryRun: false,
     minAmount: 100,
-    numberFaucets: 100,
+    numberFaucets: parseInt(process.env.FAUCET_POOL_SIZE || '25', 10) || 25,
   };
   for (const arg of argv.slice(2)) {
     if (arg === '--dry-run') opts.dryRun = true;

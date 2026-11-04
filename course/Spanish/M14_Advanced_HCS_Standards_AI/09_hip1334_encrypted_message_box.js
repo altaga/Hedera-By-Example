@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334 en HCS
- * [ CONCEPTO ] Mensajería Confidencial P2P Asimétrica Descubierta por el Memo de Cuenta
+ * [CONCEPTO] Mensajería Confidencial P2P Asimétrica Descubierta por el Memo de Cuenta
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En las economías multiagente autónomas, los agentes de IA y las cuentas institucionales
@@ -35,7 +35,7 @@
  * - Anterior:  M14 Lab 08: HashLinks HCS-12 y Adaptadores Verificados HCS-21
  * - Siguiente: M14 Lab 10: Servidor MCP Hashnet y Firewall de Políticas HOL Guard
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Destinatario -> Hedera: Crear tema buzón; el memo anuncia su llave pública
  * Remitente -> Hedera: Leer la llave del buzón desde el memo
  * Nota Remitente: ECDH efímero + AES-256-GCM
@@ -117,25 +117,25 @@ const main = async () => {
 
   try {
     // 1. Inicializar Agente Destinatario con Claves de Cifrado Asimétricas
-    console.log('[⚙️ PROCESO] Paso 1: Configurando Identidad del Buzón del Agente Destinatario...')
+    console.log('[PROCESO] Paso 1: Configurando Identidad del Buzón del Agente Destinatario...')
     const recipientMailbox = new Hip1334MailboxEngine()
 
-    console.log(`[📊 LOG] Cuenta Destinataria:    ${operatorId.toString()}`)
-    console.log(`[📊 LOG] Clave Pública de Cifrado: ${recipientMailbox.publicKeyHex.substring(0, 32)}...`)
+    console.log(`[LOG] Cuenta Destinataria:    ${operatorId.toString()}`)
+    console.log(`[LOG] Clave Pública de Cifrado: ${recipientMailbox.publicKeyHex.substring(0, 32)}...`)
 
     // 2. Crear Tópico de Entrada HCS Dedicado en Testnet
-    console.log('\n[⚙️ PROCESO] Paso 2: Creando Tópico HCS Dedicado de Entrada para el Buzón...')
+    console.log('\n[PROCESO] Paso 2: Creando Tópico HCS Dedicado de Entrada para el Buzón...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo(`HIP1334:INBOX:${operatorId.toString()}`)
       .execute(client)
 
     const topicReceipt = await topicTx.getReceipt(client)
     const inboxTopicId = topicReceipt.topicId
-    console.log(`[✅ ÉXITO] Tópico de Buzón de Entrada Creado: ${inboxTopicId.toString()}`)
-    console.log(`[🔗 ANUNCIO EN MEMO] hip1334:inbox=${inboxTopicId.toString()};key=${recipientMailbox.publicKeyHex.substring(0, 16)}...`)
+    console.log(`[ÉXITO] Tópico de Buzón de Entrada Creado: ${inboxTopicId.toString()}`)
+    console.log(`[ ANUNCIO EN MEMO] hip1334:inbox=${inboxTopicId.toString()};key=${recipientMailbox.publicKeyHex.substring(0, 16)}...`)
 
     // 3. El Emisor Descubre el Buzón y Cifra la Carga Confidencial
-    console.log('\n[⚙️ PROCESO] Paso 3: Emisor Derivando Secreto ECDH y Cifrando Carga Útil (AES-256-GCM)...')
+    console.log('\n[PROCESO] Paso 3: Emisor Derivando Secreto ECDH y Cifrando Carga Útil (AES-256-GCM)...')
     const confidentialOrder = JSON.stringify({
       orderId: 'AGENT-OTC-7712',
       strategy: 'DELTA_NEUTRAL_ARBITRAGE',
@@ -150,52 +150,52 @@ const main = async () => {
       confidentialOrder
     )
 
-    console.log('[✅ ÉXITO] ¡Carga Útil Cifrada!')
-    console.log(`[📊 LOG] Clave Pública Efímera: ${encryptedEnvelope.ephemeralPublicKey.substring(0, 24)}...`)
-    console.log(`[📊 LOG] IV (Nonce):           ${encryptedEnvelope.iv}`)
-    console.log(`[📊 LOG] Texto Cifrado (Hex):   ${encryptedEnvelope.ciphertext}`)
-    console.log(`[📊 LOG] Tag Auth (GCM):       ${encryptedEnvelope.authTag}`)
+    console.log('[ÉXITO] ¡Carga Útil Cifrada!')
+    console.log(`[LOG] Clave Pública Efímera: ${encryptedEnvelope.ephemeralPublicKey.substring(0, 24)}...`)
+    console.log(`[LOG] IV (Nonce):           ${encryptedEnvelope.iv}`)
+    console.log(`[LOG] Texto Cifrado (Hex):   ${encryptedEnvelope.ciphertext}`)
+    console.log(`[LOG] Tag Auth (GCM):       ${encryptedEnvelope.authTag}`)
 
     // 4. Enviar Sobre Cifrado a la Capa de Consenso de Hedera
-    console.log('\n[⚙️ PROCESO] Paso 4: Enviando Sobre Cifrado al Tópico de Entrada HCS del Destinatario...')
+    console.log('\n[PROCESO] Paso 4: Enviando Sobre Cifrado al Tópico de Entrada HCS del Destinatario...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(inboxTopicId)
       .setMessage(JSON.stringify(encryptedEnvelope))
       .execute(client)
 
     const submitReceipt = await submitTx.getReceipt(client)
-    console.log(`\n[✅ ÉXITO] ¡Mensaje Cifrado Anclado en HCS! Estado: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
-    console.log(`[📊 LOG] ID de Transacción:      ${submitTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORADOR] Ver en HashScan: ${getHashscanUrl(submitTx)}`)
+    console.log(`\n[ÉXITO] ¡Mensaje Cifrado Anclado en HCS! Estado: ${submitReceipt.status.toString()}`)
+    console.log(`[LOG] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
+    console.log(`[LOG] ID de Transacción:      ${submitTx.transactionId.toString()}`)
+    console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(submitTx)}`)
 
     // 5. Ingesta por el Destinatario, Autenticación y Descifrado
-    console.log('\n[⚙️ PROCESO] Paso 5: Destinatario Ingestando el Sobre y Autenticando Descifrado GCM...')
+    console.log('\n[PROCESO] Paso 5: Destinatario Ingestando el Sobre y Autenticando Descifrado GCM...')
     const decryptedPlaintext = recipientMailbox.decryptEnvelope(encryptedEnvelope)
     const parsedPayload = JSON.parse(decryptedPlaintext)
 
-    console.log('[✅ ÉXITO] ¡Integridad Criptográfica Autenticada y Texto Plano Recuperado!')
-    console.log(`   ID de Orden:        ${parsedPayload.orderId}`)
-    console.log(`   Estrategia:         ${parsedPayload.strategy}`)
-    console.log(`   Préstamo Máximo:    ${parsedPayload.maxBorrowTinybars / 1e8} ℏ`)
-    console.log(`   Agente Autorizado:  ${parsedPayload.authorizedAgent}`)
+    console.log('[ÉXITO] ¡Integridad Criptográfica Autenticada y Texto Plano Recuperado!')
+    console.log(`ID de Orden:        ${parsedPayload.orderId}`)
+    console.log(`Estrategia:         ${parsedPayload.strategy}`)
+    console.log(`Préstamo Máximo:    ${parsedPayload.maxBorrowTinybars / 1e8} ℏ`)
+    console.log(`Agente Autorizado:  ${parsedPayload.authorizedAgent}`)
 
     updateState('HIP1334_INBOX_TOPIC_ID', inboxTopicId.toString())
     updateState('HIP1334_LAST_CIPHERTEXT', encryptedEnvelope.ciphertext)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Confidencialidad Sin Servidores: HIP-1334 desacopla las comunicaciones confidenciales')
     console.log('de intermediarios en la nube. Al anclar sobres cifrados de extremo a extremo en HCS,')
     console.log('las partes obtienen prueba irrevocable de entrega sin comprometer la privacidad.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Cifrado Autenticado (AES-GCM): La etiqueta de autenticación de 16 bytes garantiza que si')
     console.log('un atacante intenta alterar incluso un solo bit del texto cifrado en tránsito,')
     console.log('el destinatario rechazará matemáticamente el paquete con un error de autenticación.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en el Buzón HIP-1334:', error.message)
+    console.error('\n[ERROR] Fallo en el Buzón HIP-1334:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -206,7 +206,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

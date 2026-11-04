@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: El Entorno Híbrido (SDK Nativo + Ethers.js)
- * [ CONCEPTO ] Comunicación Dual y Estado Unificado del Ledger
+ * [CONCEPTO] Comunicación Dual y Estado Unificado del Ledger
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Versatilidad de Acceso: Hedera ofrece dos formas de comunicarse con la
@@ -54,7 +54,7 @@ const ABI = [
  * RUTA 1: Ejecución vía SDK Nativo (gRPC)
  */
 const executeContractNatively = async (client, contractId, value) => {
-  console.log(`[⚙️ PROCESO] Ruta 1: Ejecutando set(${value}) vía SDK Nativo (gRPC)...`)
+  console.log(`[PROCESO] Ruta 1: Ejecutando set(${value}) vía SDK Nativo (gRPC)...`)
 
   const txResponse = await executeWithGas((gas) => new ContractExecuteTransaction()
     .setContractId(contractId)
@@ -62,7 +62,7 @@ const executeContractNatively = async (client, contractId, value) => {
     .setFunction('set', new ContractFunctionParameters().addUint256(value)), client, { gas: 2000000 })
 
   const receipt = await txResponse.getReceipt(client)
-  console.log(`   └─ [✅ ÉXITO] Consenso Nativo: ${receipt.status.toString()}`)
+  console.log(`└─ [ÉXITO] Consenso Nativo: ${receipt.status.toString()}`)
   return receipt.status.toString()
 }
 
@@ -70,7 +70,7 @@ const executeContractNatively = async (client, contractId, value) => {
  * RUTA 2: Ejecución vía Ethers.js (JSON-RPC)
  */
 const executeContractWithEthers = async (evmAddress, privateKey, value) => {
-  console.log(`[⚙️ PROCESO] Ruta 2: Ejecutando set(${value}) vía Ethers.js (JSON-RPC)...`)
+  console.log(`[PROCESO] Ruta 2: Ejecutando set(${value}) vía Ethers.js (JSON-RPC)...`)
 
   // Conexión al Relay JSON-RPC (Hashio)
   const provider = new ethers.JsonRpcProvider(getJsonRpcUrl())
@@ -83,10 +83,10 @@ const executeContractWithEthers = async (evmAddress, privateKey, value) => {
   // comisiones EIP-1559 desde el historial, que el relay no siempre reporta en la misma escala.
   const gasPrice = BigInt(await provider.send('eth_gasPrice', []))
   const tx = await contract.set(value, { gasPrice })
-  console.log(`📡 [📊 REGISTRO] Hash de Ethers: ${tx.hash}`)
+  console.log(`[REGISTRO] Hash de Ethers: ${tx.hash}`)
 
   const receipt = await tx.wait()
-  console.log(`   └─ [✅ ÉXITO] Estado Web3: ${receipt.status === 1 ? 'ÉXITO' : 'FALLO'}`)
+  console.log(`└─ [ÉXITO] Estado Web3: ${receipt.status === 1 ? 'ÉXITO' : 'FALLO'}`)
   return receipt.status
 }
 
@@ -97,7 +97,7 @@ const main = async () => {
   const contractId = getState('SC_STORAGE_ID')
 
   if (!contractId) {
-    console.error('[❌ FALLO] Falta SC_STORAGE_ID en el estado local. Ejecuta Lab 01 primero.')
+    console.error('[FALLO] Falta SC_STORAGE_ID en el estado local. Ejecuta Lab 01 primero.')
     process.exitCode = 1
     return
   }
@@ -108,7 +108,7 @@ const main = async () => {
     // Paso A: Resolución de dirección EVM
     const info = await new ContractInfoQuery().setContractId(contractId).execute(client)
     const evmAddress = `0x${info.contractAccountId}`
-    console.log(`[ℹ️ INFO] Interactuando con Contrato: ${contractId} (${evmAddress})`)
+    console.log(`[INFO] Interactuando con Contrato: ${contractId} (${evmAddress})`)
 
     // EJECUCIÓN RUTA 1: SDK Nativo
     await executeContractNatively(client, contractId, 111)
@@ -120,14 +120,14 @@ const main = async () => {
     await executeContractWithEthers(evmAddress, rawEthersKey, 222)
 
     // VERIFICACIÓN FINAL: Consulta cruzada del estado
-    console.log('\n[⚙️ PROCESO] Realizando consulta cruzada para verificar sincronización...')
+    console.log('\n[PROCESO] Realizando consulta cruzada para verificar sincronización...')
     const contractInfo = new ethers.Contract(evmAddress, ABI, new ethers.JsonRpcProvider(getJsonRpcUrl()))
     const finalValue = await contractInfo.get()
 
-    console.log(`\n🎉 --- [📊 REGISTRO] ESTADO INTEGRADO FINAL: ${finalValue} ---`)
+    console.log(`\n --- [REGISTRO] ESTADO INTEGRADO FINAL: ${finalValue} ---`)
     console.log('---------------------------------------------------------')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Usa el SDK nativo para la capa de servicios donde el control')
     console.log('y el rendimiento son críticos. Usa Ethers.js para el frontend')
     console.log('y la integración con DeFi. Ambos interfazan con exactamente el')
@@ -136,7 +136,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La verificación híbrida falló:', error.message)
+    console.error('\n[FALLO] La verificación híbrida falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -145,7 +145,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

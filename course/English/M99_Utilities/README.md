@@ -1,4 +1,4 @@
-# 🛠️ Module 99: Utilities and Helpers
+# Module 99: Utilities and Helpers
 ## The Developer's Toolbox
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Module Map
+## Module Map
 
 | File | Purpose | Description |
 | :--- | :--- | :--- |
@@ -19,7 +19,7 @@
 
 ---
 
-## 🛡️ Writing Labs That Keep Working
+## Writing Labs That Keep Working
 
 Fees, gas costs and Mirror Node timing change over time. Labs stay reliable when they use these helpers instead of fixed numbers:
 
@@ -33,11 +33,11 @@ Fees, gas costs and Mirror Node timing change over time. Labs stay reliable when
 | ethers / JSON-RPC relay | `getJsonRpcSigner(client, operatorKey)` | The relay only maps ECDSA alias accounts; creates one once if needed. |
 | State from another module | `getState(key)` | Reads the module's `state.json`, then the course-wide one, then `.env`. |
 
-Every lab ends the same way: a printed `❌` failure sets `process.exitCode = 1`, and the entry block exits so no lab hangs.
+Every lab ends the same way: a printed `` failure sets `process.exitCode = 1`, and the entry block exits so no lab hangs.
 
 ---
 
-## 🏗️ Utility Integration
+## Utility Integration
 
 All lessons in the course depend on this module to interact with the Hedera network in a standardized way.
 
@@ -79,7 +79,7 @@ graph TD
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. DRY (Don't Repeat Yourself)
 Instead of writing Hedera connection logic in every file, we centralize it here. This makes maintenance easier: if the SDK changes, we only update one file.
@@ -92,11 +92,11 @@ The `AgentCommunicationHandler` class in `lib.js` abstracts the complexity of Mi
 
 ---
 
-## 📚 Official References
+## Official References
 - [Clean Code Principles](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Node.js File System (fs) API](https://nodejs.org/api/fs.html)
 - [Hiero SDK for JavaScript](https://github.com/hashgraph/hedera-sdk-js)
 
 ---
 
-© 2026 **HEDERA PARA DUMMIES**. CLEAN CODE, CLEAN MIND.
+ 2026 **HEDERA PARA DUMMIES**. CLEAN CODE, CLEAN MIND.

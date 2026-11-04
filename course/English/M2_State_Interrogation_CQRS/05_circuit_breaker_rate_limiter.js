@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Enterprise Resilience — Circuit Breaker & Rate Limiter
- * [ CONCEPT ] High-Availability Mirror Node Failover & Fault-Tolerant CQRS
+ * [CONCEPT] High-Availability Mirror Node Failover & Fault-Tolerant CQRS
  * ============================================================================
  * [ KEY CONCEPT ]
  * In production enterprise architectures, public Mirror Node REST endpoints
@@ -28,7 +28,7 @@
  * - Previous: M2 Lab 04: Real-Time Event Sourcing Reactor
  * - Next:     M2 Lab 06: Real-Time WebSocket Event Bus
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The HTTP 429 responses are injected on purpose to trip the circuit breaker. The fallback Mirror Node query is real.
  *
  * [ BEFORE YOU RUN ]
@@ -65,7 +65,7 @@ class MirrorNodeCircuitBreaker {
     if (this.state === 'OPEN') {
       if (now >= this.nextAttempt) {
         this.state = 'HALF_OPEN'
-        console.log('\n[🟡 CIRCUIT HALF-OPEN] Cooldown window expired. Dispatching canary health probe...')
+        console.log('\n[ CIRCUIT HALF-OPEN] Cooldown window expired. Dispatching canary health probe...')
       } else {
         const cached = this.cache.get(cacheKey)
         const duration = Number((performance.now() - startTime).toFixed(3))
@@ -89,7 +89,7 @@ class MirrorNodeCircuitBreaker {
       this.failureCount = 0
       if (this.state === 'HALF_OPEN') {
         this.state = 'CLOSED'
-        console.log('[🟢 CIRCUIT CLOSED] Canary health probe succeeded! Breaker reset to normal operation.')
+        console.log('[ CIRCUIT CLOSED] Canary health probe succeeded! Breaker reset to normal operation.')
       }
 
       const duration = Number((performance.now() - startTime).toFixed(3))
@@ -109,7 +109,7 @@ class MirrorNodeCircuitBreaker {
       if (this.failureCount >= this.failureThreshold || this.state === 'HALF_OPEN') {
         this.state = 'OPEN'
         this.nextAttempt = Date.now() + this.cooldownMs
-        console.log(`\n[🔴 CIRCUIT TRIPPED TO OPEN] Threshold reached (${this.failureCount} errors). Tripping breaker for ${this.cooldownMs}ms.`)
+        console.log(`\n[ CIRCUIT TRIPPED TO OPEN] Threshold reached (${this.failureCount} errors). Tripping breaker for ${this.cooldownMs}ms.`)
       }
 
       const cached = this.cache.get(cacheKey)
@@ -129,7 +129,7 @@ class MirrorNodeCircuitBreaker {
   }
 
   printTelemetry () {
-    console.log('\n--- 📊 CIRCUIT BREAKER RESILIENCE AUDIT LOG ---')
+    console.log('\n---  CIRCUIT BREAKER RESILIENCE AUDIT LOG ---')
     console.table(this.telemetry.map((t, idx) => ({
       Req: idx + 1,
       State: t.state,
@@ -153,7 +153,7 @@ const main = async () => {
   })
 
   try {
-    console.log('[⚙️ PROCESS] Step 1: Performing baseline healthy state interrogation...')
+    console.log('[PROCESS] Step 1: Performing baseline healthy state interrogation...')
 
     // Baseline request to warm up cache
     const res1 = await breaker.execute(`account:${targetAccount}`, async () => {
@@ -163,32 +163,32 @@ const main = async () => {
       return await res.json()
     })
 
-    console.log(`[✅ SUCCESS] Initial Live Query: Account ${res1.data.account} Balance: ${(res1.data.balance.balance / 1e8).toFixed(4)} ℏ (Breaker: ${res1.breakerState})`)
+    console.log(`[SUCCESS] Initial Live Query: Account ${res1.data.account} Balance: ${(res1.data.balance.balance / 1e8).toFixed(4)} ℏ (Breaker: ${res1.breakerState})`)
 
-    console.log('\n[⚙️ PROCESS] Step 2: Simulating upstream Mirror Node rate-limiting (HTTP 429 storm)...')
+    console.log('\n[PROCESS] Step 2: Simulating upstream Mirror Node rate-limiting (HTTP 429 storm)...')
 
     // Simulate 3 rapid requests where the network responds with HTTP 429
     for (let i = 1; i <= 3; i++) {
-      console.log(`[⚡ TRAFFIC BURST] Dispatching Request #${i}...`)
+      console.log(`[ TRAFFIC BURST] Dispatching Request #${i}...`)
       const burstRes = await breaker.execute(`account:${targetAccount}`, async () => {
         // Intentionally simulate transient 429 / upstream overload
         throw new Error('HTTP 429: Too Many Requests (Mirror Node Rate Limit)')
       })
 
-      console.log(`[🛡️ RESILIENCE ACTIVE] Result: Returned cached balance ${(burstRes.data.balance.balance / 1e8).toFixed(4)} ℏ (From Cache: ${burstRes.fromCache}, Breaker: ${burstRes.breakerState})`)
+      console.log(`[ RESILIENCE ACTIVE] Result: Returned cached balance ${(burstRes.data.balance.balance / 1e8).toFixed(4)} ℏ (From Cache: ${burstRes.fromCache}, Breaker: ${burstRes.breakerState})`)
     }
 
-    console.log('\n[⚙️ PROCESS] Step 3: Waiting for circuit cooldown window (2,000ms)...')
+    console.log('\n[PROCESS] Step 3: Waiting for circuit cooldown window (2,000ms)...')
     await new Promise(r => setTimeout(r, 2200))
 
-    console.log('[⚙️ PROCESS] Step 4: Dispatching post-cooldown canary request to resume normal operation...')
+    console.log('[PROCESS] Step 4: Dispatching post-cooldown canary request to resume normal operation...')
     const recoveryRes = await breaker.execute(`account:${targetAccount}`, async () => {
       const res = await fetch(`${mirrorBase}/api/v1/accounts/${targetAccount}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return await res.json()
     })
 
-    console.log(`[✅ RECOVERY COMPLETE] Account ${recoveryRes.data.account} Balance: ${(recoveryRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Breaker: ${recoveryRes.breakerState})`)
+    console.log(`[ RECOVERY COMPLETE] Account ${recoveryRes.data.account} Balance: ${(recoveryRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Breaker: ${recoveryRes.breakerState})`)
 
     // Print resilience telemetry
     breaker.printTelemetry()
@@ -196,7 +196,7 @@ const main = async () => {
     updateState('CIRCUIT_BREAKER_STATE', breaker.state)
     updateState('CIRCUIT_BREAKER_FAILURES_BLOCKED', 3)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero Downtime CQRS: By coupling in-memory caching with a Circuit Breaker,')
     console.log('your dApp remains responsive during upstream rate-limits or outages,')
     console.log('serving verifiable cached state without crashing end-user experiences.')
@@ -204,7 +204,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error(`\n[❌ FAILED] Circuit Breaker Gateway Error: ${error.message}`)
+    console.error(`\n[FAILED] Circuit Breaker Gateway Error: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)
@@ -215,7 +215,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

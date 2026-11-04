@@ -2,10 +2,10 @@
 /**
  * ============================================================================
  * Lab 02: Secure Asynchronous REST Queries
- * [ CONCEPT ] Mirror Node Data Retrieval (Zero Cost)
+ * [CONCEPT] Mirror Node Data Retrieval (Zero Cost)
  * ============================================================================
  * [ KEY CONCEPT ]
- * "Don't pay for what's public." If your application needs to display a
+ * "Don't pay for what's public."If your application needs to display a
  * balance or a transaction history, your first thought should be Mirror
  * Nodes, not the Consensus network. Mirror Nodes allow for high-throughput
  * reads without transaction fees or cryptographic signatures.
@@ -39,7 +39,7 @@ const getAccountBalancesAsync = async (accountId) => {
   // Build the REST URL: reads go to the Mirror Node, never to consensus nodes.
   const targetUrl = `${baseUrl}/api/v1/balances?account.id=${accountId}`
 
-  console.log(`[⚙️ PROCESS] Interrogating Mirror Node at: ${targetUrl}`)
+  console.log(`[PROCESS] Interrogating Mirror Node at: ${targetUrl}`)
 
   try {
     const response = await fetch(targetUrl)
@@ -76,24 +76,24 @@ const main = async () => {
   const targetAccount = operatorId
 
   try {
-    console.log(`[ℹ️ INFO] Fetching network state for account: ${targetAccount}...`)
+    console.log(`[INFO] Fetching network state for account: ${targetAccount}...`)
     const balanceData = await getAccountBalancesAsync(targetAccount)
 
-    console.log('\n[✅ SUCCESS] Data successfully fetched from Mirror Node (Zero Cost).')
-    console.log(`[📊 LOG] Account ID: ${balanceData.accountId}`)
-    console.log(`[📊 LOG] HBAR Balance: ${balanceData.hbars} ℏ`)
-    console.log(`[📊 LOG] Token Associations: ${balanceData.tokens.length}`)
+    console.log('\n[SUCCESS] Data successfully fetched from Mirror Node (Zero Cost).')
+    console.log(`[LOG] Account ID: ${balanceData.accountId}`)
+    console.log(`[LOG] HBAR Balance: ${balanceData.hbars} ℏ`)
+    console.log(`[LOG] Token Associations: ${balanceData.tokens.length}`)
 
-    console.log('\n[ℹ️ INFO] Next Step: Handle large datasets with pagination in Lab 03.')
+    console.log('\n[INFO] Next Step: Handle large datasets with pagination in Lab 03.')
 
-    console.log('\n💡 KEY CONCEPT:')
-    console.log("\"Don't pay for what's public.\" If your application needs to display a")
+    console.log('\n KEY CONCEPT:')
+    console.log("\"Don't pay for what's public.\"If your application needs to display a")
     console.log('balance or a transaction history, your first thought should be Mirror')
     console.log('Nodes, not the Consensus network.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Interrogation Failed:', error.message)
+    console.error('\n[FAILED] Interrogation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -102,7 +102,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

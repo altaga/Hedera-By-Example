@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laboratorio 06: Staking Nativo (HIP-584)
- * [ CONCEPTO ] Delegación a Nodos de Consenso y Recompensas
+ * [CONCEPTO] Delegación a Nodos de Consenso y Recompensas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El sistema Proof-of-Stake de Hedera permite a las cuentas delegar (hacer staking)
@@ -41,7 +41,7 @@ const main = async () => {
     // Delegaremos el balance de la cuenta operadora al Nodo 2
     const TARGET_NODE_ID = 2
 
-    console.log(`[⚙️ PROCESO] Actualizando Cuenta ${operatorId} para hacer staking al Nodo ${TARGET_NODE_ID}...`)
+    console.log(`[PROCESO] Actualizando Cuenta ${operatorId} para hacer staking al Nodo ${TARGET_NODE_ID}...`)
 
     // 1. Actualizar la cuenta para hacer staking al nodo y aceptar recompensas
     const tx = await new AccountUpdateTransaction()
@@ -51,21 +51,21 @@ const main = async () => {
       .execute(client)
 
     await tx.getReceipt(client)
-    console.log('[✅ ÉXITO] ¡La configuración de staking se actualizó exitosamente!')
+    console.log('[ÉXITO] ¡La configuración de staking se actualizó exitosamente!')
 
     // 2. Verificar la configuración de staking consultando la información de la cuenta
-    console.log('\n[⚙️ PROCESO] Consultando Información de la Cuenta para verificar el estado de staking...')
+    console.log('\n[PROCESO] Consultando Información de la Cuenta para verificar el estado de staking...')
     const info = await new AccountInfoQuery()
       .setAccountId(operatorId)
       .execute(client)
 
-    console.log('\n[📊 REGISTRO] Información de Staking:')
+    console.log('\n[REGISTRO] Información de Staking:')
     console.log(`- Staking al ID de Nodo: ${info.stakingInfo.stakedNodeId}`)
     console.log(`- Staking al ID de Cuenta: ${info.stakingInfo.stakedAccountId || 'Ninguno'}`)
     console.log(`- ¿Rechazando Recompensas?: ${info.stakingInfo.declineStakingReward}`)
     console.log(`- Recompensas Pendientes (HBAR): ${info.stakingInfo.pendingReward.toTinybars().toNumber() / 100000000}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El staking en Hedera no es custodiado y es completamente líquido. Tus fondos')
     console.log('nunca están bloqueados y puedes transferirlos en cualquier momento. Las recompensas')
     console.log('se activan automáticamente y se pagan cuando ocurre una transacción.')
@@ -73,7 +73,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    console.error('\n[FALLO] Error de Ejecución:', error.message)
     process.exitCode = 1
   }
 }
@@ -82,7 +82,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

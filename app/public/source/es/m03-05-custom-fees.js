@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Implementación de Tarifas Personalizadas (Custom Fees)
- * [ CONCEPTO ] Lógica de Negocio Embebida en el Protocolo
+ * [CONCEPTO] Lógica de Negocio Embebida en el Protocolo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Economía Programable: Las Custom Fees de Hedera permiten embeber reglas de
@@ -59,7 +59,7 @@ const main = async () => {
   const account2Id = process.env.ACCOUNT_2_ID
 
   try {
-    console.log('[⚙️ PROCESO] Definiendo calendario de tarifas automáticas...')
+    console.log('[PROCESO] Definiendo calendario de tarifas automáticas...')
 
     // 1. Fee Fijo: 1 HBAR por transferencia
     const fixedFee = new CustomFixedFee()
@@ -75,7 +75,7 @@ const main = async () => {
       .setFeeCollectorAccountId(AccountId.fromString(operatorId))
       .setAssessmentMethod(false) // El fee se deduce del monto enviado (Inclusivo)
 
-    console.log('[⚙️ PROCESO] Creando Token con tarifas embebidas (FRT)...')
+    console.log('[PROCESO] Creando Token con tarifas embebidas (FRT)...')
     const tokenId = await reuseToken('REUSE_M3_05_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const transaction = await new TokenCreateTransaction()
@@ -95,10 +95,10 @@ const main = async () => {
       return receipt.tokenId
     }, { minBalance: 100000 })
 
-    console.log(`[✅ ÉXITO] Token con economía activa: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] Token con economía activa: ${tokenId.toString()}`)
 
     // Preparación del entorno de prueba (Tesorería -> Cuenta 1)
-    console.log(`\n[⚙️ PROCESO] Provisionando fondos a ${account1Id} para la prueba...`)
+    console.log(`\n[PROCESO] Provisionando fondos a ${account1Id} para la prueba...`)
     // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
     const setupTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-3))
@@ -109,10 +109,10 @@ const main = async () => {
     await setupTx.getReceipt(client)
 
     // Simulación de Escenarios
-    console.log('\n--- 📊 [REGISTRO] Simulación de Transferencias con Fee ---')
+    console.log('\n---  [REGISTRO] Simulación de Transferencias con Fee ---')
 
     // Escenario 1: Monto menor al mínimo (Fallo esperado)
-    console.log('[⚙️ PROCESO] Intento 1: Enviar 5 FRT (Monto < Fee Mínimo)...')
+    console.log('[PROCESO] Intento 1: Enviar 5 FRT (Monto < Fee Mínimo)...')
     try {
       const failTx = await new TransferTransaction()
         .addTokenTransfer(tokenId, account1Id, -5)
@@ -121,7 +121,7 @@ const main = async () => {
         .sign(account1PrivateKey)
       await (await failTx.execute(client)).getReceipt(client)
     } catch (error) {
-      console.log('   └─ [✅ ÉXITO] La red rechazó la transacción por fondos insuficientes para cubrir el fee.')
+      console.log('└─ [ÉXITO] La red rechazó la transacción por fondos insuficientes para cubrir el fee.')
     }
 
     const testCases = [
@@ -130,7 +130,7 @@ const main = async () => {
     ]
 
     for (const test of testCases) {
-      console.log(`\n[⚙️ PROCESO] Ejecutando: ${test.name} (${test.amount} tokens)`)
+      console.log(`\n[PROCESO] Ejecutando: ${test.name} (${test.amount} tokens)`)
       const transferTx = await new TransferTransaction()
         .addTokenTransfer(tokenId, account1Id, -test.amount)
         .addTokenTransfer(tokenId, account2Id, test.amount)
@@ -143,12 +143,12 @@ const main = async () => {
       const b1 = await new MirrorNodeTokenBalanceQuery().setAccountId(account1Id).setTokenId(tokenId).execute(client)
       const b2 = await new MirrorNodeTokenBalanceQuery().setAccountId(account2Id).setTokenId(tokenId).execute(client)
 
-      console.log(`   └─ [📊 REGISTRO] Cuenta 1: ${b1.balance.toString()} FRT`)
-      console.log(`   └─ [📊 REGISTRO] Cuenta 2: ${b2.balance.toString()} FRT`)
-      console.log('   └─ [✅ ÉXITO] Fee cobrado correctamente fuera de Tesorería.')
+      console.log(`└─ [REGISTRO] Cuenta 1: ${b1.balance.toString()} FRT`)
+      console.log(`└─ [REGISTRO] Cuenta 2: ${b2.balance.toString()} FRT`)
+      console.log('└─ [ÉXITO] Fee cobrado correctamente fuera de Tesorería.')
     }
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al usar cuentas que no son la Tesorería, activas el motor de')
     console.log('facturación real de Hedera. Esto permite crear ecosistemas')
     console.log('autofinanciados donde cada movimiento genera valor para el emisor.')
@@ -156,7 +156,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La demostración de tarifas falló:', error.message)
+    console.error('\n[FALLO] La demostración de tarifas falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -165,7 +165,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

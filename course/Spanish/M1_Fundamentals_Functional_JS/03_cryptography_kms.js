@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Firmas Externas con HSM / KMS
- * [ CONCEPTO ] Seguridad de Grado Bancario y Delegación de Firma
+ * [CONCEPTO] Seguridad de Grado Bancario y Delegación de Firma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * El SDK Agnóstico al Firmante: En arquitecturas de alta seguridad, las
@@ -23,7 +23,7 @@
  * - Actual:   M1 Lab 03: Criptografía y KMS
  * - Siguiente: M1 Lab 04: Rotación de Llaves
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El HSM / bóveda es un mock en memoria. Las firmas son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -56,7 +56,7 @@ class RemoteHSMVault {
    * La llave privada NUNCA sale de esta función.
    */
   async signPayload (payloadBuffer) {
-    console.log('[⚙️ PROCESO] Bóveda: Firmando carga útil de forma segura dentro del HSM...')
+    console.log('[PROCESO] Bóveda: Firmando carga útil de forma segura dentro del HSM...')
     return new Promise((resolve) => {
       setTimeout(() => {
         const signature = this._privateKey.sign(payloadBuffer)
@@ -76,10 +76,10 @@ const main = async () => {
   const vault = new RemoteHSMVault()
   const vaultPubKey = vault.getPublicKey()
 
-  console.log(`[ℹ️ INFO] Identidad Pública de la Bóveda: ${vaultPubKey.toStringDer().substring(0, 45)}...`)
+  console.log(`[INFO] Identidad Pública de la Bóveda: ${vaultPubKey.toStringDer().substring(0, 45)}...`)
 
   // 2. Crear una transacción que necesita una firma
-  console.log('[⚙️ PROCESO] Construyendo transacción nativa de transferencia...')
+  console.log('[PROCESO] Construyendo transacción nativa de transferencia...')
   const transaction = new TransferTransaction()
     .addHbarTransfer(AccountId.fromString('0.0.1001'), Hbar.fromTinybars(-100))
     .addHbarTransfer(AccountId.fromString('0.0.1002'), Hbar.fromTinybars(100))
@@ -92,18 +92,18 @@ const main = async () => {
 
     const transactionBytes = transaction.toBytes()
 
-    console.log('[⚙️ PROCESO] Enviando bytes a la Bóveda para firma remota...')
+    console.log('[PROCESO] Enviando bytes a la Bóveda para firma remota...')
     const signature = await vault.signPayload(transactionBytes)
 
     // 4. Inyectar la firma de vuelta en el objeto de la transacción
-    console.log('[⚙️ PROCESO] Inyectando firma externa en el objeto Transaction...')
+    console.log('[PROCESO] Inyectando firma externa en el objeto Transaction...')
     transaction.addSignature(vaultPubKey, signature)
 
-    console.log('\n[✅ ÉXITO] Transacción firmada por Bóveda remota.')
-    console.log(`[📊 REGISTRO] Firmas Detectadas: ${transaction.getSignatures().size}`)
-    console.log('[ℹ️ INFO] La transacción ahora es válida para ser enviada a la red.')
+    console.log('\n[ÉXITO] Transacción firmada por Bóveda remota.')
+    console.log(`[REGISTRO] Firmas Detectadas: ${transaction.getSignatures().size}`)
+    console.log('[INFO] La transacción ahora es válida para ser enviada a la red.')
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El flujo "Delegado" es el estándar para custodios y exchanges.')
     console.log('Al separar la Construcción de la Firma, garantizas que tus activos')
     console.log('estén protegidos por hardware especializado (HSM) sin sacrificar')
@@ -111,7 +111,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] La delegación de firma remota falló:', error.message)
+    console.error('\n[FALLO] La delegación de firma remota falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -120,7 +120,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

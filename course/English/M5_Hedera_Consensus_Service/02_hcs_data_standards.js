@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * LAB 02: Core Data Standards (HCS-2)
- * [ CONCEPT ] Decentralized Data Discoverability
+ * [CONCEPT] Decentralized Data Discoverability
  * ============================================================================
  * [ KEY CONCEPT ]
  * Standardization = Liquidity: Data that follows a standard is more valuable.
@@ -55,14 +55,14 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[❌ FAILED] Missing HCS_TOPIC_ID in configuration.')
+    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration.')
     process.exitCode = 1
-    console.log('[ℹ️ INFO] Tip: Run Lab 01 first to generate and sync a Topic ID.')
+    console.log('[INFO] Tip: Run Lab 01 first to generate and sync a Topic ID.')
     return
   }
 
   try {
-    console.log(`[ℹ️ INFO] Preparing HCS-2 compliant message for Topic: ${topicId}`)
+    console.log(`[INFO] Preparing HCS-2 compliant message for Topic: ${topicId}`)
 
     const message = buildHcs2DiscoveryMessage(
       'Hedera Syllabus Registry',
@@ -70,7 +70,7 @@ const main = async () => {
       'A decentralized directory of verified syllabus components.'
     )
 
-    console.log(`[⚙️ PROCESS] Submitting Standardized Message: ${message}`)
+    console.log(`[PROCESS] Submitting Standardized Message: ${message}`)
 
     // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
     const transaction = await new TopicMessageSubmitTransaction()
@@ -82,11 +82,11 @@ const main = async () => {
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const receipt = await response.getReceipt(client)
 
-    console.log('\n[✅ SUCCESS] Message Submitted successfully.')
-    console.log(`[📊 LOG] Consensus Status: ${receipt.status.toString()}`)
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log('\n[SUCCESS] Message Submitted successfully.')
+    console.log(`[LOG] Consensus Status: ${receipt.status.toString()}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Standardization = Liquidity: Data that follows a standard is more')
     console.log('valuable. By using HCS-2, you ensure that other developers can build')
     console.log('on top of your data stream without needing a private API key from you.')
@@ -94,7 +94,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] HCS Submission Failed:', error.message)
+    console.error('\n[FAILED] HCS Submission Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -103,7 +103,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

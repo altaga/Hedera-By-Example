@@ -29,7 +29,7 @@ export const withGasRetry = async (run, { gas = 300_000, maxGas = MAX_GAS } = {}
     } catch (error) {
       if (!isInsufficientGas(error) || limit >= maxGas) throw error
       limit = Math.min(limit * 2, maxGas)
-      console.log(`[ℹ️ INFO] Gas insuficiente; reintentando con ${limit.toLocaleString('es-MX')} de gas...`)
+      console.log(`[INFO] Gas insuficiente; reintentando con ${limit.toLocaleString('es-MX')} de gas...`)
     }
   }
 }
@@ -99,12 +99,12 @@ export const executeWithGas = async (build, client, options = {}) => {
   // failed call attempt costs little, so above 3M gas the lab's limit and the retry decide.
   const isCall = probe instanceof ContractExecuteTransaction
   if (est?.gas && isCall && est.gas > 3_000_000) {
-    console.log(`[ℹ️ INFO] La simulación pidió ${est.gas.toLocaleString('es-MX')} de gas, poco realista para una llamada (los contratos del sistema son difíciles de simular): se parte del límite del lab.`)
+    console.log(`[INFO] La simulación pidió ${est.gas.toLocaleString('es-MX')} de gas, poco realista para una llamada (los contratos del sistema son difíciles de simular): se parte del límite del lab.`)
   } else if (est?.gas) {
     start = Math.min(options.maxGas ?? MAX_GAS, Math.ceil(est.gas * 1.25) + 5_000)
-    console.log(`[ℹ️ INFO] Gas estimado por simulación: ${est.gas.toLocaleString('es-MX')} → límite ${start.toLocaleString('es-MX')} (+25%).`)
+    console.log(`[INFO] Gas estimado por simulación: ${est.gas.toLocaleString('es-MX')} → límite ${start.toLocaleString('es-MX')} (+25%).`)
   } else if (est?.revert) {
-    console.log(`[ℹ️ INFO] La simulación revirtió (${est.revert}). Corre sobre el estado del Mirror Node, que puede ir unos segundos atrás, así que la transacción se envía de todos modos con el límite de gas del lab.`)
+    console.log(`[INFO] La simulación revirtió (${est.revert}). Corre sobre el estado del Mirror Node, que puede ir unos segundos atrás, así que la transacción se envía de todos modos con el límite de gas del lab.`)
   }
   return withGasRetry(async (gas) => {
     const tx = await build(gas)
@@ -168,7 +168,7 @@ export const ensureFunded = async (client, accountId, minHbar) => {
   const current = (account?.balance?.balance ?? 0) / 1e8
   if (current >= minHbar) return
   const topUp = Math.ceil(minHbar - current)
-  console.log(`[ℹ️ INFO] ${accountId} tiene ${current.toFixed(2)} ℏ; recargando ${topUp} ℏ desde el operador...`)
+  console.log(`[INFO] ${accountId} tiene ${current.toFixed(2)} ℏ; recargando ${topUp} ℏ desde el operador...`)
   const tx = await new TransferTransaction()
     .addHbarTransfer(client.operatorAccountId, new Hbar(-topUp))
     .addHbarTransfer(accountId, new Hbar(topUp))
@@ -202,8 +202,8 @@ export const getJsonRpcSigner = async (client, operatorKey, { minHbar = 5 } = {}
   const key = stored ? PrivateKey.fromStringDer(stored) : PrivateKey.generateECDSA()
   const evmAddress = '0x' + key.publicKey.toEvmAddress()
   if (!stored) {
-    console.log(`[ℹ️ INFO] ${operatorId} no tiene alias EVM, así que el relay JSON-RPC no puede asociarle su llave.`)
-    console.log(`[⚙️ PROCESO] Creando una cuenta ECDSA con alias para llamadas JSON-RPC (${evmAddress})...`)
+    console.log(`[INFO] ${operatorId} no tiene alias EVM, así que el relay JSON-RPC no puede asociarle su llave.`)
+    console.log(`[PROCESO] Creando una cuenta ECDSA con alias para llamadas JSON-RPC (${evmAddress})...`)
     const tx = await new TransferTransaction()
       .addHbarTransfer(client.operatorAccountId, new Hbar(-minHbar))
       .addHbarTransfer(AccountId.fromEvmAddress(0, 0, evmAddress), new Hbar(minHbar))
@@ -232,7 +232,7 @@ export const getJsonRpcSigner = async (client, operatorKey, { minHbar = 5 } = {}
  */
 export const exitIfStuck = (ms, reason = 'los eventos de red esperados') => {
   setTimeout(() => {
-    console.error(`[❌ FALLO] Se agotó el tiempo (${Math.round(ms / 1000)} s) esperando ${reason}.`)
+    console.error(`[FALLO] Se agotó el tiempo (${Math.round(ms / 1000)} s) esperando ${reason}.`)
     process.exit(1)
   }, ms).unref()
 }
@@ -261,7 +261,7 @@ export const reuseToken = async (stateKey, create, { check = () => true, minBala
         .then((data) => Number(data?.balances?.[0]?.balance ?? 0) >= minBalance)
         .catch(() => false)
       if (enough) {
-        console.log(`[ℹ️ INFO] Reutilizando el token ${savedId} de una ejecución anterior (crear uno cuesta cerca de 1 USD). Usa FRESH_TOKENS=1 para crear uno nuevo.`)
+        console.log(`[INFO] Reutilizando el token ${savedId} de una ejecución anterior (crear uno cuesta cerca de 1 USD). Usa FRESH_TOKENS=1 para crear uno nuevo.`)
         return TokenId.fromString(savedId)
       }
     }
@@ -310,7 +310,7 @@ export const reuseContract = async (stateKey, identity, deploy) => {
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null)
     if (contract && !contract.deleted) {
-      console.log(`[ℹ️ INFO] Reutilizando el contrato ${savedId} de una ejecución anterior (mismo bytecode; desplegar cuesta cerca de 1 USD más gas). Usa FRESH_CONTRACTS=1 para desplegar uno nuevo.`)
+      console.log(`[INFO] Reutilizando el contrato ${savedId} de una ejecución anterior (mismo bytecode; desplegar cuesta cerca de 1 USD más gas). Usa FRESH_CONTRACTS=1 para desplegar uno nuevo.`)
       return ContractId.fromString(savedId)
     }
   }
@@ -338,7 +338,7 @@ export const reuseTopic = async (stateKey, create, { check = () => true } = {}) 
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null)
     if (topic && !topic.deleted && check(topic)) {
-      console.log(`[ℹ️ INFO] Reutilizando el tópico ${savedId} de una ejecución anterior (un tópico con comisiones cuesta cerca de 2 USD). Usa FRESH_TOPICS=1 para crear uno nuevo.`)
+      console.log(`[INFO] Reutilizando el tópico ${savedId} de una ejecución anterior (un tópico con comisiones cuesta cerca de 2 USD). Usa FRESH_TOPICS=1 para crear uno nuevo.`)
       return TopicId.fromString(savedId)
     }
   }

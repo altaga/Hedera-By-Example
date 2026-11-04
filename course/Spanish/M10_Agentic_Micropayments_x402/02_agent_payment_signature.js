@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 02: Firma de Pago del Agente Autónomo
- * [ CONCEPTO ] Firmas Criptográficas de Intención de Pago
+ * [CONCEPTO] Firmas Criptográficas de Intención de Pago
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Autorización Protegida contra Ataques de Replay: Cuando un agente de IA acepta
@@ -22,7 +22,7 @@
  * - Actual:   M10 Lab 02: Firma de Pago del Agente
  * - Siguiente: M10 Lab 03: Liquidación del Facilitador
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Servidor -> Agente: Desafío 402 (0.5 ℏ, beneficiario, nonce)
  * Nota Agente: Revisa su política de presupuesto (máx. 1 ℏ)
  * Nota Agente: Firma la autorización de pago con su llave
@@ -70,20 +70,20 @@ const main = async () => {
     const nonce = getState('X402_CHALLENGE_NONCE') || crypto.randomBytes(16).toString('hex')
     const expiresAt = Number(getState('X402_CHALLENGE_EXPIRES')) || (Date.now() + 120000)
 
-    console.log('[⚙️ PROCESO] Agente interpretando parámetros del desafío HTTP 402...')
-    console.log(`[📊 REGISTRO] Recurso Objetivo:  ${resource}`)
-    console.log(`[📊 REGISTRO] Precio Cotizado:   ${amount} HBAR`)
-    console.log(`[📊 REGISTRO] Cuenta Receptora:  ${payee}`)
-    console.log(`[📊 REGISTRO] Nonce del Desafío: ${nonce}`)
+    console.log('[PROCESO] Agente interpretando parámetros del desafío HTTP 402...')
+    console.log(`[REGISTRO] Recurso Objetivo:  ${resource}`)
+    console.log(`[REGISTRO] Precio Cotizado:   ${amount} HBAR`)
+    console.log(`[REGISTRO] Cuenta Receptora:  ${payee}`)
+    console.log(`[REGISTRO] Nonce del Desafío: ${nonce}`)
 
     // 2. Evaluación de Política Autónoma (Límite de Presupuesto)
     const MAX_PRICE_PER_CALL_HBAR = 1.0 // Límite interno del agente
-    console.log(`\n[⚙️ PROCESO] Evaluando política de gasto interno (Máximo Permitido: ${MAX_PRICE_PER_CALL_HBAR} HBAR)...`)
+    console.log(`\n[PROCESO] Evaluando política de gasto interno (Máximo Permitido: ${MAX_PRICE_PER_CALL_HBAR} HBAR)...`)
 
     if (amount > MAX_PRICE_PER_CALL_HBAR) {
       throw new Error(`El precio cotizado (${amount} HBAR) excede el límite del agente (${MAX_PRICE_PER_CALL_HBAR} HBAR).`)
     }
-    console.log('[✅ ÉXITO] El precio encaja en la política de gasto autónomo. Aprobando intención de pago.')
+    console.log('[ÉXITO] El precio encaja en la política de gasto autónomo. Aprobando intención de pago.')
 
     // 3. Construir el payload determinista de autorización de pago
     const paymentPayload = {
@@ -101,26 +101,26 @@ const main = async () => {
     }
 
     // 4. Firmar criptográficamente la intención con la llave privada del agente
-    console.log('\n[⚙️ PROCESO] Firmando prueba de autorización de pago con la llave del agente...')
+    console.log('\n[PROCESO] Firmando prueba de autorización de pago con la llave del agente...')
     const signerKey = PrivateKey.fromStringDer(operatorKey)
     const signedProof = signPaymentIntent(signerKey, paymentPayload)
 
     // Codificar en cabecera estándar x402 base64
     const paymentHeaderValue = Buffer.from(JSON.stringify(signedProof)).toString('base64')
 
-    console.log('\n[✅ ÉXITO] Prueba Criptográfica de Pago Generada:')
-    console.log(`[📊 REGISTRO] Cuenta Pagadora:       ${paymentPayload.payer}`)
-    console.log(`[📊 REGISTRO] Llave Pública (DER):   ${signedProof.publicKey.substring(0, 32)}...`)
-    console.log(`[📊 REGISTRO] Firma (Hex):           ${signedProof.signature.substring(0, 32)}...`)
-    console.log(`[📊 REGISTRO] Tamaño de Cabecera:    ${paymentHeaderValue.length} bytes (base64)`)
-    console.log(`[📊 REGISTRO] PAYMENT-SIGNATURE:     ${paymentHeaderValue.substring(0, 48)}...`)
+    console.log('\n[ÉXITO] Prueba Criptográfica de Pago Generada:')
+    console.log(`[REGISTRO] Cuenta Pagadora:       ${paymentPayload.payer}`)
+    console.log(`[REGISTRO] Llave Pública (DER):   ${signedProof.publicKey.substring(0, 32)}...`)
+    console.log(`[REGISTRO] Firma (Hex):           ${signedProof.signature.substring(0, 32)}...`)
+    console.log(`[REGISTRO] Tamaño de Cabecera:    ${paymentHeaderValue.length} bytes (base64)`)
+    console.log(`[REGISTRO] PAYMENT-SIGNATURE:     ${paymentHeaderValue.substring(0, 48)}...`)
 
     // Persistir para el Lab 03 Liquidación del Facilitador
     updateState('X402_PAYMENT_PAYLOAD', JSON.stringify(paymentPayload))
     updateState('X402_PAYMENT_SIGNATURE', signedProof.signature)
     updateState('X402_PAYMENT_HEADER', paymentHeaderValue)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('El agente firma una prueba de autorización, NO la fontanería de red ni gas.')
     console.log('La firma prueba que el titular autorizó una transferencia de 0.5 HBAR')
     console.log('específicamente para el nonce ' + nonce + '. Ningún intermediario puede')
@@ -128,7 +128,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Fallo al firmar la intención de pago:', error.message)
+    console.error('\n[FALLO] Fallo al firmar la intención de pago:', error.message)
     process.exit(1)
   }
 }
@@ -137,7 +137,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

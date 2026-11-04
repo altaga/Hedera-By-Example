@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Flujo de Auditoría Cognitiva de Agentes y Trazabilidad HCS-28
- * [ CONCEPTO ] No Repudio Criptográfico para la Inteligencia Artificial Autónoma
+ * [CONCEPTO] No Repudio Criptográfico para la Inteligencia Artificial Autónoma
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Trazabilidad Cognitiva y Responsabilidad Legal: A medida que los agentes de IA
@@ -25,7 +25,7 @@
  * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
  * - Siguiente: M14 Lab 06: Chat Encriptado de Enjambre de Agentes (P2P sobre HCS)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El prompt, el razonamiento y las reglas del agente son texto predefinido, no un modelo en vivo. El flujo de auditoría en HCS es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -95,7 +95,7 @@ const main = async () => {
 
   try {
     // 1. Crear Tópico de Auditoría HCS-28
-    console.log('[⚙️ PROCESO] Creando tópico dedicado para auditoría cognitiva HCS-28...')
+    console.log('[PROCESO] Creando tópico dedicado para auditoría cognitiva HCS-28...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-28:AGENT:COGNITIVE:AUDIT')
@@ -104,10 +104,10 @@ const main = async () => {
     // Espera el consenso: el recibo dice si la red aceptó la transacción.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
-    console.log(`[✅ ÉXITO] Tópico de Auditoría HCS-28 Creado: ${topicId}`)
+    console.log(`[ÉXITO] Tópico de Auditoría HCS-28 Creado: ${topicId}`)
 
     // 2. Simular Ciclo de Razonamiento Autónomo para Agente Financiero
-    console.log('\n[⚙️ PROCESO] Simulando ciclo de razonamiento autónomo para Agente Atlas...')
+    console.log('\n[PROCESO] Simulando ciclo de razonamiento autónomo para Agente Atlas...')
     const agentWallet = ethers.Wallet.createRandom()
 
     const simulatedPrompt = 'Rebalancear tesorería de liquidez en Hedera: Intercambiar 10,000 HBAR por USDC si volatilidad supera 35%.'
@@ -132,16 +132,16 @@ const main = async () => {
       guardrailChecks: simulatedGuardrails
     })
 
-    console.log('[📊 REGISTRO] Registro Cognitivo HCS-28 Generado:')
-    console.log(`[📊 REGISTRO] Sesión ID:          ${auditRecord.sessionId} (Ciclo #${auditRecord.cycleIndex})`)
-    console.log(`[📊 REGISTRO] Dirección Agente:   ${auditRecord.agentAddress}`)
-    console.log(`[📊 REGISTRO] Hash de Prompt:     ${auditRecord.hashes.prompt}`)
-    console.log(`[📊 REGISTRO] Hash Razonamiento:  ${auditRecord.hashes.reasoning}`)
-    console.log(`[📊 REGISTRO] Reglas de Seguridad: ${auditRecord.guardrails.passed ? 'TODAS SUPERADAS (CUMPLIMIENTO)' : 'VIOLACIÓN'}`)
-    console.log(`[📊 REGISTRO] Hash del Registro:  ${auditRecord.recordHash}`)
+    console.log('[REGISTRO] Registro Cognitivo HCS-28 Generado:')
+    console.log(`[REGISTRO] Sesión ID:          ${auditRecord.sessionId} (Ciclo #${auditRecord.cycleIndex})`)
+    console.log(`[REGISTRO] Dirección Agente:   ${auditRecord.agentAddress}`)
+    console.log(`[REGISTRO] Hash de Prompt:     ${auditRecord.hashes.prompt}`)
+    console.log(`[REGISTRO] Hash Razonamiento:  ${auditRecord.hashes.reasoning}`)
+    console.log(`[REGISTRO] Reglas de Seguridad: ${auditRecord.guardrails.passed ? 'TODAS SUPERADAS (CUMPLIMIENTO)' : 'VIOLACIÓN'}`)
+    console.log(`[REGISTRO] Hash del Registro:  ${auditRecord.recordHash}`)
 
     // 3. Anclar Registro al Consenso de HCS
-    console.log('\n[⚙️ PROCESO] Anclando registro inmutable al tópico de consenso HCS...')
+    console.log('\n[PROCESO] Anclando registro inmutable al tópico de consenso HCS...')
     // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -150,12 +150,12 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     const seq = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[✅ ÉXITO] ¡Registro Sellado en Secuencia de Consenso #${seq}!`)
+    console.log(`[ÉXITO] ¡Registro Sellado en Secuencia de Consenso #${seq}!`)
 
     // 4. Verificación de No Repudio de la Firma del Agente
     const recoveredAgent = ethers.recoverAddress(auditRecord.recordHash, auditRecord.agentSignature)
     const isAuthentic = recoveredAgent.toLowerCase() === agentWallet.address.toLowerCase()
-    console.log(`\n[📊 AUDITORÍA] Validación de No Repudio: ${isAuthentic ? 'AUTÉNTICA (FIRMADA POR EL AGENTE)' : 'FALSIFICACIÓN'}`)
+    console.log(`\n[AUDITORÍA] Validación de No Repudio: ${isAuthentic ? 'AUTÉNTICA (FIRMADA POR EL AGENTE)' : 'FALSIFICACIÓN'}`)
 
     // Persistir estado
     updateState('HCS28_TOPIC_ID', topicId)
@@ -163,17 +163,17 @@ const main = async () => {
     updateState('HCS28_RECORD_HASH', auditRecord.recordHash)
     updateState('HCS28_AGENT_ADDRESS', agentWallet.address)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-28 resuelve el problema de responsabilidad legal en la inteligencia artificial.')
     console.log('Dado que el registro está firmado criptográficamente y secuenciado en Hedera,')
     console.log('ningún desarrollador o agente puede alterar el pasado para ocultar un error o pérdida.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La gobernanza de IA no requiere frenar la innovación; requiere auditoría criptográfica inmutable.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Ejecución de HCS-28:', error.message)
+    console.error('\n[ERROR] Fallo en Ejecución de HCS-28:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -184,7 +184,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

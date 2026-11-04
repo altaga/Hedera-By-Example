@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laboratorio 08: Metadatos NFT HIP-412
- * [ CONCEPTO ] Esquema JSON Estandarizado para NFTs
+ * [CONCEPTO] Esquema JSON Estandarizado para NFTs
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * HIP-412 define el esquema JSON estándar para metadatos de NFT en Hedera.
@@ -67,7 +67,7 @@ const main = async () => {
 
   try {
     // 1. Generar los Metadatos JSON
-    console.log('\n[⚙️ PROCESO] Construyendo JSON Compatible con HIP-412...')
+    console.log('\n[PROCESO] Construyendo JSON Compatible con HIP-412...')
     const metadataObj = generateHIP412Metadata(
       'Espada Maestra HIP-412',
       'ipfs://bafkreifh3q3wxgfbsfbs5tqybbg34z62tdcugnsvf7y3c7n66n7pzybyzi', // CID de IPFS de ejemplo
@@ -79,7 +79,7 @@ const main = async () => {
       ]
     )
 
-    console.log('[📊 REGISTRO] Carga Útil HIP-412:')
+    console.log('[REGISTRO] Carga Útil HIP-412:')
     console.log(JSON.stringify(metadataObj, null, 2))
 
     // En una aplicación de producción real, subirías `metadataObj` a IPFS aquí
@@ -89,7 +89,7 @@ const main = async () => {
     const metadataBuffer = Buffer.from(mockCid)
 
     // 2. Crear la Colección NFT
-    console.log('\n[⚙️ PROCESO] Creando Colección NFT...')
+    console.log('\n[PROCESO] Creando Colección NFT...')
     const tokenId = await reuseToken('REUSE_M3_08_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
         .setTokenName('Items HIP-412')
@@ -104,10 +104,10 @@ const main = async () => {
       return (await (await signed.execute(client)).getReceipt(client)).tokenId
     })
     let tx, signTx, submitTx, receipt // los reutilizan los pasos siguientes
-    console.log(`[✅ ÉXITO] Colección creada: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] Colección creada: ${tokenId.toString()}`)
 
     // 3. Mintear el NFT con el URI HIP-412
-    console.log('\n[⚙️ PROCESO] Minteando NFT con URI de Metadatos HIP-412...')
+    console.log('\n[PROCESO] Minteando NFT con URI de Metadatos HIP-412...')
     tx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([metadataBuffer])
@@ -117,23 +117,23 @@ const main = async () => {
     submitTx = await signTx.execute(client)
     receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
-    console.log(`[✅ ÉXITO] Minteado el Serie #${serialNum}`)
+    console.log(`[ÉXITO] Minteado el Serie #${serialNum}`)
 
     // 4. Verificar
     const nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
 
-    console.log(`\n[📊 REGISTRO] URI de Metadatos On-chain: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    console.log(`\n[REGISTRO] URI de Metadatos On-chain: ${Buffer.from(nftInfo[0].metadata).toString()}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Sin HIP-412, tus NFTs aparecerán como cuadrados en blanco en las billeteras.')
     console.log('La estandarización es crítica para la interoperabilidad del ecosistema.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Error de Ejecución:', error.message)
+    console.error('\n[FALLO] Error de Ejecución:', error.message)
     process.exitCode = 1
   }
 }
@@ -142,7 +142,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -1,4 +1,4 @@
-# 🤖 Module 9: The Agentic AI Economy
+# Module 9: The Agentic AI Economy
 ## Atomic Protocol Orchestration and Autonomous Trade
 
 > [!IMPORTANT]
@@ -6,7 +6,7 @@
 
 ---
 
-## 🗺️ Atomic Curriculum Map
+## Atomic Curriculum Map
 This module focuses on the communication and sovereignty of AI agents.
 
 | Lab | Topic | Description |
@@ -25,7 +25,7 @@ This module focuses on the communication and sovereignty of AI agents.
 
 ---
 
-## 🔐 Agent Handshake (HCS-10)
+## Agent Handshake (HCS-10)
 
 Before two agents exchange sensitive data, they must perform a "Handshake" to verify identities and agree on a session key.
 
@@ -71,7 +71,7 @@ sequenceDiagram
 
 ---
 
-## 🔑 Key Concepts
+## Key Concepts
 
 ### 1. UAID (Universal Agent ID)
 In the agentic economy, identity is the first layer of trust. The **HCS-14** standard provides a unique global identifier that persists across different networks and environments, allowing an agent to maintain its reputation.
@@ -84,11 +84,11 @@ Unlike traditional bots, Hedera agents can make economic decisions, pay for thei
 
 ---
 
-## 📚 Official References
+## Official References
 - [HCS-10: OpenConvAI Standard](https://github.com/hashgraphonline/standards)
 - [HCS-14: Universal Agent ID (UAID)](https://github.com/hashgraphonline/standards)
 - [Hybrid Encryption Best Practices (NIST)](https://csrc.nist.gov/publications/detail/sp/800-56b/rev-2/final)
 
 ---
 
-© 2026 **HEDERA FOR DUMMIES**. AGENTIC INDEPENDENCE.
+ 2026 **HEDERA FOR DUMMIES**. AGENTIC INDEPENDENCE.

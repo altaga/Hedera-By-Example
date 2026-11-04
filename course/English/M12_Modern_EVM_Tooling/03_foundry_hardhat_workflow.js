@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 03: Foundry & Hardhat Automation Workflows
- * [ CONCEPT ] Configuration Blueprints for Ethereum Frameworks
+ * [CONCEPT] Configuration Blueprints for Ethereum Frameworks
  * ============================================================================
  * [ KEY CONCEPT ]
  * Zero-Friction Ethereum Workflows: You do not need to rewrite your smart
@@ -82,7 +82,7 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
 
   try {
-    console.log('[⚙️ PROCESS] Validating Hedera JSON-RPC Relay compatibility for Foundry and Hardhat...')
+    console.log('[PROCESS] Validating Hedera JSON-RPC Relay compatibility for Foundry and Hardhat...')
     const rpcUrl = 'https://testnet.hashio.io/api'
     // Hashio is Hedera's JSON-RPC relay: Foundry and Hardhat talk to it like any EVM chain (chain ID 296 on testnet).
     const provider = new ethers.JsonRpcProvider(rpcUrl)
@@ -92,26 +92,26 @@ const main = async () => {
     const blockNumber = await provider.getBlockNumber()
     const latencyMs = Date.now() - startTime
 
-    console.log('[✅ SUCCESS] RPC Endpoint Responsive:')
-    console.log(`[📊 LOG] Target RPC:     ${rpcUrl}`)
-    console.log(`[📊 LOG] Network Ping:   ${latencyMs} ms`)
-    console.log(`[📊 LOG] Current Block:  #${blockNumber}`)
+    console.log('[SUCCESS] RPC Endpoint Responsive:')
+    console.log(`[LOG] Target RPC:     ${rpcUrl}`)
+    console.log(`[LOG] Network Ping:   ${latencyMs} ms`)
+    console.log(`[LOG] Current Block:  #${blockNumber}`)
 
     // 1. Display Foundry Production Configuration
     console.log('\n===============================================================')
-    console.log('🛠️ BLUEPRINT: FOUNDRY CONFIGURATION (foundry.toml)')
+    console.log('BLUEPRINT: FOUNDRY CONFIGURATION (foundry.toml)')
     console.log('===============================================================')
     console.log(FOUNDRY_CONFIG_BLUEPRINT.trim())
     console.log('\nDeploy Command (Foundry Forge):')
     console.log('forge create --rpc-url https://testnet.hashio.io \\')
-    console.log('  --private-key $OPERATOR_PRIVATE_KEY \\')
-    console.log('  src/HtsTokenVault.sol:HtsTokenVault \\')
-    console.log('  --constructor-args 0x0000000000000000000000000000000000003039')
+    console.log('--private-key $OPERATOR_PRIVATE_KEY \\')
+    console.log('src/HtsTokenVault.sol:HtsTokenVault \\')
+    console.log('--constructor-args 0x0000000000000000000000000000000000003039')
     console.log('===============================================================')
 
     // 2. Display Hardhat Production Configuration
     console.log('\n===============================================================')
-    console.log('🛠️ BLUEPRINT: HARDHAT CONFIGURATION (hardhat.config.ts)')
+    console.log('BLUEPRINT: HARDHAT CONFIGURATION (hardhat.config.ts)')
     console.log('===============================================================')
     console.log(HARDHAT_CONFIG_BLUEPRINT.trim())
     console.log('\nDeploy Command (Hardhat):')
@@ -121,14 +121,14 @@ const main = async () => {
     updateState('FOUNDRY_CONFIG_VERIFIED', true)
     updateState('HARDHAT_CONFIG_VERIFIED', true)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Hedera is an Ethereum developer paradise: you keep your favorite tools,')
     console.log('Solidity linters, unit tests, and deployment frameworks, while gaining')
     console.log('finality in seconds and sub-cent fixed transaction costs.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Workflow blueprint validation failed:', error.message)
+    console.error('\n[ERROR] Workflow blueprint validation failed:', error.message)
     process.exit(1)
   }
 }
@@ -137,7 +137,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

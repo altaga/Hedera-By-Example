@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Bus de Eventos WebSocket en Tiempo Real del Ledger
- * [ CONCEPTO ] Transmisión Reactiva Basada en Push vs Antipatrones de Polling
+ * [CONCEPTO] Transmisión Reactiva Basada en Push vs Antipatrones de Polling
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Consultar continuamente el Mirror Node de Hedera mediante peticiones HTTP REST
@@ -28,7 +28,7 @@
  * - Anterior:  M2 Lab 05: Circuit Breaker y Limitador de Tasa
  * - Siguiente: M2 Lab 07: Indexador de Subgrafos GraphQL
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El cliente suscriptor corre en el mismo proceso que el servidor. Los eventos del ledger que retransmite son reales.
  *
  * [ ANTES DE EJECUTAR ]
@@ -127,11 +127,11 @@ const main = async () => {
   const eventBus = new LedgerEventBus(BUS_PORT)
 
   try {
-    console.log(`[⚙️ PROCESO] Paso 1: Iniciando pasarela reactiva de eventos en puerto ${BUS_PORT}...`)
+    console.log(`[PROCESO] Paso 1: Iniciando pasarela reactiva de eventos en puerto ${BUS_PORT}...`)
     await eventBus.start()
-    console.log(`[✅ ÉXITO] Gateway de Eventos activo en http://127.0.0.1:${BUS_PORT}/events/stream`)
+    console.log(`[ÉXITO] Gateway de Eventos activo en http://127.0.0.1:${BUS_PORT}/events/stream`)
 
-    console.log('\n[⚙️ PROCESO] Paso 2: Simulando conexión de suscriptor downstream (cliente SSE/WebSocket)...')
+    console.log('\n[PROCESO] Paso 2: Simulando conexión de suscriptor downstream (cliente SSE/WebSocket)...')
 
     const receivedEvents = []
 
@@ -146,7 +146,7 @@ const main = async () => {
             if (rawJson) {
               const parsed = JSON.parse(rawJson)
               receivedEvents.push(parsed)
-              console.log(`[📥 EVENTO RECIBIDO] Canal: ${parsed.topic} | Sec: #${parsed.sequence} | Tx: ${parsed.payload.txId}`)
+              console.log(`[ EVENTO RECIBIDO] Canal: ${parsed.topic} | Sec: #${parsed.sequence} | Tx: ${parsed.payload.txId}`)
             }
           }
         }
@@ -157,13 +157,13 @@ const main = async () => {
     // Esperar 200ms para el establecimiento de la suscripción
     await new Promise(r => setTimeout(r, 200))
 
-    console.log('\n[⚙️ PROCESO] Paso 3: Obteniendo eventos de consenso en vivo desde Mirror Node para ingesta en el Bus...')
+    console.log('\n[PROCESO] Paso 3: Obteniendo eventos de consenso en vivo desde Mirror Node para ingesta en el Bus...')
     // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
     const mirrorRes = await fetch(`${mirrorBase}/api/v1/transactions?limit=3&order=desc`)
     if (!mirrorRes.ok) throw new Error(`Error en Mirror Node: ${mirrorRes.statusText}`)
     const mirrorData = await mirrorRes.json()
 
-    console.log(`[⚙️ PROCESO] Paso 4: Transmitiendo ${mirrorData.transactions.length} eventos de consenso en vivo a los suscriptores...`)
+    console.log(`[PROCESO] Paso 4: Transmitiendo ${mirrorData.transactions.length} eventos de consenso en vivo a los suscriptores...`)
 
     for (const tx of mirrorData.transactions) {
       const payer = tx.payer_account_id || tx.transaction_id.split('-')[0]
@@ -180,15 +180,15 @@ const main = async () => {
     // Esperar a que el cliente procese
     await new Promise(r => setTimeout(r, 300))
 
-    console.log('\n--- 📡 RESUMEN DE TRANSMISIÓN REACTIVA ---')
-    console.log(`🔹 Total de Eventos Emitidos:   ${eventBus.eventsDispatched}`)
-    console.log(`🔹 Total de Eventos Recibidos:  ${receivedEvents.length}`)
-    console.log(`🔹 Integridad de Entrega:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (CERO PÉRDIDA DE PAQUETES)' : 'PARCIAL'}`)
+    console.log('\n---  RESUMEN DE TRANSMISIÓN REACTIVA ---')
+    console.log(`Total de Eventos Emitidos:   ${eventBus.eventsDispatched}`)
+    console.log(`Total de Eventos Recibidos:  ${receivedEvents.length}`)
+    console.log(`Integridad de Entrega:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (CERO PÉRDIDA DE PAQUETES)' : 'PARCIAL'}`)
 
     updateState('EVENT_BUS_LAST_PORT', BUS_PORT)
     updateState('EVENT_BUS_EVENTS_PROCESSED', receivedEvents.length)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Push sobre Pull: Al transformar las fuentes de consenso del Mirror Node')
     console.log('en flujos reactivos basados en push, las interfaces frontend y los bots')
     console.log('se actualizan al instante exacto de la finalidad, eliminando cuellos de botella.')
@@ -198,7 +198,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[❌ ERROR] Falló el Bus de Eventos: ${error.message}`)
+    console.error(`\n[ERROR] Falló el Bus de Eventos: ${error.message}`)
     process.exitCode = 1
     await eventBus.close()
     if (client) client.close()
@@ -210,7 +210,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

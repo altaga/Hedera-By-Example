@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Almacenamiento Estático HCS-1
- * [ CONCEPTO ] Cargas Útiles "Pesadas" y Fragmentación Nativa
+ * [CONCEPTO] Cargas Útiles "Pesadas" y Fragmentación Nativa
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Integridad Orquestada: HCS-1 es la base de los datos agénticos. Los
@@ -61,7 +61,7 @@ const main = async () => {
 
   try {
     // 1. Crear el Tema Seguro para el Registro HCS-1
-    console.log(`[⚙️ PROCESO] Creando canal inmutable HCS-1 en ${network}...`)
+    console.log(`[PROCESO] Creando canal inmutable HCS-1 en ${network}...`)
     const createTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1: AI_AntiCheat_Registry_V2')
       .setSubmitKey(client.operatorPublicKey) // Seguridad: solo el emisor puede escribir
@@ -71,13 +71,13 @@ const main = async () => {
     const createReceipt = await createResponse.getReceipt(client)
     const topicId = createReceipt.topicId.toString()
 
-    console.log(`[✅ ÉXITO] Canal Raíz HCS-1 anclado: ${topicId}`)
-    console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(createResponse)}`)
+    console.log(`[ÉXITO] Canal Raíz HCS-1 anclado: ${topicId}`)
+    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(createResponse)}`)
     updateState('HCS1_TOPIC_ID', topicId)
 
     // 2. Fragmentación y Envío de la Política de IA
-    console.log(`\n[⚙️ PROCESO] Anclando Política de IA (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)
-    console.log('[ℹ️ INFO] El SDK fragmentará automáticamente la carga útil en mensajes secuenciales.')
+    console.log(`\n[PROCESO] Anclando Política de IA (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)
+    console.log('[INFO] El SDK fragmentará automáticamente la carga útil en mensajes secuenciales.')
 
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
@@ -88,10 +88,10 @@ const main = async () => {
     const submitResponse = await submitTx.execute(client)
     const submitReceipt = await submitResponse.getReceipt(client)
 
-    console.log(`\n[✅ ÉXITO] Carga útil anclada con éxito. Estado: ${submitReceipt.status.toString()}`)
-    console.log(`[📊 REGISTRO] Auditoría del anclaje: ${getHashscanUrl(submitResponse)}`)
+    console.log(`\n[ÉXITO] Carga útil anclada con éxito. Estado: ${submitReceipt.status.toString()}`)
+    console.log(`[REGISTRO] Auditoría del anclaje: ${getHashscanUrl(submitResponse)}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Las reglas de la IA ahora son inmutables. Si un jugador es')
     console.log('sancionado, el ID del Tema sirve como prueba pública de que')
     console.log('el juicio se basó en criterios definidos matemáticamente antes')
@@ -100,7 +100,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El anclaje HCS-1 falló:', error.message)
+    console.error('\n[FALLO] El anclaje HCS-1 falló:', error.message)
     process.exitCode = 1
     client.close()
   }
@@ -110,7 +110,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

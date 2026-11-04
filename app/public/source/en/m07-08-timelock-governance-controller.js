@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 08: Enterprise Timelock Governance Controller & Security Council Veto
- * [ CONCEPT ] Layer-1 Timelocked Execution Windows & Cryptographic Veto Authority
+ * [CONCEPT] Layer-1 Timelocked Execution Windows & Cryptographic Veto Authority
  * ============================================================================
  * [ KEY CONCEPT ]
  * In high-value institutional treasuries and decentralized governance (DAOs),
@@ -64,7 +64,7 @@ class GovernanceRiskMonitor {
   }
 
   auditProposal (targetAccountId, transferAmount) {
-    console.log(`[🔍 SECURITY MONITOR] Auditing pending proposal: Recipient=${targetAccountId}, Amount=${transferAmount}...`)
+    console.log(`[ SECURITY MONITOR] Auditing pending proposal: Recipient=${targetAccountId}, Amount=${transferAmount}...`)
     if (this.prohibitedAccounts.has(targetAccountId)) {
       return { approved: false, reason: 'CRITICAL: Recipient flagged on compliance sanctions blocklist!' }
     }
@@ -78,17 +78,17 @@ const main = async () => {
 
   try {
     // 1. Generate Security Council Guardian Key & Proposer Key
-    console.log('[⚙️ PROCESS] Step 1: Provisioning Security Council & Trustee Identities...')
+    console.log('[PROCESS] Step 1: Provisioning Security Council & Trustee Identities...')
     const securityCouncilKey = PrivateKey.generateED25519()
     const trusteeKey = PrivateKey.generateED25519()
     const maliciousRecipient = '0.0.9999999' // Blocklisted address for simulation
 
-    console.log(`[📊 LOG] Operator / Treasury:     ${operatorId.toString()}`)
-    console.log(`[📊 LOG] Council Guardian Key:    ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
-    console.log(`[📊 LOG] Trustee Multi-Sig Key:   ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[LOG] Operator / Treasury:     ${operatorId.toString()}`)
+    console.log(`[LOG] Council Guardian Key:    ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[LOG] Trustee Multi-Sig Key:   ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
 
     // 2. Schedule a Timelocked Treasury Action
-    console.log('\n[⚙️ PROCESS] Step 2: Scheduling Timelocked Treasury Payout (48h Window)...')
+    console.log('\n[PROCESS] Step 2: Scheduling Timelocked Treasury Payout (48h Window)...')
 
     // Inner transaction: Transfer 0 tinybars to self
     const innerTransferTx = new TransferTransaction()
@@ -113,20 +113,20 @@ const main = async () => {
     const scheduleReceipt = await scheduleCreateTx.getReceipt(client)
     const scheduleId = scheduleReceipt.scheduleId
 
-    console.log(`[✅ SUCCESS] Proposal Timelocked on Layer 1! Schedule ID: ${scheduleId.toString()}`)
-    console.log(`[📊 LOG] Transaction ID:  ${scheduleCreateTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] View on HashScan: ${getHashscanUrl(scheduleCreateTx)}`)
+    console.log(`[SUCCESS] Proposal Timelocked on Layer 1! Schedule ID: ${scheduleId.toString()}`)
+    console.log(`[LOG] Transaction ID:  ${scheduleCreateTx.transactionId.toString()}`)
+    console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(scheduleCreateTx)}`)
 
     // 3. Security Monitor detects policy violation during Timelock Window
-    console.log('\n[⚙️ PROCESS] Step 3: Security Council Automated Risk Inspection...')
+    console.log('\n[PROCESS] Step 3: Security Council Automated Risk Inspection...')
     const monitor = new GovernanceRiskMonitor([maliciousRecipient])
     const auditResult = monitor.auditProposal(maliciousRecipient, '50,000 HBAR')
 
-    console.log(`[⚠️ RISK ALERT] Audit Result: ${auditResult.reason}`)
-    console.log('[🚨 ACTION] Triggering Security Council Emergency Cryptographic Veto...')
+    console.log(`[ RISK ALERT] Audit Result: ${auditResult.reason}`)
+    console.log('[ACTION] Triggering Security Council Emergency Cryptographic Veto...')
 
     // 4. Security Council issues emergency VETO via ScheduleDeleteTransaction
-    console.log('\n[⚙️ PROCESS] Step 4: Signing & Broadcasting ScheduleDeleteTransaction...')
+    console.log('\n[PROCESS] Step 4: Signing & Broadcasting ScheduleDeleteTransaction...')
     const deleteTx = await (await new ScheduleDeleteTransaction()
       .setScheduleId(scheduleId)
       .freezeWith(client)
@@ -134,27 +134,27 @@ const main = async () => {
       .execute(client)
 
     const deleteReceipt = await deleteTx.getReceipt(client)
-    console.log(`\n[✅ SUCCESS] Emergency Veto Executed! Consensus Status: ${deleteReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Deletion Tx ID:  ${deleteTx.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] View on HashScan: ${getHashscanUrl(deleteTx)}`)
+    console.log(`\n[SUCCESS] Emergency Veto Executed! Consensus Status: ${deleteReceipt.status.toString()}`)
+    console.log(`[LOG] Deletion Tx ID:  ${deleteTx.transactionId.toString()}`)
+    console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(deleteTx)}`)
 
     updateState('TIMELOCK_SCHEDULE_ID', scheduleId.toString())
     updateState('TIMELOCK_VETO_STATUS', deleteReceipt.status.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Native Timelock Security: Hedera Schedule Service allows organizations to define')
     console.log('an admin key on any scheduled transaction. If the Security Council or risk monitors')
     console.log('detect fraudulent parameters, the admin key can delete the transaction before the')
     console.log('timelock matures, preventing unauthorized funds movement with mathematical certainty.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Because Hedera native scheduling is enforced by consensus nodes directly, there is')
     console.log('zero smart contract code that can be re-entered, paused, or flash-loan attacked.')
     console.log('Corporate governance is baked into the Byzantine Fault Tolerant protocol itself.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Timelock Controller Failure:', error.message)
+    console.error('\n[ERROR] Timelock Controller Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -165,7 +165,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

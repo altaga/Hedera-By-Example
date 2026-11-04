@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 05: Identidad Descentralizada (DID) sobre Hedera
- * [ CONCEPTO ] Soberanía Digital y Documentos DID Anclados
+ * [CONCEPTO] Soberanía Digital y Documentos DID Anclados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Soberanía de Identidad: Un DID (Decentralized Identifier) es una URI que
@@ -44,7 +44,7 @@ const main = async () => {
 
   try {
     // 1. Crear un Tópico para actuar como Registro de DID
-    console.log('[⚙️ PROCESO] Creando Tópico HCS para anclaje de Documento DID...')
+    console.log('[PROCESO] Creando Tópico HCS para anclaje de Documento DID...')
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('Registro DID')
       .freezeWith(client)
@@ -53,7 +53,7 @@ const main = async () => {
     const topicReceipt = await topicRes.getReceipt(client)
     const topicId = topicReceipt.topicId
 
-    console.log(`\n[✅ ÉXITO] Tópico de Registro DID Creado: ${topicId.toString()}`)
+    console.log(`\n[ÉXITO] Tópico de Registro DID Creado: ${topicId.toString()}`)
 
     // 2. Construir un Documento DID W3C usando el estándar de @hiero-did-sdk
     // Usamos la llave del Operador para que el Lab 06 demuestre posesión en el login
@@ -80,11 +80,11 @@ const main = async () => {
       assertionMethod: [keyId]
     }
 
-    console.log('\n[📊 REGISTRO] Documento DID W3C Generado (formato @hiero-did-sdk):')
+    console.log('\n[REGISTRO] Documento DID W3C Generado (formato @hiero-did-sdk):')
     console.log(JSON.stringify(didDocument, null, 2))
 
     // 3. Anclar el Documento DID a HCS
-    console.log('\n[⚙️ PROCESO] Anclando Documento DID al ledger...')
+    console.log('\n[PROCESO] Anclando Documento DID al ledger...')
     const submitTx = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
       .setMessage(JSON.stringify(didDocument))
@@ -92,15 +92,15 @@ const main = async () => {
 
     await submitTx.getReceipt(client)
 
-    console.log('\n[✅ ÉXITO] Documento DID Anclado Exitosamente!')
-    console.log(`[📊 REGISTRO] Registro: ${topicId.toString()}`)
-    console.log(`[📊 REGISTRO] ID DID:   ${didDocument.id}`)
+    console.log('\n[ÉXITO] Documento DID Anclado Exitosamente!')
+    console.log(`[REGISTRO] Registro: ${topicId.toString()}`)
+    console.log(`[REGISTRO] ID DID:   ${didDocument.id}`)
 
     // Guardar para el Paso 06 (Prueba de Inicio de Sesión)
-    console.log('[ℹ️ INFO] Sincronizando state.json con ID de Tópico DID...')
+    console.log('[INFO] Sincronizando state.json con ID de Tópico DID...')
     updateState('DID_TOPIC_ID', topicId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Identidad Autosoberana: Este patrón permite una identidad verificable')
     console.log('y criptográficamente segura que no puede ser revocada por un tercero.')
     console.log('Hedera actúa como el directorio definitivo y neutral de la verdad.')
@@ -108,7 +108,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] Anclaje de DID Fallido:', error.message)
+    console.error('\n[FALLO] Anclaje de DID Fallido:', error.message)
     process.exitCode = 1
   }
 }
@@ -117,7 +117,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
- * [ CONCEPTO ] Verificación de Patrocinio de Gas con Paymaster en el Relay JSON-RPC
+ * [CONCEPTO] Verificación de Patrocinio de Gas con Paymaster en el Relay JSON-RPC
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * En la adopción masiva de Web3 y la operación de agentes de IA autónomos, los
@@ -34,7 +34,7 @@
  * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
  * - Siguiente: M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
  *
- * [ SIMULADO ]
+ * [SIMULADO]
  * El bundler de ERC-4337 y el flujo de UserOperation son simulados. La liquidación final en Hedera es real.
  *
  * [ ANTES DE EJECUTAR ]
@@ -148,16 +148,16 @@ const main = async () => {
     const engine = new Erc4337PaymasterEngine(ENTRY_POINT_ADDRESS, 296) // Hedera Testnet
 
     // 1. Configurar Cuenta Inteligente del Usuario y Patrocinador Paymaster
-    console.log('[⚙️ PROCESO] Paso 1: Configurando Smart Account del Usuario y Patrocinador Paymaster...')
+    console.log('[PROCESO] Paso 1: Configurando Smart Account del Usuario y Patrocinador Paymaster...')
     const userWallet = ethers.Wallet.createRandom()
     const paymasterWallet = ethers.Wallet.createRandom()
 
-    console.log(`[📊 LOG] Cuenta de Usuario (Emisor):   ${userWallet.address}`)
-    console.log(`[📊 LOG] Patrocinador Paymaster:      ${paymasterWallet.address}`)
-    console.log(`[📊 LOG] EntryPoint ERC-4337:         ${ENTRY_POINT_ADDRESS}`)
+    console.log(`[LOG] Cuenta de Usuario (Emisor):   ${userWallet.address}`)
+    console.log(`[LOG] Patrocinador Paymaster:      ${paymasterWallet.address}`)
+    console.log(`[LOG] EntryPoint ERC-4337:         ${ENTRY_POINT_ADDRESS}`)
 
     // 2. Ensamblar Estructura UserOperation
-    console.log('\n[⚙️ PROCESO] Paso 2: Ensamblando UserOperation ERC-4337 para Transferencia Sin Gas...')
+    console.log('\n[PROCESO] Paso 2: Ensamblando UserOperation ERC-4337 para Transferencia Sin Gas...')
     const sampleCallData = ethers.hexlify(ethers.toUtf8Bytes('hedera:transfer:gasless:0.0.11226623'))
 
     const userOp = {
@@ -175,7 +175,7 @@ const main = async () => {
     }
 
     // 3. Filtrado de Políticas del Paymaster y Patrocinio
-    console.log('\n[⚙️ PROCESO] Paso 3: Evaluando UserOperation según la Política de Patrocinio Empresarial...')
+    console.log('\n[PROCESO] Paso 3: Evaluando UserOperation según la Política de Patrocinio Empresarial...')
     const validUntil = Math.floor(Date.now() / 1000) + 3600 // 1 hora de validez
     const validAfter = Math.floor(Date.now() / 1000)
 
@@ -187,46 +187,46 @@ const main = async () => {
     )
 
     userOp.paymasterAndData = sponsorship.paymasterAndData
-    console.log('[✅ ÉXITO] ¡Política Aprobada: Patrocinio de Gas Concedido por el Paymaster!')
-    console.log(`[📊 LOG] Digest del Paymaster: ${sponsorship.paymasterDigest}`)
-    console.log(`[📊 LOG] Ventana de Patrocinio: ${validAfter} ➔ ${validUntil}`)
-    console.log(`[📊 LOG] Longitud de paymasterAndData: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
+    console.log('[ÉXITO] ¡Política Aprobada: Patrocinio de Gas Concedido por el Paymaster!')
+    console.log(`[LOG] Digest del Paymaster: ${sponsorship.paymasterDigest}`)
+    console.log(`[LOG] Ventana de Patrocinio: ${validAfter} ➔ ${validUntil}`)
+    console.log(`[LOG] Longitud de paymasterAndData: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
 
     // 4. El Usuario Firma la UserOperation Patrocinada
-    console.log('\n[⚙️ PROCESO] Paso 4: El Usuario Firma el Hash Definitivo de la UserOperation...')
+    console.log('\n[PROCESO] Paso 4: El Usuario Firma el Hash Definitivo de la UserOperation...')
     const finalUserOpHash = engine.getUserOpHash(userOp)
     const userSigningKey = new ethers.SigningKey(userWallet.privateKey)
     const userSig = userSigningKey.sign(finalUserOpHash)
     userOp.signature = ethers.concat([userSig.r, userSig.s, ethers.toBeHex(userSig.v, 1)])
 
-    console.log('[✅ ÉXITO] ¡UserOperation Sellada Criptográficamente!')
-    console.log(`[📊 LOG] Hash Final de UserOp: ${finalUserOpHash}`)
-    console.log(`[📊 LOG] Firma del Usuario:    ${userOp.signature.substring(0, 24)}...`)
+    console.log('[ÉXITO] ¡UserOperation Sellada Criptográficamente!')
+    console.log(`[LOG] Hash Final de UserOp: ${finalUserOpHash}`)
+    console.log(`[LOG] Firma del Usuario:    ${userOp.signature.substring(0, 24)}...`)
 
     // 5. Simulación del Bundler y Liquidación en Hedera
-    console.log('\n[⚙️ PROCESO] Paso 5: El Bundler Verifica el Patrocinio y Transmite a Hedera...')
-    console.log('   Verificación 1: Firma del emisor válida ➔ CONFIRMADO')
-    console.log('   Verificación 2: Firma del Paymaster válida ➔ CONFIRMADO')
-    console.log('   Verificación 3: Saldo del Paymaster suficiente para gas ➔ CONFIRMADO')
-    console.log('   Verificación 4: Gas debitado al Paymaster, CERO HBAR deducido al Usuario ➔ CONFIRMADO')
+    console.log('\n[PROCESO] Paso 5: El Bundler Verifica el Patrocinio y Transmite a Hedera...')
+    console.log('Verificación 1: Firma del emisor válida ➔ CONFIRMADO')
+    console.log('Verificación 2: Firma del Paymaster válida ➔ CONFIRMADO')
+    console.log('Verificación 3: Saldo del Paymaster suficiente para gas ➔ CONFIRMADO')
+    console.log('Verificación 4: Gas debitado al Paymaster, CERO HBAR deducido al Usuario ➔ CONFIRMADO')
 
-    console.log('\n[✅ ÉXITO] ¡UserOperation ERC-4337 Liquidada! Estado: SETTLED_GASLESS')
+    console.log('\n[ÉXITO] ¡UserOperation ERC-4337 Liquidada! Estado: SETTLED_GASLESS')
 
     updateState('ERC4337_PAYMASTER_ADDRESS', paymasterWallet.address)
     updateState('ERC4337_LAST_USEROP_HASH', finalUserOpHash)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Web3 Universal Sin Gas: Los usuarios nunca tienen que comprar tokens nativos ni pagar')
     console.log('tarifas de red. Las aplicaciones empresariales, estudios de videojuegos y marcos de agentes')
     console.log('de IA pueden absorber todos los costos operativos de gas mediante patrocinio Paymaster ERC-4337.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Hedera es la red idónea para la Abstracción de Cuentas ERC-4337 gracias a sus costos de')
     console.log('gas predecibles y reducidos, lo que impide que las arcas de los Paymasters se agoten por picos de tarifas.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Fallo en Paymaster ERC-4337:', error.message)
+    console.error('\n[ERROR] Fallo en Paymaster ERC-4337:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -237,7 +237,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

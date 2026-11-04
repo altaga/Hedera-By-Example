@@ -2,14 +2,14 @@
 /**
  * ============================================================================
  * Lab 02: ERC-1400 Security Tokens & Bond Coupon Schedules
- * [ CONCEPT ] Tranche Partitions and Automated Debt Servicing
+ * [CONCEPT] Tranche Partitions and Automated Debt Servicing
  * ============================================================================
  * [ KEY CONCEPT ]
  * Programmable Debt Instruments: Corporate and municipal bonds historically
  * suffer from high administrative overhead and manual custodian reconciliation.
  * The ERC-1400 standard models debt on-chain through discrete partitions
  * (Senior vs. Subordinated) and automates interest coupon payouts directly
- * to token holders' Hedera accounts through scheduled atomic transfers.
+ * to token holders'Hedera accounts through scheduled atomic transfers.
  * *
  * [ LEARNABLE MOMENT ]
  * ERC-1400 tranche partitions allow an enterprise to issue Senior and Mezzanine debt tranches within the same security token contract, automating distinct coupon payment schedules on Hedera.
@@ -21,7 +21,7 @@
  * - Previous: M11 Lab 01: ERC-3643 Identity Registry
  * - Next:     M11 Lab 03: Stablecoin Studio Roles
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * Coupon periods are simulated instead of waiting for real dates. Tokens and payments are real.
  *
  * [ BEFORE YOU RUN ]
@@ -68,11 +68,11 @@ const main = async () => {
   const { client, operatorId, network } = getClient()
 
   try {
-    console.log(`[⚙️ PROCESS] Initializing Bond Token Structure for: ${BOND_SPECIFICATION.issuer}`)
-    console.log(`[📊 LOG] ISIN: ${BOND_SPECIFICATION.isin} | Maturity: ${BOND_SPECIFICATION.maturityYears} Years`)
+    console.log(`[PROCESS] Initializing Bond Token Structure for: ${BOND_SPECIFICATION.issuer}`)
+    console.log(`[LOG] ISIN: ${BOND_SPECIFICATION.isin} | Maturity: ${BOND_SPECIFICATION.maturityYears} Years`)
 
     // 1. Issue the Security Token on HTS representing the Bond Series
-    console.log('\n[⚙️ PROCESS] Deploying ERC-1400 compliant bond token on HTS...')
+    console.log('\n[PROCESS] Deploying ERC-1400 compliant bond token on HTS...')
     const bondTokenId = (await reuseToken('REUSE_M11_02_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const bondCreateTx = await new TokenCreateTransaction()
@@ -93,12 +93,12 @@ const main = async () => {
       return (await (await bondCreateTx.execute(client)).getReceipt(client)).tokenId
     })).toString()
 
-    console.log(`[✅ SUCCESS] Corporate Bond Token Deployed: ${bondTokenId}`)
-    console.log(`[🔗 EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
+    console.log(`[SUCCESS] Corporate Bond Token Deployed: ${bondTokenId}`)
+    console.log(`[EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${bondTokenId}`}`)
 
     // 2. Simulate Quarterly Coupon Servicing Schedule
     console.log('\n===============================================================')
-    console.log('📅 EXECUTING QUARTERLY COUPON DISTRIBUTION (AUTOMATED PAYOUT)')
+    console.log('EXECUTING QUARTERLY COUPON DISTRIBUTION (AUTOMATED PAYOUT)')
     console.log('===============================================================')
 
     BOND_SPECIFICATION.partitions.forEach((tranche) => {
@@ -113,7 +113,7 @@ const main = async () => {
     })
 
     // 3. Execute On-Chain Coupon Distribution
-    console.log('\n[⚙️ PROCESS] Executing on-chain atomic coupon distribution...')
+    console.log('\n[PROCESS] Executing on-chain atomic coupon distribution...')
     // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
     const couponDistributionTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-1.0)) // Distributing coupon yield
@@ -125,22 +125,22 @@ const main = async () => {
     const couponReceipt = await couponResponse.getReceipt(client)
     const couponHashscanUrl = getHashscanUrl(couponResponse)
 
-    console.log('\n[✅ SUCCESS] Coupon Distribution Settled On-Chain:')
-    console.log(`[📊 LOG] Status:         ${couponReceipt.status.toString()}`)
-    console.log(`[📊 LOG] Transaction ID: ${couponResponse.transactionId.toString()}`)
-    console.log(`[🔗 EXPLORER] HashScan:  ${couponHashscanUrl}`)
+    console.log('\n[SUCCESS] Coupon Distribution Settled On-Chain:')
+    console.log(`[LOG] Status:         ${couponReceipt.status.toString()}`)
+    console.log(`[LOG] Transaction ID: ${couponResponse.transactionId.toString()}`)
+    console.log(`[EXPLORER] HashScan:  ${couponHashscanUrl}`)
 
     updateState('BOND_TOKEN_ID', bondTokenId)
     updateState('BOND_COUPON_TX_ID', couponResponse.transactionId.toString())
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('ERC-1400 replaces manual bond servicing teams with programmatic settlement.')
     console.log('Coupons, principal maturities, and voting tranches are enforced by ledger logic,')
     console.log('eliminating clearinghouse delays and reducing administrative fees by over 80%.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] ERC-1400 bond issuance failed:', error.message)
+    console.error('\n[ERROR] ERC-1400 bond issuance failed:', error.message)
     process.exit(1)
   }
 }
@@ -149,7 +149,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

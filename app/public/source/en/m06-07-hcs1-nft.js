@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: HCS-1 Native NFT (Metadata + Image on HCS)
- * [ CONCEPT ] Fully Decentralized Digital Artifacts
+ * [CONCEPT] Fully Decentralized Digital Artifacts
  * ============================================================================
  * [ KEY CONCEPT ]
  * Beyond IPFS: While IPFS is common, it still relies on external availability.
@@ -85,11 +85,11 @@ const main = async () => {
     const fileBuffer = fs.readFileSync(filePath)
     const imageHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
 
-    console.log(`[ℹ️ INFO] Asset: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
-    console.log(`[📊 LOG] Asset FID: ${imageHash}`)
+    console.log(`[INFO] Asset: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
+    console.log(`[LOG] Asset FID: ${imageHash}`)
 
     // 1. Create the HCS Storage Topic
-    console.log('\n[⚙️ PROCESS] Creating HCS Storage Topic...')
+    console.log('\n[PROCESS] Creating HCS Storage Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('HCS-1 Asset Anchor')
@@ -101,15 +101,15 @@ const main = async () => {
     const topicId = topicReceipt.topicId
     const topicIdStr = topicId.toString()
 
-    console.log(`[✅ SUCCESS] HCS Topic Created: ${topicIdStr}`)
+    console.log(`[SUCCESS] HCS Topic Created: ${topicIdStr}`)
 
     // 2. Submit Image Shards
     const imagePayloads = constructHcs1Payloads(fileBuffer, topicIdStr)
-    console.log(`[ℹ️ INFO] Submitting ${imagePayloads.length} image shards to HCS...`)
+    console.log(`[INFO] Submitting ${imagePayloads.length} image shards to HCS...`)
 
     for (const payload of imagePayloads) {
       show.shards({ id: 'hcs1-image', title: 'Image shards submitted', total: payload.t, done: payload.i + 1 })
-      process.stdout.write(` └─ [⚙️] Shard ${payload.i + 1}/${payload.t}\r`)
+      process.stdout.write(` └─ [] Shard ${payload.i + 1}/${payload.t}\r`)
       // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -117,7 +117,7 @@ const main = async () => {
         .execute(client)
       await submitTx.getReceipt(client)
     }
-    process.stdout.write('\n[✅ SUCCESS] Image Shards Anchored.\n')
+    process.stdout.write('\n[SUCCESS] Image Shards Anchored.\n')
 
     // 3. Construct and Submit Metadata JSON (HIP-412)
     const metadataJSON = {
@@ -137,7 +137,7 @@ const main = async () => {
     const metaHash = crypto.createHash('sha256').update(metaBuffer).digest('hex')
     const metaPayloads = constructHcs1Payloads(metaBuffer, topicIdStr)
 
-    console.log(`\n[ℹ️ INFO] Submitting Metadata manifest (${metaPayloads.length} shard)...`)
+    console.log(`\n[INFO] Submitting Metadata manifest (${metaPayloads.length} shard)...`)
     for (const payload of metaPayloads) {
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -145,10 +145,10 @@ const main = async () => {
         .execute(client)
       await submitTx.getReceipt(client)
     }
-    console.log('[✅ SUCCESS] Metadata Shard Anchored.')
+    console.log('[SUCCESS] Metadata Shard Anchored.')
 
     // 4. Create the NFT Collection
-    console.log('\n[⚙️ PROCESS] Creating NFT Collection...')
+    console.log('\n[PROCESS] Creating NFT Collection...')
     const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenTx = await new TokenCreateTransaction()
@@ -166,12 +166,12 @@ const main = async () => {
       return tokenReceipt.tokenId
     })
 
-    console.log(`[✅ SUCCESS] Collection ID: ${tokenId.toString()}`)
+    console.log(`[SUCCESS] Collection ID: ${tokenId.toString()}`)
 
     // 5. Mint Serial #1 pointing to HCS Metadata
     // The pointer format: hcs://<TOPIC_ID>?fid=<METADATA_FID>
     const hcsPointer = `hcs://${topicIdStr}?fid=${metaHash}`
-    console.log(`\n[⚙️ PROCESS] Minting Serial #1 with Pointer: ${hcsPointer}`)
+    console.log(`\n[PROCESS] Minting Serial #1 with Pointer: ${hcsPointer}`)
 
     // Mint: only the supply key can create new units or NFT serials.
     const mintTx = await new TokenMintTransaction()
@@ -182,14 +182,14 @@ const main = async () => {
     const mintRes = await mintTx.execute(client)
     await mintRes.getReceipt(client)
 
-    console.log('\n[✅ SUCCESS] HCS-1 Native NFT Minted!')
-    console.log(`[📊 LOG] View NFT on Hashscan: ${getHashscanUrl(mintRes)}`)
+    console.log('\n[SUCCESS] HCS-1 Native NFT Minted!')
+    console.log(`[LOG] View NFT on Hashscan: ${getHashscanUrl(mintRes)}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Zero-Trust Autonomous Inscription: The metadata and image are stored')
     console.log('directly within HCS shards, completely eliminating IPFS pinning dependencies.')
 
-    console.log('\n💡 LEARNABLE MOMENT:')
+    console.log('\n LEARNABLE MOMENT:')
     console.log('Frontend Resolution Logic:')
     console.log(`1. Read NFT metadata: "${hcsPointer}"`)
     console.log(`2. Query Mirror Node: /api/v1/topics/${topicIdStr}/messages`)
@@ -205,7 +205,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Operation Failed:', error.message)
+    console.error('\n[FAILED] Operation Failed:', error.message)
     process.exitCode = 1
     if (client) client.close()
   }
@@ -215,7 +215,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

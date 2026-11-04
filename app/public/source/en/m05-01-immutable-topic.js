@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Immutable HCS Primitives
- * [ CONCEPT ] Decentralized Message Queues (Topics)
+ * [CONCEPT] Decentralized Message Queues (Topics)
  * ============================================================================
  * [ KEY CONCEPT ]
  * Trust but Verify: By creating an "Immutable" topic (no keys), you ensure
@@ -38,7 +38,7 @@ const main = async () => {
   const { client } = getClient()
 
   try {
-    console.log('[⚙️ PROCESS] Executing Topic Creation on Hedera Consensus Service...')
+    console.log('[PROCESS] Executing Topic Creation on Hedera Consensus Service...')
 
     // We create a strictly open Topic (No keys) so anyone can publish test messages
     // In production, you would use .setSubmitKey() to restrict access.
@@ -48,18 +48,18 @@ const main = async () => {
 
     const response = await transaction.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
     const topicId = receipt.topicId.toString()
 
-    console.log(`\n[✅ SUCCESS] HCS Topic Created Successfully: ${topicId}`)
+    console.log(`\n[SUCCESS] HCS Topic Created Successfully: ${topicId}`)
 
     // Automatically sync the Topic ID to the local state
-    console.log('[ℹ️ INFO] Synchronizing state.json with new Topic ID...')
+    console.log('[INFO] Synchronizing state.json with new Topic ID...')
     updateState('HCS_TOPIC_ID', topicId)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('Trust but Verify: By creating an "Immutable" topic (no keys), you')
     console.log("ensure that no one can ever delete or change the topic's settings. It")
     console.log('becomes a permanent piece of public infrastructure.')
@@ -67,7 +67,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Topic Creation Failed:', error.message)
+    console.error('\n[FAILED] Topic Creation Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -76,7 +76,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

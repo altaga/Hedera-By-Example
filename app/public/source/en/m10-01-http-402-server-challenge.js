@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Server HTTP 402 Challenge Generation
- * [ CONCEPT ] Machine-Readable Payment Challenges
+ * [CONCEPT] Machine-Readable Payment Challenges
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Paywall Header: Instead of redirecting an AI agent to a web browser
@@ -21,12 +21,12 @@
  * - Previous: M9 Lab 11: A2A Encrypted Handshake
  * - Next:     M10 Lab 02: Agent Payment Signature
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * Agent -> Server: GET /api/v1/alpha-intelligence/market-depth
  * Note Server: No API key, token or cookie
  * Server -> Agent: 402 Payment Required (price, payee, nonce, expiry)
  *
- * [ SIMULATED ]
+ * [SIMULATED]
  * The HTTP request and server run in the same process; no web server is started.
  *
  * [ BEFORE YOU RUN ]
@@ -87,22 +87,22 @@ const main = async () => {
     const resourcePath = '/api/v1/alpha-intelligence/market-depth'
     const queryCostHbar = 0.5 // 0.5 HBAR per request
 
-    console.log(`[⚙️ PROCESS] Simulating unauthenticated request to: ${resourcePath}`)
-    console.log('[ℹ️ INFO] No API Key, OAuth Bearer token, or Session Cookie present.')
+    console.log(`[PROCESS] Simulating unauthenticated request to: ${resourcePath}`)
+    console.log('[INFO] No API Key, OAuth Bearer token, or Session Cookie present.')
 
-    console.log('\n[⚙️ PROCESS] Server interceptor triggering HTTP 402 challenge...')
+    console.log('\n[PROCESS] Server interceptor triggering HTTP 402 challenge...')
     // The server answers a protected request with a payment challenge instead of the data.
     const challenge = create402Challenge(resourcePath, queryCostHbar, operatorId.toString(), network)
 
-    console.log('\n[✅ SUCCESS] HTTP 402 Payment Required Challenge Generated:')
-    console.log(`[📊 LOG] HTTP Status:       ${challenge.status} Payment Required`)
-    console.log(`[📊 LOG] Target Resource:   ${challenge.headers['x402-resource']}`)
-    console.log(`[📊 LOG] Required Network:  ${challenge.headers['x402-network']}`)
-    console.log(`[📊 LOG] Scheme:            ${challenge.headers['x402-scheme']}`)
-    console.log(`[📊 LOG] Payee Address:     ${challenge.headers['x402-payee']}`)
-    console.log(`[📊 LOG] Required Cost:     ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
-    console.log(`[📊 LOG] Cryptographic Nonce: ${challenge.headers['x402-nonce']}`)
-    console.log(`[📊 LOG] Expires At:        ${challenge.body.details.validUntil}`)
+    console.log('\n[SUCCESS] HTTP 402 Payment Required Challenge Generated:')
+    console.log(`[LOG] HTTP Status:       ${challenge.status} Payment Required`)
+    console.log(`[LOG] Target Resource:   ${challenge.headers['x402-resource']}`)
+    console.log(`[LOG] Required Network:  ${challenge.headers['x402-network']}`)
+    console.log(`[LOG] Scheme:            ${challenge.headers['x402-scheme']}`)
+    console.log(`[LOG] Payee Address:     ${challenge.headers['x402-payee']}`)
+    console.log(`[LOG] Required Cost:     ${challenge.headers['x402-amount']} ${challenge.headers['x402-asset']}`)
+    console.log(`[LOG] Cryptographic Nonce: ${challenge.headers['x402-nonce']}`)
+    console.log(`[LOG] Expires At:        ${challenge.body.details.validUntil}`)
 
     // Persist challenge for Lab 02
     updateState('X402_CHALLENGE_RESOURCE', resourcePath)
@@ -111,14 +111,14 @@ const main = async () => {
     updateState('X402_CHALLENGE_NONCE', challenge.headers['x402-nonce'])
     updateState('X402_CHALLENGE_EXPIRES', challenge.headers['x402-expires'])
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The HTTP 402 response is completely self-describing. Any compliant machine')
     console.log('agent can inspect the headers, evaluate whether the cost meets its budget')
     console.log('policy, and construct an on-chain cryptographic settlement proof autonomously.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ ERROR] Failed to generate 402 challenge:', error.message)
+    console.error('\n[ERROR] Failed to generate 402 challenge:', error.message)
     process.exit(1)
   }
 }
@@ -127,7 +127,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

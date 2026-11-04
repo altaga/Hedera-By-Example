@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: User to Agent Communication (Parallel Orchestration)
- * [ CONCEPT ] Stateful Event-Driven Duplex Communication
+ * [CONCEPT] Stateful Event-Driven Duplex Communication
  * ============================================================================
  * [ KEY CONCEPT ]
  * Stateful Callbacks: True Agentic workflows rely on reactive parallel
@@ -22,7 +22,7 @@
  * - Previous: M9 Lab 05: HCS-14 UAID
  * - Next:     M9 Lab 07: HCS-10 A2A Public
  *
- * [ SEQUENCE ]
+ * [SEQUENCE]
  * User -> Agent Inbox: Request message (HCS-10)
  * Agent -> Agent Inbox: Subscribe and read request
  * Note Agent: Processes the request
@@ -62,7 +62,7 @@ const main = async () => {
   const operatorKeyRaw = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!agentId || !operatorId) {
-    console.error('[❌ FAILED] Missing Agent A or Account 1 data in configuration.')
+    console.error('[FAILED] Missing Agent A or Account 1 data in configuration.')
     process.exitCode = 1
     return
   }
@@ -77,7 +77,7 @@ const main = async () => {
     })
 
     const processedMessages = new Set()
-    console.log(`📡 [ℹ️ INFO] Agent A live: Listening on Inbox [${agentInbox}]`)
+    console.log(`[INFO] Agent A live: Listening on Inbox [${agentInbox}]`)
 
     // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
@@ -85,7 +85,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => { console.error(`\n[❌ FAILED] AGENT MIRROR ERROR: ${err.message}`); process.exit(1) },
+        (err) => { console.error(`\n[FAILED] AGENT MIRROR ERROR: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -99,19 +99,19 @@ const main = async () => {
             const parsed = Array.isArray(rawJson) ? rawJson[0] : rawJson
 
             if (parsed?.data?.toLowerCase().includes('hello')) {
-              console.log('\n--- 📥 [📊 LOG] AGENT A: REQUEST RECEIVED ---')
+              console.log('\n---  [LOG] AGENT A: REQUEST RECEIVED ---')
               const num = parsed.data.match(/\d+/) ? parsed.data.match(/\d+/)[0] : ''
 
-              console.log('[⚙️ PROCESS] Agent "thinking" to process request...')
+              console.log('[PROCESS] Agent "thinking" to process request...')
               await sleep(4000)
 
               await hcs10Agent.sendMessage(agentOutbox, {
                 text: `World ${num}!`.trim(),
                 target: parsed.operator_id
               })
-              console.log('[✅ SUCCESS] Response dispatched to ledger.')
+              console.log('[SUCCESS] Response dispatched to ledger.')
             }
-          } catch (e) { console.error('[❌ FAILED] The agent could not reply:', e.message) }
+          } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
         })
   }
 
@@ -120,13 +120,13 @@ const main = async () => {
     const hederaClient = createClient().setOperator(operatorId, operatorKeyRaw)
     const processedMessages = new Set()
 
-    console.log(`👤 [ℹ️ INFO] User live: Monitoring Outbox [${agentOutbox}]`)
+    console.log(`[INFO] User live: Monitoring Outbox [${agentOutbox}]`)
 
     let currentRound = 1
     const maxRounds = 3
 
     const sendPing = async (round) => {
-      console.log(`\n--- 📤 [⚙️ PROCESS] USER: INITIATING ROUND ${round} ---`)
+      console.log(`\n---  [PROCESS] USER: INITIATING ROUND ${round} ---`)
       const rawPayload = JSON.stringify({ operator_id: operatorId, data: `Hello ${round}` })
       // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
       const tx = await new TopicMessageSubmitTransaction()
@@ -136,7 +136,7 @@ const main = async () => {
 
       // Wait for consensus: the receipt says whether the network accepted the transaction.
       await tx.getReceipt(hederaClient)
-      console.log(`[✅ SUCCESS] Published "Hello ${round}". Waiting for Pong...`)
+      console.log(`[SUCCESS] Published "Hello ${round}". Waiting for Pong...`)
     }
 
     new TopicMessageQuery()
@@ -144,7 +144,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => { console.error(`\n[❌ FAILED] CLIENT MIRROR ERROR: ${err.message}`); process.exit(1) },
+        (err) => { console.error(`\n[FAILED] CLIENT MIRROR ERROR: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -163,17 +163,17 @@ const main = async () => {
             if (targetId.includes(myId)) {
               const replyText = parsed.data.text || ''
               if (replyText.includes(`World ${currentRound}`)) {
-                console.log('\n--- 📥 [📊 LOG] USER: CALLBACK DETECTED ---')
-                console.log(`[✅ SUCCESS] Agent responded with: "${replyText}"`)
+                console.log('\n---  [LOG] USER: CALLBACK DETECTED ---')
+                console.log(`[SUCCESS] Agent responded with: "${replyText}"`)
 
                 if (currentRound < maxRounds) {
                   currentRound++
-                  console.log('[⚙️ PROCESS] Reading response...')
+                  console.log('[PROCESS] Reading response...')
                   await sleep(5000)
                   await sendPing(currentRound)
                 } else {
-                  console.log('\n🏁 [✅ SUCCESS] Interaction sequence complete.')
-                  console.log('\n💡 KEY CONCEPT:')
+                  console.log('\n [SUCCESS] Interaction sequence complete.')
+                  console.log('\n KEY CONCEPT:')
                   console.log('Stateful Callbacks: True Agentic workflows rely on reactive parallel')
                   console.log('communication. Instead of "polling" an API, both sides listen to')
                   console.log('the public ledger and only progress when specific criteria is met.')
@@ -183,7 +183,7 @@ const main = async () => {
               }
             }
           } catch (e) {
-            console.error('\n[❌ FAILED] Malformed callback packet:', e.message)
+            console.error('\n[FAILED] Malformed callback packet:', e.message)
             process.exitCode = 1
           }
         })
@@ -200,7 +200,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

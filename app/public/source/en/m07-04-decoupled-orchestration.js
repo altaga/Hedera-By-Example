@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 04: Decoupled Orchestration and Quorum
- * [ CONCEPT ] Signature Fragment Collection
+ * [CONCEPT] Signature Fragment Collection
  * ============================================================================
  * [ KEY CONCEPT ]
  * Trustless Orchestration: The "Orchestrator" doesn't need to hold any keys.
@@ -44,14 +44,14 @@ const main = async () => {
   const scheduleId = getState('SCHEDULE_ID')
 
   if (!userKey || !scheduleId) {
-    console.error('[❌ FAILED] Missing ACCOUNT_1_PRIVATE_KEY or SCHEDULE_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_PRIVATE_KEY or SCHEDULE_ID in configuration.')
     process.exitCode = 1
-    console.log('[ℹ️ INFO] Tip: Run Lab 03 first to schedule a transaction.')
+    console.log('[INFO] Tip: Run Lab 03 first to schedule a transaction.')
     return
   }
 
   try {
-    console.log(`[⚙️ PROCESS] Adding signature fragment to Schedule: ${scheduleId}...`)
+    console.log(`[PROCESS] Adding signature fragment to Schedule: ${scheduleId}...`)
 
     // Use ScheduleSignTransaction to add the child wallet's signature
     const transaction = await new ScheduleSignTransaction()
@@ -59,19 +59,19 @@ const main = async () => {
       .freezeWith(client)
 
     // Sign with the Child Wallet (the required signer for the inner transfer)
-    console.log('[ℹ️ INFO] Signing with decentralized authority (Child Wallet)...')
+    console.log('[INFO] Signing with decentralized authority (Child Wallet)...')
     const signedTx = await transaction.sign(PrivateKey.fromString(userKey))
 
     const response = await signedTx.execute(client)
 
-    console.log(`[📊 LOG] View on HashScan: ${getHashscanUrl(response)}`)
+    console.log(`[LOG] View on HashScan: ${getHashscanUrl(response)}`)
 
     const receipt = await response.getReceipt(client)
 
-    console.log(`\n[✅ SUCCESS] Signature Collected! Status: ${receipt.status.toString()}`)
-    console.log('[ℹ️ INFO] If threshold met, the inner transaction has been triggered.')
+    console.log(`\n[SUCCESS] Signature Collected! Status: ${receipt.status.toString()}`)
+    console.log('[INFO] If threshold met, the inner transaction has been triggered.')
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log("Trustless Orchestration: The \"Orchestrator\" doesn't need to hold any")
     console.log('keys. They simply tell the required signers the `ScheduleId`, and the')
     console.log('signers send their approval directly to the ledger. Hedera acts as the')
@@ -80,7 +80,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Signature Orchestration Failed:', error.message)
+    console.error('\n[FAILED] Signature Orchestration Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -89,7 +89,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

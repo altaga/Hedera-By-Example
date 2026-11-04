@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Comunicación Humano-a-Agente HCS-10 (Pública)
- * [ CONCEPTO ] Orquestación Reactiva y Arquitectura Orientada a Eventos
+ * [CONCEPTO] Orquestación Reactiva y Arquitectura Orientada a Eventos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Reactividad Instantánea: La comunicación entre humanos y agentes en Hedera
@@ -25,7 +25,7 @@
  * - Actual:   M9 Lab 06: Interacción Humano-a-Agente (HCS-10)
  * - Siguiente: M9 Lab 07: Comunicación Agente-a-Agente (A2A)
  *
- * [ SECUENCIA ]
+ * [SECUENCIA]
  * Usuario -> Buzón del agente: Mensaje de solicitud (HCS-10)
  * Agente -> Buzón del agente: Suscribirse y leer la solicitud
  * Nota Agente: Procesa la solicitud
@@ -61,7 +61,7 @@ const main = async () => {
   const { operatorId, operatorKey: operatorKeyRaw } = getClient()
 
   if (!agentId || !operatorId) {
-    console.error('[❌ FALLO] Faltan identidades para la orquestación. Ejecuta Lab 04 primero.')
+    console.error('[FALLO] Faltan identidades para la orquestación. Ejecuta Lab 04 primero.')
     process.exitCode = 1
     return
   }
@@ -76,7 +76,7 @@ const main = async () => {
     })
 
     const processedMessages = new Set()
-    console.log(`🤖 [ℹ️ INFO] Agente: Servicio Activo en Inbox [${agentInbox}]`)
+    console.log(`[INFO] Agente: Servicio Activo en Inbox [${agentInbox}]`)
 
     // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
@@ -84,7 +84,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => { console.error(` [❌ FALLO] Mirror Node Agente: ${err.message}`); process.exit(1) },
+        (err) => { console.error(` [FALLO] Mirror Node Agente: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -98,19 +98,19 @@ const main = async () => {
             const parsed = Array.isArray(rawJson) ? rawJson[0] : rawJson
 
             if (parsed?.data?.toLowerCase().includes('hola') || parsed?.data?.toLowerCase().includes('hello')) {
-              console.log('\n--- 📥 AGENTE A: SOLICITUD DE AUDITORÍA RECIBIDA ---')
+              console.log('\n---  AGENTE A: SOLICITUD DE AUDITORÍA RECIBIDA ---')
               const round = parsed.data.match(/\d+/) ? parsed.data.match(/\d+/)[0] : ''
 
-              console.log('[⚙️ PROCESO] Procesando lógica de respuesta (Latencia simulada)...')
+              console.log('[PROCESO] Procesando lógica de respuesta (Latencia simulada)...')
               await sleep(3000)
 
               await hcs10Agent.sendMessage(agentOutbox, {
                 text: `¡Hola Humano! Ronda ${round} verificada.`.trim(),
                 target: parsed.operator_id
               })
-              console.log('[✅ ÉXITO] Respuesta enviada al canal de salida.')
+              console.log('[ÉXITO] Respuesta enviada al canal de salida.')
             }
-          } catch (e) { console.error('[❌ FALLO] El agente no pudo responder:', e.message) }
+          } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
         }
       )
   }
@@ -120,13 +120,13 @@ const main = async () => {
     const { client: hederaClient } = getClient()
     const processedMessages = new Set()
 
-    console.log(`👤 [ℹ️ INFO] Usuario: Controlador Activo en Outbox [${agentOutbox}]`)
+    console.log(`[INFO] Usuario: Controlador Activo en Outbox [${agentOutbox}]`)
 
     let currentRound = 1
     const maxRounds = 3
 
     const sendPing = async (round) => {
-      console.log(`\n--- 📤 USUARIO: INICIANDO RONDA ${round} ---`)
+      console.log(`\n---  USUARIO: INICIANDO RONDA ${round} ---`)
       const rawPayload = JSON.stringify({ operator_id: operatorId, data: `Hola Agente, ronda ${round}` })
       // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
       const tx = await new TopicMessageSubmitTransaction()
@@ -136,7 +136,7 @@ const main = async () => {
 
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       await tx.getReceipt(hederaClient)
-      console.log('[ℹ️ INFO] Mensaje publicado. Esperando callback del agente...')
+      console.log('[INFO] Mensaje publicado. Esperando callback del agente...')
     }
 
     new TopicMessageQuery()
@@ -144,7 +144,7 @@ const main = async () => {
       .setStartTime(0)
       .subscribe(
         hederaClient,
-        (err) => { console.error(` [❌ FALLO] Mirror Node Usuario: ${err.message}`); process.exit(1) },
+        (err) => { console.error(` [FALLO] Mirror Node Usuario: ${err.message}`); process.exit(1) },
         async (message) => {
           const tsString = message.consensusTimestamp.toString()
           if (processedMessages.has(tsString)) return
@@ -163,17 +163,17 @@ const main = async () => {
             if (targetId.includes(myId)) {
               const replyText = parsed.data.text || ''
               if (replyText.includes(`Ronda ${currentRound}`)) {
-                console.log('\n--- 📥 USUARIO: RESPUESTA DE AGENTE DETECTADA ---')
-                console.log(`[📊 REGISTRO] Mensaje: "${replyText}"`)
+                console.log('\n---  USUARIO: RESPUESTA DE AGENTE DETECTADA ---')
+                console.log(`[REGISTRO] Mensaje: "${replyText}"`)
 
                 if (currentRound < maxRounds) {
                   currentRound++
-                  console.log('[⚙️ PROCESO] Preparando siguiente interacción...')
+                  console.log('[PROCESO] Preparando siguiente interacción...')
                   await sleep(4000)
                   await sendPing(currentRound)
                 } else {
-                  console.log('\n🏁 --- [✅ ÉXITO] Secuencia U2A completada. ---')
-                  console.log('\n💡 CONCEPTO CLAVE:')
+                  console.log('\n --- [ÉXITO] Secuencia U2A completada. ---')
+                  console.log('\n CONCEPTO CLAVE:')
                   console.log('Callbacks con Estado: Los flujos de agentes reales se basan en comunicación')
                   console.log('paralela reactiva. En vez de sondear una API, ambas partes escuchan el ledger')
                   console.log('y solo avanzan cuando se cumplen los criterios esperados.')
@@ -182,7 +182,7 @@ const main = async () => {
                 }
               }
             }
-          } catch (e) { console.error('\n[❌ FALLO] Paquete de respuesta malformado:', e.message) }
+          } catch (e) { console.error('\n[FALLO] Paquete de respuesta malformado:', e.message) }
         }
       )
 
@@ -198,7 +198,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

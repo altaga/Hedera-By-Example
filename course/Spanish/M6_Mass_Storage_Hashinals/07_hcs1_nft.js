@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 07: NFT Nativo HCS-1 (Metadatos + Imagen en HCS)
- * [ CONCEPTO ] Artefactos Digitales Totalmente Descentralizados
+ * [CONCEPTO] Artefactos Digitales Totalmente Descentralizados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Más allá de IPFS: Aunque IPFS es común, sigue dependiendo de disponibilidad
@@ -85,11 +85,11 @@ const main = async () => {
     const fileBuffer = fs.readFileSync(filePath)
     const imageHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
 
-    console.log(`[ℹ️ INFO] Activo: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
-    console.log(`[📊 LOG] FID del Activo: ${imageHash}`)
+    console.log(`[INFO] Activo: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
+    console.log(`[LOG] FID del Activo: ${imageHash}`)
 
     // 1. Crear el Topic de Almacenamiento HCS
-    console.log('\n[⚙️ PROCESO] Creando Topic de Almacenamiento HCS...')
+    console.log('\n[PROCESO] Creando Topic de Almacenamiento HCS...')
     // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
     const topicTx = await new TopicCreateTransaction()
       .setTopicMemo('Ancla de Activos HCS-1')
@@ -101,15 +101,15 @@ const main = async () => {
     const topicId = topicReceipt.topicId
     const topicIdStr = topicId.toString()
 
-    console.log(`[✅ ÉXITO] Topic HCS Creado: ${topicIdStr}`)
+    console.log(`[ÉXITO] Topic HCS Creado: ${topicIdStr}`)
 
     // 2. Enviar Shards de la Imagen
     const imagePayloads = constructHcs1Payloads(fileBuffer, topicIdStr)
-    console.log(`[ℹ️ INFO] Enviando ${imagePayloads.length} shards de imagen a HCS...`)
+    console.log(`[INFO] Enviando ${imagePayloads.length} shards de imagen a HCS...`)
 
     for (const payload of imagePayloads) {
       show.shards({ id: 'hcs1-image', title: 'Fragmentos de imagen enviados', total: payload.t, done: payload.i + 1 })
-      process.stdout.write(` └─ [⚙️] Shard ${payload.i + 1}/${payload.t}\r`)
+      process.stdout.write(` └─ [] Shard ${payload.i + 1}/${payload.t}\r`)
       // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -117,7 +117,7 @@ const main = async () => {
         .execute(client)
       await submitTx.getReceipt(client)
     }
-    process.stdout.write('\n[✅ ÉXITO] Shards de Imagen Anclados.\n')
+    process.stdout.write('\n[ÉXITO] Shards de Imagen Anclados.\n')
 
     // 3. Construir y Enviar Metadatos JSON (HIP-412)
     const metadataJSON = {
@@ -137,7 +137,7 @@ const main = async () => {
     const metaHash = crypto.createHash('sha256').update(metaBuffer).digest('hex')
     const metaPayloads = constructHcs1Payloads(metaBuffer, topicIdStr)
 
-    console.log(`\n[ℹ️ INFO] Enviando manifiesto de Metadatos (${metaPayloads.length} shard)...`)
+    console.log(`\n[INFO] Enviando manifiesto de Metadatos (${metaPayloads.length} shard)...`)
     for (const payload of metaPayloads) {
       const submitTx = await new TopicMessageSubmitTransaction()
         .setTopicId(topicId)
@@ -145,10 +145,10 @@ const main = async () => {
         .execute(client)
       await submitTx.getReceipt(client)
     }
-    console.log('[✅ ÉXITO] Shard de Metadatos Anclado.')
+    console.log('[ÉXITO] Shard de Metadatos Anclado.')
 
     // 4. Crear la Colección NFT
-    console.log('\n[⚙️ PROCESO] Creando Colección NFT...')
+    console.log('\n[PROCESO] Creando Colección NFT...')
     const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
       // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenTx = await new TokenCreateTransaction()
@@ -166,11 +166,11 @@ const main = async () => {
       return tokenReceipt.tokenId
     })
 
-    console.log(`[✅ ÉXITO] ID de Colección: ${tokenId.toString()}`)
+    console.log(`[ÉXITO] ID de Colección: ${tokenId.toString()}`)
 
     // 5. Minar Serial #1 apuntando a Metadatos HCS
     const hcsPointer = `hcs://${topicIdStr}?fid=${metaHash}`
-    console.log(`\n[⚙️ PROCESO] Minando Serial #1 con Puntero: ${hcsPointer}`)
+    console.log(`\n[PROCESO] Minando Serial #1 con Puntero: ${hcsPointer}`)
 
     // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
     const mintTx = await new TokenMintTransaction()
@@ -181,14 +181,14 @@ const main = async () => {
     const mintRes = await mintTx.execute(client)
     await mintRes.getReceipt(client)
 
-    console.log('\n[✅ ÉXITO] ¡NFT Nativo HCS-1 Minado!')
-    console.log(`[📊 LOG] Ver NFT en Hashscan: ${getHashscanUrl(mintRes)}`)
+    console.log('\n[ÉXITO] ¡NFT Nativo HCS-1 Minado!')
+    console.log(`[LOG] Ver NFT en Hashscan: ${getHashscanUrl(mintRes)}`)
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Inscripción Autónoma de Confianza Cero: Los metadatos y la imagen se almacenan')
     console.log('directamente en shards de HCS, eliminando dependencias de servidores IPFS.')
 
-    console.log('\n💡 MOMENTO DE APRENDIZAJE:')
+    console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Lógica de Resolución Frontend:')
     console.log(`1. Leer metadatos del NFT: "${hcsPointer}"`)
     console.log(`2. Consultar Mirror Node: /api/v1/topics/${topicIdStr}/messages`)
@@ -203,7 +203,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLÓ] La operación falló:', error.message)
+    console.error('\n[FALLÓ] La operación falló:', error.message)
     process.exitCode = 1
     if (client) client.close()
   }
@@ -213,7 +213,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => { if (process.exitCode) process.exit() })
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

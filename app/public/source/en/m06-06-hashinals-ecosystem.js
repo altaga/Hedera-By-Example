@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 06: Digital Asset Evolution (Hashinals)
- * [ CONCEPT ] Ledger-Native Digital Artifacts
+ * [CONCEPT] Ledger-Native Digital Artifacts
  * ============================================================================
  * [ KEY CONCEPT ]
  * The hedera:// Protocol: This is a network-native way to reference files. By
@@ -50,7 +50,7 @@ const main = async () => {
   const hfsFileId = getState('HFS_FILE_ID')
 
   if (!hfsFileId) {
-    console.error('[❌ FAILED] Missing HFS_FILE_ID in configuration. Run Lab 01/02 first.')
+    console.error('[FAILED] Missing HFS_FILE_ID in configuration. Run Lab 01/02 first.')
     process.exitCode = 1
     return
   }
@@ -61,7 +61,7 @@ const main = async () => {
     const readmeContent = fs.existsSync(metaPath) ? fs.readFileSync(metaPath, 'utf8') : 'Default Metadata'
 
     // 1. Create the Hashinal NFT Collection
-    console.log("[⚙️ PROCESS] Creating the 'Hedera Syllabus Hashinal' collection...")
+    console.log("[PROCESS] Creating the 'Hedera Syllabus Hashinal' collection...")
     const tokenId = await reuseToken('REUSE_M6_06_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
       const tokenTx = await new TokenCreateTransaction()
@@ -82,7 +82,7 @@ const main = async () => {
       return tokenReceipt.tokenId
     })
 
-    console.log(`\n[✅ SUCCESS] Hashinal Collection Created: ${tokenId.toString()}`)
+    console.log(`\n[SUCCESS] Hashinal Collection Created: ${tokenId.toString()}`)
 
     // 2. Define the Hashinal Metadata (hedera:// protocol)
     const metadataJSON = {
@@ -97,11 +97,11 @@ const main = async () => {
       format: 'HIP412@2.0.0'
     }
 
-    console.log('\n[📊 LOG] Generated Metadata Manifest:')
+    console.log('\n[LOG] Generated Metadata Manifest:')
     console.log(JSON.stringify(metadataJSON, null, 2))
 
     // 3. Mint the Serial
-    console.log(`\n[⚙️ PROCESS] Minting Serial #1 for Hashinal ${tokenId.toString()}...`)
+    console.log(`\n[PROCESS] Minting Serial #1 for Hashinal ${tokenId.toString()}...`)
 
     // Final pointer to the on-chain file bundle
     const pointer = `hedera://1/${hfsFileId}`
@@ -115,10 +115,10 @@ const main = async () => {
     const mintResponse = await mintTx.execute(client)
     await mintResponse.getReceipt(client)
 
-    console.log(`[📊 LOG] View Mint Transaction: ${getHashscanUrl(mintResponse)}`)
-    console.log(`\n[✅ SUCCESS] Success! NFT Serial #1 now points directly to HFS File ${hfsFileId}`)
+    console.log(`[LOG] View Mint Transaction: ${getHashscanUrl(mintResponse)}`)
+    console.log(`\n[SUCCESS] Success! NFT Serial #1 now points directly to HFS File ${hfsFileId}`)
 
-    console.log('\n💡 KEY CONCEPT:')
+    console.log('\n KEY CONCEPT:')
     console.log('The hedera:// Protocol: This is a network-native way to reference')
     console.log('files. By using this URI in your metadata, you are making your assets')
     console.log('"Ledger-Native" and globally resolvable by any Hedera-compatible')
@@ -127,7 +127,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[❌ FAILED] Hashinal Minting Failed:', error.message)
+    console.error('\n[FAILED] Hashinal Minting Failed:', error.message)
     process.exitCode = 1
   }
 }
@@ -136,7 +136,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FAILED] Execution Error:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

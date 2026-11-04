@@ -2,7 +2,7 @@
 /**
  * ============================================================================
  * Lab 01: Emisión de Token Fungible con HTS
- * [ CONCEPTO ] Tokens Fungibles a Nivel de Protocolo
+ * [CONCEPTO] Tokens Fungibles a Nivel de Protocolo
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Inmutabilidad y Confianza: En Hedera, los tokens son entidades NATIVAS del
@@ -46,7 +46,7 @@ const main = async () => {
   const treasuryKey = PrivateKey.fromString(operatorKey)
 
   try {
-    console.log('[⚙️ PROCESO] Creando "Hedera Syllabus Coin" (HSC) en el Ledger...')
+    console.log('[PROCESO] Creando "Hedera Syllabus Coin" (HSC) en el Ledger...')
 
     // 1. Definir y Ejecutar la Creación del Token Nativo
     const tokenId = await reuseToken('REUSE_M3_01_TOKEN', async () => {
@@ -66,22 +66,22 @@ const main = async () => {
 
       const response = await transaction.execute(client)
 
-      console.log(`[📊 REGISTRO] Transacción enviada: ${response.transactionId.toString()}`)
-      console.log(`[📊 REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
+      console.log(`[REGISTRO] Transacción enviada: ${response.transactionId.toString()}`)
+      console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
       const receipt = await response.getReceipt(client)
       return receipt.tokenId
     })
 
-    console.log('\n[✅ ÉXITO] Token Nativo emitido exitosamente.')
-    console.log(`[📊 REGISTRO] Token ID: ${tokenId.toString()}`)
-    console.log(`[📊 REGISTRO] Cuenta de Tesorería: ${operatorId}`)
+    console.log('\n[ÉXITO] Token Nativo emitido exitosamente.')
+    console.log(`[REGISTRO] Token ID: ${tokenId.toString()}`)
+    console.log(`[REGISTRO] Cuenta de Tesorería: ${operatorId}`)
 
     // Persistir el Token ID para laboratorios posteriores
-    console.log('[ℹ️ INFO] Guardando Token ID en el estado local del módulo...')
+    console.log('[INFO] Guardando Token ID en el estado local del módulo...')
     updateState('FT_TOKEN_ID', tokenId.toString())
 
-    console.log('\n💡 CONCEPTO CLAVE:')
+    console.log('\n CONCEPTO CLAVE:')
     console.log('Al ser un activo nativo, las transferencias de este token')
     console.log('tienen la misma seguridad y finalidad que el HBAR base,')
     console.log('sin los riesgos de seguridad asociados a los Smart Contracts')
@@ -90,7 +90,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[❌ FALLO] El despliegue del token falló:', error.message)
+    console.error('\n[FALLO] El despliegue del token falló:', error.message)
     process.exitCode = 1
   }
 }
@@ -99,7 +99,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[❌ FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }
