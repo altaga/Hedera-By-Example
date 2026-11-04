@@ -29,30 +29,42 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
       <div className='brand-cluster'>
         <a
           href='#index'
-          className='wordmark'
+          className='brand-logo-link'
           onClick={(e) => { e.preventDefault(); onHome() }}
+          aria-label={`${t.siteName} - ${lang === 'es' ? 'Inicio' : 'Home'}`}
         >
           <img
-            src='/brand-icon.png'
+            src='/brand-logo.png'
             alt=''
             aria-hidden='true'
-            className='wordmark-logo'
-            width={26}
-            height={26}
+            className='brand-logo-img'
+            width={34}
+            height={38}
           />
-          <span>{t.siteName}</span>
         </a>
-        <a
-          href='https://effisend.xyz'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='brand-byline'
-          aria-label={lang === 'es' ? 'Hedera by Example, por Effisend' : 'Hedera by Example, by Effisend'}
-          title={lang === 'es' ? 'Desarrollado por Effisend' : 'Built by Effisend'}
-        >
-          <span className='brand-byline-credit'>{lang === 'es' ? 'por' : 'by'}</span>
-          <span className='brand-byline-name'>Effisend</span>
-        </a>
+
+        <div className='brand-text-stack'>
+          <a
+            href='#index'
+            className='brand-title-link'
+            onClick={(e) => { e.preventDefault(); onHome() }}
+            aria-label={`${t.siteName} - ${lang === 'es' ? 'Inicio' : 'Home'}`}
+          >
+            <span className='brand-title-l1'>HEDERA BY</span>
+            <span className='brand-title-l2'>EXAMPLE</span>
+          </a>
+          <a
+            href='https://effisend.xyz'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='brand-byline-link'
+            aria-label={lang === 'es' ? 'Hedera by Example, por Effisend' : 'Hedera by Example, by Effisend'}
+            title={lang === 'es' ? 'Desarrollado por Effisend' : 'Built by Effisend'}
+          >
+            <span className='brand-byline-lead'>{lang === 'es' ? 'por' : 'by'}</span>
+            <span className='brand-byline-name'>Effisend</span>
+          </a>
+        </div>
       </div>
 
       <div className='topbar-actions'>
