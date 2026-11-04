@@ -708,8 +708,24 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 
 /* Code lines: numbers come from data-line so copying never includes them. */
 .code {
-  margin: 0; padding: 14px 0; overflow-x: auto;
-  font-size: 13px; line-height: 1.65; tab-size: 2; color: var(--text);
+  margin: 0;
+  padding: 14px 0;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.65;
+  tab-size: 2;
+  color: var(--text);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-3) 55%, transparent) transparent;
+}
+.code::-webkit-scrollbar { height: 5px; }
+.code::-webkit-scrollbar-track { background: transparent; }
+.code::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-3) 45%, transparent);
+  border-radius: 999px;
+}
+.code:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-3) 70%, transparent);
 }
 .code code { display: block; min-width: max-content; }
 .code-line { display: block; padding-right: 20px; white-space: pre; }
@@ -727,46 +743,82 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .t-sdk { color: var(--t-sdk); }
 .t-com { color: var(--t-com); font-style: italic; }
 
-/* Walkthrough: explanation beside the code it explains. */
+/* Walkthrough: explanation left (tight), code right (dominant). */
+.walk {
+  display: flex;
+  flex-direction: column;
+}
 .walk-row {
-  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 8fr);
+  display: grid;
+  /* Narrow prose rail — code owns the width; no huge empty left slab. */
+  grid-template-columns: minmax(13rem, 18rem) minmax(0, 1fr);
+  align-items: start;
+  column-gap: 0;
 }
-.walk-row + .walk-row .walk-doc { border-top: 1px solid var(--border); }
-.walk-row + .walk-row .walk-code { border-top: 1px solid var(--border); }
-.walk-doc { padding: 12px 18px; font-size: 14px; line-height: 1.55; color: var(--text-2); }
-.walk-doc p { margin: 0 0 8px; }
-.walk-doc p:last-child { margin-bottom: 0; }
-.walk-code { background: var(--bg-code); border-left: 1px solid var(--border); min-width: 0; }
-.walk-code .code { padding: 10px 0; }
-.walk-row-bare .walk-doc { padding: 0; }
-
-/* Short steps: caption above code — avoids a sparse two-column wall of 1-liners */
-.walk-row-compact {
-  grid-template-columns: minmax(0, 1fr);
-}
-.walk-row-compact .walk-doc {
-  padding: 8px 16px 2px;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--text-3);
-  border-top: 0;
-}
-.walk-row-compact .walk-doc p { margin: 0 0 4px; }
-.walk-row-compact .walk-code {
-  border-left: 0;
-}
-.walk-row-compact + .walk-row-compact .walk-doc {
+.walk-row + .walk-row {
   border-top: 1px solid var(--border);
-  padding-top: 10px;
 }
-.walk-row-compact .code { padding: 6px 0 10px; font-size: 12.5px; line-height: 1.55; }
-.walk-row-compact .code-line::before { width: 3.5ch; margin-right: 1.5ch; }
+.walk-doc {
+  padding: 16px 16px 16px 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  background: transparent;
+}
+.walk-doc > :first-child {
+  position: sticky;
+  top: 12px;
+}
+.walk-doc p { margin: 0 0 10px; }
+.walk-doc p:last-child { margin-bottom: 0; }
+.walk-doc code {
+  font-size: 0.92em;
+}
+.walk-code {
+  background: var(--bg-code);
+  border-left: 1px solid var(--border);
+  min-width: 0;
+  /* Scroll lives on .code only — avoid nested bars. */
+  overflow: visible;
+}
+.walk-code .code {
+  padding: 14px 0 16px;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+/* Code-only steps keep the left rail so gutters stay aligned. */
+.walk-row-cont .walk-doc {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+.walk-doc-cont {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  min-height: 1.2em;
+}
+.walk-doc-cont-mark {
+  display: block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border-strong, var(--border));
+  opacity: 0.65;
+}
 
 @container (max-width: 760px) {
-  .walk-row { grid-template-columns: minmax(0, 1fr); }
+  .walk-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .walk-code { border-left: 0; }
-  .walk-row + .walk-row .walk-code { border-top: 0; }
-  .walk-doc:empty { display: none; }
+  .walk-doc {
+    padding-bottom: 6px;
+    font-size: 14.5px;
+    color: var(--text-2);
+  }
+  .walk-row-cont .walk-doc { display: none; }
 }
 
 .source, .playground { background: var(--bg-code); }
@@ -810,12 +862,15 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 /* ---------- notes, commands, refs ---------- */
 
 .note {
-  margin: 32px 0 0; padding: 16px 20px;
-  border: 1px solid var(--border); border-left: 3px solid var(--text-3); border-radius: var(--radius);
+  margin: 28px 0 0;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--effisend, #5090D0);
+  border-radius: var(--radius);
   background: var(--bg-subtle);
 }
-.note h2 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
-.note p { margin: 0; color: var(--text-2); max-width: 80ch; }
+.note h2 { margin: 0 0 6px; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; }
+.note p { margin: 0; color: var(--text-2); max-width: 80ch; font-size: 14px; line-height: 1.55; }
 
 .run-local { margin-top: 36px; }
 .run-local > summary.section-title {

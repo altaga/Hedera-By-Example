@@ -13,10 +13,8 @@ import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
 import {
   buildLabFileTabs,
-  isCompactWalkSegment,
   type LabCodeFile,
   type ExtractedCompanionModule,
-  type LabWalkthroughSegment,
 } from '../lib/labTabs'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
@@ -553,18 +551,20 @@ export function LabPage (props: Props) {
                   )
                 }
 
-                const compact = isCompactWalkSegment(seg as LabWalkthroughSegment)
+                const hasDoc = seg.doc.length > 0
                 return (
                   <div
                     key={i}
-                    className={[
-                      'walk-row',
-                      seg.doc.length ? '' : 'walk-row-bare',
-                      compact ? 'walk-row-compact' : '',
-                    ].filter(Boolean).join(' ')}
+                    className={['walk-row', hasDoc ? '' : 'walk-row-cont'].filter(Boolean).join(' ')}
                   >
                     <div className='walk-doc'>
-                      {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
+                      {hasDoc ? (
+                        seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)
+                      ) : (
+                        <p className='walk-doc-cont' aria-hidden='true'>
+                          <span className='walk-doc-cont-mark' />
+                        </p>
+                      )}
                     </div>
                     <div className='walk-code'>
                       {seg.code ? <CodeLines text={seg.code} start={seg.start ?? 1} sdk={sdk} /> : null}

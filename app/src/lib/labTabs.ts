@@ -120,14 +120,6 @@ export function mergeWalkthroughSegments (
   return out
 }
 
-/** True when a walkthrough row should use the compact stacked layout. */
-export function isCompactWalkSegment (seg: LabWalkthroughSegment): boolean {
-  if (seg.companionModules?.length || seg.companionModule) return false
-  const lines = nonEmptyLines(seg.code)
-  const chars = docChars(seg.doc)
-  return lines <= 16 && chars <= 180
-}
-
 /**
  * Extracts class and standalone helper function definitions outside/before main().
  */
