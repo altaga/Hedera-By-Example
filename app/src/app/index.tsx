@@ -49,7 +49,7 @@ export default function HederaByExample () {
   // All of the learner's wallets live in this browser; the active one runs the labs.
   const [walletStore, setWalletStore] = useState<WalletStore>(EMPTY_STORE)
   const [balances, setBalances] = useState<Record<string, number | null>>({})
-  const [edits, setEdits] = useState<Record<string, string>>({})
+
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
   // Files the learner chose to use instead of the course assets, per lab.
@@ -117,9 +117,7 @@ export default function HederaByExample () {
 
   const selectLab = useCallback((slug: string) => go({ view: 'lab', slug }), [go])
 
-  const editKey = entry ? `${lang}/${entry.lab.slug}` : ''
-  const defaultCode = useMemo(() => (body ? runnableCode(body) : ''), [body])
-  const code = edits[editKey] ?? defaultCode
+  const code = useMemo(() => (body ? runnableCode(body) : ''), [body])
 
   const run = useCallback(async () => {
     if (!entry || runStatus === 'running') return
@@ -232,9 +230,6 @@ export default function HederaByExample () {
                 next={next}
                 onSelect={selectLab}
                 code={code}
-                isEdited={editKey in edits}
-                onEditCode={(c) => setEdits((m) => ({ ...m, [editKey]: c }))}
-                onResetCode={() => setEdits((m) => { const copy = { ...m }; delete copy[editKey]; return copy })}
                 runStatus={runStatus}
                 logs={logs}
                 onRun={run}

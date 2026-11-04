@@ -71,7 +71,7 @@ export async function withGasRetry(run, { gas = 300_000, maxGas = MAX_GAS } = {}
 export async function reuseToken(stateKey, createFn) {
   const cached = localStorage.getItem(\`hbe_state_\${stateKey}\`)
   if (cached) {
-    console.log(\`[♻️ REUSE] Using existing HTS token: \${cached}\`)
+    console.log(\`[REUSE] Using existing HTS token: \${cached}\`)
     return cached
   }
   const newTokenId = await createFn()
@@ -86,7 +86,7 @@ export async function reuseToken(stateKey, createFn) {
 export async function reuseContract(stateKey, bytecode, deployFn) {
   const cached = localStorage.getItem(\`hbe_state_\${stateKey}\`)
   if (cached) {
-    console.log(\`[♻️ REUSE] Using existing Contract: \${cached}\`)
+    console.log(\`[REUSE] Using existing Contract: \${cached}\`)
     return cached
   }
   const newContractId = await deployFn()
@@ -96,7 +96,7 @@ export async function reuseContract(stateKey, bytecode, deployFn) {
 
 /**
  * Resilient multi-endpoint on-chain reader for smart contract calls and EVM queries.
- * Sequence: Hedera Mirror Node (/api/v1/contracts/call) ➡️ Thirdweb (Chain 296) ➡️ Hashio.
+ * Sequence: Hedera Mirror Node (/api/v1/contracts/call) -> Thirdweb (Chain 296) -> Hashio.
  * Remembers the last successful endpoint (sticky cursor) for optimal latency.
  */
 export async function resilientContractCall(to, data) {

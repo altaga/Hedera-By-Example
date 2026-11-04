@@ -86,8 +86,8 @@ export function extractCompanionModulesFromCode(source: string, lang: Lang): {
         badge: 'CLASS',
         description:
           lang === 'es'
-            ? `Componente de clase modular: ${className} (arquitectura desacoplada)`
-            : `Modular class component: ${className} (decoupled architecture)`,
+            ? `Definición de clase: ${className}`
+            : `Class definition: ${className}`,
         code,
         start: startIndex,
         end: endIndex,
@@ -139,8 +139,8 @@ export function extractCompanionModulesFromCode(source: string, lang: Lang): {
             badge: 'UTIL',
             description:
               lang === 'es'
-                ? `Función de utilidad desacoplada: ${fnName}`
-                : `Decoupled utility helper function: ${fnName}`,
+                ? `Función auxiliar: ${fnName}`
+                : `Utility helper function: ${fnName}`,
             code,
             start: startIndex,
             end: endIndex,
@@ -165,7 +165,7 @@ export function extractCompanionModulesFromCode(source: string, lang: Lang): {
   let mainWithoutModules = source
   const reverseModules = [...modules].sort((a, b) => b.start - a.start)
   for (const m of reverseModules) {
-    const placeholder = `// ----------------------------------------------------------------------------\n// ⚡ [COMPANION TAB: ${m.name}.js]\n// ${m.description || 'Implementation extracted into companion tab.'}\n// ----------------------------------------------------------------------------`
+    const placeholder = `// ----------------------------------------------------------------------------\n// [Module: ${m.name}.js]\n// ${m.description || 'Definition in companion tab.'}\n// ----------------------------------------------------------------------------`
     mainWithoutModules =
       mainWithoutModules.slice(0, m.start) + placeholder + mainWithoutModules.slice(m.end)
   }
@@ -254,13 +254,13 @@ export function buildLabFileTabs({
         mainSegments.push({
           doc: [
             lang === 'es'
-              ? `**⚡ Componente Modular: ${matchedModule.name}.js**`
-              : `**⚡ Modular Component: ${matchedModule.name}.js**`,
+              ? `**Módulo: ${matchedModule.name}.js**`
+              : `**Module: ${matchedModule.name}.js**`,
             lang === 'es'
-              ? `La implementación detallada de \`${matchedModule.name}\` ha sido extraída a su propia pestaña modular para mantener este laboratorio enfocado y limpio.`
-              : `The detailed implementation of \`${matchedModule.name}\` has been decoupled into its own file tab to keep this lab focused and lightweight.`,
+              ? `La definición de \`${matchedModule.name}\` se encuentra en la pestaña \`${matchedModule.name}.js\` de la barra superior.`
+              : `The definition of \`${matchedModule.name}\` is located in the \`${matchedModule.name}.js\` tab above.`,
           ],
-          code: `// ⚡ [COMPANION TAB: ${matchedModule.name}.js]\n// Switch to the "${matchedModule.name}.js" tab above to inspect and edit.`,
+          code: `// [Module: ${matchedModule.name}.js]\n// ${lang === 'es' ? `Ver pestaña "${matchedModule.name}.js" arriba.` : `See "${matchedModule.name}.js" tab above.`}`,
           start: matchedModule.startLine,
           companionModule: matchedModule,
         })

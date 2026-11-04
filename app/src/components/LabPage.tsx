@@ -11,10 +11,10 @@ import type { WalletStore } from '../lib/wallets'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
-import { buildLabFileTabs, recombineCode, type LabCodeFile, type ExtractedCompanionModule } from '../lib/labTabs'
+import { buildLabFileTabs, type LabCodeFile, type ExtractedCompanionModule } from '../lib/labTabs'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
-type Tab = 'walkthrough' | 'source' | 'playground'
+type Tab = 'walkthrough' | 'source'
 
 interface Props {
   t: Strings
@@ -25,9 +25,6 @@ interface Props {
   next: LabEntry | null
   onSelect: (slug: string) => void
   code: string
-  isEdited: boolean
-  onEditCode: (code: string) => void
-  onResetCode: () => void
   runStatus: RunStatus
   logs: TerminalLogLine[]
   onRun: () => void
@@ -175,14 +172,14 @@ function LabRefs ({ text, onSelect }: { text: string; onSelect: (slug: string) =
 export function LabPage (props: Props) {
   const {
     t, lang, entry, body, prev, next, onSelect,
-    code, isEdited, onEditCode, onResetCode, runStatus, logs, onRun, onClearLogs,
+    code, runStatus, logs, onRun, onClearLogs,
     needsPractice, onOpenAccount, fileOverrides, onReplaceFile, wallet, walletStore, onSelectWallet
   } = props
   const { mod, lab } = entry
   const [tab, setTab] = useState<Tab>('walkthrough')
   const [activeFileId, setActiveFileId] = useState<string>('main')
   const [auxiliaryTexts, setAuxiliaryTexts] = useState<Record<string, string>>({})
-  const [moduleEdits, setModuleEdits] = useState<Record<string, string>>({})
+
 
   const sdk = useMemo(() => new Set(body.sdk), [body])
   const source = useSource(lang, lab.slug)
@@ -193,7 +190,7 @@ export function LabPage (props: Props) {
   useEffect(() => {
     setTab('walkthrough')
     setActiveFileId('main')
-    setModuleEdits({})
+
   }, [lab.slug])
 
   // Fetch auxiliary file texts (.sol, .csv, .json, .md)
@@ -237,29 +234,6 @@ export function LabPage (props: Props) {
   // Fallback to main if activeFileId not found
   const currentActiveTab: LabCodeFile = fileTabs.find((ft) => ft.id === activeFileId) || fileTabs[0]
 
-  // Handle editing within active tab
-  const handleEditActiveTab = (newText: string) => {
-    if (currentActiveTab.id === 'main') {
-      onEditCode(newText)
-    } else if (currentActiveTab.id.startsWith('class:') || currentActiveTab.id.startsWith('util:')) {
-      const mName = currentActiveTab.name.replace(/\.js$/, '')
-      const newModuleEdits = { ...moduleEdits, [mName]: newText }
-      setModuleEdits(newModuleEdits)
-      const moduleMap: Record<string, string> = {}
-      for (const m of modules) {
-        moduleMap[m.name] = newModuleEdits[m.name] ?? m.code
-      }
-      const recombined = recombineCode(fileTabs[0].code, moduleMap, modules.map((m) => m.name))
-      onEditCode(recombined)
-    } else if (currentActiveTab.id.startsWith('file:')) {
-      const fileName = currentActiveTab.name
-      setAuxiliaryTexts((prev) => ({ ...prev, [fileName]: newText }))
-      const blob = new Blob([newText], { type: 'text/plain' })
-      const file = new File([blob], fileName, { type: 'text/plain' })
-      onReplaceFile(fileName, file)
-    }
-  }
-
   // W3C WAI-ARIA keyboard navigation for file tabs
   const handleFileTabKey = (e: React.KeyboardEvent, index: number) => {
     if (e.key === 'ArrowRight') {
@@ -281,8 +255,7 @@ export function LabPage (props: Props) {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'walkthrough', label: t.walkthrough },
-    { id: 'source', label: t.source },
-    { id: 'playground', label: t.playground }
+    { id: 'source', label: t.source }
   ]
 
   const statusLabel = runStatus === 'running' ? t.statusRunning : runStatus === 'success' ? t.statusSuccess : runStatus === 'error' ? t.statusError : ''
@@ -373,7 +346,6 @@ export function LabPage (props: Props) {
                 onClick={() => setTab(x.id)}
               >
                 {x.label}
-                {x.id === 'playground' && isEdited && <span className='tab-badge'>{t.edited}</span>}
               </button>
             ))}
           </div>
@@ -555,35 +527,7 @@ export function LabPage (props: Props) {
           </div>
         )}
 
-        {tab === 'playground' && (
-          <div className='playground' role='tabpanel' id='panel-playground' aria-labelledby='tab-playground'>
-            <div className='source-bar'>
-              <div className='file-context-banner-inline'>
-                <span className={`file-badge file-badge-${currentActiveTab.kind}`}>{currentActiveTab.badge}</span>
-                <p className='playground-note'>{currentActiveTab.description || t.playgroundNote}</p>
-              </div>
-              {currentActiveTab.readOnly ? (
-                <span className='tab-badge'>{lang === 'es' ? 'Sólo lectura' : 'Read-only'}</span>
-              ) : isEdited ? (
-                <button type='button' className='btn btn-ghost btn-sm' onClick={onResetCode}>{t.resetCode}</button>
-              ) : null}
-            </div>
-            {currentActiveTab.readOnly ? (
-              <CodeLines text={currentActiveTab.code} start={1} sdk={sdk} />
-            ) : (
-              <textarea
-                className='editor'
-                value={currentActiveTab.code}
-                onChange={(e) => handleEditActiveTab(e.target.value)}
-                spellCheck={false}
-                autoCapitalize='off'
-                autoCorrect='off'
-                aria-label={currentActiveTab.name}
-              />
-            )}
-          </div>
-        )}
-
+        
         {runStatus !== 'idle' && (
           <div className='output' data-testid='run-output' data-status={runStatus}>
             <div className='output-bar'>

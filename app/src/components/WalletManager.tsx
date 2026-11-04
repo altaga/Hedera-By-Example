@@ -262,7 +262,7 @@ function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; on
       {!claimed ? (
         <div className='welcome-drop-card' data-testid='welcome-drop-card'>
           <div className='welcome-drop-head'>
-            <span className='welcome-drop-title'>{lang === 'es' ? '🎁 Drop Inicial de 10 ℏ' : '🎁 Initial 10 ℏ Drop'}</span>
+            <span className='welcome-drop-title'>{lang === 'es' ? 'Drop Inicial de 10 ℏ' : 'Welcome Drop: 10 ℏ'}</span>
             <span className='welcome-drop-badge'>{lang === 'es' ? '1 sola vez' : '1 per learner'}</span>
           </div>
           <p className='welcome-drop-desc'>
