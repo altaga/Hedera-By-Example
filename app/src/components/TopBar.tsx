@@ -32,7 +32,14 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
           className='wordmark'
           onClick={(e) => { e.preventDefault(); onHome() }}
         >
-          <span className='wordmark-mark' aria-hidden='true'>ℏ</span>
+          <img
+            src='/brand-icon.png'
+            alt=''
+            aria-hidden='true'
+            className='wordmark-logo'
+            width={26}
+            height={26}
+          />
           <span>{t.siteName}</span>
         </a>
         <a
