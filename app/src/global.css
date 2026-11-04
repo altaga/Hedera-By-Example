@@ -437,6 +437,52 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   color: var(--text-3);
 }
 
+/* Companion Callout Card in Walkthrough */
+.walk-row-companion {
+  background: rgba(255, 255, 255, 0.015);
+}
+.walk-row-companion .walk-doc p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.companion-callout-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--effisend, #5090D0);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: border-color 140ms cubic-bezier(0.16, 1, 0.3, 1), background-color 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.companion-callout-card:hover {
+  border-color: var(--border-hover, rgba(255, 255, 255, 0.2));
+  background: var(--bg-surface, var(--bg-subtle));
+}
+.companion-callout-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.companion-callout-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.companion-callout-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.companion-callout-card .btn {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
 /* Code lines: numbers come from data-line so copying never includes them. */
 .code {
   margin: 0; padding: 14px 0; overflow-x: auto;

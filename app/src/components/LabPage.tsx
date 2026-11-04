@@ -11,7 +11,7 @@ import type { WalletStore } from '../lib/wallets'
 import { OutputLine } from './OutputLine'
 import { SequenceDiagram } from './SequenceDiagram'
 import { PasskeyDemo } from './PasskeyDemo'
-import { buildLabFileTabs, recombineCode, type LabCodeFile } from '../lib/labTabs'
+import { buildLabFileTabs, recombineCode, type LabCodeFile, type ExtractedCompanionModule } from '../lib/labTabs'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source' | 'playground'
@@ -182,7 +182,7 @@ export function LabPage (props: Props) {
   const [tab, setTab] = useState<Tab>('walkthrough')
   const [activeFileId, setActiveFileId] = useState<string>('main')
   const [auxiliaryTexts, setAuxiliaryTexts] = useState<Record<string, string>>({})
-  const [classEdits, setClassEdits] = useState<Record<string, string>>({})
+  const [moduleEdits, setModuleEdits] = useState<Record<string, string>>({})
 
   const sdk = useMemo(() => new Set(body.sdk), [body])
   const source = useSource(lang, lab.slug)
@@ -193,7 +193,7 @@ export function LabPage (props: Props) {
   useEffect(() => {
     setTab('walkthrough')
     setActiveFileId('main')
-    setClassEdits({})
+    setModuleEdits({})
   }, [lab.slug])
 
   // Fetch auxiliary file texts (.sol, .csv, .json, .md)
@@ -224,7 +224,7 @@ export function LabPage (props: Props) {
   }, [body.files, fileOverrides])
 
   // Build multi-file tabs
-  const { tabs: fileTabs, classes } = useMemo(() => {
+  const { tabs: fileTabs, modules } = useMemo(() => {
     return buildLabFileTabs({
       code,
       entry,
@@ -241,15 +241,15 @@ export function LabPage (props: Props) {
   const handleEditActiveTab = (newText: string) => {
     if (currentActiveTab.id === 'main') {
       onEditCode(newText)
-    } else if (currentActiveTab.id.startsWith('class:')) {
-      const cName = currentActiveTab.name.replace(/\.js$/, '')
-      const newClassEdits = { ...classEdits, [cName]: newText }
-      setClassEdits(newClassEdits)
-      const classMap: Record<string, string> = {}
-      for (const c of classes) {
-        classMap[c.name] = newClassEdits[c.name] ?? c.code
+    } else if (currentActiveTab.id.startsWith('class:') || currentActiveTab.id.startsWith('util:')) {
+      const mName = currentActiveTab.name.replace(/\.js$/, '')
+      const newModuleEdits = { ...moduleEdits, [mName]: newText }
+      setModuleEdits(newModuleEdits)
+      const moduleMap: Record<string, string> = {}
+      for (const m of modules) {
+        moduleMap[m.name] = newModuleEdits[m.name] ?? m.code
       }
-      const recombined = recombineCode(fileTabs[0].code, classMap, classes.map((c) => c.name))
+      const recombined = recombineCode(fileTabs[0].code, moduleMap, modules.map((m) => m.name))
       onEditCode(recombined)
     } else if (currentActiveTab.id.startsWith('file:')) {
       const fileName = currentActiveTab.name
@@ -436,17 +436,55 @@ export function LabPage (props: Props) {
 
         {tab === 'walkthrough' && (
           <div className='walk' role='tabpanel' id='panel-walkthrough' aria-labelledby='tab-walkthrough'>
-            {currentActiveTab.id === 'main' ? (
-              body.segments.map((seg, i) => (
-                <div key={i} className={`walk-row ${seg.doc.length ? '' : 'walk-row-bare'}`}>
-                  <div className='walk-doc'>
-                    {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
+            {currentActiveTab.segments && currentActiveTab.segments.length > 0 ? (
+              currentActiveTab.segments.map((seg, i) =>
+                seg.companionModule ? (
+                  <div key={i} className='walk-row walk-row-companion'>
+                    <div className='walk-doc'>
+                      {seg.doc.map((d, j) => (
+                        <p key={j}><Inline text={d} /></p>
+                      ))}
+                    </div>
+                    <div className='walk-code'>
+                      <div className='companion-callout-card'>
+                        <div className='companion-callout-header'>
+                          <span className={`file-badge file-badge-${seg.companionModule.kind}`}>
+                            {seg.companionModule.badge}
+                          </span>
+                          <code className='companion-callout-name'>
+                            {seg.companionModule.name}.js
+                          </code>
+                        </div>
+                        <p className='companion-callout-desc'>
+                          {seg.companionModule.description}
+                        </p>
+                        <button
+                          type='button'
+                          className='btn btn-secondary btn-sm'
+                          onClick={() => setActiveFileId(seg.companionModule.id)}
+                          title={lang === 'es' ? `Examinar archivo ${seg.companionModule.name}.js` : `Inspect ${seg.companionModule.name}.js`}
+                        >
+                          <Icon name='forward' size={12} />
+                          <span>
+                            {lang === 'es'
+                              ? `Abrir ${seg.companionModule.name}.js →`
+                              : `Open ${seg.companionModule.name}.js →`}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className='walk-code'>
-                    {seg.code ? <CodeLines text={seg.code} start={seg.start} sdk={sdk} /> : null}
+                ) : (
+                  <div key={i} className={`walk-row ${seg.doc.length ? '' : 'walk-row-bare'}`}>
+                    <div className='walk-doc'>
+                      {seg.doc.map((d, j) => <p key={j}><Inline text={d} /></p>)}
+                    </div>
+                    <div className='walk-code'>
+                      {seg.code ? <CodeLines text={seg.code} start={seg.start} sdk={sdk} /> : null}
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              )
             ) : (
               <div className='walk-companion'>
                 {currentActiveTab.description && (
