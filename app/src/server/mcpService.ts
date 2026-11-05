@@ -543,6 +543,7 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         if (!TOOLS.some((t) => t.name === name)) return rpcError(id, -32602, `Unknown tool: ${name}`)
         const args = params.arguments || {}
         const started = Date.now()
+        // Fire-and-forget: analytics never delays or fails a tool call.
         const track = (isError: boolean) => recordMcpToolCall({
           tool: name,
           isError,
@@ -553,10 +554,10 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         }).catch(() => false)
         try {
           const text = await callTool(name, args)
-          await track(false)
+          void track(false)
           return rpcResult(id, { content: [{ type: 'text', text: String(text) }] })
         } catch (err: any) {
-          await track(true)
+          void track(true)
           return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : `Tool error: ${err.message}` }] })
         }
       }
