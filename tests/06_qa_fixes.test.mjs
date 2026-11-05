@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { canRunLab, documentTitle, SITE_TITLE } from '../app/src/lib/uiState.mjs'
 import { labFor, normalizeTxId } from '../app/src/lib/labAttribution.mjs'
+import { shouldRetryExecution, MAX_NODE_ATTEMPTS } from '../app/src/lib/retryPolicy.mjs'
+import { resolve as labResolve, join as labJoin } from '../app/src/lib/posixPath.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -56,6 +58,24 @@ export async function runQaFixesTest () {
   assert(normalizeTxId('0.0.1@1005.000000007') === normalizeTxId('0.0.1-1005-7'), 'tx id forms compare equal')
   assert(labFor([{ slug: 'a', start: 10, end: 20, accountId: '0.0.1' }, { slug: 'b', start: 21, end: 30, accountId: '0.0.1' }], '19.5') === 'a', 'legacy runs: containing window wins over grace margin')
   console.log('  ✓ Resources are labelled by the run that submitted the creating transaction')
+
+  // Retries never resend a transaction that may already have reached consensus.
+  const tx = (message, attempt = 1) => shouldRetryExecution({ isTransaction: true, message, attempt })
+  assert(tx('NodeAccountId not recognized: 0.0.6') === true, 'unknown node is pre-submission')
+  assert(tx('transaction failed precheck with status BUSY') === true, 'BUSY is pre-consensus')
+  assert(tx('max attempts of 10 was reached for request with last error being: GrpcServiceError: UNAVAILABLE') === false, 'max attempts may hide a submission')
+  assert(tx('gRPC timed out') === false && tx('Failed to fetch') === false, 'timeouts / dropped connections are not retried for transactions')
+  assert(tx('INSUFFICIENT_PAYER_BALANCE') === false, 'real failures are not retried')
+  assert(tx('BUSY', MAX_NODE_ATTEMPTS) === false, 'attempt cap')
+  assert(shouldRetryExecution({ isTransaction: true, message: 'BUSY', attempt: 1, stopped: true }) === false, 'stopped runs never retry')
+  assert(shouldRetryExecution({ isTransaction: false, message: 'Failed to fetch', attempt: 1 }) === true, 'queries retry transport errors')
+  console.log('  ✓ Retry policy: only pre-consensus errors, same transaction, max 3 attempts')
+
+  assert(labResolve('/lab', './assets/test_image.png') === '/lab/assets/test_image.png', 'resolve normalizes ./')
+  assert(labResolve('assets/x.png') === '/lab/assets/x.png', 'resolve uses /lab as cwd')
+  assert(labResolve('/lab/sub', '../a.txt') === '/lab/a.txt' && labResolve('/a', '/b', 'c') === '/b/c', 'resolve .. and absolute')
+  assert(labJoin('/lab', './x', '../y.json') === '/lab/y.json', 'join normalizes')
+  console.log('  ✓ Lab paths display normalized (/lab/assets/test_image.png)')
 
   assert(canRunLab({ running: false, blockReason: 'account', allowLowBalance: true }) === false, 'no-account must stay blocked')
   assert(canRunLab({ running: false, blockReason: 'balance', allowLowBalance: false }) === false, 'low balance starts blocked')

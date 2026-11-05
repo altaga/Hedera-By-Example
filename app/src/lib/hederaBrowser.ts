@@ -11,6 +11,8 @@ import { sha256, sha384, sha512 } from '@noble/hashes/sha2.js'
 import { md5, sha1 } from '@noble/hashes/legacy.js'
 import { hmac } from '@noble/hashes/hmac.js'
 import { utf8ToBytes } from '@noble/hashes/utils.js'
+import { join as posixJoin, normalize as posixNormalize, resolve as posixResolve } from './posixPath.mjs'
+import { MAX_NODE_ATTEMPTS, retryDelayMs, shouldRetryExecution } from './retryPolicy.mjs'
 import { Buffer, NodeOnlyError, adaptSolcCalls, loadVendor, prefetchKeyTypes, bindingValue, createFs, createVirtualHttp, extractImports, resolveModule, type LabFileEvent } from './labModules'
 import { RSA_CONSTANTS, createCipher, createECDH, generateKeyPairSync, privateDecrypt, publicEncrypt, sign, verify } from './nodeCrypto'
 import { isMirrorUrl, mirrorFetch } from './mirror'
@@ -288,9 +290,6 @@ export function abortActiveRun (): void {
 }
 
 
-/** Errors from a node or the transport, not from the transaction itself: worth another node. */
-export const TRANSIENT_NODE_ERROR = /NodeAccountId not recognized|failed to find a healthy working node|\bUNAVAILABLE\b|\bBUSY\b|PLATFORM_NOT_ACTIVE|PLATFORM_TRANSACTION_NOT_CREATED|RST_STREAM|Failed to fetch|NetworkError|fetch failed|timed? ?out|deadline exceeded|ECONNRESET/i
-export const MAX_NODE_ATTEMPTS = 3
 
 const sleepMs = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -311,6 +310,11 @@ function trackExecutions (hedera: any) {
   const execute = proto.execute
   proto.execute = async function (this: any, client: any, ...rest: any[]) {
     const run = activeRun
+    const isTransaction = this instanceof hedera.Transaction
+    // Fix the transaction id before the first attempt, so a retry can only resend the same transaction.
+    if (isTransaction && client && typeof this.isFrozen === 'function' && !this.isFrozen()) {
+      try { this.freezeWith(client) } catch (_) {}
+    }
     let lastErr: any
     for (let attempt = 1; attempt <= MAX_NODE_ATTEMPTS; attempt++) {
       try {
@@ -331,13 +335,13 @@ function trackExecutions (hedera: any) {
       } catch (err: any) {
         lastErr = err
         const msg = String(err?.message ?? err)
-        const closed = !client || client.__hbeClosed || client._isShutdown || run?.exited
-        if (closed || attempt === MAX_NODE_ATTEMPTS || !TRANSIENT_NODE_ERROR.test(msg)) throw err
+        const stopped = !client || client.__hbeClosed || client._isShutdown || !!run?.exited
+        if (!shouldRetryExecution({ isTransaction, message: msg, attempt, stopped })) throw err
         if (/not recognized|healthy working node/i.test(msg)) {
           try { client.setNetwork('testnet') } catch (_) {}
         }
         run?.note?.(`Node error (${msg.slice(0, 80)}). Retrying on another node, attempt ${attempt + 1}/${MAX_NODE_ATTEMPTS}...`)
-        await sleepMs(500 * 2 ** (attempt - 1))
+        await sleepMs(retryDelayMs(attempt))
       }
     }
     throw lastErr
@@ -466,9 +470,14 @@ export async function executeInBrowser (
   wallet: BrowserWallet,
   onLog: (line: TerminalLogLine) => void,
   options: RunOptions = {}
-): Promise<{ success: boolean; durationMs: number; txIds: string[] }> {
+): Promise<{ success: boolean; durationMs: number; txIds: string[]; busy?: boolean }> {
+  // One run at a time: a second call while a run is live (not stopped by navigation) does nothing.
+  if (activeRun && !activeRun.exited) {
+    return { success: false, durationMs: 0, txIds: [], busy: true }
+  }
   const startTime = Date.now()
   let seq = 0
+  const es = options.lang === 'es'
   let printedUrls: Set<string> | undefined
 
   const emit = (line: Omit<TerminalLogLine, 'id' | 'timestamp'>) => {
@@ -491,7 +500,7 @@ export async function executeInBrowser (
   }
 
   if (isAccountId(wallet.accountId) && wallet.privateKey) {
-    pushLog('system', `Operator ${wallet.accountId} on testnet`)
+    pushLog('system', es ? `Operador ${wallet.accountId} en testnet` : `Operator ${wallet.accountId} on testnet`)
   } else {
     pushLog('warn', options.lang === 'es'
       ? 'No hay una cuenta de testnet. Los labs que envían transacciones fallarán. Ábrela con «Crear billetera».'
@@ -501,7 +510,7 @@ export async function executeInBrowser (
   const practice = options.practice || {}
   if (labUsesPracticeAccounts(sourceCode)) {
     if (practice.account1 && practice.account2) {
-      pushLog('system', `Practice accounts ${practice.account1.accountId} and ${practice.account2.accountId}`)
+      pushLog('system', es ? `Cuentas de práctica ${practice.account1.accountId} y ${practice.account2.accountId}` : `Practice accounts ${practice.account1.accountId} and ${practice.account2.accountId}`)
     } else {
       pushLog('warn', options.lang === 'es'
         ? 'Este lab usa ACCOUNT_1 / ACCOUNT_2. Asígalas en Billeteras antes de ejecutarlo.'
@@ -512,7 +521,7 @@ export async function executeInBrowser (
   let failedWithExitCode = false
   stopRun(activeRun)
   const run: RunHandles = { subs: new Set(), timers: new Set(), clients: new Set(), exited: false, wake: () => {}, txs: [], created: [] }
-  run.note = (text) => pushLog('warn', text)
+  run.note = (text) => pushLog('warn', es ? text.replace('Node error', 'Error del nodo').replace('Retrying on another node, attempt', 'Reintentando en otro nodo, intento') : text)
   // HashScan URLs the lab printed itself, so the summary only adds what is missing.
   printedUrls = new Set<string>()
   const linkSummary = () => {
@@ -520,7 +529,7 @@ export async function executeInBrowser (
     const missing: { text: string; url: string }[] = []
     for (const id of run.txs || []) {
       const url = `${base}/transaction/${txIdForUrl(id)}`
-      if (!printedUrls.has(url)) missing.push({ text: `Transaction ${id}`, url })
+      if (!printedUrls.has(url)) missing.push({ text: `${es ? 'Transacción' : 'Transaction'} ${id}`, url })
     }
     for (const tag of run.created || []) {
       const [kind, id] = tag.split(':')
@@ -554,7 +563,7 @@ export async function executeInBrowser (
       try {
         client.setOperator(hedera.AccountId.fromString(wallet.accountId), parsePrivateKey(hedera, wallet.privateKey))
       } catch (keyErr: any) {
-        pushLog('error', `Could not load the operator key: ${keyErr.message}`)
+        pushLog('error', es ? `No se pudo cargar la llave del operador: ${keyErr.message}` : `Could not load the operator key: ${keyErr.message}`)
       }
     }
 
@@ -631,7 +640,7 @@ export async function executeInBrowser (
           const insufficient = String(error?.status ?? '') === 'INSUFFICIENT_GAS' || /INSUFFICIENT_GAS/.test(String(error?.message ?? error))
           if (!insufficient || limit >= maxGas) throw error
           limit = Math.min(limit * 2, maxGas)
-          pushLog('info', `Not enough gas; retrying with ${limit.toLocaleString('en-US')} gas...`)
+          pushLog('info', es ? `Gas insuficiente; reintentando con ${limit.toLocaleString('en-US')} de gas...` : `Not enough gas; retrying with ${limit.toLocaleString('en-US')} gas...`)
         }
       }
     }
@@ -728,6 +737,12 @@ export async function executeInBrowser (
       await tx.getReceipt(c)
     }
     /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
+    /** A reused entity gets its HashScan link right away, since no transaction will print one. */
+    const reusedLink = (kind: 'token' | 'contract' | 'topic', id: string) => {
+      const url = `https://hashscan.io/testnet/${kind}/${id}`
+      const label = options.lang === 'es' ? { token: 'Token', contract: 'Contrato', topic: 'Tópico' }[kind] : { token: 'Token', contract: 'Contract', topic: 'Topic' }[kind]
+      emit({ type: 'link', text: `${label} ${id}${options.lang === 'es' ? ' en HashScan' : ' on HashScan'}: ${url}`, url })
+    }
     const reuseToken = async (stateKey: string, create: () => Promise<any>, { check = (_: any) => true, minBalance = 0, treasury = undefined as string | undefined } = {}) => {
       const operator = wallet.accountId
       const [savedId, owner] = String(getState(stateKey) || '').split('@')
@@ -741,6 +756,7 @@ export async function executeInBrowser (
             .catch(() => false)
           if (enough) {
             pushLog('info', options.lang === 'es' ? `Reutilizando el token ${savedId} de una ejecución anterior (crear uno cuesta cerca de 1 USD).` : `Reusing token ${savedId} from an earlier run (creating one costs about 1 USD).`)
+            reusedLink('token', savedId)
             return hedera.TokenId.fromString(savedId)
           }
         }
@@ -791,6 +807,7 @@ export async function executeInBrowser (
           .then((r) => (r.ok ? r.json() : null)).catch(() => null)
         if (contract && !contract.deleted) {
           pushLog('info', options.lang === 'es' ? `Reutilizando el contrato ${savedId} de una ejecución anterior (mismo bytecode; desplegar cuesta cerca de 1 USD más gas).` : `Reusing contract ${savedId} from an earlier run (same bytecode; deploying costs about 1 USD plus gas).`)
+          reusedLink('contract', savedId)
           return hedera.ContractId.fromString(savedId)
         }
       }
@@ -809,6 +826,7 @@ export async function executeInBrowser (
           pushLog('info', options.lang === 'es'
             ? `Reutilizando el tópico ${savedId} de una ejecución anterior (un tópico con comisiones cuesta cerca de 2 USD).`
             : `Reusing topic ${savedId} from an earlier run (a topic with custom fees costs about 2 USD).`)
+          reusedLink('topic', savedId)
           return hedera.TopicId.fromString(savedId)
         }
       }
@@ -828,8 +846,9 @@ export async function executeInBrowser (
 
     const pathShim: any = {
       sep: '/',
-      join: (...args: string[]) => args.filter(Boolean).join('/').replace(/\/+/g, '/'),
-      resolve: (...args: string[]) => args.filter(Boolean).join('/').replace(/\/+/g, '/'),
+      join: posixJoin,
+      resolve: posixResolve,
+      normalize: posixNormalize,
       basename: (p: string, ext?: string) => { const b = String(p).split(/[\\/]/).pop() || ''; return ext && b.endsWith(ext) ? b.slice(0, -ext.length) : b },
       dirname: (p: string) => String(p).split(/[\\/]/).slice(0, -1).join('/') || '.',
       extname: (p: string) => { const b = String(p).split(/[\\/]/).pop() || ''; return b.includes('.') ? '.' + b.split('.').pop() : '' },
@@ -859,7 +878,7 @@ export async function executeInBrowser (
       const mime = mimeOf(name)
       const url = URL.createObjectURL(new Blob([data as BlobPart], { type: mime }))
       const text = mime.startsWith('text/') || mime === 'application/json' ? new TextDecoder().decode(data.slice(0, 4000)) : undefined
-      emit({ type: 'info', text: `Wrote ${name} (${data.length.toLocaleString('en-US')} bytes)`, kind: 'file', data: { name, mime, url, size: data.length, text } })
+      emit({ type: 'info', text: es ? `Escrito ${name} (${data.length.toLocaleString('en-US')} bytes)` : `Wrote ${name} (${data.length.toLocaleString('en-US')} bytes)`, kind: 'file', data: { name, mime, url, size: data.length, text } })
     }
     const fs = createFs(files, onWrite)
     const cryptoShim = makeCryptoShim()
@@ -1051,7 +1070,7 @@ export async function executeInBrowser (
         run.wake()
       })
       if (timedOut && !run.exited) {
-        pushLog('error', `Stopped after ${Math.round(limitMs / 1000)} s waiting for ${limitStuck ? limitStuck.reason : 'pending subscriptions or timers'}.`)
+        pushLog('error', es ? `Detenido tras ${Math.round(limitMs / 1000)} s esperando ${limitStuck ? limitStuck.reason : 'suscripciones o temporizadores pendientes'}.` : `Stopped after ${Math.round(limitMs / 1000)} s waiting for ${limitStuck ? limitStuck.reason : 'pending subscriptions or timers'}.`)
         mockProcess.exitCode = 1
       }
     } finally {
@@ -1066,21 +1085,21 @@ export async function executeInBrowser (
     // Labs flag handled failures with process.exitCode = 1 instead of throwing.
     if (mockProcess.exitCode) {
       lowBalanceHint()
-      pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
+      pushLog('error', es ? `Terminado con errores en ${(durationMs / 1000).toFixed(2)} s` : `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
       return { success: false, durationMs, txIds: run.txs || [] }
     }
-    pushLog('system', `Finished in ${(durationMs / 1000).toFixed(2)} s`)
+    pushLog('system', es ? `Terminado en ${(durationMs / 1000).toFixed(2)} s` : `Finished in ${(durationMs / 1000).toFixed(2)} s`)
     return { success: true, durationMs, txIds: run.txs || [] }
   } catch (err: any) {
     const durationMs = Date.now() - startTime
     const message = err?.message || String(err)
-    if (!failedWithExitCode) pushLog('error', `Stopped: ${message}`)
-    else pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
+    if (!failedWithExitCode) pushLog('error', es ? `Detenido: ${message}` : `Stopped: ${message}`)
+    else pushLog('error', es ? `Terminado con errores en ${(durationMs / 1000).toFixed(2)} s` : `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
     lowBalanceHint()
     if (err instanceof NodeOnlyError) {
-      pushLog('warn', 'This lab uses a Node.js-only API. The commands to run it on your machine are below the code.')
+      pushLog('warn', es ? 'Este lab usa una API exclusiva de Node.js. Los comandos para correrlo en tu máquina están debajo del código.' : 'This lab uses a Node.js-only API. The commands to run it on your machine are below the code.')
     } else if (err instanceof ReferenceError && /require|__dirname/.test(message)) {
-      pushLog('warn', 'This lab uses Node.js-only APIs. Run it locally with Node.js to see its full behaviour.')
+      pushLog('warn', es ? 'Este lab usa APIs exclusivas de Node.js. Córrelo localmente con Node.js para ver todo su comportamiento.' : 'This lab uses Node.js-only APIs. Run it locally with Node.js to see its full behaviour.')
     }
     return { success: false, durationMs, txIds: run.txs || [] }
   }

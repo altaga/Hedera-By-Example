@@ -178,6 +178,7 @@ export default function HederaByExample () {
     }
     const started = Date.now() / 1000
     const result = await executeInBrowser(code, wallet, onLine, { practice, files, lang })
+    if (result.busy) return
     recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId, txIds: result.txIds })
     if (!live()) return
     if (result.success) setDone(markDone(entry.lab.slug))
