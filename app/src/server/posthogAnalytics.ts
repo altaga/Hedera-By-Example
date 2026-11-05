@@ -58,12 +58,13 @@ export async function recordFaucetClaim({
     const res = await fetch(POSTHOG_CAPTURE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
       body: JSON.stringify(payload),
     });
     if (res.ok) cachedUserCount.timestamp = 0;
     return res.ok;
   } catch (err: any) {
-    console.warn('[ANALYTICS] Failed to emit PostHog faucet event:', err?.message || err);
+    // silent: analytics failures never surface
     return false;
   }
 }
@@ -139,6 +140,7 @@ export async function getFaucetUniqueUsersCount(): Promise<{ ok: boolean; count:
     const res = await fetch(`${POSTHOG_QUERY_HOST}/api/projects/${projectId}/query/`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000),
       body: JSON.stringify({
         refresh: 'force_blocking',
         query: { kind: 'HogQLQuery', query: hogql },
