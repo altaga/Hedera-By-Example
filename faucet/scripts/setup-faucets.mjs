@@ -79,8 +79,7 @@ async function main() {
   let failedCount = 0;
   let totalSpentHbar = 0;
 
-  // Wallet #0 is the treasury; the user pool is indices 1..POOL_SIZE.
-  for (let i = 1; i <= POOL_SIZE; i++) {
+  for (let i = 0; i < POOL_SIZE; i++) {
     const pathDerivation = `m/44'/60'/0'/0/${i}`;
     const derived = ethers.HDNodeWallet.fromPhrase(FAUCET_MNEMONIC, undefined, pathDerivation);
 

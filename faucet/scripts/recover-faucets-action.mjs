@@ -211,8 +211,7 @@ async function main() {
   let totalHbarSpent = 0;
   const maxRetriesPerWallet = 3;
 
-  // Wallet #0 is the treasury; the user pool is indices 1..N.
-  for (let i = 1; i <= opts.numberFaucets; i++) {
+  for (let i = 0; i < opts.numberFaucets; i++) {
     const derivationPath = `m/44'/60'/0'/0/${i}`;
     const derivedWallet = ethers.HDNodeWallet.fromPhrase(FAUCET_MNEMONIC, undefined, derivationPath);
     const target = derivedWallet.address;
@@ -221,7 +220,7 @@ async function main() {
     try {
       balance = await resilientProvider.getBalance(target);
     } catch (e) {
-      captureLog(`[#${i}/${opts.numberFaucets}] Warning: failed to fetch balance for ${target}: ${e.message}`);
+      captureLog(`[#${i + 1}/${opts.numberFaucets}] Warning: failed to fetch balance for ${target}: ${e.message}`);
     }
 
     const targetWei = ethers.parseUnits(opts.minAmount.toString(), 18);
@@ -230,18 +229,18 @@ async function main() {
     const topUpHbar = parseFloat(ethers.formatUnits(topUpWei, 18));
 
     if (topUpWei === 0n) {
-      captureLog(`[#${i}/${opts.numberFaucets}] SKIP: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ (>= ${opts.minAmount} ℏ)`);
+      captureLog(`[#${i + 1}/${opts.numberFaucets}] SKIP: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ (>= ${opts.minAmount} ℏ)`);
       skipped++;
       continue;
     }
 
     if (opts.dryRun) {
-      captureLog(`[#${i}/${opts.numberFaucets}] DRY-RUN: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ — would send ${topUpHbar.toFixed(2)} ℏ`);
+      captureLog(`[#${i + 1}/${opts.numberFaucets}] DRY-RUN: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ — would send ${topUpHbar.toFixed(2)} ℏ`);
       skipped++;
       continue;
     }
 
-    captureLog(`[#${i}/${opts.numberFaucets}] FUNDING: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ — sending ${topUpHbar.toFixed(2)} ℏ`);
+    captureLog(`[#${i + 1}/${opts.numberFaucets}] FUNDING: ${target.slice(0, 10)}... has ${currentHbar.toFixed(2)} ℏ — sending ${topUpHbar.toFixed(2)} ℏ`);
 
     let attempts = 0;
     let success = false;
