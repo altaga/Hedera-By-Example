@@ -23,7 +23,7 @@ const MIRROR_NODE_URL = NETWORK === 'mainnet'
   ? 'https://mainnet-public.mirrornode.hedera.com/api/v1'
   : 'https://testnet.mirrornode.hedera.com/api/v1';
 
-const FAUCET_MNEMONIC = process.env.FAUCET_MNEMONIC;
+const FAUCET_MNEMONIC = (process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
 const OPERATOR_KEY = process.env.OPERATOR_KEY;
 
 if (!FAUCET_MNEMONIC) {

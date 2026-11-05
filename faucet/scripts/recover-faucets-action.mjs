@@ -24,7 +24,8 @@ if (fs.existsSync(envPath)) {
 // Map ACTION_* variables or standard variables
 const OPERATOR_ID = process.env.ACTION_OPERATOR_ID || process.env.OPERATOR_ID;
 const OPERATOR_KEY = process.env.ACTION_OPERATOR_KEY || process.env.OPERATOR_KEY;
-const FAUCET_MNEMONIC = process.env.ACTION_FAUCET_MNEMONIC || process.env.FAUCET_MNEMONIC;
+// Strip surrounding quotes/whitespace (same cleanup the app applies), so a quoted secret still works.
+const FAUCET_MNEMONIC = (process.env.ACTION_FAUCET_MNEMONIC || process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
 const NETWORK = process.env.ACTION_HEDERA_NETWORK || process.env.NEXT_PUBLIC_HEDERA_NETWORK || 'testnet';
 const CHAIN_ID = NETWORK === 'mainnet' ? 295 : 296;
 

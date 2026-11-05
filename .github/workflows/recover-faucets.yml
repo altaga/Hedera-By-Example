@@ -10,7 +10,7 @@ on:
       count:
         required: false
         type: string
-        default: '100'
+        default: '25'
 
   # Manual trigger from GitHub Actions tab
   workflow_dispatch:
@@ -23,7 +23,7 @@ on:
       count:
         description: 'Number of faucets to check (pool size)'
         required: false
-        default: '100'
+        default: '25'
         type: string
 
   # Scheduled daily run at 04:00 UTC
