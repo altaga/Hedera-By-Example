@@ -1,0 +1,169 @@
+# Hedera by Example — full agent index
+> Extended companion to https://hbe.expo.app/llms.txt. Prefer the MCP server for structured access.
+
+Site: https://hbe.expo.app
+Short index: https://hbe.expo.app/llms.txt
+Repository: https://github.com/altaga/Hedera-By-Example
+MCP endpoint: https://hbe.expo.app/api/mcp
+MCP manifest: https://hbe.expo.app/mcp/manifest.json
+MCP tools: https://hbe.expo.app/mcp/tools.json
+Well-known: https://hbe.expo.app/.well-known/mcp.json
+
+## MCP server
+
+Server name: `hedera-by-example-mcp` version `2.0.0`
+Transport: Streamable HTTP JSON-RPC at `https://hbe.expo.app/api/mcp`
+Header: `Accept: application/json, text/event-stream`
+Protocols: 2025-06-18, 2025-03-26, 2024-11-05
+Local stdio: `node mcp/index.js` (Node.js 20+; optional `--http 3001`)
+
+### Tools
+
+| Tool | Description |
+| --- | --- |
+| search_labs | Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code. |
+| get_lab | Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code. |
+| list_labs | The course map: 16 modules and 131 labs with their slugs, optionally for one module. |
+| query_curriculum | Search the labs and return the best matches with their full code (heavier than search_labs + get_lab). |
+| anti_hallucination_rules | Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag. |
+| architecture_decision_tree | When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide. |
+| mirror_node_query | Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks. |
+| estimate_cost | Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price). |
+| query_knowledge | Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links. |
+| official_resources | Official Hedera documentation, repositories and specifications. |
+
+### Client config snippets
+
+Remote URL (Cursor `.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "hedera-by-example": {
+      "url": "https://hbe.expo.app/api/mcp"
+    }
+  }
+}
+```
+
+Claude Desktop (`mcp-remote`):
+
+```json
+{
+  "mcpServers": {
+    "hedera-by-example": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://hbe.expo.app/api/mcp"]
+    }
+  }
+}
+```
+
+Local stdio:
+
+```json
+{
+  "mcpServers": {
+    "hedera-by-example": {
+      "command": "node",
+      "args": ["/ABSOLUTE/PATH/TO/Hedera-By-Example/mcp/index.js"]
+    }
+  }
+}
+```
+
+```bash
+curl -sS -X POST 'https://hbe.expo.app/api/mcp' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"llms-full","version":"1.0"}}}'
+```
+
+## Welcome Drop
+
+- Amount: 25 ℏ on Hedera Testnet
+- Health: GET https://hbe.expo.app/api/faucet/health
+- Claim: POST https://hbe.expo.app/api/welcome-drop
+- Portal faucet: https://portal.hedera.com/faucet
+
+## Course map (131 labs, en + es)
+
+SDK: @hiero-ledger/sdk 2.90.1
+Lab count: 131
+
+### M00 — Setup and Initial Testing
+- Directory: `course/English/M0_Setup_and_Test/` (and Spanish parity)
+- Labs (6): m00-01-generate-wallet, m00-02-check-balance, m00-03-unlimited-association, m00-04-create-child-wallet, m00-05-aws-kms-enterprise-signer, m00-06-opentelemetry-consensus-telemetry
+
+### M01 — Fundamentals and Cryptography
+- Directory: `course/English/M1_Fundamentals_Functional_JS/` (and Spanish parity)
+- Labs (8): m01-01-consensus-and-abft, m01-02-account-rent, m01-03-cryptography-kms, m01-04-key-rotation, m01-05-lazy-account-creation, m01-06-native-staking, m01-07-hip1261-simple-fees-engine, m01-08-hip1068-gasless-fee-allowance
+
+### M02 — State Interrogation and CQRS
+- Directory: `course/English/M2_State_Interrogation_CQRS/` (and Spanish parity)
+- Labs (7): m02-01-sync-deprecation, m02-02-secure-async-rest, m02-03-recursive-pagination, m02-04-realtime-grpc-sqlite-reactor, m02-05-circuit-breaker-rate-limiter, m02-06-realtime-websocket-event-bus, m02-07-graphql-subgraph-indexer
+
+### M03 — Hedera Token Service (HTS)
+- Directory: `course/English/M3_Hedera_Token_Service/` (and Spanish parity)
+- Labs (10): m03-01-immutable-issuance, m03-02-financial-identity, m03-03-nft-hip412, m03-04-read-nft-onchain, m03-05-custom-fees, m03-06-base-layer-royalties, m03-07-dynamic-nfts, m03-08-hip412-metadata, m03-09-hip850-treasury-nft-lock, m03-10-nft-studio-rarity-and-airdrop-verifier
+
+### M04 — Token Operations and Atomic Swaps
+- Directory: `course/English/M4_Token_Operations_Atomic_Swaps/` (and Spanish parity)
+- Labs (9): m04-01-hbar-transfers, m04-02-token-transfers, m04-03-nft-transfers, m04-04-atomic-swaps, m04-05-parallel-transfers, m04-06-native-airdrops, m04-07-airdrop-cancel-and-reject, m04-08-orderbook-triangular-settlement, m04-09-atomic-flash-settlement
+
+### M05 — Hedera Consensus Service (HCS)
+- Directory: `course/English/M5_Hedera_Consensus_Service/` (and Spanish parity)
+- Labs (8): m05-01-immutable-topic, m05-02-hcs-data-standards, m05-03-chunking-subscriptions, m05-04-hcs-ping-pong, m05-05-hcs6-registry, m05-06-hip991-paid-topics, m05-07-high-throughput-merkle-batcher, m05-08-kafka-enterprise-queue-bridge
+
+### M06 — Mass Storage and Hashinals
+- Directory: `course/English/M6_Mass_Storage_Hashinals/` (and Spanish parity)
+- Labs (10): m06-01-native-hfs, m06-02-large-file-hfs, m06-03-batch-uploading, m06-04-economic-hcs1, m06-05-reconstruct-hcs1, m06-06-hashinals-ecosystem, m06-07-hcs1-nft, m06-08-reconstruct-hcs1-nft, m06-09-hcs7-smart-hashinals, m06-10-zero-trust-encrypted-vault
+
+### M07 — Governance and Automation (Cron)
+- Directory: `course/English/M7_Governance_Cron/` (and Spanish parity)
+- Labs (8): m07-01-multisig-keylist, m07-02-multisig-transfer, m07-03-native-cron, m07-04-decoupled-orchestration, m07-05-decentralized-identity, m07-06-did-login, m07-07-webhook-slack-treasury-dao, m07-08-timelock-governance-controller
+
+### M08 — Smart Contracts and EVM
+- Directory: `course/English/M8_Smart_Contracts_EVM/` (and Spanish parity)
+- Labs (11): m08-01-contract-deployment, m08-02-hybrid-environment, m08-03-evm-structural-changes, m08-04-system-contracts, m08-05-authorization-protocols, m08-06-erc20-usdc-interaction, m08-07-usdc-association, m08-08-hts-precompiles-advanced, m08-09-zk-snark-privacy-pool, m08-10-system-contracts-exchange-and-has, m08-11-solidity-autonomous-hss-cron
+
+### M09 — The Agentic AI Economy
+- Directory: `course/English/M9_AI_Orchestration/` (and Spanish parity)
+- Labs (11): m09-01-hcs1-storage, m09-02-hcs2-registries, m09-03-hcs2-search, m09-04-hcs11-profiles, m09-05-hcs14-uaid, m09-06-hcs10-u2a-public, m09-07-hcs10-a2a-public, m09-08-hcs10-impersonation-attack, m09-09-hcs10-a2a-secure, m09-10-hcs10-a2a-secure-with-attack, m09-11-hcs10-a2a-encrypted
+
+### M10 — Agentic Micropayments (x402 Protocol)
+- Directory: `course/English/M10_Agentic_Micropayments_x402/` (and Spanish parity)
+- Labs (8): m10-01-http-402-server-challenge, m10-02-agent-payment-signature, m10-03-facilitator-settlement, m10-04-usdc-hts-micropayments, m10-05-agent-budget-guardrails, m10-06-autonomous-ai-market-agent, m10-07-live-ai-streaming-gateway, m10-08-x402-direct-p2p-settlement
+
+### M11 — Hedera Studios & Real-World Assets (RWA)
+- Directory: `course/English/M11_Hedera_Studios_RWA/` (and Spanish parity)
+- Labs (8): m11-01-erc3643-identity-registry, m11-02-security-token-erc1400-bonds, m11-03-stablecoin-studio-role-management, m11-04-proof-of-reserve-oracle, m11-05-rwa-invoice-factoring, m11-06-rwa-multi-asset-pool-tokens, m11-07-institutional-erp-invoicing-bridge, m11-08-ats-corporate-actions-mass-payout
+
+### M12 — Modern EVM Tooling on Hedera
+- Directory: `course/English/M12_Modern_EVM_Tooling/` (and Spanish parity)
+- Labs (6): m12-01-hts-direct-erc20-facade, m12-02-json-rpc-relay-ethers, m12-03-foundry-hardhat-workflow, m12-04-scaffold-hbar-integration, m12-05-eip7702-pectra-account-delegation, m12-06-erc4337-paymaster-gasless
+
+### M13 — Cross-Ledger Protocol & Data Streams
+- Directory: `course/English/M13_Cross_Ledger_and_Data_Streams/` (and Spanish parity)
+- Labs (6): m13-01-clpr-state-proof-verification, m13-02-sponsored-fees-allowance, m13-03-block-stream-tss-verification, m13-04-block-node-discovery-lake, m13-05-cross-chain-intent-settlement-engine, m13-06-block-stream-protobuf-parser
+
+### M14 — Advanced HCS Standards & Autonomous AI
+- Directory: `course/English/M14_Advanced_HCS_Standards_AI/` (and Spanish parity)
+- Labs (10): m14-01-hcs20-auditable-points, m14-02-hcs25-ai-trust-score, m14-03-hcs26-agent-skills-registry, m14-04-hcs27-merkle-transparency-log, m14-05-hcs28-agent-audit-stream, m14-06-encrypted-ai-agent-swarm-chat, m14-07-hcs15-to-18-petal-flora-swarm, m14-08-hcs12-hashlinks-and-hcs21-adapters, m14-09-hip1334-encrypted-message-box, m14-10-hashnet-mcp-server-hol-guard
+
+### M15 — DePIN & Frontier Crypto Architectures
+- Directory: `course/English/M15_DePIN_and_Future_Crypto/` (and Spanish parity)
+- Labs (5): m15-01-depin-mqtts-pacemaker-telemetry, m15-02-depin-lightweight-cold-chain-api-key, m15-03-intent-based-defi-solver, m15-04-passkeys-webauthn-p256-authenticator, m15-05-zktls-cryptographic-web-proofs
+
+## Source paths
+
+- Compiled annotations: `app/src/content/en.json`, `app/src/content/es.json`
+- Browser source example: https://hbe.expo.app/source/en/m03-01-immutable-issuance.js (swap `en`→`es` or the slug)
+- Standalone course: `course/English/` and `course/Spanish/`
+
+## Docs
+
+- https://github.com/altaga/Hedera-By-Example/blob/master/docs/HEDERA_ARCHITECTURE_AND_GUARDRAILS.md
+- https://github.com/altaga/Hedera-By-Example/blob/master/docs/OFFICIAL_HEDERA_RESOURCES.md
+- https://github.com/altaga/Hedera-By-Example/blob/master/docs/HACKATHON_RULES_AND_GUIDELINES.md
+- https://github.com/altaga/Hedera-By-Example/blob/master/mcp/README.md
