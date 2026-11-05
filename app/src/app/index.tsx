@@ -11,12 +11,14 @@ import {
   FLAT_LABS, LAB_BY_SLUG, getBody, runnableCode, searchModules, type Lang
 } from '../lib/content'
 import { abortActiveRun, executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
+import { runBlock } from '../lib/labPrep'
+import { loadDone, markDone } from '../lib/progress'
 import {
   EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
 } from '../lib/wallets'
 
 type Theme = 'light' | 'dark'
-type Route = { view: 'index' } | { view: 'resources' } | { view: 'lab'; slug: string }
+type Route = { view: 'index' } | { view: 'resources' } | { view: 'lab'; slug: string } | { view: 'missing'; slug: string }
 
 const PREFS_KEY = 'hbe_prefs_v1'
 
@@ -33,9 +35,10 @@ function writePrefs (prefs: { lang: Lang; theme: Theme }) {
 function routeFromHash (): Route {
   if (typeof window === 'undefined') return { view: 'index' }
   const h = decodeURIComponent(window.location.hash.replace(/^#\/?/, '').trim())
-  if (LAB_BY_SLUG.has(h)) return { view: 'lab', slug: h }
+  if (!h || h === 'index') return { view: 'index' }
   if (h === 'resources') return { view: 'resources' }
-  return { view: 'index' }
+  if (LAB_BY_SLUG.has(h)) return { view: 'lab', slug: h }
+  return { view: 'missing', slug: h }
 }
 
 export default function HederaByExample () {
@@ -52,6 +55,7 @@ export default function HederaByExample () {
 
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
+  const [done, setDone] = useState<string[]>([])
   // Files the learner chose to use instead of the course assets, per lab.
   const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -63,9 +67,18 @@ export default function HederaByExample () {
 
   // Restore preferences, route and wallet after the static HTML hydrates.
   useEffect(() => {
+    const path = window.location.pathname.replace(/\/+$/, '')
+    if (path && path !== '/index.html' && !path.startsWith('/api') && !path.startsWith('/_expo') && !path.startsWith('/source')) {
+      const slug = decodeURIComponent(path.replace(/^\//, ''))
+      if (slug) {
+        window.location.replace(`${window.location.origin}/#${slug}`)
+        return
+      }
+    }
     const prefs = readPrefs()
     setLang(prefs.lang || (navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en'))
     setTheme(prefs.theme || 'dark')
+    setDone(loadDone())
     setRoute(routeFromHash())
 
     const stored = loadWallets()
@@ -102,6 +115,18 @@ export default function HederaByExample () {
 
   const entry = route.view === 'lab' ? LAB_BY_SLUG.get(route.slug)! : null
   const body = entry ? getBody(lang, entry.lab.slug) : null
+
+  useEffect(() => {
+    const base = 'Hedera by Example'
+    const title = route.view === 'lab' && entry
+      ? `${body?.title || entry.lab[lang].title} · ${base}`
+      : route.view === 'resources'
+        ? `${lang === 'es' ? 'Recursos' : 'Resources'} · ${base}`
+        : route.view === 'missing'
+          ? `${lang === 'es' ? 'Lab no encontrado' : 'Lab not found'} · ${base}`
+          : base
+    document.title = title
+  }, [route, lang, entry, body])
   const prev = entry && entry.idx > 0 ? FLAT_LABS[entry.idx - 1] : null
   const next = entry && entry.idx < FLAT_LABS.length - 1 ? FLAT_LABS[entry.idx + 1] : null
 
@@ -110,6 +135,7 @@ export default function HederaByExample () {
     if (window.location.hash !== hash) window.history.pushState(null, '', hash)
     runIdRef.current++
     abortActiveRun()
+    setQuery('')
     setRoute(target)
     setMenuOpen(false)
     setRunStatus('idle')
@@ -121,8 +147,9 @@ export default function HederaByExample () {
 
   const code = useMemo(() => (body ? runnableCode(body) : ''), [body])
 
-  const run = useCallback(async () => {
+  const run = useCallback(async (force?: boolean) => {
     if (!entry || runStatus === 'running') return
+    if (!force && runBlock(body?.before, wallet)) return
     const runId = ++runIdRef.current
     const live = () => runIdRef.current === runId
     setRunStatus('running')
@@ -151,6 +178,7 @@ export default function HederaByExample () {
     const result = await executeInBrowser(code, wallet, onLine, { practice, files, lang })
     recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId })
     if (!live()) return
+    if (result.success) setDone(markDone(entry.lab.slug))
     setRunStatus(result.success ? 'success' : 'error')
     // Labs move HBAR between the learner's wallets: refresh every balance.
     setBalances(await fetchBalances(walletStore))
@@ -210,6 +238,7 @@ export default function HederaByExample () {
         <Sidebar
           t={t}
           lang={lang}
+          done={done}
           modules={modules}
           query={query}
           onQuery={setQuery}
@@ -240,7 +269,7 @@ export default function HederaByExample () {
                 code={code}
                 runStatus={runStatus}
                 logs={logs}
-                onRun={run}
+                onRun={(force) => { void run(force) }}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
                 wallet={wallet}
                 walletStore={walletStore}
@@ -258,7 +287,21 @@ export default function HederaByExample () {
               )
             : route.view === 'resources'
               ? <ResourcesPanel lang={lang} store={walletStore} onOpenWallets={() => setAccountOpen(true)} onSelectLab={selectLab} />
-              : <CourseIndex t={t} lang={lang} modules={modules} onSelect={selectLab} />}
+              : route.view === 'missing'
+                ? (
+                  <div className='page'>
+                    <h1>{lang === 'es' ? 'Lab no encontrado' : 'Lab not found'}</h1>
+                    <p className='lead'>
+                      {lang === 'es'
+                        ? <>No hay un lab con la ruta <code>#{route.slug}</code>.</>
+                        : <>No lab matches <code>#{route.slug}</code>.</>}
+                    </p>
+                    <a className='btn btn-primary' href='#index' onClick={(e) => { e.preventDefault(); go({ view: 'index' }) }}>
+                      {t.allLabs}
+                    </a>
+                  </div>
+                  )
+                : <CourseIndex t={t} lang={lang} modules={modules} done={done} onSelect={selectLab} />}
         </main>
       </div>
 

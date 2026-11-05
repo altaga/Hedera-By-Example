@@ -375,8 +375,8 @@ export function buildLabFileTabs({
     const trimmed = seg.code.trim()
     if (!trimmed || trimmed.split('\n').length < 2) continue
     const home = modules.find((mod) => mod.code.includes(trimmed))
-    if (!home) continue
-    home.segments.unshift(seg)
+    if (!home || seg.start == null) continue
+    home.segments.unshift({ doc: seg.doc, code: seg.code, start: seg.start })
     mainSegments.splice(i, 1)
   }
 

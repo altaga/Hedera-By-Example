@@ -30,13 +30,13 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
         <a
           href='#index'
           className='brand-logo-link'
+          tabIndex={-1}
+          aria-hidden='true'
           onClick={(e) => { e.preventDefault(); onHome() }}
-          aria-label={`${t.siteName} - ${lang === 'es' ? 'Inicio' : 'Home'}`}
         >
           <img
             src='/brand-logo.png'
             alt=''
-            aria-hidden='true'
             className='brand-logo-img'
             width={34}
             height={38}
@@ -83,11 +83,11 @@ export function TopBar ({ t, lang, theme, wallet, onHome, onMenu, onLang, onThem
           className='account-btn'
           data-testid='account-button'
           onClick={onAccount}
-          title={t.account}
+          title={t.wallets}
         >
           <span className={`account-dot ${hasAccount ? 'is-on' : ''}`} aria-hidden='true' />
           <span className='account-btn-label'>
-            {hasAccount ? wallet.accountId : wallet.privateKey ? t.account : (lang === 'es' ? 'Crear wallet' : 'Create wallet')}
+            {hasAccount ? wallet.accountId : wallet.privateKey ? t.wallets : t.createWallet}
           </span>
           {hasAccount && wallet.balanceHbar != null && (
             <span className='account-btn-balance'>{wallet.balanceHbar.toFixed(2)} ℏ</span>

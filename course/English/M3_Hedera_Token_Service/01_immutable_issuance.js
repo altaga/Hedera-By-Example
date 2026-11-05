@@ -64,7 +64,10 @@ const main = async () => {
       const response = await transaction.execute(client)
 
       // Log HashScan URL for immediate audit
-      const txId = response.transactionId.toString().replace('@', '-').replace('.', '-')
+      // HashScan wants 0.0.X-seconds-nanos. Replacing the first "." turns the account into 0-0.X.
+      const rawTxId = response.transactionId.toString()
+      const at = rawTxId.indexOf('@')
+      const txId = at === -1 ? rawTxId : `${rawTxId.slice(0, at)}-${rawTxId.slice(at + 1).replace(/\./g, '-')}`
       console.log(`[LOG] View on HashScan: https://hashscan.io/testnet/transaction/${txId}`)
 
       const receipt = await response.getReceipt(client)

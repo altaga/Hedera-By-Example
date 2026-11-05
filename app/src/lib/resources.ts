@@ -89,8 +89,14 @@ async function fetchCreations (accountId: string, kind: ResourceKind, tx: string
 
 const labFor = (runs: LabRun[], createdAt: string): string | undefined => {
   const t = Number(createdAt)
-  const run = runs.find((r) => t >= r.start - 2 && t <= r.end + 5)
-  return run?.slug
+  // A slow earlier run can still be open when the next lab creates something.
+  // The latest start that covers this timestamp is the lab that made it.
+  let best: LabRun | undefined
+  for (const r of runs) {
+    if (t < r.start - 2 || t > r.end + 15) continue
+    if (!best || r.start > best.start) best = r
+  }
+  return best?.slug
 }
 
 /** All resources created with the given accounts, newest first, without duplicates. */

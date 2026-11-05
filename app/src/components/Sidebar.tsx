@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react'
 import { Icon } from './Icon'
-import { moduleLabel, type Lang, type ModuleMeta } from '../lib/content'
+import { getBody, moduleLabel, type Lang, type ModuleMeta } from '../lib/content'
+import { difficultyLabel, labRequirements } from '../lib/labPrep'
 import type { Strings } from '../lib/i18n'
 
 interface Props {
   t: Strings
   lang: Lang
   modules: ModuleMeta[]
+  done: string[]
   query: string
   onQuery: (q: string) => void
   searchRef: React.RefObject<HTMLInputElement | null>
@@ -22,7 +24,8 @@ interface Props {
 }
 
 export function Sidebar (props: Props) {
-  const { t, lang, modules, query, onQuery, searchRef, currentSlug, currentModId, openMods, onToggleMod, onSelect, onIndex, isIndex, open, onClose } = props
+  const { t, lang, modules, done, query, onQuery, searchRef, currentSlug, currentModId, openMods, onToggleMod, onSelect, onIndex, isIndex, open, onClose } = props
+  const finished = new Set(done)
   const currentRef = useRef<HTMLAnchorElement | null>(null)
 
   // Keep the current lab visible in the list when navigating.
@@ -86,16 +89,20 @@ export function Sidebar (props: Props) {
                     <ol className='toc-labs'>
                       {mod.labs.map((lab) => {
                         const isCurrent = lab.slug === currentSlug
+                        const req = labRequirements(getBody(lang, lab.slug).before)
+                        const level = difficultyLabel(req.difficulty, req.firstHbar, lang)
                         return (
                           <li key={lab.slug}>
                             <a
                               href={`#${lab.slug}`}
                               ref={isCurrent ? currentRef : undefined}
                               aria-current={isCurrent ? 'page' : undefined}
+                              title={level}
                               onClick={(e) => { e.preventDefault(); onSelect(lab.slug) }}
                             >
                               <span className='toc-num'>{Number(lab.n)}</span>
                               <span>{lab[lang].title}</span>
+                              {finished.has(lab.slug) && <span className='toc-done' aria-label={lang === 'es' ? 'Completado' : 'Completed'}>✓</span>}
                             </a>
                           </li>
                         )

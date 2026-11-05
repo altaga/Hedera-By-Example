@@ -1,5 +1,6 @@
 import React from 'react'
-import { INDEX, FIRST_SLUG, moduleLabel, type Lang, type ModuleMeta } from '../lib/content'
+import { INDEX, FIRST_SLUG, getBody, moduleLabel, type Lang, type ModuleMeta } from '../lib/content'
+import { difficultyLabel, labRequirements } from '../lib/labPrep'
 import type { Strings } from '../lib/i18n'
 import { McpCard } from './McpCard'
 
@@ -7,10 +8,12 @@ interface Props {
   t: Strings
   lang: Lang
   modules: ModuleMeta[]
+  done: string[]
   onSelect: (slug: string) => void
 }
 
-export function CourseIndex ({ t, lang, modules, onSelect }: Props) {
+export function CourseIndex ({ t, lang, modules, done, onSelect }: Props) {
+  const finished = new Set(done)
   return (
     <div className='page index-page'>
       <header className='index-hero'>
@@ -45,32 +48,40 @@ export function CourseIndex ({ t, lang, modules, onSelect }: Props) {
         </ol>
       </section>
 
-      <McpCard lang={lang} />
-
       <div className='index-modules'>
-        {modules.map((mod) => (
+        {modules.map((mod) => {
+          const doneCount = mod.labs.filter((lab) => finished.has(lab.slug)).length
+          return (
           <section key={mod.id} className='index-module' aria-labelledby={`mod-${mod.id}`}>
             <div className='index-module-head'>
               <span className='index-module-num'>{t.module} {moduleLabel(mod)}</span>
-              <span className='index-module-count'>{t.labsCount(mod.labs.length)}</span>
+              <span className='index-module-count'>{t.labsCount(mod.labs.length)}{doneCount ? ` · ${doneCount}` : ''}</span>
             </div>
             <h2 id={`mod-${mod.id}`}>{mod[lang].title}</h2>
             {(mod[lang].objective || mod[lang].subtitle) && (
               <p className='index-module-desc'>{mod[lang].objective || mod[lang].subtitle}</p>
             )}
             <ol className='index-labs'>
-              {mod.labs.map((lab) => (
+              {mod.labs.map((lab) => {
+                const req = labRequirements(getBody(lang, lab.slug).before)
+                return (
                 <li key={lab.slug}>
                   <a href={`#${lab.slug}`} onClick={(e) => { e.preventDefault(); onSelect(lab.slug) }}>
                     <span className='toc-num'>{Number(lab.n)}</span>
                     <span>{lab[lang].title}</span>
+                    <span className={`tag tag-diff tag-${req.difficulty}`}>{difficultyLabel(req.difficulty, req.firstHbar, lang)}</span>
+                    {finished.has(lab.slug) && <span className='toc-done' aria-label={lang === 'es' ? 'Completado' : 'Completed'}>✓</span>}
                   </a>
                 </li>
-              ))}
+                )
+              })}
             </ol>
           </section>
-        ))}
+          )
+        })}
       </div>
+
+      <McpCard lang={lang} />
     </div>
   )
 }

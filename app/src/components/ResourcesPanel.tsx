@@ -21,6 +21,7 @@ const TEXT = {
     loading: 'Reading the Mirror Node…',
     noWallets: 'Add a wallet with a testnet account to see what it created.',
     openWallets: 'Open wallets',
+    createWallet: 'Create wallet',
     empty: 'Nothing created yet. Run a lab and come back.',
     none: 'No resources match.',
     pick: 'Pick a resource to see its live data.',
@@ -37,16 +38,17 @@ const TEXT = {
   },
   es: {
     title: 'Recursos',
-    intro: 'Todo lo que tus wallets crearon en testnet: tokens, tópicos, cuentas, contratos, archivos y schedules. Los datos vienen en vivo del Mirror Node, así que también aparece lo que hiciste con el curso en local.',
-    allWallets: 'Todas mis wallets',
+    intro: 'Todo lo que tus billeteras crearon en testnet: tokens, tópicos, cuentas, contratos, archivos y schedules. Los datos vienen en vivo del Mirror Node, así que también aparece lo que hiciste con el curso en local.',
+    allWallets: 'Todas mis billeteras',
     all: 'Todo',
     kinds: { token: 'Tokens', topic: 'Tópicos', account: 'Cuentas', contract: 'Contratos', file: 'Archivos', schedule: 'Schedules' } as Record<ResourceKind, string>,
     kind1: { token: 'Token', topic: 'Tópico', account: 'Cuenta', contract: 'Contrato', file: 'Archivo', schedule: 'Schedule' } as Record<ResourceKind, string>,
     filter: 'Filtrar por ID, nombre o lab',
     refresh: 'Actualizar',
     loading: 'Leyendo el Mirror Node…',
-    noWallets: 'Agrega una wallet con cuenta en testnet para ver lo que creó.',
-    openWallets: 'Abrir wallets',
+    noWallets: 'Agrega una billetera con cuenta en testnet para ver lo que creó.',
+    openWallets: 'Abrir billeteras',
+    createWallet: 'Crear billetera',
     empty: 'Aún no hay nada creado. Ejecuta un lab y vuelve.',
     none: 'Ningún recurso coincide.',
     pick: 'Elige un recurso para ver sus datos en vivo.',
@@ -210,7 +212,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
         ? (
           <div className='notice'>
             <p>{t.noWallets}</p>
-            <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenWallets}><Icon name='key' size={14} />{t.openWallets}</button>
+            <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenWallets}><Icon name='key' size={14} />{store.wallets.length ? t.openWallets : t.createWallet}</button>
           </div>
           )
         : (

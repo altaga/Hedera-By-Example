@@ -112,7 +112,7 @@ const server = http.createServer(async (req, res) => {
         url.pathname === '/api/faucet/claim')
     ) {
       const body = await parseBody(req);
-      const { evmAddress, accountId, amount = 10, skipCooldown = false } = body;
+      const { evmAddress, accountId, amount = 25, skipCooldown = false } = body;
 
       if (!evmAddress) {
         return sendJson(res, 400, {
@@ -123,7 +123,7 @@ const server = http.createServer(async (req, res) => {
 
       const result = await disburseHbar({
         evmAddress,
-        amount: Number(amount) || 10,
+        amount: Number(amount) || 25,
         skipCooldown: Boolean(skipCooldown),
       });
 
@@ -132,7 +132,7 @@ const server = http.createServer(async (req, res) => {
         recordFaucetClaim({
           evmAddress,
           accountId,
-          amount: Number(amount) || 10,
+          amount: Number(amount) || 25,
           txHash: result.hash,
           network: NETWORK,
         }).catch((err) => {
@@ -154,7 +154,7 @@ const server = http.createServer(async (req, res) => {
           event: HBE_EVENT_FAUCET_CLAIM,
         },
         endpoints: {
-          'POST /api/welcome-drop': 'Disburse 10 HBAR to a learner wallet (1-per-wallet limit)',
+          'POST /api/welcome-drop': 'Disburse 25 HBAR to a learner wallet (1-per-learner limit)',
           'POST /api/faucet/disburse': 'Disburse custom HBAR amount',
           'GET /api/faucet/health': 'Health, RPC rotation status and pool balances',
           'GET /api/faucet/stats': 'Count of unique users who claimed testnet funds (PostHog)',

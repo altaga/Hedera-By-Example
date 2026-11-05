@@ -154,16 +154,22 @@ const main = async () => {
     await tracer.startSpan('hedera.mirrornode.sync', traceContext, async () => {
       console.log('[PROCESS] Span [hedera.mirrornode.sync]: Probing mirror node state ingestion...')
       const mirrorBase = getMirrorNodeBaseUrl()
-      const formattedTxId = `${response.transactionId.accountId}-${response.transactionId.validStart.seconds}-${response.transactionId.validStart.nanos}`
+      const account = response.transactionId.accountId.toString()
+      const seconds = response.transactionId.validStart.seconds.toString()
+      const nanos = response.transactionId.validStart.nanos.toString().padStart(9, '0')
+      // The by-id route 404s until the mirror ingests the transaction, which the
+      // browser logs as an error. The list route returns 200 with an empty page.
+      const listUrl = `${mirrorBase}/api/v1/transactions?account.id=${account}&timestamp=gte:${seconds}.${nanos}&limit=1&order=asc`
 
       let synced = false
       const maxRetries = 10
       for (let i = 0; i < maxRetries; i++) {
         // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
-        const res = await fetch(`${mirrorBase}/api/v1/transactions/${formattedTxId}`)
+        const res = await fetch(listUrl)
         if (res.ok) {
           const body = await res.json()
-          if (body.transactions && body.transactions.length > 0) {
+          const hit = (body.transactions || []).some((t) => String(t.transaction_id) === `${account}-${seconds}-${nanos}`)
+          if (hit) {
             synced = true
             break
           }

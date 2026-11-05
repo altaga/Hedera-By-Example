@@ -40,12 +40,14 @@ import { getClient } from '../M99_Utilities/index.js'
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Configuración de Recepción Automática ---\n')
 
+  // 1. Abrir un cliente pagado por la cuenta operadora
   const { client, operatorId: opId } = getClient()
 
   try {
+    // 2. La cuenta a la que aplica esta actualización
     console.log(`[INFO] Cuenta Objetivo: ${opId}`)
 
-    // Preparar la Transacción de Actualización
+    // 3. Preparar la transacción de actualización
     console.log('[PROCESO] Construyendo AccountUpdateTransaction...')
 
     // setMaxAutomaticTokenAssociations(-1) habilita la auto-asociación "Ilimitada"
@@ -54,7 +56,7 @@ const main = async () => {
       .setMaxAutomaticTokenAssociations(-1)
       .freezeWith(client)
 
-    // Firmar y Ejecutar
+    // 4. Firmar y ejecutar
     console.log('[PROCESO] Firmando transacción con la llave del operador...')
     const response = await transaction.execute(client)
 
