@@ -19,12 +19,15 @@ Checked by hand with raw JSON-RPC requests (`Content-Type: application/json`, `A
 - `app/public/mcp/manifest.json` said version 1.0.0 and only listed `http://localhost:3001/mcp`. It now says 2.0.0 and lists the production endpoint.
 - `app/public/mcp/tools.json` listed 6 of the 10 tools with older descriptions. It is now the live `tools/list` output.
 
-## Known gaps (not changed here)
-- `query_knowledge` with the query "hashscan" finds nothing (the knowledge catalog has no entry for it); "payments" works.
+## Fixed after review
+- `query_knowledge` with a query that has no ecosystem entry (for example "hashscan") now falls back to the matching rows of the official resources table instead of returning nothing.
+
+## Known gaps
 - The stdio server `mcp/index.js` was not run in this check (dependencies not installed in the sandbox).
 - The MCP server sends no analytics. The only PostHog event in the repo is `hbe_faucet_claimed`, emitted by the faucet on a successful claim (`app/src/server/faucetService.ts` via `posthogAnalytics.ts`). Lab runs and MCP calls are not tracked.
 
-## Faucet context for the next reviewer
-- GitHub workflow `recover-faucets.yml` fails: secret `ACTION_FAUCET_MNEMONIC` is not a valid BIP-39 phrase.
-- Production `/api/faucet/health` returned `samplePoolBalances: []` and `uniqueUsersCount: 0`, so the EAS `FAUCET_MNEMONIC` may also be invalid or unset, and the PostHog keys (`HBE_HOG_API_KEY` / `HOG_API_KEY`, `HOG_PERSONAL_API_KEY`, project id) may be missing. Not confirmed (no access to runtime logs or secret values).
-- Operator account `0.0.11296718` (EVM twin `0.0.11296890`); pool is 25 wallets derived from the mnemonic; Welcome Drop is 25 HBAR.
+## Faucet context for the next reviewer (updated 2026-11-05)
+- The earlier suspicion that the secrets were invalid was wrong. Production deploys must use `eas deploy --prod --environment production`; without the flag the server gets no env vars, which made the pool look empty.
+- `ACTION_FAUCET_MNEMONIC` in GitHub is the same mnemonic as the EAS production `FAUCET_MNEMONIC` (checked with the `check-faucet-mnemonic.yml` workflow). It was stored with surrounding quotes, which the recovery scripts now strip.
+- `recover-faucets.yml` passes: 25 pool wallets, default `count` is 25.
+- Operator account `0.0.11296718` (EVM twin `0.0.11296890`); Welcome Drop is 25 HBAR.

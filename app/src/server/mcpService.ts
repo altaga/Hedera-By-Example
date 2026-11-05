@@ -406,7 +406,13 @@ function handleQueryKnowledge (p: any = {}) {
       return { r, s: words.filter((w) => hay.includes(w)).length }
     }).filter((x: any) => x.s).sort((a: any, b: any) => b.s - a.s).map((x: any) => x.r)
   }
-  if (!results.length) return `Nothing matches "${p.query || p.category}". Categories: ${(catalog.categories || []).join(', ')}.`
+  if (!results.length) {
+    // Fall back to the official resources table (docs, explorers, repos) before giving up.
+    const fallback = words.length ? handleOfficialResources({ query: p.query }) : ''
+    const rows = fallback.split('\n').filter((l: string) => l.startsWith('|') && !l.startsWith('| Resource') && !l.startsWith('| :---'))
+    if (rows.length) return `No ecosystem entry matches "${p.query}". Closest official resources:\n\n| Resource | Link |\n| :--- | :--- |\n${rows.join('\n')}`
+    return `Nothing matches "${p.query || p.category}". Categories: ${(catalog.categories || []).join(', ')}.`
+  }
   return results.slice(0, 5).map((r: any) => `### ${r.name}
 - **Category:** ${r.category} (${r.layer})
 - **Summary:** ${r.summary}
