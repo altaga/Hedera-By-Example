@@ -1,0 +1,52 @@
+name: Check faucet mnemonic secret
+
+# Manual, read-only check. Never prints the secret: only word count, BIP-39 validity,
+# and the PUBLIC address of pool wallet #0, compared with the production pool.
+on:
+  workflow_dispatch:
+    inputs:
+      expected_wallet0:
+        description: 'Expected address of pool wallet #0 (production)'
+        required: false
+        default: '0x6F77439094DD884F7Ac7e65D68FC5C83A4Feb494'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: faucet/package-lock.json
+      - name: Install faucet dependencies
+        working-directory: faucet
+        run: npm ci
+      - name: Validate ACTION_FAUCET_MNEMONIC
+        working-directory: faucet
+        env:
+          ACTION_FAUCET_MNEMONIC: ${{ secrets.ACTION_FAUCET_MNEMONIC }}
+          EXPECTED_WALLET0: ${{ inputs.expected_wallet0 }}
+        run: |
+          node --input-type=module -e "
+          import { ethers } from 'ethers';
+          const raw = process.env.ACTION_FAUCET_MNEMONIC || '';
+          if (!raw) { console.log('RESULT: secret is EMPTY or not set'); process.exit(1); }
+          const m = raw.trim().replace(/^[\"']|[\"']\$/g, '');
+          const words = m.split(/\s+/).filter(Boolean);
+          console.log('words:', words.length, '| surrounding quotes:', /^[\"']|[\"']\$/.test(raw.trim()), '| single spaces only:', m === words.join(' '));
+          const valid = ethers.Mnemonic.isValidMnemonic(m);
+          console.log('valid BIP-39:', valid);
+          if (!valid) { console.log('RESULT: INVALID mnemonic'); process.exit(1); }
+          const w0 = ethers.HDNodeWallet.fromPhrase(m, undefined, \"m/44'/60'/0'/0/0\").address;
+          console.log('pool wallet #0 address:', w0);
+          const same = w0.toLowerCase() === (process.env.EXPECTED_WALLET0 || '').toLowerCase();
+          console.log('matches production pool:', same);
+          console.log(same ? 'RESULT: OK, same mnemonic as production' : 'RESULT: valid but DIFFERENT from production');
+          "
