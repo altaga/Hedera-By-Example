@@ -410,7 +410,7 @@ function handleQueryKnowledge (p: any = {}) {
     // Fall back to the official resources table (docs, explorers, repos) before giving up.
     const fallback = words.length ? handleOfficialResources({ query: p.query }) : ''
     const rows = fallback.split('\n').filter((l: string) => l.startsWith('|') && !l.startsWith('| Resource') && !l.startsWith('| :---'))
-    if (rows.length) return `No ecosystem entry matches "${p.query}". Closest official resources:\n\n| Resource | Link |\n| :--- | :--- |\n${rows.join('\n')}`
+    if (rows.length) return `No ecosystem entry matches "${p.query}". Closest official resources:\n\n| Resource Name | Category | Official URL | Purpose / Coverage | Last Verified Update |\n| :--- | :--- | :--- | :--- | :---: |\n${rows.join('\n')}`
     return `Nothing matches "${p.query || p.category}". Categories: ${(catalog.categories || []).join(', ')}.`
   }
   return results.slice(0, 5).map((r: any) => `### ${r.name}
