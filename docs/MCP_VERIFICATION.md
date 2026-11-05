@@ -31,3 +31,4 @@ Checked by hand with raw JSON-RPC requests (`Content-Type: application/json`, `A
 - `ACTION_FAUCET_MNEMONIC` in GitHub is the same mnemonic as the EAS production `FAUCET_MNEMONIC` (checked with the `check-faucet-mnemonic.yml` workflow). It was stored with surrounding quotes, which the recovery scripts now strip.
 - `recover-faucets.yml` passes: 25 pool wallets, default `count` is 25.
 - Operator account `0.0.11296718` (EVM twin `0.0.11296890`); Welcome Drop is 25 HBAR.
+- Pool layout (2026-11-05): wallet #0 of the mnemonic is the treasury and never serves users; the user pool is derived indices 1..25 (`TREASURY_INDEX`, `POOL_SIZE` in `faucetService.ts`). The recovery workflow tops up indices 1..25.

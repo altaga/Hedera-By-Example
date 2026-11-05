@@ -152,7 +152,7 @@ export async function getFaucetAccounts() {
     try {
       const pool = [];
       const poolSize = Math.max(1, parseInt(process.env.FAUCET_POOL_SIZE || '25', 10) || 25);
-      for (let i = 0; i < poolSize; i++) {
+      for (let i = 1; i <= poolSize; i++) {
         const derived = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, `m/44'/60'/0'/0/${i}`);
         pool.push({
           index: i,

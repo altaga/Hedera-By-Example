@@ -40,7 +40,7 @@ async function mapPool (fn) {
 }
 
 const rows = await mapPool(async (i) => {
-  const w = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, `m/44'/60'/0'/0/${i}`)
+  const w = ethers.HDNodeWallet.fromPhrase(mnemonic, undefined, `m/44'/60'/0'/0/${i + 1}`)
   let bal = 0
   try {
     bal = parseFloat(ethers.formatEther(await provider.getBalance(w.address)))

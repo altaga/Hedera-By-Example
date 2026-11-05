@@ -139,6 +139,8 @@ export async function calculateHederaGasPrice(provider: ethers.JsonRpcProvider, 
   return withHeadroom > absoluteMin ? withHeadroom : absoluteMin;
 }
 
+// Index 0 of the mnemonic is the treasury wallet (never serves users); the user pool is indices 1..POOL_SIZE.
+export const TREASURY_INDEX = 0;
 export const POOL_SIZE = Math.max(1, parseInt(process.env.FAUCET_POOL_SIZE || '25', 10) || 25);
 
 let cachedOperatorWallet: ethers.Wallet | null = null;
@@ -265,7 +267,7 @@ export async function disburseHbar({
 
     // Try up to 3 pool wallets across the RPC sequence
     for (let attempt = 0; attempt < 3; attempt++) {
-      const walletIdx = (startIndex + attempt) % POOL_SIZE;
+      const walletIdx = 1 + ((startIndex + attempt) % POOL_SIZE);
       const acc = getWalletAtIndex(walletIdx);
       if (!acc) continue;
 
@@ -344,7 +346,7 @@ export async function getFaucetHealth(): Promise<any> {
   const sampleBalances: any[] = [];
   try {
     const provider = new ethers.JsonRpcProvider(rpcs[0], undefined, { staticNetwork: true });
-    for (let i = 0; i < 3; i++) {
+    for (let i = 1; i <= 3; i++) {
       const acc = getWalletAtIndex(i);
       if (acc) {
         const b = await provider.getBalance(acc.address).catch(() => 0n);
