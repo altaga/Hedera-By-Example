@@ -214,6 +214,7 @@ function hashscanUrl (target: any): string {
   if (!target) return base
   if (typeof target === 'object') {
     if (target.transactionId) return `${base}/transaction/${txIdForUrl(String(target.transactionId))}`
+    if (target.contractId) return `${base}/contract/${target.contractId}`
     if (target.topicId) return `${base}/topic/${target.topicId}`
     if (target.tokenId) return `${base}/token/${target.tokenId}`
     if (target.accountId) return `${base}/account/${target.accountId}`
@@ -255,7 +256,19 @@ const isExit = (e: unknown) => e instanceof ExitSignal
  * open topic subscriptions and pending timers. The run ends when the lab
  * calls process.exit(), when nothing is pending, or at the time limit.
  */
-interface RunHandles { subs: Set<object>; timers: Set<number>; clients: Set<any>; exited: boolean; wake: () => void }
+interface RunHandles {
+  subs: Set<object>
+  timers: Set<number>
+  clients: Set<any>
+  exited: boolean
+  wake: () => void
+  /** Transactions this run submitted ("0.0.1@secs.nanos"), in order. */
+  txs?: string[]
+  /** Entities their receipts created, as "kind:id". */
+  created?: string[]
+  /** Called with a status line for a retry. */
+  note?: (text: string) => void
+}
 let activeRun: RunHandles | null = null
 
 /** Stop a run for good: timers, subscriptions and every client it opened, so nothing more is sent. */
@@ -272,6 +285,63 @@ function stopRun (run: RunHandles | null) {
 /** Called when the learner leaves the lab or starts another run: the old run must not keep spending HBAR. */
 export function abortActiveRun (): void {
   stopRun(activeRun)
+}
+
+
+/** Errors from a node or the transport, not from the transaction itself: worth another node. */
+export const TRANSIENT_NODE_ERROR = /NodeAccountId not recognized|failed to find a healthy working node|\bUNAVAILABLE\b|\bBUSY\b|PLATFORM_NOT_ACTIVE|PLATFORM_TRANSACTION_NOT_CREATED|RST_STREAM|Failed to fetch|NetworkError|fetch failed|timed? ?out|deadline exceeded|ECONNRESET/i
+export const MAX_NODE_ATTEMPTS = 3
+
+const sleepMs = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Every execute() a lab makes (transactions and queries) goes through here:
+ * - transient node errors retry up to MAX_NODE_ATTEMPTS times with backoff,
+ *   and the SDK moves to another node (the failed one is marked unhealthy);
+ * - "NodeAccountId not recognized" means the client's node map lost entries
+ *   (e.g. it was emptied): the testnet node list is restored before retrying;
+ * - transaction ids are recorded so the run can link each one on HashScan
+ *   and Resources can name the lab that created each entity.
+ * A run that was stopped (its client closed) never retries.
+ */
+function trackExecutions (hedera: any) {
+  const proto = hedera.Executable?.prototype
+  if (!proto || proto.__hbeExecute) return
+  proto.__hbeExecute = true
+  const execute = proto.execute
+  proto.execute = async function (this: any, client: any, ...rest: any[]) {
+    const run = activeRun
+    let lastErr: any
+    for (let attempt = 1; attempt <= MAX_NODE_ATTEMPTS; attempt++) {
+      try {
+        const out = await execute.call(this, client, ...rest)
+        if (run && out instanceof hedera.TransactionResponse && out.transactionId) {
+          const id = out.transactionId.toString()
+          run.txs ||= []
+          if (!run.txs.includes(id)) run.txs.push(id)
+        }
+        if (run && out instanceof hedera.TransactionReceipt) {
+          run.created ||= []
+          for (const [kind, key] of [['token', 'tokenId'], ['topic', 'topicId'], ['contract', 'contractId'], ['account', 'accountId'], ['file', 'fileId'], ['schedule', 'scheduleId']]) {
+            const v = (out as any)[key]
+            if (v) { const tag = `${kind}:${v.toString()}`; if (!run.created.includes(tag)) run.created.push(tag) }
+          }
+        }
+        return out
+      } catch (err: any) {
+        lastErr = err
+        const msg = String(err?.message ?? err)
+        const closed = !client || client.__hbeClosed || client._isShutdown || run?.exited
+        if (closed || attempt === MAX_NODE_ATTEMPTS || !TRANSIENT_NODE_ERROR.test(msg)) throw err
+        if (/not recognized|healthy working node/i.test(msg)) {
+          try { client.setNetwork('testnet') } catch (_) {}
+        }
+        run?.note?.(`Node error (${msg.slice(0, 80)}). Retrying on another node, attempt ${attempt + 1}/${MAX_NODE_ATTEMPTS}...`)
+        await sleepMs(500 * 2 ** (attempt - 1))
+      }
+    }
+    throw lastErr
+  }
 }
 
 /** Every Client a lab (or a library it uses) opens belongs to the run that opened it. */
@@ -396,14 +466,17 @@ export async function executeInBrowser (
   wallet: BrowserWallet,
   onLog: (line: TerminalLogLine) => void,
   options: RunOptions = {}
-): Promise<{ success: boolean; durationMs: number }> {
+): Promise<{ success: boolean; durationMs: number; txIds: string[] }> {
   const startTime = Date.now()
   let seq = 0
+  let printedUrls: Set<string> | undefined
 
   const emit = (line: Omit<TerminalLogLine, 'id' | 'timestamp'>) => {
     const d = new Date()
     const ts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':')
     if (/INSUFFICIENT_(PAYER|ACCOUNT)_BALANCE/.test(String(line.text ?? ''))) lowBalance = true
+    for (const u of String(line.text ?? '').match(/https:\/\/hashscan\.io\/[^\s)'"]+/g) || []) printedUrls?.add(u.replace(/[.,;]+$/, ''))
+    if (line.url) printedUrls?.add(line.url)
     onLog({ id: `${startTime}-${seq++}`, timestamp: ts, ...line })
   }
   const pushLog = (type: TerminalLogLine['type'], text: string, url?: string) => emit({ type, text, url })
@@ -438,13 +511,33 @@ export async function executeInBrowser (
 
   let failedWithExitCode = false
   stopRun(activeRun)
-  const run: RunHandles = { subs: new Set(), timers: new Set(), clients: new Set(), exited: false, wake: () => {} }
+  const run: RunHandles = { subs: new Set(), timers: new Set(), clients: new Set(), exited: false, wake: () => {}, txs: [], created: [] }
+  run.note = (text) => pushLog('warn', text)
+  // HashScan URLs the lab printed itself, so the summary only adds what is missing.
+  printedUrls = new Set<string>()
+  const linkSummary = () => {
+    const base = 'https://hashscan.io/testnet'
+    const missing: { text: string; url: string }[] = []
+    for (const id of run.txs || []) {
+      const url = `${base}/transaction/${txIdForUrl(id)}`
+      if (!printedUrls.has(url)) missing.push({ text: `Transaction ${id}`, url })
+    }
+    for (const tag of run.created || []) {
+      const [kind, id] = tag.split(':')
+      const url = `${base}/${kind}/${id}`
+      if (!printedUrls.has(url)) missing.push({ text: `${kind[0].toUpperCase()}${kind.slice(1)} ${id}`, url })
+    }
+    if (!missing.length) return
+    pushLog('system', options.lang === 'es' ? 'En HashScan:' : 'On HashScan:')
+    for (const m of missing) emit({ type: 'link', text: `${m.text}: ${m.url}`, url: m.url })
+  }
   activeRun = run
   let stuck: { ms: number, reason: string } | null = null
   try {
     const hedera = await import('@hiero-ledger/sdk')
     useRestTopicSubscriptions(hedera)
     trackClients(hedera)
+    trackExecutions(hedera)
     // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
     // (only the real fee is charged) so labs survive fee-schedule changes.
     const createClient = (accountId?: string, privateKey?: any) => {
@@ -964,6 +1057,7 @@ export async function executeInBrowser (
     } finally {
       stopRun(run)
       window.removeEventListener('unhandledrejection', swallowExit)
+      linkSummary()
     }
     if (failedWithExitCode) throw new ExitSignal(1)
 
@@ -973,10 +1067,10 @@ export async function executeInBrowser (
     if (mockProcess.exitCode) {
       lowBalanceHint()
       pushLog('error', `Finished with errors in ${(durationMs / 1000).toFixed(2)} s`)
-      return { success: false, durationMs }
+      return { success: false, durationMs, txIds: run.txs || [] }
     }
     pushLog('system', `Finished in ${(durationMs / 1000).toFixed(2)} s`)
-    return { success: true, durationMs }
+    return { success: true, durationMs, txIds: run.txs || [] }
   } catch (err: any) {
     const durationMs = Date.now() - startTime
     const message = err?.message || String(err)
@@ -988,6 +1082,6 @@ export async function executeInBrowser (
     } else if (err instanceof ReferenceError && /require|__dirname/.test(message)) {
       pushLog('warn', 'This lab uses Node.js-only APIs. Run it locally with Node.js to see its full behaviour.')
     }
-    return { success: false, durationMs }
+    return { success: false, durationMs, txIds: run.txs || [] }
   }
 }

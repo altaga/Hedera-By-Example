@@ -37,7 +37,7 @@ import {
   PrivateKey
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, updateState, executeWithGas, withGasRetry, reuseContract } from '../M99_Utilities/index.js'
+import { getClient, updateState, executeWithGas, withGasRetry, reuseContract, getHashscanUrl } from '../M99_Utilities/index.js'
 
 // --- 1. SOLIDITY SOURCE CODE ---
 const SOURCE_CODE = `
@@ -114,10 +114,12 @@ const main = async () => {
         .setAdminKey(adminKey) // Sets the Operator as admin to allow updates (like rent)
         .freezeWith(client), client, { gas: 2000000 })
       const contractReceipt = await contractResponse.getReceipt(client)
+      console.log(`[LOG] Deployment tx on HashScan: ${getHashscanUrl(contractResponse)}`)
       return contractReceipt.contractId
     })
 
     console.log(`\n[SUCCESS] Contract Created: ${contractId}`)
+    console.log(`[LOG] Contract on HashScan: https://hashscan.io/testnet/contract/${contractId}`)
 
     console.log('[INFO] Synchronizing state.json with Contract ID...')
     updateState('SC_STORAGE_ID', contractId.toString())
@@ -129,6 +131,7 @@ const main = async () => {
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
     await setTx.getReceipt(client)
+    console.log(`[LOG] set(42) tx on HashScan: ${getHashscanUrl(setTx)}`)
     console.log('[SUCCESS] State updated to 42.')
 
     // Step D: Query (Get)

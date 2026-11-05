@@ -39,7 +39,7 @@ import {
   ContractCallQuery, ContractFunctionParameters, Hbar
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState, executeWithGas, withGasRetry, reuseContract } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, executeWithGas, withGasRetry, reuseContract, getHashscanUrl } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE SOLIDITY (SimpleStorage) ---
 const SOURCE_CODE = `
@@ -108,10 +108,12 @@ const main = async () => {
         .setAdminKey(adminKey) // Permite actualizaciones y gestión de renta
         .freezeWith(client), client, { gas: 2000000 })
       const contractReceipt = await contractResponse.getReceipt(client)
+      console.log(`[LOG] Tx de despliegue en HashScan: ${getHashscanUrl(contractResponse)}`)
       return contractReceipt.contractId
     })
 
     console.log(`[ÉXITO] Contrato anclado exitosamente: ${contractId}`)
+    console.log(`[LOG] Contrato en HashScan: https://hashscan.io/testnet/contract/${contractId}`)
     updateState('SC_STORAGE_ID', contractId.toString())
 
     // FASE C: Interacción (Escritura de Estado)
@@ -122,6 +124,7 @@ const main = async () => {
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
     await setTx.getReceipt(client)
+    console.log(`[LOG] Tx set(42) en HashScan: ${getHashscanUrl(setTx)}`)
     console.log('[ÉXITO] Estado del contrato actualizado a 42.')
 
     // FASE D: Consulta (Lectura de Estado)
