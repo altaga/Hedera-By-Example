@@ -17,6 +17,8 @@ import {
   type ExtractedCompanionModule,
 } from '../lib/labTabs'
 import { runBlock } from '../lib/labPrep'
+import { canRunLab } from '../lib/uiState.mjs'
+import { FaucetNote, OFFICIAL_FAUCET_URL } from './FaucetNote'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source'
@@ -32,7 +34,10 @@ interface Props {
   code: string
   runStatus: RunStatus
   logs: TerminalLogLine[]
-  onRun: (force?: boolean) => void
+  onRun: () => void
+  /** Learner chose "Run anyway" for this lab and wallet despite a low balance. */
+  allowLowBalance: boolean
+  onAllowLowBalance: () => void
   onClearLogs: () => void
   needsPractice: boolean
   onOpenAccount: () => void
@@ -237,7 +242,7 @@ function LabRefs ({ text, onSelect }: { text: string; onSelect: (slug: string) =
 export function LabPage (props: Props) {
   const {
     t, lang, entry, body, prev, next, onSelect,
-    code, runStatus, logs, onRun, onClearLogs,
+    code, runStatus, logs, onRun, onClearLogs, allowLowBalance, onAllowLowBalance,
     needsPractice, onOpenAccount, fileOverrides, onReplaceFile, wallet, walletStore, onSelectWallet
   } = props
   const { mod, lab } = entry
@@ -446,13 +451,14 @@ export function LabPage (props: Props) {
                 ? `La primera ejecución declara ~${block.need} ℏ y esta billetera tiene ${block.have.toFixed(2)} ℏ.${again} Consigue más en el faucet o desde otra billetera.`
                 : `The first run is listed at ~${block.need} ℏ and this wallet has ${block.have.toFixed(2)} ℏ.${again} Get more from the faucet or from another wallet.`}
             </p>
-            <a className='btn btn-ghost btn-sm' href='https://portal.hedera.com/faucet' target='_blank' rel='noopener noreferrer'>
+            <a className='btn btn-ghost btn-sm' href={OFFICIAL_FAUCET_URL} target='_blank' rel='noopener noreferrer'>
               {lang === 'es' ? 'Faucet de Hedera' : 'Hedera faucet'}
             </a>
             <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenAccount}>{lang === 'es' ? 'Billeteras' : 'Wallets'}</button>
-            <button type='button' className='btn btn-ghost btn-sm' data-testid='run-anyway' onClick={() => onRun(true)}>
+            <button type='button' className='btn btn-ghost btn-sm' data-testid='run-anyway' onClick={onAllowLowBalance}>
               {lang === 'es' ? 'Ejecutar igual' : 'Run anyway'}
             </button>
+            <FaucetNote lang={lang} />
           </div>
         )
       })()}
@@ -494,8 +500,12 @@ export function LabPage (props: Props) {
               type='button'
               className='btn btn-primary btn-sm'
               data-testid='run-button'
-              onClick={() => onRun()}
-              disabled={runStatus === 'running' || !!runBlock(body.before, wallet)}
+              onClick={onRun}
+              disabled={!canRunLab({
+                running: runStatus === 'running',
+                blockReason: runBlock(body.before, wallet)?.reason ?? null,
+                allowLowBalance
+              })}
               title='Ctrl+Enter'
             >
               <Icon name='play' size={12} />

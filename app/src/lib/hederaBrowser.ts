@@ -412,8 +412,8 @@ export async function executeInBrowser (
   const lowBalanceHint = () => {
     if (!lowBalance) return
     pushLog('warn', options.lang === 'es'
-      ? 'Una cuenta se quedó sin HBAR suficientes. Crear un token o desplegar un contrato cuesta cerca de 1 USD (unos 14 ℏ en testnet). Recarga tu wallet en el faucet de Hedera, o desde otra de tus wallets en el gestor de wallets.'
-      : 'An account ran out of HBAR. Creating a token or deploying a contract costs about 1 USD (around 14 ℏ on testnet). Top up your wallet from the Hedera faucet, or from another of your wallets in the wallet manager.',
+      ? 'Una cuenta se quedó sin HBAR. Si el drop de bienvenida no alcanza, pide más HBAR de testnet en el faucet oficial (usa TU propio Account ID, por ejemplo 0.0.xxxx). No envíes fondos a la cuenta faucet/operadora de esta app: no es un lugar para depositar; solo fondea el drop de bienvenida.'
+      : 'An account ran out of HBAR. If the Welcome Drop is not enough, request more testnet HBAR from the official Hedera faucet (use YOUR own account ID, e.g. 0.0.xxxx). Do not send funds to this app\'s faucet/operator account — it is not a place to deposit; it only funds the Welcome Drop.',
     'https://portal.hedera.com/faucet')
   }
 

@@ -1120,6 +1120,8 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   background: var(--bg-subtle); font-size: 14.5px;
 }
 .notice p { margin: 0; color: var(--text-2); }
+.faucet-more { margin: 8px 0 0; max-width: 72ch; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+.notice .faucet-more { flex-basis: 100%; }
 
 .lab-files { margin-top: 28px; }
 .lab-files > summary.section-title {
@@ -1440,8 +1442,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 }
 .curve-card:hover { border-color: var(--text-3); }
 .curve-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.curve-card input { position: absolute; opacity: 0; pointer-events: none; }
-.curve-card:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.curve-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .curve-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .curve-pros, .curve-cons { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 12.5px; }
 .curve-pros li, .curve-cons li { padding-left: 16px; position: relative; color: var(--text-2); }

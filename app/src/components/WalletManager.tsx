@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Icon } from './Icon'
+import { CurvePicker } from './CurvePicker'
+import { FaucetNote, OFFICIAL_FAUCET_URL } from './FaucetNote'
 import type { Lang } from '../lib/content'
 import { isAccountId } from '../lib/hederaBrowser'
 import {
   WELCOME_DROP_HBAR, createWallet, fetchBalances, findWallet, fundWallet, importMnemonic, importWallet, keyFormats, lookUpAccount, waitForFunding, requestWelcomeDrop, welcomeDropClaim,
   type Curve, type KeyFormat, type Role, type Wallet, type WalletStore
 } from '../lib/wallets'
-
-const FAUCET_URL = 'https://portal.hedera.com/faucet'
 
 const TEXT = {
   en: {
@@ -258,25 +258,6 @@ function KeyFormats ({ w, t }: { w: Wallet; t: T }) {
   )
 }
 
-/** Pick ECDSA or Ed25519, with what each is good for. */
-function CurvePicker ({ t, value, onChange }: { t: T; value: Curve; onChange: (c: Curve) => void }) {
-  return (
-    <div className='curve-picker' role='radiogroup'>
-      {(['ECDSA', 'ED25519'] as Curve[]).map((c) => {
-        const info = t.curves[c]
-        return (
-          <label key={c} className={`curve-card ${value === c ? 'is-selected' : ''}`} data-testid={`curve-${c.toLowerCase()}`}>
-            <input type='radio' name='curve' checked={value === c} onChange={() => onChange(c)} />
-            <span className='curve-head'><strong>{info.name}</strong><span className={`tag ${c === 'ECDSA' ? 'tag-accent' : ''}`}>{info.badge}</span></span>
-            <ul className='curve-pros'>{info.pros.map((p) => <li key={p}>{p}</li>)}</ul>
-            <ul className='curve-cons'>{info.cons.map((p) => <li key={p}>{p}</li>)}</ul>
-          </label>
-        )
-      })}
-    </div>
-  )
-}
-
 /** Step 2 and 3 for an ECDSA key that has no account yet. Polls only while a drop for this wallet is in flight. */
 function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; onFound: (accountId: string) => void }) {
   const mine = welcomeDropClaim()?.walletId === w.id
@@ -360,8 +341,9 @@ function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; on
         </summary>
         <ol style={{ marginTop: 8 }}>{t.faucetSteps.map((s) => <li key={s}>{s}</li>)}</ol>
         <p className='kv-value'><code>{w.evmAddress}</code><CopyButton value={w.evmAddress} t={t} /></p>
-        <a className='btn btn-ghost btn-sm' href={FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
+        <a className='btn btn-ghost btn-sm' href={OFFICIAL_FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
       </details>
+      <FaucetNote lang={lang} />
     </div>
   )
 }
@@ -524,7 +506,7 @@ export function WalletManager ({ lang, store, balances, onChange, onBalances, on
   const newWalletForm = (
     <div className='wallet-new' data-testid='new-wallet'>
       {first && <h3 className='step-title'><span className='step-n'>1</span>{t.step1}</h3>}
-      <CurvePicker t={t} value={curve} onChange={setCurve} />
+      <CurvePicker curves={t.curves} value={curve} onChange={setCurve} label={t.curve} />
       <label className='check'>
         <input type='checkbox' checked={withMnemonic} onChange={(e) => setWithMnemonic(e.target.checked)} data-testid='with-mnemonic' />
         <span>{t.withMnemonic}<small className='muted'>{t.withMnemonicHint}</small></span>
