@@ -27,7 +27,8 @@ function isWeb (): boolean {
 
 function publicApiKey (): string | null {
   try {
-    const key = (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_HOG_API_KEY) || ''
+    // Must be the literal `process.env.EXPO_PUBLIC_*` form so Expo inlines it at build time.
+    const key = process.env.EXPO_PUBLIC_HOG_API_KEY || ''
     return key && key.startsWith('phc_') ? key : null
   } catch (_) {
     return null
