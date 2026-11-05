@@ -12,7 +12,7 @@ import indexData from '../content/index.json'
 import enData from '../content/en.json'
 import esData from '../content/es.json'
 import catalogData from './data/hedera_master_catalog.json'
-import { recordMcpToolCall } from './posthogAnalytics'
+import { recordMcpToolCall, runAnalyticsSilently } from './posthogAnalytics'
 import { ARCHITECTURE_DOC, HACKATHON_DOC, RESOURCES_DOC } from './mcpDocsData'
 
 export const VERSION = '2.0.0'
@@ -544,14 +544,14 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         const args = params.arguments || {}
         const started = Date.now()
         // Fire-and-forget: analytics never delays or fails a tool call.
-        const track = (isError: boolean) => recordMcpToolCall({
+        const track = (isError: boolean) => { const durationMs = Date.now() - started; runAnalyticsSilently(() => recordMcpToolCall({
           tool: name,
           isError,
-          durationMs: Date.now() - started,
+          durationMs,
           labSlug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : undefined,
           queryLength: typeof args.query === 'string' ? args.query.length : undefined,
           client: ctx.client
-        }).catch(() => false)
+        })) }
         try {
           const text = await callTool(name, args)
           void track(false)

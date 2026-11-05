@@ -4,6 +4,22 @@
  * Runs strictly server-side in Expo Router API routes.
  */
 
+import { deferTask } from 'expo-server';
+
+/**
+ * Runs an analytics task after the response is sent (Expo `deferTask`), so it never blocks a
+ * user request, and is kept alive until it finishes on the hosting runtime. Any failure is silent.
+ * Falls back to a plain detached promise where `deferTask` is unsupported (tests, local node).
+ */
+export function runAnalyticsSilently(task: () => Promise<unknown>): void {
+  const safe = () => task().catch(() => undefined);
+  try {
+    deferTask(safe);
+  } catch (_) {
+    try { void safe(); } catch (__) { /* silent */ }
+  }
+}
+
 const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/';
 const POSTHOG_QUERY_HOST = 'https://us.posthog.com';
 

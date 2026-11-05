@@ -15,7 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import { ethers } from 'ethers';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { recordFaucetClaim, getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
+import { recordFaucetClaim, runAnalyticsSilently, getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
 
 /** Load local secrets into process.env if Expo CLI did not inject them yet. */
 function loadLocalFaucetEnv (): void {
@@ -296,13 +296,13 @@ export async function disburseHbar({
 
           // Track metric in PostHog on the side: never awaited, never blocks or fails the claim.
           try {
-            void recordFaucetClaim({
+            runAnalyticsSilently(() => recordFaucetClaim({
               evmAddress,
               accountId,
               amount: finalAmount,
               txHash: tx.hash,
               network: NETWORK,
-            }).catch(() => false);
+            }));
           } catch (_) {
             /* analytics must stay silent */
           }
