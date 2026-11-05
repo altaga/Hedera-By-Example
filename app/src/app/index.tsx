@@ -60,8 +60,6 @@ export default function HederaByExample () {
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
   const [done, setDone] = useState<string[]>([])
   const [allowLowBalance, setAllowLowBalance] = useState(false)
-  // Wait until hash prefs hydrate before counting pageviews (avoids a fake 'index' hit).
-  const [analyticsReady, setAnalyticsReady] = useState(false)
   // Files the learner chose to use instead of the course assets, per lab.
   const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -88,7 +86,6 @@ export default function HederaByExample () {
     setTheme(prefs.theme || 'dark')
     setDone(loadDone())
     setRoute(routeFromHash())
-    setAnalyticsReady(true)
 
     const stored = loadWallets()
     setWalletStore(stored)
@@ -113,7 +110,7 @@ export default function HederaByExample () {
 
   // Anonymous pageviews (web): hash routes are the real navigation surface.
   useEffect(() => {
-    if (typeof window === 'undefined' || !analyticsReady) return
+    if (typeof window === 'undefined') return
     const labSlug = route.view === 'lab' ? route.slug : null
     const hash = window.location.hash || ''
     const path = hash ? `/${hash}` : (window.location.pathname || '/')
@@ -123,7 +120,7 @@ export default function HederaByExample () {
       labSlug,
       view: route.view
     })
-  }, [route, lang, analyticsReady])
+  }, [route, lang])
 
   const savePrefs = (next: { lang?: Lang; theme?: Theme }) => {
     const merged = { lang, theme, ...next }
