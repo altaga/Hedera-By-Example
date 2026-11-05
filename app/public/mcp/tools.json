@@ -1,105 +1,345 @@
 {
   "tools": [
     {
-      "name": "query_curriculum",
-      "description": "Search and inspect any of the 131 runnable Hedera by Example labs. Returns full runnable code, concept, learnable moments, and SDK references.",
+      "name": "search_labs",
+      "title": "Search the labs",
+      "description": "Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "query": {
             "type": "string",
-            "description": "Search term, concept, or SDK class (e.g., 'x402', 'TransferTransaction', 'Merkle', 'EVM', 'TokenCreate')"
+            "description": "e.g. \"nft royalties\", \"TopicMessageSubmitTransaction\", \"HIP-904 airdrop\", \"x402\""
           },
           "module": {
             "type": "string",
-            "description": "Optional module prefix (e.g., 'M0', 'M3', 'M10', 'M15')"
+            "description": "Optional module, e.g. \"M3\""
           },
           "lang": {
             "type": "string",
-            "enum": ["en", "es"],
-            "description": "Language of explanation and code comments (default: 'en')"
+            "enum": [
+              "en",
+              "es"
+            ],
+            "description": "Course language (default \"en\")"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Results (default 5)"
           }
-        }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     },
     {
-      "name": "query_knowledge",
-      "description": "Query the Hedera Master Knowledge Graph across AI agents, RWA, DePIN, Passkeys, zk-TLS, and L1 consensus services.",
+      "name": "get_lab",
+      "title": "Get a lab",
+      "description": "Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Lab slug from search_labs or list_labs, e.g. \"m03-01-immutable-issuance\""
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "description": "Course language (default \"en\")"
+          },
+          "include_code": {
+            "type": "boolean",
+            "description": "Include the code (default true)"
+          }
+        },
+        "required": [
+          "slug"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_labs",
+      "title": "List the course",
+      "description": "The course map: 16 modules and 131 labs with their slugs, optionally for one module.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "type": "string",
+            "description": "Optional module, e.g. \"M8\""
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "description": "Course language (default \"en\")"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "query_curriculum",
+      "title": "Search labs with code",
+      "description": "Search the labs and return the best matches with their full code (heavier than search_labs + get_lab).",
       "inputSchema": {
         "type": "object",
         "properties": {
           "query": {
             "type": "string",
-            "description": "Technology, protocol, or standard (e.g., 'AI Studio', 'ATS', 'x402', 'Guardian', 'Passkeys', 'HIP-904')"
+            "description": "Search term, concept or SDK class"
           },
-          "category": {
+          "module": {
             "type": "string",
-            "description": "Filter category (e.g., 'AI & Autonomous Agents', 'DePIN & Hardware IoT', 'Asset Tokenization & RWA')"
+            "description": "Optional module, e.g. \"M3\""
           },
-          "audience": {
+          "lang": {
             "type": "string",
-            "enum": ["developer", "architect", "business", "founder"],
-            "description": "Target audience perspective"
+            "enum": [
+              "en",
+              "es"
+            ],
+            "description": "Course language (default \"en\")"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Labs with code (default 3)"
           }
         }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "anti_hallucination_rules",
-      "description": "Retrieve strict anti-hallucination rules and technical guardrails for building on Hedera with @hiero-ledger/sdk.",
+      "title": "Hedera guardrails",
+      "description": "Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag.",
       "inputSchema": {
         "type": "object",
         "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "architecture_decision_tree",
-      "description": "Retrieve the architectural decision matrix guiding when to use Hedera Consensus Service (HCS), Token Service (HTS), or Smart Contracts (HSCS).",
+      "title": "HCS vs HTS vs smart contracts",
+      "description": "When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "focus": {
             "type": "string",
-            "description": "Optional focus area (e.g., 'cost', 'throughput', 'compliance', 'ai-agents')"
+            "description": "Optional section to keep, e.g. \"fees\", \"keys\", \"NFT\""
           }
         }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     },
     {
       "name": "mirror_node_query",
-      "description": "Interrogate the public Hedera Mirror Node REST API in real-time. Free read-only state lookup for accounts, tokens, and topics.",
+      "title": "Read Hedera state",
+      "description": "Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks.",
       "inputSchema": {
         "type": "object",
-        "required": ["endpoint", "id"],
+        "required": [
+          "endpoint"
+        ],
         "properties": {
           "endpoint": {
             "type": "string",
-            "enum": ["accounts", "tokens", "topics", "transactions"],
-            "description": "Mirror node resource type"
+            "enum": [
+              "accounts",
+              "tokens",
+              "topics",
+              "transactions",
+              "contracts",
+              "schedules",
+              "balances",
+              "network/exchangerate",
+              "network/fees",
+              "network/supply",
+              "network/nodes",
+              "blocks"
+            ]
           },
           "id": {
             "type": "string",
-            "description": "Hedera entity ID (e.g. '0.0.12345' or EVM address '0x...')"
+            "description": "Entity ID (0.0.123), EVM address (0x\u2026) or transaction ID; not needed for network/*, balances, blocks"
+          },
+          "sub": {
+            "type": "string",
+            "description": "Sub-resource: accounts \u2192 tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens \u2192 nfts | balances; topics \u2192 messages; contracts \u2192 results | state"
           },
           "network": {
             "type": "string",
-            "enum": ["testnet", "mainnet"],
-            "description": "Hedera network (default: 'testnet')"
+            "enum": [
+              "testnet",
+              "mainnet",
+              "previewnet"
+            ],
+            "description": "Default \"testnet\""
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
           }
         }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
       }
     },
     {
-      "name": "official_resources",
-      "description": "Search official Hedera documentation, repositories, and specifications with verified update timestamps.",
+      "name": "estimate_cost",
+      "title": "Estimate HBAR cost",
+      "description": "Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price).",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "operations"
+        ],
+        "properties": {
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "hbar_transfer",
+                    "token_transfer",
+                    "account_create",
+                    "account_update",
+                    "allowance_approve",
+                    "token_create",
+                    "token_create_custom_fees",
+                    "token_associate",
+                    "token_mint_ft",
+                    "nft_mint",
+                    "token_airdrop",
+                    "topic_create",
+                    "topic_create_custom_fees",
+                    "topic_message",
+                    "schedule_create",
+                    "schedule_sign",
+                    "file_create",
+                    "file_append",
+                    "contract_create",
+                    "contract_call"
+                  ]
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "gas": {
+                  "type": "integer",
+                  "description": "Gas limit, for contract_create / contract_call"
+                }
+              }
+            }
+          },
+          "network": {
+            "type": "string",
+            "enum": [
+              "testnet",
+              "mainnet"
+            ]
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "query_knowledge",
+      "title": "Hedera ecosystem map",
+      "description": "Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links.",
       "inputSchema": {
         "type": "object",
         "properties": {
           "query": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "audience": {
             "type": "string",
-            "description": "Search term for official URLs and documentation"
+            "enum": [
+              "developer",
+              "architect",
+              "business",
+              "founder"
+            ]
           }
         }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "official_resources",
+      "title": "Official links",
+      "description": "Official Hedera documentation, repositories and specifications.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        }
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": false
       }
     }
   ]
