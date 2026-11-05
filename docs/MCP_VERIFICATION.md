@@ -24,7 +24,7 @@ Checked by hand with raw JSON-RPC requests (`Content-Type: application/json`, `A
 
 ## Known gaps
 - The stdio server `mcp/index.js` was not run in this check (dependencies not installed in the sandbox).
-- The MCP server sends no analytics. The only PostHog event in the repo is `hbe_faucet_claimed`, emitted by the faucet on a successful claim (`app/src/server/faucetService.ts` via `posthogAnalytics.ts`). Lab runs and MCP calls are not tracked.
+- PostHog events: `hbe_faucet_claimed` (faucet claim) and `hbe_mcp_tool_called` (every MCP `tools/call`: tool, is_error, duration_ms, lab_slug for `get_lab`, query_length, client user-agent; the query text itself is never sent). Lab views in the browser are not tracked.
 
 ## Faucet context for the next reviewer (updated 2026-11-05)
 - The earlier suspicion that the secrets were invalid was wrong. Production deploys must use `eas deploy --prod --environment production`; without the flag the server gets no env vars, which made the pool look empty.

@@ -12,6 +12,7 @@ import indexData from '../content/index.json'
 import enData from '../content/en.json'
 import esData from '../content/es.json'
 import catalogData from './data/hedera_master_catalog.json'
+import { recordMcpToolCall } from './posthogAnalytics'
 import { ARCHITECTURE_DOC, HACKATHON_DOC, RESOURCES_DOC } from './mcpDocsData'
 
 export const VERSION = '2.0.0'
@@ -515,7 +516,9 @@ Start with search_labs (or list_labs), read a lab with get_lab, check anti_hallu
 const rpcError = (id: any, code: number, message: string) => ({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })
 const rpcResult = (id: any, result: any) => ({ jsonrpc: '2.0', id, result })
 
-export async function dispatchOneMcp (msg: any) {
+export type McpContext = { client?: string }
+
+export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
   if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0') return rpcError(msg?.id, -32600, 'Invalid Request')
   const { id, method, params = {} } = msg
   const isNotification = id === undefined || id === null
@@ -538,10 +541,22 @@ export async function dispatchOneMcp (msg: any) {
       case 'tools/call': {
         const name = params.name
         if (!TOOLS.some((t) => t.name === name)) return rpcError(id, -32602, `Unknown tool: ${name}`)
+        const args = params.arguments || {}
+        const started = Date.now()
+        const track = (isError: boolean) => recordMcpToolCall({
+          tool: name,
+          isError,
+          durationMs: Date.now() - started,
+          labSlug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : undefined,
+          queryLength: typeof args.query === 'string' ? args.query.length : undefined,
+          client: ctx.client
+        }).catch(() => false)
         try {
-          const text = await callTool(name, params.arguments || {})
+          const text = await callTool(name, args)
+          await track(false)
           return rpcResult(id, { content: [{ type: 'text', text: String(text) }] })
         } catch (err: any) {
+          await track(true)
           return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : `Tool error: ${err.message}` }] })
         }
       }
@@ -565,13 +580,13 @@ export async function dispatchOneMcp (msg: any) {
   }
 }
 
-export async function dispatchMcpRpc (payload: any) {
+export async function dispatchMcpRpc (payload: any, ctx: McpContext = {}) {
   if (Array.isArray(payload)) {
     if (!payload.length) return rpcError(null, -32600, 'Invalid Request: empty batch')
-    const out = (await Promise.all(payload.map(dispatchOneMcp))).filter(Boolean)
+    const out = (await Promise.all(payload.map((p: any) => dispatchOneMcp(p, ctx)))).filter(Boolean)
     return out.length ? out : null
   }
-  return dispatchOneMcp(payload)
+  return dispatchOneMcp(payload, ctx)
 }
 
 export function getMcpMetadata () {

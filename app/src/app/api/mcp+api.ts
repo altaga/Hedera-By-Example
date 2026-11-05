@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await dispatchMcpRpc(payload);
+    const response = await dispatchMcpRpc(payload, { client: request.headers.get('user-agent') || undefined });
     if (!response) {
       return new Response(null, {
         status: 202,

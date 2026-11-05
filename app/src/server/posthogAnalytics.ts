@@ -8,6 +8,7 @@ const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/';
 const POSTHOG_QUERY_HOST = 'https://us.posthog.com';
 
 export const HBE_EVENT_FAUCET_CLAIM = 'hbe_faucet_claimed';
+export const HBE_EVENT_MCP_TOOL = 'hbe_mcp_tool_called';
 export const HBE_APP_TAG = 'hedera-by-example';
 
 let cachedUserCount = { count: 0, timestamp: 0 };
@@ -63,6 +64,60 @@ export async function recordFaucetClaim({
     return res.ok;
   } catch (err: any) {
     console.warn('[ANALYTICS] Failed to emit PostHog faucet event:', err?.message || err);
+    return false;
+  }
+}
+
+/**
+ * Records one MCP tool call. Never sends the query text (only its length) and never throws:
+ * analytics must not break or slow down a tool call.
+ */
+export async function recordMcpToolCall({
+  tool,
+  isError = false,
+  durationMs,
+  labSlug,
+  queryLength,
+  client,
+}: {
+  tool: string;
+  isError?: boolean;
+  durationMs?: number;
+  labSlug?: string;
+  queryLength?: number;
+  client?: string;
+}): Promise<boolean> {
+  if (process.env.POSTHOG_DISABLED === 'true') return false;
+  const apiKey = process.env.HBE_HOG_API_KEY || process.env.HOG_API_KEY;
+  if (!apiKey) return false;
+
+  const clientName = String(client || 'unknown').slice(0, 80);
+  try {
+    const res = await fetch(POSTHOG_CAPTURE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(2000),
+      body: JSON.stringify({
+        api_key: apiKey,
+        event: HBE_EVENT_MCP_TOOL,
+        distinct_id: `mcp:${clientName}`,
+        properties: {
+          app: HBE_APP_TAG,
+          service: 'mcp',
+          tool,
+          is_error: isError,
+          duration_ms: durationMs ?? null,
+          lab_slug: labSlug || null,
+          query_length: queryLength ?? null,
+          client: clientName,
+          $process_person_profile: false,
+          timestamp: new Date().toISOString(),
+        },
+      }),
+    });
+    return res.ok;
+  } catch (err: any) {
+    console.warn('[ANALYTICS] Failed to emit PostHog MCP event:', err?.message || err);
     return false;
   }
 }
