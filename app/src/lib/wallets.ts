@@ -149,16 +149,52 @@ export async function findAccountForKey (evmAddress: string, publicKeyRaw: strin
 /** Parse a private key in DER, raw hex or 0x hex. Raw hex needs the curve: 32 bytes fit both. */
 async function parseAnyKey (value: string, curve: Curve | 'auto'): Promise<{ key: any, keyType: Curve }> {
   const hedera = await import('@hiero-ledger/sdk')
-  const v = value.trim().replace(/^0x/i, '')
-  if (!/^[0-9a-fA-F]+$/.test(v)) throw new Error('INVALID_KEY')
+  const raw = value.trim()
+  if (!raw) throw new Error('INVALID_KEY_EMPTY')
+  const v = raw.replace(/^0x/i, '')
+  if (!/^[0-9a-fA-F]+$/.test(v)) throw new Error('INVALID_KEY_HEX')
   const isDer = /^30[0-9a-fA-F]{60,}$/.test(v) && v.length > 64
   let key
-  if (isDer) key = hedera.PrivateKey.fromStringDer(v)
-  else if (v.length !== 64) throw new Error('INVALID_KEY')
-  else if (curve === 'ECDSA' || (curve === 'auto' && /^0x/i.test(value.trim()))) key = hedera.PrivateKey.fromStringECDSA(v)
-  else if (curve === 'ED25519') key = hedera.PrivateKey.fromStringED25519(v)
-  else throw new Error('AMBIGUOUS_KEY')
+  try {
+    if (isDer) key = hedera.PrivateKey.fromStringDer(v)
+    else if (v.length !== 64) throw new Error(`INVALID_KEY_LENGTH:${v.length}`)
+    else if (curve === 'ECDSA' || (curve === 'auto' && /^0x/i.test(raw))) key = hedera.PrivateKey.fromStringECDSA(v)
+    else if (curve === 'ED25519') key = hedera.PrivateKey.fromStringED25519(v)
+    else throw new Error('AMBIGUOUS_KEY')
+  } catch (e: any) {
+    const m = String(e?.message || '')
+    if (m.startsWith('INVALID_') || m === 'AMBIGUOUS_KEY') throw e
+    throw new Error('INVALID_KEY')
+  }
   return { key, keyType: key.type === 'secp256k1' ? 'ECDSA' : 'ED25519' }
+}
+
+/** True when `rawPublic` (Mirror Node / SDK raw hex) is the account key or one member of it. */
+export function publicKeyControlsAccount (accountKey: unknown, rawPublic: string): boolean {
+  const want = rawPublic.replace(/^0x/i, '').toLowerCase()
+  if (!want) return false
+  const found: string[] = []
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return
+    if (typeof node.key === 'string') found.push(node.key.replace(/^0x/i, '').toLowerCase())
+    if (Array.isArray(node.keys)) node.keys.forEach(walk)
+  }
+  walk(accountKey)
+  return found.some((k) => k === want)
+}
+
+/** Reject an Account ID the pasted key does not control. The Mirror Node is the source of the account key. */
+async function assertKeyControlsAccount (accountId: string, rawPublic: string): Promise<void> {
+  let res: Response
+  try {
+    res = await mirrorFetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${accountId.trim()}`)
+  } catch (_) {
+    throw new Error('ACCOUNT_LOOKUP_FAILED')
+  }
+  if (res.status === 404) throw new Error('ACCOUNT_NOT_FOUND')
+  if (!res.ok) throw new Error('ACCOUNT_LOOKUP_FAILED')
+  const data = await res.json().catch(() => null)
+  if (!publicKeyControlsAccount(data?.key, rawPublic)) throw new Error('KEY_MISMATCH')
 }
 
 /**
@@ -167,10 +203,11 @@ async function parseAnyKey (value: string, curve: Curve | 'auto'): Promise<{ key
  */
 export async function importWallet (accountId: string, privateKey: string, label: string, curve: Curve | 'auto' = 'auto'): Promise<Wallet> {
   if (accountId.trim() && !isAccountId(accountId)) throw new Error('INVALID_ACCOUNT_ID')
-  let parsed
-  try { parsed = await parseAnyKey(privateKey, curve) } catch (e: any) { throw new Error(e?.message === 'AMBIGUOUS_KEY' ? 'AMBIGUOUS_KEY' : 'INVALID_KEY') }
+  const parsed = await parseAnyKey(privateKey, curve)
+  const rawPublic = parsed.key.publicKey.toStringRaw()
+  if (accountId.trim()) await assertKeyControlsAccount(accountId, rawPublic)
   const w = toWallet(parsed.key, parsed.keyType, label, { accountId: accountId.trim() })
-  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, parsed.key.publicKey.toStringRaw())) || ''
+  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, rawPublic)) || ''
   return w
 }
 
@@ -180,8 +217,13 @@ export async function importMnemonic (phrase: string, keyType: Curve, label: str
   let words
   try { words = await hedera.Mnemonic.fromString(phrase.trim().toLowerCase().split(/\s+/).join(' ')) } catch (_) { throw new Error('INVALID_MNEMONIC') }
   const key = keyType === 'ECDSA' ? await words.toStandardECDSAsecp256k1PrivateKey('', 0) : await words.toStandardEd25519PrivateKey('', 0)
+  const rawPublic = key.publicKey.toStringRaw()
+  if (accountId.trim()) {
+    if (!isAccountId(accountId)) throw new Error('INVALID_ACCOUNT_ID')
+    await assertKeyControlsAccount(accountId, rawPublic)
+  }
   const w = toWallet(key, keyType, label, { mnemonic: words.toString(), accountId: accountId.trim() })
-  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, key.publicKey.toStringRaw())) || ''
+  if (!w.accountId) w.accountId = (await findAccountForKey(w.evmAddress, rawPublic)) || ''
   return w
 }
 
@@ -257,12 +299,22 @@ async function waitForAccount (evm: string, timeoutMs = 60_000): Promise<string>
  */
 export async function fundWallet (from: Wallet, to: Wallet, hbar: number): Promise<string> {
   if (!isAccountId(from.accountId)) throw new Error('The paying wallet has no testnet account.')
-  if (!to.accountId && !to.evmAddress) throw new Error('This wallet has no account yet. Ed25519 keys need an account created for them; use an ECDSA wallet or import an existing account.')
+  if (!Number.isFinite(hbar) || hbar <= 0) throw new Error('Enter an amount greater than 0 ℏ.')
   const hedera = await import('@hiero-ledger/sdk')
   const client = hedera.Client.forTestnet()
   client.setOperator(hedera.AccountId.fromString(from.accountId), parseKey(hedera, from.privateKey))
-  const target = to.accountId ? hedera.AccountId.fromString(to.accountId) : hedera.AccountId.fromEvmAddress(0, 0, to.evmAddress)
   try {
+    // Ed25519 has no EVM address, so a transfer cannot open the account. Create it.
+    if (!to.accountId && !to.evmAddress) {
+      const tx = new hedera.AccountCreateTransaction()
+        .setKey(parseKey(hedera, to.privateKey).publicKey)
+        .setInitialBalance(new hedera.Hbar(hbar))
+      const receipt = await (await tx.execute(client)).getReceipt(client)
+      const created = receipt.accountId?.toString()
+      if (!created) throw new Error('The network did not return an account ID.')
+      return created
+    }
+    const target = to.accountId ? hedera.AccountId.fromString(to.accountId) : hedera.AccountId.fromEvmAddress(0, 0, to.evmAddress)
     const tx = new hedera.TransferTransaction()
       .addHbarTransfer(from.accountId, new hedera.Hbar(-hbar))
       .addHbarTransfer(target, new hedera.Hbar(hbar))
@@ -279,7 +331,20 @@ export async function fetchBalances (store: WalletStore): Promise<Record<string,
   return Object.fromEntries(entries)
 }
 
+/** Enough for one token-create or contract-deploy lab (~15 ℏ) plus account-creation fees. The faucet caps a drop at 50. */
+export const WELCOME_DROP_HBAR = 25
+
 export const WELCOME_DROP_STORAGE_KEY = 'hbe_welcome_drop_v1'
+
+export function welcomeDropClaim (): { walletId?: string } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(WELCOME_DROP_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch (_) {
+    return null
+  }
+}
 
 export function isWelcomeDropClaimed(): boolean {
   if (typeof window === 'undefined') return false
@@ -302,7 +367,7 @@ export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean;
     return { success: false, error: 'Only ECDSA wallets with EVM addresses qualify for the welcome drop.' }
   }
   if (isWelcomeDropClaimed()) {
-    return { success: false, error: 'Welcome drop of 10 ℏ already claimed (limit 1 per learner).' }
+    return { success: false, error: 'ALREADY_CLAIMED' }
   }
   
   const endpoints: string[] = ['/api/welcome-drop']
@@ -319,7 +384,7 @@ export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evmAddress: w.evmAddress, amount: 10 }),
+        body: JSON.stringify({ evmAddress: w.evmAddress, amount: WELCOME_DROP_HBAR }),
         signal: typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(12000) : undefined
       })
       const data = await res.json().catch(() => ({}))

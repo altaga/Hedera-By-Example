@@ -206,7 +206,7 @@ function makeCryptoShim () {
 // "0.0.123@1700000000.123456789" -> "0.0.123-1700000000-123456789" (Mirror Node / HashScan format)
 const txIdForUrl = (id: string) => {
   const [acct, ts] = id.trim().split('@')
-  return ts ? `${acct}-${ts.replace('.', '-')}` : acct
+  return ts ? `${acct}-${ts.replace(/\./g, '-')}` : acct
 }
 
 function hashscanUrl (target: any): string {
@@ -420,7 +420,9 @@ export async function executeInBrowser (
   if (isAccountId(wallet.accountId) && wallet.privateKey) {
     pushLog('system', `Operator ${wallet.accountId} on testnet`)
   } else {
-    pushLog('warn', 'No testnet account configured. Labs that send transactions will fail; set one up under "Testnet account".')
+    pushLog('warn', options.lang === 'es'
+      ? 'No hay una cuenta de testnet. Los labs que envían transacciones fallarán. Ábrela con «Crear billetera».'
+      : 'No testnet account configured. Labs that send transactions will fail. Set one up with "Create wallet".')
   }
 
   const practice = options.practice || {}
@@ -428,7 +430,9 @@ export async function executeInBrowser (
     if (practice.account1 && practice.account2) {
       pushLog('system', `Practice accounts ${practice.account1.accountId} and ${practice.account2.accountId}`)
     } else {
-      pushLog('warn', 'This lab uses ACCOUNT_1 / ACCOUNT_2. Create practice accounts under "Testnet account" first.')
+      pushLog('warn', options.lang === 'es'
+        ? 'Este lab usa ACCOUNT_1 / ACCOUNT_2. Asígalas en Billeteras antes de ejecutarlo.'
+        : 'This lab uses ACCOUNT_1 / ACCOUNT_2. Assign them under Wallets before you run it.')
     }
   }
 

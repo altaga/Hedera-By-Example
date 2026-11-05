@@ -155,16 +155,22 @@ const main = async () => {
     await tracer.startSpan('hedera.mirrornode.sync', traceContext, async () => {
       console.log('[PROCESO] Span [hedera.mirrornode.sync]: Sondeando ingesta de estado en Mirror Node...')
       const mirrorBase = getMirrorNodeBaseUrl()
-      const formattedTxId = `${response.transactionId.accountId}-${response.transactionId.validStart.seconds}-${response.transactionId.validStart.nanos}`
+      const account = response.transactionId.accountId.toString()
+      const seconds = response.transactionId.validStart.seconds.toString()
+      const nanos = response.transactionId.validStart.nanos.toString().padStart(9, '0')
+      // La ruta por id responde 404 hasta que el mirror ingiere la transacción, y el
+      // navegador lo registra como error. La lista responde 200 con una página vacía.
+      const listUrl = `${mirrorBase}/api/v1/transactions?account.id=${account}&timestamp=gte:${seconds}.${nanos}&limit=1&order=asc`
 
       let synced = false
       const maxRetries = 10
       for (let i = 0; i < maxRetries; i++) {
         // Lee de la API REST del Mirror Node: es gratis, pero va unos segundos detrás del consenso.
-        const res = await fetch(`${mirrorBase}/api/v1/transactions/${formattedTxId}`)
+        const res = await fetch(listUrl)
         if (res.ok) {
           const body = await res.json()
-          if (body.transactions && body.transactions.length > 0) {
+          const hit = (body.transactions || []).some((t) => String(t.transaction_id) === `${account}-${seconds}-${nanos}`)
+          if (hit) {
             synced = true
             break
           }

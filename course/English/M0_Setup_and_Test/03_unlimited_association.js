@@ -37,7 +37,9 @@ import { getClient } from '../M99_Utilities/index.js'
 const main = async () => {
   console.log('--- SESSION START: Account Optimization ---\n')
 
+  // 1. Open a client paid by the operator account
   const { client, operatorId } = getClient()
+  // 2. The account this update applies to
   const opId = AccountId.fromString(operatorId)
 
   try {

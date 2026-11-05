@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 02: Verificación y Activación de Cuenta
+ * Lab 02: Verificación manual de cuenta
  * [CONCEPTO] Sincronización de Identidad On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -13,7 +13,7 @@
  * recibes refleja el estado DEFINITIVO e inmutable de la red.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Consultar nodos de consenso directamente consume comisiones en HBAR y genera límites de tasa. Las dApps en producción deben usar siempre la REST API de Mirror Node para lecturas: son gratuitas, escalables y devuelven el historial completo.
+ * Este lab lee el saldo en el Mirror Node, y esa lectura es gratis. Pedir el mismo saldo a un nodo de consenso sí cobraría comisión y contaría contra el límite de tasa, así que las apps en producción dejan las lecturas en el Mirror Node.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/core-concepts/mirror-nodes
@@ -91,9 +91,13 @@ const main = async () => {
     console.log(`[REGISTRO] Account ID: ${inputId}`)
     console.log(`[REGISTRO] Saldo Actual: ${balance.hbars.toString()}`)
 
-    // Actualizar el .env con el ID verificado
-    console.log('\n[INFO] Sincronizando OPERATOR_ID en el archivo .env...')
+    // Recordar el ID verificado para los labs que siguen (.env en Node, estado del navegador aquí).
+    const inBrowser = typeof window !== 'undefined'
+    console.log(inBrowser
+      ? '\n[INFO] Guardando OPERATOR_ID para los labs que siguen (este navegador no escribe un archivo .env)...'
+      : '\n[INFO] Sincronizando OPERATOR_ID en el archivo .env...')
     updateEnv('OPERATOR_ID', inputId)
+    console.log(inBrowser ? '[ÉXITO] OPERATOR_ID guardado para los labs siguientes.' : '[ÉXITO] OPERATOR_ID guardado en .env.')
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('El objeto `Client` es tu portal al ledger. Al llamar a')

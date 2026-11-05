@@ -1,4 +1,4 @@
-# Módulo 12: Tooling EVM Moderno sobre Hedera
+# Módulo 12: Herramientas modernas de la EVM en Hedera
 ## Scaffold-HBAR, Foundry, Hardhat y Fachadas Directas HTS
 
 > [!IMPORTANT]

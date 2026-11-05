@@ -16,6 +16,7 @@ import {
   type LabCodeFile,
   type ExtractedCompanionModule,
 } from '../lib/labTabs'
+import { runBlock } from '../lib/labPrep'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source'
@@ -31,7 +32,7 @@ interface Props {
   code: string
   runStatus: RunStatus
   logs: TerminalLogLine[]
-  onRun: () => void
+  onRun: (force?: boolean) => void
   onClearLogs: () => void
   needsPractice: boolean
   onOpenAccount: () => void
@@ -418,6 +419,44 @@ export function LabPage (props: Props) {
         </div>
       )}
 
+      {(() => {
+        const block = runBlock(body.before, wallet)
+        if (!block) return null
+        if (block.reason === 'account') {
+          return (
+            <div className='notice' role='note' data-testid='account-notice'>
+              <p>
+                {lang === 'es'
+                  ? 'Este lab envía transacciones y esta billetera todavía no tiene cuenta. Créala con «Crear billetera» y fóndéala (el drop de bienvenida o el faucet).'
+                  : 'This lab sends transactions, and this wallet has no account yet. Create one with “Create wallet” and fund it (the welcome drop or the Hedera faucet).'}
+              </p>
+              <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenAccount}>{lang === 'es' ? 'Crear billetera' : 'Create wallet'}</button>
+            </div>
+          )
+        }
+        const again = block.again != null && block.again < block.need
+          ? (lang === 'es'
+            ? ` Si ya lo ejecutaste, repetirlo está declarado en ~${block.again} ℏ.`
+            : ` If you already ran it, a repeat is listed at ~${block.again} ℏ.`)
+          : ''
+        return (
+          <div className='notice' role='note' data-testid='balance-notice'>
+            <p>
+              {lang === 'es'
+                ? `La primera ejecución declara ~${block.need} ℏ y esta billetera tiene ${block.have.toFixed(2)} ℏ.${again} Consigue más en el faucet o desde otra billetera.`
+                : `The first run is listed at ~${block.need} ℏ and this wallet has ${block.have.toFixed(2)} ℏ.${again} Get more from the faucet or from another wallet.`}
+            </p>
+            <a className='btn btn-ghost btn-sm' href='https://portal.hedera.com/faucet' target='_blank' rel='noopener noreferrer'>
+              {lang === 'es' ? 'Faucet de Hedera' : 'Hedera faucet'}
+            </a>
+            <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenAccount}>{lang === 'es' ? 'Billeteras' : 'Wallets'}</button>
+            <button type='button' className='btn btn-ghost btn-sm' data-testid='run-anyway' onClick={() => onRun(true)}>
+              {lang === 'es' ? 'Ejecutar igual' : 'Run anyway'}
+            </button>
+          </div>
+        )
+      })()}
+
       <section className='code-panel' aria-label={t.walkthrough}>
         <div className='code-panel-bar'>
           <div className='tabs' role='tablist'>
@@ -455,8 +494,8 @@ export function LabPage (props: Props) {
               type='button'
               className='btn btn-primary btn-sm'
               data-testid='run-button'
-              onClick={onRun}
-              disabled={runStatus === 'running'}
+              onClick={() => onRun()}
+              disabled={runStatus === 'running' || !!runBlock(body.before, wallet)}
               title='Ctrl+Enter'
             >
               <Icon name='play' size={12} />

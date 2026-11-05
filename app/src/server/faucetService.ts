@@ -215,7 +215,7 @@ export interface DisburseResult {
 export async function disburseHbar({
   evmAddress,
   accountId,
-  amount = 10,
+  amount = 25,
   skipCooldown = false,
 }: DisburseParams): Promise<DisburseResult> {
   const startMs = Date.now();
@@ -257,7 +257,7 @@ export async function disburseHbar({
     }
 
     const rpcSequence = buildFaucetRpcSequence();
-    const finalAmount = Math.min(Math.max(Number(amount) || 10, 0.1), 50);
+    const finalAmount = Math.min(Math.max(Number(amount) || 25, 0.1), 50);
     const valueWei = ethers.parseEther(String(finalAmount));
 
     const startIndex = Math.floor(Math.random() * POOL_SIZE);
@@ -291,7 +291,7 @@ export async function disburseHbar({
             nonce,
           });
 
-          log(`Transaction broadcast confirmed: ${tx.hash}. 10 HBAR delivered.`);
+          log(`Transaction broadcast confirmed: ${tx.hash}. ${finalAmount} HBAR delivered.`);
           const durationMs = Date.now() - startMs;
 
           // Track metric in PostHog

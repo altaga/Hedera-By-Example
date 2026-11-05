@@ -1,4 +1,4 @@
-# Módulo 11: Hedera Studios y Activos del Mundo Real (RWA)
+# Módulo 11: Activos del mundo real (Hedera Studios)
 ## Tokenización Institucional, Cumplimiento ERC-3643 y Gobernanza de Stablecoins
 
 > [!IMPORTANT]

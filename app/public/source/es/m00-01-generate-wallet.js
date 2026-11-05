@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 01: Generación de Billetera Local (ECDSA Offline)
+ * Lab 01: Generación de billetera local (ECDSA sin conexión)
  * [CONCEPTO] Identidad Soberana y Derivación de Alias
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -37,35 +37,40 @@ import { updateEnv, loadEnv } from '../M99_Utilities/index.js'
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Generación de Identidad Soberana ---\n')
 
-  try {
-    // PASO 1: Generar la llave privada ECDSA.
-    console.log('[PROCESO] Generando par de llaves ECDSA (Estándar Web3)...')
-    const privateKey = PrivateKey.generateECDSA()
-    const publicKey = privateKey.publicKey
+  // 1. Generar una llave privada ECDSA aleatoria. La dirección EVM que se deriva es determinista.
+  console.log('[PROCESO] Generando par de llaves ECDSA (Estándar Web3)...')
+  const privateKey = PrivateKey.generateECDSA()
+  const publicKey = privateKey.publicKey
 
-    // PASO 2: Derivar la dirección EVM desde la llave pública.
-    console.log('[PROCESO] Derivando dirección EVM determinista (EIP-55)...')
-    const evmAddress = publicKey.toEvmAddress()
+  // 2. Derivar la dirección EVM desde la llave pública.
+  const evmAddress = publicKey.toEvmAddress()
 
-    console.log('\n[ÉXITO] Nueva Billetera Generada de forma Offline.')
-    console.log(`[REGISTRO] Llave Privada (DER): ${privateKey.toStringDer()}`)
-    console.log(`[REGISTRO] Llave Pública (DER): ${publicKey.toStringDer()}`)
-    console.log(`[REGISTRO] Dirección EVM (Alias): 0x${evmAddress}`)
+  console.log('\n[ÉXITO] Nueva billetera generada de forma local.')
+  console.log(`[REGISTRO] Llave Privada (DER): ${privateKey.toStringDer()}`)
+  console.log(`[REGISTRO] Llave Pública (DER): ${publicKey.toStringDer()}`)
+  console.log(`[REGISTRO] Dirección EVM (Alias): 0x${evmAddress}`)
 
-    // PASO 3: Persistir las llaves en el archivo .env, salvo que ya haya un operador:
-    //    sobrescribir solo la llave dejaría OPERATOR_ID apuntando a una cuenta que
-    //    esta llave nueva no controla, y todos los labs siguientes fallarían.
-    loadEnv()
-    if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
-      console.log(`\n[INFO] Ya hay un operador configurado (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
-      console.log('[INFO] La llave nueva NO se guardó, así que tus credenciales actuales siguen funcionando.')
-      console.log('[INFO] Para usar esta llave como operador, quita OPERATOR_ID y OPERATOR_PRIVATE_KEY de .env y vuelve a correr este lab.')
+  // 3. Guardar la llave como operador solo si todavía no hay uno:
+  //    sobrescribir solo la llave dejaría OPERATOR_ID apuntando a una cuenta que
+  //    esta llave nueva no controla, y todos los labs siguientes fallarían.
+  loadEnv()
+  const inBrowser = typeof window !== 'undefined'
+  if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
+    console.log(`\n[INFO] Ya hay un operador configurado (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
+    console.log('[INFO] La llave nueva NO se guardó, así que tus credenciales actuales siguen funcionando.')
+    if (inBrowser) {
+      console.log('[INFO] En este navegador ese operador es la billetera seleccionada arriba. No se escribió ningún archivo .env.')
     } else {
-      console.log('\n[INFO] Sincronizando credenciales en el archivo .env...')
+      console.log('[INFO] Para usar esta llave como operador, quita OPERATOR_ID y OPERATOR_PRIVATE_KEY de .env y vuelve a correr este lab.')
+    }
+  } else {
+    console.log(inBrowser
+      ? '\n[INFO] Aún no hay un operador en este navegador. Usa «Crear billetera» en el encabezado para fondear una. Las líneas de abajo son para correr este archivo en Node.js.'
+      : '\n[INFO] Sincronizando credenciales en el archivo .env...')
+    if (!inBrowser) {
       updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
       updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
     }
-
     console.log('\n[INFO] ACCIÓN REQUERIDA: FINANCIA TU BILLETERA')
     console.log('-------------------------------------------------------')
     console.log('1. Ve al Faucet de Hedera: https://portal.hedera.com/faucet')
@@ -74,17 +79,14 @@ const main = async () => {
     console.log(`4. Revisa HashScan: https://hashscan.io/testnet/account/0x${evmAddress}`)
     console.log('5. Una vez veas tu Account ID (0.0.X), ejecuta el Lab 02.')
     console.log('-------------------------------------------------------')
-
-    console.log('\n CONCEPTO CLAVE:')
-    console.log('Soberanía de Identidad: Tu llave privada nunca debe tocar la red.')
-    console.log('Al generarla localmente, garantizas que el ledger jamás la ve;')
-    console.log('solo recibe las PRUEBAS CRIPTOGRÁFICAS (firmas) que tú produces.')
-
-    console.log('\n--- SESIÓN COMPLETADA ---')
-  } catch (error) {
-    console.error('\n[FALLO] Fallo en la generación de billetera:', error.message)
-    process.exitCode = 1
   }
+
+  console.log('\n CONCEPTO CLAVE:')
+  console.log('Soberanía de Identidad: Tu llave privada nunca debe tocar la red.')
+  console.log('Al generarla localmente, garantizas que el ledger jamás la ve;')
+  console.log('solo recibe las PRUEBAS CRIPTOGRÁFICAS (firmas) que tú produces.')
+
+  console.log('\n--- SESIÓN COMPLETADA ---')
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {

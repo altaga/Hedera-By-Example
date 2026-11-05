@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const result = await disburseHbar({
       evmAddress: body.evmAddress,
       accountId: body.accountId,
-      amount: body.amount ?? 10,
+      amount: body.amount ?? 25,
       skipCooldown: body.skipCooldown ?? false,
     });
 

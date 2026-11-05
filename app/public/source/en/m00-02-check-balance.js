@@ -9,7 +9,7 @@
  * which account pays the fees for all subsequent queries and transactions.
  * *
  * [ LEARNABLE MOMENT ]
- * Querying consensus nodes directly incurs transaction fees and rate limits. Production dApps should always query Mirror Node REST APIs for read operations: mirror queries are free, highly scalable, and return rich historical state.
+ * This lab reads the balance from the Mirror Node, which is free. Asking a consensus node for the same balance would charge a fee and count against rate limits, so production apps keep reads on the Mirror Node.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/core-concepts/mirror-nodes
@@ -92,11 +92,14 @@ const main = async () => {
     console.log(`[LOG] Account ID: ${operatorId.toString()}`)
     console.log(`[LOG] Balance:    ${balance.hbars.toString()}`)
 
-    // Update the .env with the verified ID
-    console.log('\n[INFO] Synchronizing .env file...')
+    // Remember the verified ID for the labs that follow (.env in Node, browser state here).
+    const inBrowser = typeof window !== 'undefined'
+    console.log(inBrowser
+      ? '\n[INFO] Saving OPERATOR_ID for the labs that follow (this browser does not write a .env file)...'
+      : '\n[INFO] Synchronizing .env file...')
     updateEnv('OPERATOR_ID', operatorId.toString())
 
-    console.log('[SUCCESS] OPERATOR_ID successfully saved.')
+    console.log(inBrowser ? '[SUCCESS] OPERATOR_ID saved for the next labs.' : '[SUCCESS] OPERATOR_ID successfully saved.')
     console.log('Ready for Lab 03.')
 
     console.log('\n KEY CONCEPT:')

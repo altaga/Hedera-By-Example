@@ -13,7 +13,7 @@
   --border-strong: #cdcbc5;
   --text: #1c1c1b;
   --text-2: #464644;
-  --text-3: #73726d;
+  --text-3: #5e5d58;
   --accent: #1d4fc4;
   --accent-hover: #163f9e;
   --accent-soft: #e9effc;
@@ -47,7 +47,7 @@
   --border-strong: #3c3d41;
   --text: #e9e9e6;
   --text-2: #babab5;
-  --text-3: #8a8a85;
+  --text-3: #b4b4ae;
   --accent: #82a4ff;
   --accent-hover: #a5bdff;
   --accent-soft: #1c2438;
@@ -363,7 +363,7 @@ button { font: inherit; color: inherit; }
 }
 .search input::-webkit-search-cancel-button { display: none; }
 .search kbd {
-  font-size: 11px; color: var(--text-3); border: 1px solid var(--border);
+  font-size: 12px; color: var(--text-2); border: 1px solid var(--border);
   border-radius: 4px; padding: 0 5px; line-height: 18px;
 }
 
@@ -410,8 +410,10 @@ button { font: inherit; color: inherit; }
 
 .sidebar-foot {
   margin: 0; padding: 10px 18px 14px; border-top: 1px solid var(--border);
-  font-size: 12px; color: var(--text-3); line-height: 1.5;
+  font-size: 13px; color: var(--text-2); line-height: 1.5;
 }
+.toc-done { margin-left: auto; color: var(--ok); font-weight: 700; }
+.toc-labs a > span:nth-child(2) { min-width: 0; }
 
 /* ---------- typography ---------- */
 
@@ -727,8 +729,8 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 .code:hover::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--text-3) 70%, transparent);
 }
-.code code { display: block; min-width: max-content; }
-.code-line { display: block; padding-right: 20px; white-space: pre; }
+.code code { display: block; min-width: 0; }
+.code-line { display: block; padding-right: 16px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .code-line::before {
   content: attr(data-line);
   display: inline-block; width: 4.5ch; margin-right: 2ch; padding-right: 1ch;
@@ -924,7 +926,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 /* ---------- course index ---------- */
 
 .index-hero { padding-bottom: 32px; border-bottom: 1px solid var(--border); }
-.index-hero h1 { font-size: 40px; max-width: 22ch; }
+.index-hero h1 { font-size: 40px; max-width: 22em; }
 .index-hero .lead { margin-bottom: 24px; }
 
 .how { padding: 32px 0; border-bottom: 1px solid var(--border); }
@@ -942,6 +944,14 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   color: var(--text); text-decoration: none; font-size: 14.5px; line-height: 1.4;
 }
 .index-labs a:hover { color: var(--accent); }
+.index-labs a > span:nth-child(2) { flex: 1; min-width: 0; }
+.tag-diff { margin-left: auto; flex-shrink: 0; }
+.fee-note { flex-basis: 100%; font-size: 13px; }
+.rename-row, .confirm-delete { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rename-row input {
+  height: 32px; padding: 0 8px; border: 1px solid var(--border-strong); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font: inherit;
+}
 
 /* ---------- dialog ---------- */
 
@@ -1052,7 +1062,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   .page { padding: 32px 32px 64px; }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .topbar { padding: 0 8px 0 12px; gap: 8px; }
   .topbar-menu { display: inline-flex; }
   .sidebar {
@@ -1070,6 +1080,12 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   .lab-header h1 { font-size: 28px; }
   .index-hero h1 { font-size: 30px; }
   .lead { font-size: 17px; }
+}
+
+@media (max-width: 760px) {
+  .topbar-link-label { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  .account-btn { max-width: 46vw; }
+  .account-btn-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 @media (max-width: 600px) {

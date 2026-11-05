@@ -217,7 +217,7 @@ const faucetInFlight = new Set();
  */
 export async function disburseHbar({
   evmAddress,
-  amount = 10,
+  amount = 25,
   skipCooldown = false,
 }) {
   const addressKey = (evmAddress || '').toLowerCase().trim();
@@ -278,7 +278,7 @@ export async function disburseHbar({
 
     const faucetAccounts = await getFaucetAccounts();
     const poolLen = faucetAccounts.length;
-    const finalAmount = Math.min(Math.max(parseFloat(String(amount)) || 10, 0.1), 50);
+    const finalAmount = Math.min(Math.max(parseFloat(String(amount)) || 25, 0.1), 50);
 
     const rpcSequence = buildFaucetRpcSequence();
     const maxRpcAttempts = rpcSequence.length;

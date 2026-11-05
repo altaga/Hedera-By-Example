@@ -1,4 +1,4 @@
-# Módulo 8: Smart Contracts y EVM
+# Módulo 8: Contratos inteligentes y EVM
 ## Compatibilidad con Ethereum y Poder de Hedera
 
 > [!IMPORTANT]

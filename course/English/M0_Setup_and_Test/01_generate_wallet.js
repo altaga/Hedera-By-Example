@@ -33,7 +33,7 @@ import { updateEnv, loadEnv } from '../M99_Utilities/index.js'
 const main = async () => {
   console.log('--- SESSION START: Hedera ECDSA Wallet Generation ---\n')
 
-  // 1. Generate an ECDSA private key deterministically
+  // 1. Generate a random ECDSA private key. The EVM address derived from it is deterministic.
   console.log('[PROCESS] Generating secure ECDSA private key pair...')
   const privateKey = PrivateKey.generateECDSA()
   const publicKey = privateKey.publicKey
@@ -50,25 +50,33 @@ const main = async () => {
   //    overwriting only the key would leave OPERATOR_ID pointing at an account
   //    this new key does not control, and every later lab would fail.
   loadEnv()
+  const inBrowser = typeof window !== 'undefined'
   if (process.env.OPERATOR_ID && process.env.OPERATOR_PRIVATE_KEY) {
     console.log(`\n[INFO] An operator is already configured (OPERATOR_ID=${process.env.OPERATOR_ID}).`)
     console.log('[INFO] The new key was NOT saved, so your current credentials keep working.')
-    console.log('[INFO] To use this key as your operator, remove OPERATOR_ID and OPERATOR_PRIVATE_KEY from .env and run this lab again.')
+    if (inBrowser) {
+      console.log('[INFO] In this browser that operator is the wallet selected above. Nothing was written to a .env file.')
+    } else {
+      console.log('[INFO] To use this key as your operator, remove OPERATOR_ID and OPERATOR_PRIVATE_KEY from .env and run this lab again.')
+    }
   } else {
-    console.log('\n[INFO] Synchronizing .env file...')
-    updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
-    updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+    console.log(inBrowser
+      ? '\n[INFO] No operator is configured in this browser yet. Use "Create wallet" in the header to fund one. The lines below are for running this file in Node.js.'
+      : '\n[INFO] Synchronizing .env file...')
+    if (!inBrowser) {
+      updateEnv('OPERATOR_PRIVATE_KEY', privateKey.toStringDer())
+      updateEnv('OPERATOR_EVM_ADDRESS', '0x' + evmAddress)
+    }
+    console.log('\n=======================================================')
+    console.log('ACTION REQUIRED: FUND YOUR WALLET TO OBTAIN AN ACCOUNT ID')
+    console.log('=======================================================')
+    console.log('1. Go to the Hedera Testnet Faucet: https://portal.hedera.com/faucet')
+    console.log(`2. Paste your EVM Address: 0x${evmAddress}`)
+    console.log('3. Click \'Receive HBAR\'')
+    console.log(`4. View your account on HashScan: https://hashscan.io/testnet/account/0x${evmAddress}`)
+    console.log('5. Once you see your Account ID (0.0.X), run Lab 02.')
+    console.log('=======================================================\n')
   }
-
-  console.log('\n=======================================================')
-  console.log('ACTION REQUIRED: FUND YOUR WALLET TO OBTAIN AN ACCOUNT ID')
-  console.log('=======================================================')
-  console.log('1. Go to the Hedera Testnet Faucet: https://portal.hedera.com/faucet')
-  console.log(`2. Paste your EVM Address: 0x${evmAddress}`)
-  console.log('3. Click \'Receive HBAR\'')
-  console.log(`4. View your account on HashScan: https://hashscan.io/testnet/account/0x${evmAddress}`)
-  console.log('5. Once you see your Account ID (0.0.X), run Lab 02.')
-  console.log('=======================================================\n')
 
   console.log('KEY CONCEPT:')
   console.log('Security starts offline. By generating your keys locally, you ensure')
