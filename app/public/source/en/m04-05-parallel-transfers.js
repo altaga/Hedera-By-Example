@@ -14,7 +14,7 @@
  * Submitting high-frequency parallel transactions from a single operator requires distinct validStart timestamps. Staggering nanoseconds prevents transaction duplicate detection from dropping rapid-fire payouts.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/submit-a-transaction
+ * - https://docs.hedera.com/native/transactions/submit
  *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 04: Atomic Swaps

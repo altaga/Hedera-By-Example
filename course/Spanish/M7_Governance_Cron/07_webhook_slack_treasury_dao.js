@@ -26,7 +26,7 @@
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/sign-a-scheduled-transaction
+ * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M7 Lab 06: Verificación de Login Criptográfico

@@ -16,7 +16,7 @@
  * Decoupled scheduling allows one entity to create and pay for a transaction, while authorizing signers submit their signatures independently over time until the execution quorum is reached.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/sign-a-scheduled-transaction
+ * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ LEARNING PATH ]
  * - Previous: M7 Lab 03: Native Cron

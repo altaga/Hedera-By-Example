@@ -15,7 +15,7 @@
  * No necesitas reescribir tus contratos de Ethereum para usar tokens HTS. Las interfaces ERC-20 estándar interactúan directamente con tokens nativos de Hedera a través de precompilados del sistema.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/tokens/token-evm-addresses
+ * - https://docs.hedera.com/evm/development/addresses
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M11 Lab 07: Puente de Integración ERP Institucional

@@ -15,7 +15,7 @@
  * You do not need to rewrite your Ethereum smart contracts to use HTS tokens. Standard ERC-20 contract interfaces interact directly with native Hedera Token Service tokens via system precompiles.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/tokens/token-evm-addresses
+ * - https://docs.hedera.com/evm/development/addresses
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 07: Institutional ERP Integration Bridge

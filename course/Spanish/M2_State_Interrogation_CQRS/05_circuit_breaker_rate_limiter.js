@@ -23,7 +23,7 @@
  * Si un endpoint de infraestructura se degrada, un Circuit Breaker automatizado cambia a estado ABIERTO, redirigiendo el tráfico a nodos de respaldo o réplicas en caché y evitando caídas en cascada.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/tutorials/more-tutorials/how-to-use-mirror-node-rest-apis
+ * - https://docs.hedera.com/reference/rest-api
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M2 Lab 04: Reactor de Event Sourcing en Tiempo Real

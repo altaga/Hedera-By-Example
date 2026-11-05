@@ -17,7 +17,7 @@
  * Los System Contracts de Hedera exponen primitivas nativas del ledger (acuñación, transferencias y KYC en HTS) a contratos Solidity mediante precompilados (0x167), uniendo la lógica EVM con el rendimiento nativo.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M8 Lab 03: Cambios Estructurales de la EVM

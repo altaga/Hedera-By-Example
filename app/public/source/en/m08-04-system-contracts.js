@@ -17,7 +17,7 @@
  * Hedera System Contracts expose native ledger primitives (HTS token minting, transfers, and KYC) to Solidity smart contracts via precompiled contract addresses (0x167), bridging EVM logic with native performance.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 03: Structural Changes

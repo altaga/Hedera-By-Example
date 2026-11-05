@@ -24,7 +24,7 @@
  * - Next:     M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683)
  *
  * [ OFFICIAL REFERENCES ]
- * - Hedera Consensus Service Overview: https://docs.hedera.com/hedera/services/consensus-service
+ * - Hedera Consensus Service Overview: https://docs.hedera.com/native/consensus
  * - RFC 2104: HMAC: Keyed-Hashing for Message Authentication
  * - WHO Technical Report 961: Temperature & Humidity Monitoring in Cold Chains
  *

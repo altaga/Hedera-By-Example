@@ -18,7 +18,7 @@
  * La programación desacoplada permite que una entidad cree y pague la transacción, mientras que los firmantes autorizados aportan sus firmas de forma independiente hasta alcanzar el quórum de ejecución.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction/sign-a-scheduled-transaction
+ * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M7 Lab 03: Automatización Nativa (Cron)

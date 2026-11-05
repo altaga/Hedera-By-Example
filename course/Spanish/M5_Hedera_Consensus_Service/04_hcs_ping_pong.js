@@ -17,7 +17,7 @@
  * Medir el tiempo de respuesta en consenso de HCS proporciona prueba empírica de finalidad en subsegundos. Evaluar los tiempos de ida y vuelta confirma el ordenamiento justo a través de nodos globales.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/consensus-service
+ * - https://docs.hedera.com/native/consensus
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M5 Lab 03: Paginación y Fragmentación

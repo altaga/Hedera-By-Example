@@ -15,7 +15,7 @@
  * Enviar transacciones paralelas de alta frecuencia desde una misma cuenta operadora requiere marcas de tiempo validStart distintas. Escalonar los nanosegundos evita que la red descarte envíos rápidos por duplicidad.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/submit-a-transaction
+ * - https://docs.hedera.com/native/transactions/submit
  *
  * [ RUTA DE APRENDIZAJE ]
  * Escalado Horizontal: A diferencia de las blockchains secuenciales que

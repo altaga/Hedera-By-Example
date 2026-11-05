@@ -21,7 +21,7 @@
  * By modeling Mirror Node data into a unified GraphQL schema, client applications can resolve nested account, token, and transaction relationships in a single query round-trip instead of dozens of sequential REST calls.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/tutorials/more-tutorials/how-to-use-mirror-node-rest-apis
+ * - https://docs.hedera.com/reference/rest-api
  *
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 06: Real-Time WebSocket Event Bus

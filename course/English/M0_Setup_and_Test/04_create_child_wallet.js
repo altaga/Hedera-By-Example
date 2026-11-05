@@ -13,7 +13,7 @@
  * In enterprise deployments, never use your root treasury account to test risky smart contracts or daily operations. Programmatically spawning isolated child wallets protects master funds while enforcing dedicated association quotas.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts/create-an-account
+ * - https://docs.hedera.com/native/accounts/create
  *
  * [ LEARNING PATH ]
  * - Previous: Lab 03: Unlimited Association

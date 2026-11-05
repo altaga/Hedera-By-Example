@@ -17,7 +17,7 @@
  * En Ethereum, si tu llave privada se filtra, pierdes tu dirección para siempre. En Hedera, puedes ejecutar una AccountUpdateTransaction para rotar la llave manteniendo exactamente el mismo Account ID y balances.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts/update-an-account
+ * - https://docs.hedera.com/native/accounts/update
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M1 Lab 03: Criptografía y KMS

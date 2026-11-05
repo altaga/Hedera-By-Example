@@ -14,7 +14,7 @@
  * HCS topics created without an adminKey or submitKey become completely immutable public data broadcast channels. Anyone can audit historical message sequence numbers with cryptographically proven consensus timestamps.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/consensus-service
+ * - https://docs.hedera.com/native/consensus
  *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 05: Parallel Transfers

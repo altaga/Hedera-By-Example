@@ -41,6 +41,7 @@ const LANGS = { en: 'English', es: 'Spanish' }
 
 const SECTION_ALIASES = {
   CONCEPT: 'kicker',
+  CONCEPTO: 'kicker',
   'KEY CONCEPT': 'concept',
   'CONCEPTO CLAVE': 'concept',
   'LEARNABLE MOMENT': 'moment',
@@ -126,7 +127,7 @@ function parseHeader (lines) {
   for (const raw of lines) {
     const line = raw.replace(/^\s*\/?\*+\/?\s?/, '').replace(/\s*\*\/\s*$/, '').trimEnd()
     if (/^=+$/.test(line.trim())) continue
-    const title = line.match(/^\s*Lab\s+\d+\w*\s*[:\-–]\s*(.+)$/i)
+    const title = line.match(/^\s*(?:Lab|Laboratorio)\s+\d+\w*\s*[:\-–]\s*(.+)$/i)
     if (title && !out.title) {
       out.title = title[1].trim()
       current = null

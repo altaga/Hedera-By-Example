@@ -21,7 +21,7 @@
  * Al modelar datos de Mirror Node en un esquema unificado de GraphQL, las aplicaciones cliente pueden resolver relaciones anidadas de cuentas, tokens y transacciones en una sola petición en vez de decenas de llamadas REST.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/tutorials/more-tutorials/how-to-use-mirror-node-rest-apis
+ * - https://docs.hedera.com/reference/rest-api
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real

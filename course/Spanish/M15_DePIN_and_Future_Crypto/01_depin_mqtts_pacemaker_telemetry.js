@@ -25,7 +25,7 @@
  * - Siguiente: M15 Lab 02: Telemetría Ligera DePIN de Cadena de Frío (API Key + HMAC)
  *
  * [ REFERENCIAS OFICIALES ]
- * - Servicio de Consenso de Hedera: https://docs.hedera.com/hedera/services/consensus-service
+ * - Servicio de Consenso de Hedera: https://docs.hedera.com/native/consensus
  * - Estándares de Temas HCS HIP-10: https://hips.hedera.com/hip/hip-10
  * - Validación de Módulos Criptográficos NIST SP 800-140C (Almacenes Hardware Ed25519)
  *

@@ -14,7 +14,7 @@
  * Regulated institutional assets require KYC and Freeze keys. While smart contracts on EVM require expensive custom blacklist loops, HTS executes identity enforcement at Layer 1 with micro-cent predictability.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 01: Immutable Issuance

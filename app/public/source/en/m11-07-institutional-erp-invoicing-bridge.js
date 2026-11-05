@@ -29,7 +29,7 @@
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/tokenization/ats
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 06: Multi-Asset Pool Tokens

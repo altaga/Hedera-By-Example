@@ -76,7 +76,7 @@ The size limit of a message in Hedera is 1024 bytes. To send larger files or dat
 
 ## Official References
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
-- [Working with Topics and Messages](https://docs.hedera.com/hedera/core-concepts/consensus-service)
+- [Working with Topics and Messages](https://docs.hedera.com/native/consensus)
 - [HCS Message Chunking Logic](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message)
 
 ---

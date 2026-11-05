@@ -18,7 +18,7 @@
  * Los contratos en la EVM de Hedera están sujetos a renta de almacenamiento y auto-renovación. Mantener fondeada la cuenta de auto-renovación asegura la persistencia del contrato en cada época de actualización.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/smart-contract-storage-rent
+ * - https://docs.hedera.com/evm/development/rent
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M8 Lab 02: Ejecución de Lógica Híbrida

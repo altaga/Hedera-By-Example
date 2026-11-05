@@ -24,7 +24,7 @@
  * oracle dependencies and eliminate the risk of flash-loan oracle manipulation.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts
  * - https://hips.hedera.com/hip/hip-475
  * - https://hips.hedera.com/hip/hip-351
  *

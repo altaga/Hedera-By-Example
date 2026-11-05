@@ -43,31 +43,35 @@ function labBody (slug: string, lang: 'en' | 'es') {
 const labCode = (body: any) => (body.segments || []).map((s: any) => s.code).filter(Boolean).join('\n\n')
 const moduleId = (m: any) => `M${m.n}`
 
+const LABELS_EN = { lab: 'Lab', concept: 'Concept', moment: 'Learnable moment', sdk: 'SDK classes', simulated: 'Simulated in this lab', browser: 'Run it in the browser', source: 'Source', local: 'Run locally', env: 'needs a `.env` with OPERATOR_ID and OPERATOR_PRIVATE_KEY', refs: 'Official references', code: 'Code' }
+const LABELS_ES: typeof LABELS_EN = { lab: 'Lab', concept: 'Concepto', moment: 'Momento clave', sdk: 'Clases del SDK', simulated: 'Simulado en este lab', browser: 'Ejecútalo en el navegador', source: 'Código fuente', local: 'Ejecutar localmente', env: 'requiere un `.env` con OPERATOR_ID y OPERATOR_PRIVATE_KEY', refs: 'Referencias oficiales', code: 'Código' }
+
 function labMarkdown (slug: string, lang: 'en' | 'es', { includeCode = true }: { includeCode?: boolean } = {}) {
   const entry = labCatalog().find((e: any) => e.lab.slug === slug)
   const body = labBody(slug, lang)
   if (!entry || !body) return null
   const { module: m, lab } = entry
   const meta = lab[lang] || lab.en
+  const L = lang === 'es' ? LABELS_ES : LABELS_EN
   const out = [
-    `# ${moduleId(m)} Lab ${lab.n}: ${body.title || meta.title}`,
+    `# ${moduleId(m)} ${L.lab} ${lab.n}: ${body.title || meta.title}`,
     `*${m[lang]?.title || m.en.title}* · \`${slug}\``,
     '',
-    body.kicker ? `**Concept:** ${body.kicker}` : '',
+    body.kicker ? `**${L.concept}:** ${body.kicker}` : '',
     ...(body.concept || []).map((p: string) => p),
-    body.moment ? `**Learnable moment:** ${body.moment}` : ''
+    body.moment ? `**${L.moment}:** ${body.moment}` : ''
   ]
   if (body.before?.length) {
     out.push('', lang === 'es' ? '## Antes de ejecutar' : '## Before you run')
     for (const b of body.before) out.push(`- ${b.label ? `**${b.label}:** ` : ''}${b.text}`)
   }
-  if (body.sdk?.length) out.push('', `**SDK classes:** ${body.sdk.map((s: string) => `\`${s}\``).join(', ')}`)
-  if (body.simulated) out.push('', `**Simulated in this lab:** ${body.simulated}`)
-  out.push('', `**Run it in the browser:** ${WEB}/#${slug}`,
-    `**Source:** ${REPO}/blob/master/course/${LANG_DIR[lang]}/${m.dir}/${lab.file}`,
-    `**Run locally:** \`cd course && npm ci && node ${LANG_DIR[lang]}/${m.dir}/${lab.file}\` (needs a \`.env\` with OPERATOR_ID and OPERATOR_PRIVATE_KEY)`)
-  if (body.refs?.length) out.push('', '**Official references:**', ...body.refs.map((r: string) => `- ${r}`))
-  if (includeCode) out.push('', '## Code', '```javascript', labCode(body), '```')
+  if (body.sdk?.length) out.push('', `**${L.sdk}:** ${body.sdk.map((s: string) => `\`${s}\``).join(', ')}`)
+  if (body.simulated) out.push('', `**${L.simulated}:** ${body.simulated}`)
+  out.push('', `**${L.browser}:** ${WEB}/#${slug}`,
+    `**${L.source}:** ${REPO}/blob/master/course/${LANG_DIR[lang]}/${m.dir}/${lab.file}`,
+    `**${L.local}:** \`cd course && npm ci && node ${LANG_DIR[lang]}/${m.dir}/${lab.file}\` (${L.env})`)
+  if (body.refs?.length) out.push('', `**${L.refs}:**`, ...body.refs.map((r: string) => `- ${r}`))
+  if (includeCode) out.push('', `## ${L.code}`, '```javascript', labCode(body), '```')
   return out.filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n')
 }
 
@@ -247,7 +251,9 @@ async function handleEstimateCost ({ operations = [], network = 'testnet' }: any
   for (const op of operations) {
     const fee = FEES_USD[op.type]
     if (!fee) throw new InvalidParams(`unknown operation type "${op.type}". Types: ${Object.keys(FEES_USD).join(', ')}`)
-    const count = Math.max(1, Number(op.count) || 1)
+    const count = op.count === undefined || op.count === null ? 1 : Number(op.count)
+    if (!Number.isInteger(count) || count < 1) throw new InvalidParams(`count for "${op.type}" must be a positive integer (got ${JSON.stringify(op.count)})`)
+    if (op.gas !== undefined && op.gas !== null && (!Number.isInteger(Number(op.gas)) || Number(op.gas) < 1)) throw new InvalidParams(`gas for "${op.type}" must be a positive integer (got ${JSON.stringify(op.gas)})`)
     const usd = fee[0] * count
     let gasHbar = 0
     if (op.gas && /contract/.test(op.type)) {
@@ -365,7 +371,7 @@ function handleSearchLabs (p: any = {}) {
   if (!String(p.query || '').trim()) throw new InvalidParams('query is required')
   const hits = searchLabs({ ...p, lang })
   if (!hits.length) return `No lab matches "${p.query}". Try SDK class names (TokenCreateTransaction), standards (HCS-10, HIP-991) or list_labs.`
-  return `Labs for "${p.query}" (${lang}):\n\n${hits.map((h: any) => summaryLine(h, lang)).join('\n\n')}`
+  return `${lang === 'es' ? 'Labs para' : 'Labs for'} "${p.query}" (${lang}):\n\n${hits.map((h: any) => summaryLine(h, lang)).join('\n\n')}`
 }
 
 function handleGetLab (p: any = {}) {
@@ -389,6 +395,7 @@ function handleListLabs (p: any = {}) {
 
 function handleQueryCurriculum (p: any = {}) {
   const lang = langOf(p.lang)
+  if (!String(p.query || '').trim()) throw new InvalidParams('query is required (e.g. "TokenCreateTransaction", "HCS-10", "x402")')
   const hits = searchLabs({ query: p.query || '', module: p.module, lang, limit: Math.min(Number(p.limit) || 3, 5) })
   if (!hits.length) return `No labs found matching query: "${p.query || ''}" in language "${lang}". Try SDK classes like "PrivateKey", "TopicMessageSubmitTransaction" or "TransferTransaction".`
   return hits.map((h: any) => labMarkdown(h.lab.slug, lang)).join('\n\n---\n\n')
@@ -426,17 +433,41 @@ function handleQueryKnowledge (p: any = {}) {
 function handleArchitecture (p: any = {}) {
   const doc = ARCHITECTURE_DOC
   if (!p.focus) return doc
-  const parts = doc.split(/\n(?=#{2,3} )/)
-  const keep = parts.filter((s: string) => norm(s).includes(norm(p.focus)))
-  return keep.length ? keep.join('\n') : doc
+  const parts: string[] = doc.split(/\n(?=#{2,3} )/)
+  const titleOf = (s: string) => s.split('\n')[0].replace(/^#+\s*/, '').trim()
+  const words = tokens(p.focus)
+  const phrase = norm(p.focus).trim()
+  const stem = (w: string) => w.replace(/(ies|es|s)$/, '')
+  const hasWord = (text: string, w: string) => text.includes(w) || (stem(w).length > 2 && text.includes(stem(w)))
+  const sections = parts.slice(1).map((s) => ({ s, title: norm(titleOf(s)), body: norm(s) }))
+  const available = parts.slice(1).map((s) => `- ${titleOf(s)}`).join('\n')
+  if (!words.length) return `No section matches "${p.focus}". Available sections:\n${available}`
+  const byTitle = sections.filter((x) => x.title.includes(phrase) || words.every((w) => hasWord(x.title, w)))
+  let keep = byTitle
+  if (!keep.length) {
+    keep = sections
+      .map((x) => ({ ...x, n: words.reduce((a, w) => a + (x.body.split(w).length - 1), 0), all: words.every((w) => hasWord(x.body, w)) }))
+      .filter((x) => x.all && x.n > 0)
+      .sort((a, b) => b.n - a.n)
+      .slice(0, 4)
+  }
+  if (!keep.length) return `No section of the architecture guide matches "${p.focus}". Available sections (use a word from a title as focus, e.g. "fees", "keys", "NFT", "HCS"):\n${available}`
+  return `Sections matching "${p.focus}" (${keep.length}):\n\n${keep.map((x) => x.s.trim()).join('\n\n')}`
 }
 
 function handleOfficialResources (p: any = {}) {
   const doc = RESOURCES_DOC
   const words = tokens(p.query)
   if (!words.length) return doc
-  const lines = doc.split('\n').filter((l: string) => l.startsWith('| Resource') || l.startsWith('| :---') || words.some((w) => norm(l).includes(w)))
-  return lines.join('\n')
+  const all = doc.split('\n')
+  const rows = all.filter((l: string) => l.startsWith('|') && !l.startsWith('| Resource') && !l.startsWith('| :---'))
+  const hits = rows.filter((l: string) => words.some((w) => norm(l).includes(w)))
+  if (!hits.length) {
+    const cats = [...new Set(rows.map((l: string) => (l.split('|')[2] || '').replace(/\*/g, '').trim()).filter(Boolean))]
+    return `No official resource matches "${p.query}". Categories: ${cats.join(', ')}. Try a product or topic such as "mirror node", "faucet", "HashScan", "SDK" or "HIP".`
+  }
+  const header = all.filter((l: string) => l.startsWith('| Resource') || l.startsWith('| :---')).slice(0, 2)
+  return [`Official resources matching "${p.query}" (${hits.length}):`, '', ...header, ...hits].join('\n')
 }
 
 export async function callTool (name: string, args: any = {}) {

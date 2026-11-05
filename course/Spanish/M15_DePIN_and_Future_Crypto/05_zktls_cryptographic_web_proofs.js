@@ -27,7 +27,7 @@
  * [ REFERENCIAS OFICIALES ]
  * - Especificaciones del Protocolo TLSNotary: https://tlsnotary.org/
  * - Documentación Oficial del Protocolo Reclaim: https://docs.reclaimprotocol.org/
- * - Servicio de Consenso de Hedera (HCS): https://docs.hedera.com/hedera/services/consensus-service
+ * - Servicio de Consenso de Hedera (HCS): https://docs.hedera.com/native/consensus
  *
  * [SECUENCIA]
  * Probador -> Banco: Sesión TLS 1.3 (simulada)

@@ -15,7 +15,7 @@
  * Benchmarking HCS consensus turnaround time provides empirical proof of sub-second finality. Measuring round-trip message timestamps confirms fair ordering across global consensus nodes.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/consensus-service
+ * - https://docs.hedera.com/native/consensus
  *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 03: Chunking & Subscriptions

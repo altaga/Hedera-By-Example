@@ -22,7 +22,7 @@
  * If a remote infrastructure endpoint suffers degradation, an automated Circuit Breaker trips into OPEN state, diverting traffic to backup nodes or cached replicas and preventing application cascade failures.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/tutorials/more-tutorials/how-to-use-mirror-node-rest-apis
+ * - https://docs.hedera.com/reference/rest-api
  *
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 04: Real-Time Event Sourcing Reactor

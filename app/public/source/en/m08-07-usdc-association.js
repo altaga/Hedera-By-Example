@@ -16,7 +16,7 @@
  * When deploying smart contracts that hold or route USDC or other HTS tokens, the contract must associate the token class (either via precompile 0x167 or prior to deployment) to receive transfers without error.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts/hedera-token-service
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 06: ERC20 USDC Interaction

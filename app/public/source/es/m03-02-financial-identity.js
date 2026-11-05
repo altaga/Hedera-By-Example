@@ -17,7 +17,7 @@
  * Los activos institucionales regulados requieren llaves de KYC y Freeze. Mientras que en EVM esto requiere costosos contratos con listas negras, HTS aplica las reglas de identidad en Capa 1 con previsibilidad de microcentavos.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/kyc-a-token
+ * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M3 Lab 01: Emisión de Token

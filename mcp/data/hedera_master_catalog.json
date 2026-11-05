@@ -66,8 +66,8 @@
       "technicalStack": "ERC-3643, ERC-1400, ONCHAINID, HTS, HSCS",
       "urls": {
         "portal": "https://portal.hedera.com",
-        "docs": "https://docs.hedera.com/solutions/rwa/ats",
-        "github": "https://github.com/hashgraph/hedera-accelerator-defi-dex-rwa"
+        "docs": "https://docs.hedera.com/solutions/tokenization/ats",
+        "github": "https://github.com/hashgraph/asset-tokenization-studio"
       },
       "antiHallucinationNotes": "ATS tokens are permissioned security tokens, not naked ERC-20s. Every transfer must pass identity registry checks (KYC/AML) before ledger execution.",
       "searchTriggers": ["ats", "asset tokenization studio", "rwa", "erc-3643", "erc-1400", "security tokens", "dividends", "cap table"]
@@ -83,7 +83,7 @@
       "businessValue": "Enables banks and payment institutions to issue compliant stablecoins with multi-custody admin controls, freeze/wipe compliance keys, and automated reserves attestation.",
       "technicalStack": "HTS, Chainlink PoR, Role-Based Access Control (RBAC), Hedera SDK",
       "urls": {
-        "docs": "https://docs.hedera.com/solutions/stablecoins/stablecoin-studio",
+        "docs": "https://docs.hedera.com/solutions/tokenization/stablecoin",
         "github": "https://github.com/hashgraph/stablecoin-studio"
       },
       "antiHallucinationNotes": "Stablecoins on Hedera run on HTS natively, not as costly EVM bytecode smart contracts. They achieve 10,000+ TPS at $0.0001 per transfer.",
@@ -100,7 +100,7 @@
       "businessValue": "Fractional-cent minting ($0.05 per NFT collection creation), built-in enforcement of base-layer royalties (CustomRoyaltyFee), and zero smart contract vulnerability surface.",
       "technicalStack": "HIP-412, HIP-904, HTS Non-Fungible, CustomRoyaltyFee",
       "urls": {
-        "docs": "https://docs.hedera.com/solutions/nft/nft-studio",
+        "docs": "https://docs.hedera.com/solutions/tokenization/nft-studio",
         "standards": "https://hips.hedera.com/hip/hip-412"
       },
       "antiHallucinationNotes": "HTS NFT metadata is limited to 100 bytes on-chain per serial. Always store IPFS/Arweave URIs (`ipfs://...`), never raw JSON strings directly in TokenMintTransaction.",
@@ -117,7 +117,7 @@
       "businessValue": "Reduces on-chain telemetry costs by 99.9% via Merkle batching ($0.0001 per batch) while guaranteeing cryptographic audit trails for insurance, medical, and aerospace SLA compliance.",
       "technicalStack": "MQTTS, Ed25519 TPM/Secure Enclave, Merkle Trees, HCS",
       "urls": {
-        "docs": "https://docs.hedera.com/hedera/services/consensus-service"
+        "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Never write high-speed raw sensor heartbeats (50-100 Hz) directly to individual consensus messages. Batch routine frames off-chain via Merkle proofs, and submit directly only upon anomaly breaches.",
       "searchTriggers": ["depin", "mqtts", "pacemaker", "iot telemetry", "hardware signing", "merkle batching", "ed25519 iot"]
@@ -133,7 +133,7 @@
       "businessValue": "Prevents cargo tampering and pharmaceutical spoilage (e.g. +2°C to +8°C vaccine SLAs) with legally indisputable consensus proofs that trigger automated insurance payouts.",
       "technicalStack": "HTTP REST, HMAC-SHA256, HCS, HTS Slashing / Escrow",
       "urls": {
-        "docs": "https://docs.hedera.com/hedera/services/consensus-service"
+        "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Constrained microcontrollers (ESP32, nRF9160) should not run full TLS handshakes on every wake cycle; use API Key + HMAC-SHA256 header signatures to guarantee zero-tamper security.",
       "searchTriggers": ["cold chain", "vaccine iot", "hmac-sha256", "sla slashing", "iot rest", "low power depin"]
@@ -184,7 +184,7 @@
       "technicalStack": "TLSNotary, Reclaim Protocol, SHA-256 Blinding Commitments, HCS",
       "urls": {
         "tlsnotary": "https://tlsnotary.org/",
-        "docs": "https://docs.hedera.com/hedera/services/consensus-service"
+        "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Never post private banking statements or KYC credentials directly to HCS. Post only the blinded commitment hash and notary cryptographic attestation signature.",
       "searchTriggers": ["zktls", "tlsnotary", "web proofs", "selective disclosure", "zero knowledge compliance", "accredited investor proof"]
@@ -200,7 +200,7 @@
       "businessValue": "Provides trustless audit trails, supply chain provenance, and decentralized messaging without maintaining high-cost smart contract state.",
       "technicalStack": "TopicCreateTransaction, TopicMessageSubmitTransaction, gRPC streaming",
       "urls": {
-        "docs": "https://docs.hedera.com/hedera/services/consensus-service",
+        "docs": "https://docs.hedera.com/native/consensus",
         "explorer": "https://hashscan.io"
       },
       "antiHallucinationNotes": "HCS is a consensus ordering service, not a blob database. For payloads > 1024 bytes, use SDK automatic chunking or store data in HFS/IPFS and submit the content hash to HCS.",
@@ -217,7 +217,7 @@
       "businessValue": "Avoids smart contract risk, gas auctions, and EVM reentrancy vulnerabilities. Costs $0.0001 per transfer regardless of market congestion.",
       "technicalStack": "TokenCreateTransaction, TokenMintTransaction, TransferTransaction, CustomFees",
       "urls": {
-        "docs": "https://docs.hedera.com/hedera/services/token-service"
+        "docs": "https://docs.hedera.com/learn/core-concepts/tokens"
       },
       "antiHallucinationNotes": "Accounts cannot receive tokens unless they have an open auto-association slot or explicitly submit a TokenAssociateTransaction (or use HIP-904 native airdrops).",
       "searchTriggers": ["hts", "token service", "fungible token", "nft", "custom fees", "royalties", "airdrop"]
@@ -233,8 +233,8 @@
       "businessValue": "Allows deploying battle-tested Ethereum Solidity contracts with 1/1000th the gas cost and instant finality, bridged natively to Hedera tokens.",
       "technicalStack": "Solidity 0.8.x, Hardhat, Foundry, JSON-RPC Relay, Ethers.js, Viem",
       "urls": {
-        "docs": "https://docs.hedera.com/hedera/services/smart-contract-service",
-        "systemContracts": "https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/system-contracts"
+        "docs": "https://docs.hedera.com/learn/core-concepts/services/smart-contracts",
+        "systemContracts": "https://docs.hedera.com/evm/hedera-services/system-contracts"
       },
       "antiHallucinationNotes": "EVM contracts interact with HTS tokens through the HTS System Contract address `0x167` (`HederaTokenService.sol`) or direct ERC-20 facade wrappers.",
       "searchTriggers": ["hscs", "evm", "smart contracts", "solidity", "system contracts", "0x167", "hardhat", "foundry"]
@@ -270,7 +270,7 @@
       "urls": {
         "hashio": "https://testnet.hashio.io/api",
         "docs": "https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay",
-        "github": "https://github.com/hashgraph/hedera-json-rpc-relay"
+        "github": "https://github.com/hiero-ledger/hiero-json-rpc-relay"
       },
       "antiHallucinationNotes": "EVM addresses in Hedera are 20-byte aliases derived from ECDSA secp256k1 public keys or contract IDs (`0x000...<contractNum>`).",
       "searchTriggers": ["json rpc relay", "hashio", "metamask hedera", "ethers hedera", "web3 rpc"]

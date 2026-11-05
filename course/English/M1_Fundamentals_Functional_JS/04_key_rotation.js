@@ -14,7 +14,7 @@
  * On Ethereum, if your private key is leaked, your account address is permanently lost. On Hedera, you can execute an AccountUpdateTransaction to rotate the private key while retaining the exact same Account ID and asset balances.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts/update-an-account
+ * - https://docs.hedera.com/native/accounts/update
  *
  * [ LEARNING PATH ]
  * - Previous: M1 Lab 03: Cryptography & KMS

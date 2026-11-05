@@ -16,7 +16,7 @@
  * En despliegues empresariales, jamás uses tu cuenta principal de tesorería para probar contratos o tareas diarias. Crear cuentas hijas aisladas protege los fondos maestros y asigna cuotas de asociación dedicadas.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/accounts/create-an-account
+ * - https://docs.hedera.com/native/accounts/create
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M0 Lab 03: Asociación Ilimitada

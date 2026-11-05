@@ -16,7 +16,7 @@
  * Invocar precompilados avanzados permite a contratos Solidity confiscar (wipe), congelar o pausar tokens directamente desde EVM, otorgando a contratos de gobernanza control soberano sobre activos HTS.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts/hedera-token-service
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 07: Asociación USDC

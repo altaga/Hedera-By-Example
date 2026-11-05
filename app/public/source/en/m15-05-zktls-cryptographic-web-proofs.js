@@ -26,7 +26,7 @@
  * [ OFFICIAL REFERENCES ]
  * - TLSNotary Protocol Specifications: https://tlsnotary.org/
  * - Reclaim Protocol Whitepaper: https://docs.reclaimprotocol.org/
- * - Hedera Consensus Service: https://docs.hedera.com/hedera/services/consensus-service
+ * - Hedera Consensus Service: https://docs.hedera.com/native/consensus
  *
  * [SEQUENCE]
  * Prover -> Bank: TLS 1.3 session (simulated)

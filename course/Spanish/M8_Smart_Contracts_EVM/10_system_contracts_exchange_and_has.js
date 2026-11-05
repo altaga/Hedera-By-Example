@@ -24,7 +24,7 @@
  * externos y el riesgo de ataques de préstamos flash sobre oráculos desfasados.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts
  * - https://hips.hedera.com/hip/hip-475
  * - https://hips.hedera.com/hip/hip-351
  *

@@ -18,7 +18,7 @@
  * Los topics de HCS creados sin adminKey ni submitKey se convierten en canales de difusión públicos e inmutables. Cualquiera puede auditar el orden de los mensajes con marcas de tiempo de consenso matemáticamente probadas.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/consensus-service
+ * - https://docs.hedera.com/native/consensus
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M4 Lab 05: Transferencias en Paralelo

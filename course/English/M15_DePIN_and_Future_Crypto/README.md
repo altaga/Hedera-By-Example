@@ -56,7 +56,7 @@ Welcome to **Module 15**. This module explores frontier Web3 architectures integ
 
 ## References
 
-- [Hedera Consensus Service Documentation](https://docs.hedera.com/hedera/services/consensus-service)
+- [Hedera Consensus Service Documentation](https://docs.hedera.com/native/consensus)
 - [W3C Web Authentication (WebAuthn) Specification](https://www.w3.org/TR/webauthn-3/)
 - [ERC-7683: Cross-Chain Intent Standard](https://eips.ethereum.org/EIPS/eip-7683)
 - [TLSNotary Protocol Specification](https://tlsnotary.org/)

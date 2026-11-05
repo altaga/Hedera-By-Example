@@ -25,7 +25,7 @@
  * - Next:     M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC)
  *
  * [ OFFICIAL REFERENCES ]
- * - Hedera Consensus Service: https://docs.hedera.com/hedera/services/consensus-service
+ * - Hedera Consensus Service: https://docs.hedera.com/native/consensus
  * - HIP-10 Zero-Fee HCS Topic Standards: https://hips.hedera.com/hip/hip-10
  * - NIST SP 800-140C Cryptographic Module Validation (Ed25519 Hardware Keystores)
  *

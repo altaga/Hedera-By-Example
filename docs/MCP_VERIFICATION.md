@@ -31,3 +31,12 @@ Checked by hand with raw JSON-RPC requests (`Content-Type: application/json`, `A
 - `ACTION_FAUCET_MNEMONIC` in GitHub is the same mnemonic as the EAS production `FAUCET_MNEMONIC` (checked with the `check-faucet-mnemonic.yml` workflow). It was stored with surrounding quotes, which the recovery scripts now strip.
 - `recover-faucets.yml` passes: 25 pool wallets, default `count` is 25.
 - Operator account `0.0.11296718` (EVM twin `0.0.11296890`); Welcome Drop is 25 HBAR.
+
+## Audit fixes (2026-11-05, second pass)
+- **Dead links:** 21 docs.hedera.com / GitHub URLs that returned 404 were replaced with their current pages (docs moved to `/learn`, `/native`, `/evm`, `/solutions/tokenization/...`; `hashgraph/hedera-json-rpc-relay` → `hiero-ledger/hiero-json-rpc-relay`; `hashgraph/scaffold-hbar` → `hedera-dev/scaffold-hbar`; ATS repo → `hashgraph/asset-tokenization-studio`) in the catalog, resources doc, lab refs and course sources. Every external URL the MCP serves is curl-checked (200, or 403/405 from bot-blocking/POST-only endpoints).
+- **Faucet figure:** the Portal faucet gives 100 HBAR per rolling 24 h (docs.hedera.com/learn/getting-started/testnet-faucet and faucet-api), not "10,000 ℏ daily".
+- **estimate_cost:** `count` (and `gas`) must be a positive integer; otherwise `isError` with a clear message.
+- **query_curriculum:** empty `query` returns `isError` (same as `search_labs`).
+- **architecture_decision_tree:** `focus` matches section titles first, then ranks sections by mentions (top 4); no match returns a "no section matches" message with the list of sections.
+- **official_resources:** no match returns "No official resource matches" with the category list instead of an empty table.
+- **Spanish output:** lab labels are translated (Concepto, Momento clave, Ejecútalo en el navegador, …); the content build now reads `Laboratorio NN:` titles and `[CONCEPTO]` kickers, fixing 21 Spanish titles that were auto-generated from filenames and 131 empty Spanish kickers.

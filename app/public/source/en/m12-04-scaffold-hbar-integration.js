@@ -15,7 +15,7 @@
  * Scaffold-HBAR streamlines full-stack Web3 application development on Hedera, connecting modern React/Next.js frontends with EVM contracts and native HTS token flows out-of-the-box.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://github.com/hashgraph/scaffold-hbar
+ * - https://github.com/hedera-dev/scaffold-hbar
  *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 03: Foundry & Hardhat Workflows

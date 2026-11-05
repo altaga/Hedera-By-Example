@@ -16,7 +16,7 @@
  * Native HTS tokens (like Circle USDC on Hedera) are automatically accessible via standard ERC-20 contract interfaces at their derived EVM addresses, enabling seamless drop-in DeFi compatibility.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/tokens/token-evm-addresses
+ * - https://docs.hedera.com/evm/development/addresses
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 05: Authorization Protocols

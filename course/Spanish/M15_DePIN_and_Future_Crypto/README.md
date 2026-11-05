@@ -56,7 +56,7 @@ Bienvenido al **Módulo 15**. Este módulo explora arquitecturas Web3 de vanguar
 
 ## Referencias
 
-- [Documentación de Hedera Consensus Service](https://docs.hedera.com/hedera/services/consensus-service)
+- [Documentación de Hedera Consensus Service](https://docs.hedera.com/native/consensus)
 - [Especificación W3C Web Authentication (WebAuthn)](https://www.w3.org/TR/webauthn-3/)
 - [Estándar de Intenciones Entre Cadenas ERC-7683](https://eips.ethereum.org/EIPS/eip-7683)
 - [Especificación del Protocolo TLSNotary](https://tlsnotary.org/)

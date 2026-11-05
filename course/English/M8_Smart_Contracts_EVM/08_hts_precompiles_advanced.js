@@ -14,7 +14,7 @@
  * Invoking advanced precompiles allows Solidity contracts to wipe, freeze, or pause tokens directly from EVM code, giving decentralized governance contracts sovereign control over native token supply.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-contracts/hedera-token-service
+ * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 07: USDC Association

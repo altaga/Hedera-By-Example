@@ -16,7 +16,7 @@
  * Hedera EVM contracts are governed by storage rent and auto-renew mechanics. Maintaining a funded auto-renew account ensures persistent contract storage across network upgrade epochs.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/smart-contract-storage-rent
+ * - https://docs.hedera.com/evm/development/rent
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 02: Hybrid Environment

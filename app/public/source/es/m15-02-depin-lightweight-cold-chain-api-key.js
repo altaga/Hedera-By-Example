@@ -26,7 +26,7 @@
  * - Siguiente: M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683)
  *
  * [ REFERENCIAS OFICIALES ]
- * - Descripción General de Hedera Consensus Service: https://docs.hedera.com/hedera/services/consensus-service
+ * - Descripción General de Hedera Consensus Service: https://docs.hedera.com/native/consensus
  * - RFC 2104: HMAC: Hashing con Clave para Autenticación de Mensajes
  * - Reporte Técnico OMS 961: Monitoreo de Temperatura y Humedad en Cadenas de Frío
  *

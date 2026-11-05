@@ -76,7 +76,7 @@ El límite de tamaño de un mensaje en Hedera es de 1024 bytes. Para enviar arch
 
 ## Referencias Oficiales
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
-- [Working with Topics and Messages](https://docs.hedera.com/hedera/core-concepts/consensus-service)
+- [Working with Topics and Messages](https://docs.hedera.com/native/consensus)
 - [HCS Message Chunking Logic](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message)
 
 ---
