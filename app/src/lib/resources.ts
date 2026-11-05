@@ -4,6 +4,9 @@
  * local log of lab runs so each resource can name the lab that made it.
  */
 import { mirrorFetch } from './mirror'
+import { labFor, normalizeTxId } from './labAttribution.mjs'
+
+export { labFor, normalizeTxId }
 
 const MIRROR = 'https://testnet.mirrornode.hedera.com/api/v1'
 const RUNS_KEY = 'hbe_runs_v1'
@@ -35,7 +38,14 @@ export interface Resource {
   label?: string
 }
 
-export interface LabRun { slug: string; start: number; end: number; accountId: string }
+export interface LabRun {
+  slug: string
+  start: number
+  end: number
+  accountId: string
+  /** Transaction ids the run submitted (SDK "0.0.1@secs.nanos" form). */
+  txIds?: string[]
+}
 
 export function loadRuns (): LabRun[] {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return []
@@ -87,24 +97,12 @@ async function fetchCreations (accountId: string, kind: ResourceKind, tx: string
   return out
 }
 
-const labFor = (runs: LabRun[], createdAt: string): string | undefined => {
-  const t = Number(createdAt)
-  // A slow earlier run can still be open when the next lab creates something.
-  // The latest start that covers this timestamp is the lab that made it.
-  let best: LabRun | undefined
-  for (const r of runs) {
-    if (t < r.start - 2 || t > r.end + 15) continue
-    if (!best || r.start > best.start) best = r
-  }
-  return best?.slug
-}
-
 /** All resources created with the given accounts, newest first, without duplicates. */
 export async function fetchResources (accountIds: string[]): Promise<Resource[]> {
   const runs = loadRuns()
   const lists = await Promise.all(accountIds.flatMap((a) => KINDS.map(({ kind, tx }) => fetchCreations(a, kind, tx).catch(() => []))))
   const byId = new Map<string, Resource>()
-  for (const r of lists.flat()) if (!byId.has(r.id)) byId.set(r.id, { ...r, labSlug: labFor(runs, r.createdAt) })
+  for (const r of lists.flat()) if (!byId.has(r.id)) byId.set(r.id, { ...r, labSlug: labFor(runs, r.createdAt, r.txId) })
   return [...byId.values()].sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
 }
 
@@ -234,4 +232,4 @@ export function summary (r: Resource, d: any): [string, string][] {
   return rows
 }
 
-export const hashscanUrl = (r: Resource) => `https://hashscan.io/testnet/${r.kind}/${r.id}`
+export const hashscanUrl = (r: Pick<Resource, 'kind' | 'id'>) => `https://hashscan.io/testnet/${r.kind}/${r.id}`

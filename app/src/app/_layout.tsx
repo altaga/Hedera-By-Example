@@ -1,12 +1,13 @@
 import '../global.css'
 import { Slot } from 'expo-router'
 import Head from 'expo-router/head'
+import { SITE_TITLE } from '../lib/uiState.mjs'
 
 export default function RootLayout () {
   return (
     <>
       <Head>
-        <title>HBE by Effisend</title>
+        <title>{SITE_TITLE}</title>
         <meta
           name='description'
           content='Learn Hedera by reading and running 131 small, complete @hiero-ledger/sdk programs: annotated walkthroughs, exact source files and a browser runner for testnet.'

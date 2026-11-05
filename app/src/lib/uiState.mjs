@@ -1,10 +1,9 @@
-/** Tab title. Home is fixed in both languages; labs keep their own title. */
-export function documentTitle (view, labTitle, lang) {
-  if (view === 'index') return 'HBE by Effisend'
-  if (view === 'lab' && labTitle) return `${labTitle} · Hedera by Example`
-  if (view === 'resources') return `${lang === 'es' ? 'Recursos' : 'Resources'} · Hedera by Example`
-  if (view === 'missing') return `${lang === 'es' ? 'Lab no encontrado' : 'Lab not found'} · Hedera by Example`
-  return 'HBE by Effisend'
+/** The one browser tab title for every page, screen and language (same as the global header). */
+export const SITE_TITLE = 'HBE by Effisend'
+
+/** Tab title: always SITE_TITLE, whatever the view, lab or language. */
+export function documentTitle (_view, _labTitle, _lang) {
+  return SITE_TITLE
 }
 
 /**

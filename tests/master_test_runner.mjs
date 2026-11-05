@@ -12,6 +12,7 @@ import { runBrowserSandboxTest } from './03_browser_sandbox.test.mjs'
 import { runE2ELiveBrowserTest } from './04_e2e_live_browser.test.mjs'
 import { runMcpServerTest } from './05_mcp_server.test.mjs'
 import { runQaFixesTest } from './06_qa_fixes.test.mjs'
+import { runRunOnceTest } from './07_run_once_browser.test.mjs'
 
 const args = process.argv.slice(2)
 const skipE2E = args.includes('--skip-e2e') || process.env.CI === 'true'
@@ -73,6 +74,13 @@ async function main() {
     results.push({ name: 'Suite 06: QA fixes (title, Run anyway, curve card)', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 06: QA fixes (title, Run anyway, curve card)', status: 'FAIL', error: err.message })
+  }
+
+  try {
+    const r7 = await runRunOnceTest()
+    results.push({ name: 'Suite 07: One Run = one transaction (browser)', status: r7.skipped ? 'SKIPPED' : 'PASS' })
+  } catch (err) {
+    results.push({ name: 'Suite 07: One Run = one transaction (browser)', status: 'FAIL', error: err.message })
   }
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2)

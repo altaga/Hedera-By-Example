@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { usePathname } from 'expo-router'
 import Head from 'expo-router/head'
+import { SITE_TITLE } from '../lib/uiState.mjs'
 
 /**
  * Static-export 404. Shared links often drop the hash (`/m00-01-…` instead of
@@ -19,7 +20,7 @@ export default function NotFound () {
   return (
     <>
       <Head>
-        <title>Page not found · Hedera by Example</title>
+        <title>{SITE_TITLE}</title>
       </Head>
       <main className='page' style={{ maxWidth: 640, margin: '12vh auto' }}>
         <p className='section-title'>Hedera by Example</p>

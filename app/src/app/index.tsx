@@ -64,6 +64,8 @@ export default function HederaByExample () {
   const searchRef = useRef<HTMLInputElement | null>(null)
   // Each run gets an id; output from a run that belongs to a lab we left is ignored.
   const runIdRef = useRef(0)
+  // Synchronous lock: two Run clicks (or Ctrl+Enter) before React re-renders must not start two runs.
+  const runLockRef = useRef(0)
   // Where Resources was opened from — second click toggles back.
   const resourcesReturnRef = useRef<Route>({ view: 'index' })
   const t = STRINGS[lang]
@@ -118,11 +120,7 @@ export default function HederaByExample () {
 
   const entry = route.view === 'lab' ? LAB_BY_SLUG.get(route.slug)! : null
   const body = entry ? getBody(lang, entry.lab.slug) : null
-  const pageTitle = documentTitle(
-    route.view,
-    route.view === 'lab' && entry ? (body?.title || entry.lab[lang].title) : null,
-    lang
-  )
+  const pageTitle = documentTitle()
 
   useEffect(() => {
     setAllowLowBalance(false)
@@ -134,6 +132,7 @@ export default function HederaByExample () {
     const hash = target.view === 'lab' ? `#${target.slug}` : `#${target.view}`
     if (window.location.hash !== hash) window.history.pushState(null, '', hash)
     runIdRef.current++
+    runLockRef.current = 0
     abortActiveRun()
     setQuery('')
     setRoute(target)
@@ -148,11 +147,13 @@ export default function HederaByExample () {
   const code = useMemo(() => (body ? runnableCode(body) : ''), [body])
 
   const run = useCallback(async () => {
-    if (!entry || runStatus === 'running') return
+    if (!entry || runStatus === 'running' || runLockRef.current) return
     const block = runBlock(body?.before, wallet)
     if (!canRunLab({ running: false, blockReason: block?.reason ?? null, allowLowBalance })) return
     const runId = ++runIdRef.current
+    runLockRef.current = runId
     const live = () => runIdRef.current === runId
+    try {
     setRunStatus('running')
     setLogs([])
     const files: Record<string, Uint8Array> = {}
@@ -177,12 +178,16 @@ export default function HederaByExample () {
     }
     const started = Date.now() / 1000
     const result = await executeInBrowser(code, wallet, onLine, { practice, files, lang })
-    recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId })
+    if (result.busy) return
+    recordRun({ slug: entry.lab.slug, start: started, end: Date.now() / 1000, accountId: wallet.accountId, txIds: result.txIds })
     if (!live()) return
     if (result.success) setDone(markDone(entry.lab.slug))
     setRunStatus(result.success ? 'success' : 'error')
     // Labs move HBAR between the learner's wallets: refresh every balance.
     setBalances(await fetchBalances(walletStore))
+    } finally {
+      if (runLockRef.current === runId) runLockRef.current = 0
+    }
   }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore, lang, allowLowBalance])
 
   // Keyboard: "/" search, ←/→ previous/next lab, Ctrl/Cmd+Enter run.
