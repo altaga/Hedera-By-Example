@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Head from 'expo-router/head'
 import { TopBar } from '../components/TopBar'
 import { Sidebar } from '../components/Sidebar'
 import { CourseIndex } from '../components/CourseIndex'
@@ -12,6 +13,7 @@ import {
 } from '../lib/content'
 import { abortActiveRun, executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
 import { runBlock } from '../lib/labPrep'
+import { canRunLab, documentTitle } from '../lib/uiState.mjs'
 import { loadDone, markDone } from '../lib/progress'
 import {
   EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
@@ -56,6 +58,7 @@ export default function HederaByExample () {
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
   const [done, setDone] = useState<string[]>([])
+  const [allowLowBalance, setAllowLowBalance] = useState(false)
   // Files the learner chose to use instead of the course assets, per lab.
   const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -115,18 +118,15 @@ export default function HederaByExample () {
 
   const entry = route.view === 'lab' ? LAB_BY_SLUG.get(route.slug)! : null
   const body = entry ? getBody(lang, entry.lab.slug) : null
+  const pageTitle = documentTitle(
+    route.view,
+    route.view === 'lab' && entry ? (body?.title || entry.lab[lang].title) : null,
+    lang
+  )
 
   useEffect(() => {
-    const base = 'Hedera by Example'
-    const title = route.view === 'lab' && entry
-      ? `${body?.title || entry.lab[lang].title} · ${base}`
-      : route.view === 'resources'
-        ? `${lang === 'es' ? 'Recursos' : 'Resources'} · ${base}`
-        : route.view === 'missing'
-          ? `${lang === 'es' ? 'Lab no encontrado' : 'Lab not found'} · ${base}`
-          : base
-    document.title = title
-  }, [route, lang, entry, body])
+    setAllowLowBalance(false)
+  }, [route.view === 'lab' ? route.slug : '', walletStore.activeId, wallet.balanceHbar])
   const prev = entry && entry.idx > 0 ? FLAT_LABS[entry.idx - 1] : null
   const next = entry && entry.idx < FLAT_LABS.length - 1 ? FLAT_LABS[entry.idx + 1] : null
 
@@ -147,9 +147,10 @@ export default function HederaByExample () {
 
   const code = useMemo(() => (body ? runnableCode(body) : ''), [body])
 
-  const run = useCallback(async (force?: boolean) => {
+  const run = useCallback(async () => {
     if (!entry || runStatus === 'running') return
-    if (!force && runBlock(body?.before, wallet)) return
+    const block = runBlock(body?.before, wallet)
+    if (!canRunLab({ running: false, blockReason: block?.reason ?? null, allowLowBalance })) return
     const runId = ++runIdRef.current
     const live = () => runIdRef.current === runId
     setRunStatus('running')
@@ -182,7 +183,7 @@ export default function HederaByExample () {
     setRunStatus(result.success ? 'success' : 'error')
     // Labs move HBAR between the learner's wallets: refresh every balance.
     setBalances(await fetchBalances(walletStore))
-  }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore, lang])
+  }, [entry, body, runStatus, code, wallet, practice, fileOverrides, walletStore, lang, allowLowBalance])
 
   // Keyboard: "/" search, ←/→ previous/next lab, Ctrl/Cmd+Enter run.
   useEffect(() => {
@@ -213,6 +214,9 @@ export default function HederaByExample () {
 
   return (
     <div className='app'>
+      <Head>
+        <title>{pageTitle}</title>
+      </Head>
       <a className='skip-link' href='#main'>Skip to content</a>
       <TopBar
         t={t}
@@ -269,7 +273,9 @@ export default function HederaByExample () {
                 code={code}
                 runStatus={runStatus}
                 logs={logs}
-                onRun={(force) => { void run(force) }}
+                onRun={() => { void run() }}
+                allowLowBalance={allowLowBalance}
+                onAllowLowBalance={() => setAllowLowBalance(true)}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
                 wallet={wallet}
                 walletStore={walletStore}

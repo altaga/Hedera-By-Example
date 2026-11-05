@@ -1442,8 +1442,7 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
 }
 .curve-card:hover { border-color: var(--text-3); }
 .curve-card.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.curve-card input { position: absolute; opacity: 0; pointer-events: none; }
-.curve-card:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.curve-card:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .curve-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .curve-pros, .curve-cons { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 12.5px; }
 .curve-pros li, .curve-cons li { padding-left: 16px; position: relative; color: var(--text-2); }
