@@ -14,7 +14,6 @@ import {
 import { abortActiveRun, executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
 import { runBlock } from '../lib/labPrep'
 import { canRunLab, documentTitle } from '../lib/uiState.mjs'
-import { recordPageView } from '../lib/pageAnalytics'
 import { loadDone, markDone } from '../lib/progress'
 import {
   EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
@@ -107,20 +106,6 @@ export default function HederaByExample () {
     document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.setAttribute('lang', lang)
   }, [theme, lang])
-
-  // Anonymous pageviews (web): hash routes are the real navigation surface.
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const labSlug = route.view === 'lab' ? route.slug : null
-    const hash = window.location.hash || ''
-    const path = hash ? `/${hash}` : (window.location.pathname || '/')
-    recordPageView({
-      path,
-      lang,
-      labSlug,
-      view: route.view
-    })
-  }, [route, lang])
 
   const savePrefs = (next: { lang?: Lang; theme?: Theme }) => {
     const merged = { lang, theme, ...next }
