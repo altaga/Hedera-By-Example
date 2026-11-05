@@ -29,8 +29,8 @@ Hosted Streamable HTTP JSON-RPC endpoint (server `hedera-by-example-mcp` v2.0.0)
 - `query_curriculum` — Search and return best matches with full code in one call.
 - `anti_hallucination_rules` — Verified guardrails (tinybars, fees/gas, keys, EVM addresses, limits, Mirror Node).
 - `architecture_decision_tree` — When to use HCS, HTS or smart contracts (optional `focus`).
-- `mirror_node_query` — Live free Mirror Node reads (testnet/mainnet/previewnet).
-- `estimate_cost` — Price operations in USD and HBAR at the live exchange rate.
+- `mirror_node_query` — Live free Mirror Node reads (testnet/mainnet/previewnet; any other network is rejected). Upstream HTTP errors/timeouts return `isError: true`; paginate with `next` = the returned `links.next`.
+- `estimate_cost` — Price operations in USD and HBAR at the live exchange rate (testnet/mainnet). Contract gas is added to both totals when you pass `gas`; without it the total is marked incomplete.
 - `query_knowledge` — Curated map of Hedera studios, SDKs, standards and solutions.
 - `official_resources` — Official Hedera documentation, repositories and specifications.
 

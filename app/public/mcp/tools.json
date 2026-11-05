@@ -168,7 +168,7 @@
     {
       "name": "mirror_node_query",
       "title": "Read Hedera state",
-      "description": "Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks.",
+      "description": "Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks. Upstream HTTP errors and timeouts return isError; follow links.next with the next argument.",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -194,11 +194,11 @@
           },
           "id": {
             "type": "string",
-            "description": "Entity ID (0.0.123), EVM address (0x\u2026) or transaction ID; not needed for network/*, balances, blocks"
+            "description": "Entity ID (0.0.123), EVM address (0x…) or transaction ID; not needed for network/*, balances, blocks"
           },
           "sub": {
             "type": "string",
-            "description": "Sub-resource: accounts \u2192 tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens \u2192 nfts | balances; topics \u2192 messages; contracts \u2192 results | state"
+            "description": "Sub-resource: accounts → tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens → nfts | balances; topics → messages; contracts → results | state"
           },
           "network": {
             "type": "string",
@@ -213,6 +213,10 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 100
+          },
+          "next": {
+            "type": "string",
+            "description": "Pagination: the relative links.next value (/api/v1/…) returned by a previous call for the same endpoint/id/sub/network"
           },
           "order": {
             "type": "string",
@@ -231,7 +235,7 @@
     {
       "name": "estimate_cost",
       "title": "Estimate HBAR cost",
-      "description": "Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price).",
+      "description": "Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price times the gas limit you give; without gas, contract totals are marked incomplete).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -277,7 +281,9 @@
                 },
                 "gas": {
                   "type": "integer",
-                  "description": "Gas limit, for contract_create / contract_call"
+                  "minimum": 1,
+                  "maximum": 15000000,
+                  "description": "Gas limit, for contract_create / contract_call (without it the total excludes gas and is marked incomplete)"
                 }
               }
             }
@@ -287,7 +293,8 @@
             "enum": [
               "testnet",
               "mainnet"
-            ]
+            ],
+            "description": "Default \"testnet\""
           }
         }
       },

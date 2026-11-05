@@ -27,8 +27,8 @@ Local stdio: `node mcp/index.js` (Node.js 20+; optional `--http 3001`)
 | query_curriculum | Search the labs and return the best matches with their full code (heavier than search_labs + get_lab). |
 | anti_hallucination_rules | Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag. |
 | architecture_decision_tree | When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide. |
-| mirror_node_query | Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks. |
-| estimate_cost | Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price). |
+| mirror_node_query | Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks. Upstream HTTP errors and timeouts return isError; follow links.next with the next argument. |
+| estimate_cost | Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price times the gas limit you give; without gas, contract totals are marked incomplete). |
 | query_knowledge | Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links. |
 | official_resources | Official Hedera documentation, repositories and specifications. |
 
