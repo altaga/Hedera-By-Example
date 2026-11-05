@@ -182,245 +182,314 @@ Each rule was checked against the SDK and testnet while building this course.
 
 ## Fees and gas
 4. **Fees are fixed in USD and paid in HBAR** at the network exchange rate: about $0.0001 per HBAR transfer or HCS message, $0.001 per token transfer, $0.05 per account creation or token association, $1 per token creation ($2 with custom fees), $2 per HIP-991 topic with custom fees, $1 + gas per contract deployment. Use the \`estimate_cost\` tool for today's HBAR amounts.
-5. **Gas is charged on at least 80% of the limit.** A limit far above the real use wastes HBAR; one too low fails with INSUFFICIENT_GAS and still pays. Estimate first with the Mirror Node (\`POST /api/v1/contracts/call\` with \`estimate: true\`, free) and add ~25%. Max gas per transaction: 15,000,000. Simulations of system contracts (HTS 0x167, HSS 0x16b) can be far above the real use.
+5. **Set a realistic gas limit.** Since HIP-1249 only the gas actually used is charged (the old 80%-of-limit minimum is gone), but the limit reserves throttle capacity and one too low fails with INSUFFICIENT_GAS and still pays for the gas used. Estimate first with the Mirror Node (\`POST /api/v1/contracts/call\` with \`estimate: true\`, free) and add ~25%. Max gas per transaction: 15,000,000 (INDIVIDUAL_TX_GAS_LIMIT_EXCEEDED above it). Simulations of system contracts (HTS 0x167, HSS 0x16b) can be far above the real use.
 
 ## Accounts and keys
-6. **Raw 32-byte private keys are ambiguous**: the same hex fits ECDSA (secp256k1) and Ed25519. Prefer DER (\`302e…\` Ed25519, \`3030…\` ECDSA), or \`PrivateKey.fromStringECDSA()\` / \`fromStringED25519()\` explicitly. Guessing the curve gives INVALID_SIGNATURE.
-7. **Two EVM addresses.** Every account has a long-zero address (0x000…<account number>); ECDSA accounts created from an EVM address also have an alias (keccak of the public key). Send to and verify against the one the account actually uses (Mirror Node \`/accounts/{id}\` → \`evm_address\`).
+6. **Raw 32-byte private keys are ambiguous**: the same hex fits ECDSA (secp256k1) and Ed25519. Prefer DER (\`302e\u2026\` Ed25519, \`3030\u2026\` ECDSA), or \`PrivateKey.fromStringECDSA()\` / \`fromStringED25519()\` explicitly. Guessing the curve gives INVALID_SIGNATURE.
+7. **Two EVM addresses.** Every account has a long-zero address (0x000\u2026<account number>); ECDSA accounts created from an EVM address also have an alias (keccak of the public key). Send to and verify against the one the account actually uses (Mirror Node \`/accounts/{id}\` \u2192 \`evm_address\`).
 8. **Lazy creation.** Sending HBAR to an unused ECDSA EVM address creates the account (HIP-583); the receiver's key signs nothing until it spends.
 9. **Associations.** An account can hold a token only after associating it, or through free auto-association slots. HIP-904 airdrops arrive at once when a slot is free and stay pending (claim/cancel/reject) otherwise. Associating twice fails with TOKEN_ALREADY_ASSOCIATED_TO_ACCOUNT.
 
 ## Data limits
-10. **NFT metadata: 100 bytes.** Store a URI/CID (ipfs://…), not the JSON (METADATA_TOO_LONG otherwise).
+10. **NFT metadata: 100 bytes.** Store a URI/CID (ipfs://\u2026), not the JSON (METADATA_TOO_LONG otherwise).
 11. **Memos: 100 bytes** for transaction, account, token and topic memos.
-12. **HCS messages: 1,024 bytes per chunk.** \`TopicMessageSubmitTransaction\` chunks larger messages (20 chunks by default). Transactions as a whole: 6 KB.
+12. **HCS messages: 1,024 bytes per chunk.** \`TopicMessageSubmitTransaction\` chunks larger messages (SDK \`CHUNK_SIZE\` 1024, \`maxChunks\` 20 by default, so ~20 KB unless raised; each chunk is its own paid transaction). A whole transaction, signatures included, is capped at 6,144 bytes (https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions).
 13. **HFS files: ~4 KB per transaction.** Create with the first chunk, then \`FileAppendTransaction\`; storage is billed by size and lifetime.
 
 ## Reading state
-14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` / \`AccountInfoQuery\` are being retired from consensus nodes; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
+14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` is deprecated in @hiero-ledger/sdk (its consensus-node endpoint \`cryptoGetBalance\` was removed) and \`AccountInfoQuery\` is a paid query; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
 15. **Receipts vs records.** \`getReceipt()\` gives status and new IDs (free); \`getRecord()\` adds transfers, fees and contract results (paid query).
 16. **Public Mirror Nodes are rate-limited** per IP: back off on HTTP 429 and avoid bursts.
 
 ## Scheduling and keys
 17. **Scheduled transactions** wait until every required key signs or they expire (HIP-423 allows a custom expiry and \`waitForExpiry\`). A KeyList with a threshold needs M of N signatures.
 
-Sources: https://docs.hedera.com · https://hedera.com/fees · https://hips.hedera.com · ${WEB}`
-
-// ============================================================================
-// MIRROR NODE
-// ============================================================================
-
-const ID_RE = /^(\d+\.\d+\.\d+(-[a-z]{5})?|0x[0-9a-fA-F]{40}|\d+\.\d+\.\d+-\d+-\d+|\d+\.\d+\.\d+@\d+\.\d+)$/
-// resource -> allowed sub-paths
+Sources: https://docs.hedera.com \xB7 https://hedera.com/fees \xB7 https://hips.hedera.com \xB7 ${WEB}`;
+const ID_RE = /^(\d+\.\d+\.\d+(-[a-z]{5})?|0x[0-9a-fA-F]{40}|\d+\.\d+\.\d+-\d+-\d+|\d+\.\d+\.\d+@\d+\.\d+)$/;
 const MIRROR_ROUTES = {
-  accounts: ['', 'tokens', 'nfts', 'allowances/crypto', 'allowances/tokens', 'rewards'],
-  tokens: ['', 'nfts', 'balances'],
-  topics: ['', 'messages'],
-  transactions: [''],
-  contracts: ['', 'results', 'state'],
-  schedules: [''],
+  accounts: ["", "tokens", "nfts", "allowances/crypto", "allowances/tokens", "rewards"],
+  tokens: ["", "nfts", "balances"],
+  topics: ["", "messages"],
+  transactions: [""],
+  contracts: ["", "results", "state"],
+  schedules: [""],
   balances: null,
-  'network/exchangerate': null,
-  'network/fees': null,
-  'network/supply': null,
-  'network/nodes': null,
+  "network/exchangerate": null,
+  "network/fees": null,
+  "network/supply": null,
+  "network/nodes": null,
   blocks: null
+};
+const decode64 = (s) => {
+  try {
+    return Buffer.from(s, "base64").toString("utf8");
+  } catch (_) {
+    return s;
+  }
+};
+class UpstreamError extends Error {
 }
-
-const decode64 = (s) => { try { return Buffer.from(s, 'base64').toString('utf8') } catch (_) { return s } }
-
-async function mirrorGet (network, apiPath) {
-  const base = MIRROR[network] || MIRROR.testnet
-  const url = `${base}/api/v1/${apiPath}`
-  const res = await fetch(url, { headers: { Accept: 'application/json' } })
-  const text = await res.text()
-  let data = null
-  try { data = JSON.parse(text) } catch (_) {}
-  return { url, ok: res.ok, status: res.status, data, text }
+const MIRROR_NETWORKS = ["testnet", "mainnet", "previewnet"];
+const MIRROR_TIMEOUT_MS = 1e4;
+function requireNetwork(network, allowed) {
+  const n = network === void 0 || network === null ? "testnet" : network;
+  if (typeof n !== "string" || !allowed.includes(n)) throw new InvalidParams(`network must be one of: ${allowed.join(", ")} (lowercase; got ${JSON.stringify(network)})`);
+  return n;
 }
-
-async function handleMirrorNodeQuery ({ endpoint, id, sub = '', network = 'testnet', limit, order } = {}) {
-  if (!(endpoint in MIRROR_ROUTES)) throw new InvalidParams(`endpoint must be one of: ${Object.keys(MIRROR_ROUTES).join(', ')}`)
-  const subs = MIRROR_ROUTES[endpoint]
-  let apiPath = endpoint
+async function mirrorGet(network, apiPath) {
+  const base = MIRROR[network];
+  if (!base) throw new InvalidParams(`network must be one of: ${MIRROR_NETWORKS.join(", ")}`);
+  const url = `${base}/api/v1/${apiPath}`;
+  let res;
+  try {
+    res = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(MIRROR_TIMEOUT_MS) });
+  } catch (err) {
+    const timedOut = err?.name === "TimeoutError" || err?.name === "AbortError";
+    return { url, ok: false, status: 0, data: null, text: timedOut ? `timed out after ${MIRROR_TIMEOUT_MS / 1e3}s` : `request failed (${err?.message || "network error"})` };
+  }
+  const text = await res.text();
+  let data = null;
+  try {
+    data = JSON.parse(text);
+  } catch (_) {
+  }
+  return { url, ok: res.ok, status: res.status, data, text };
+}
+const describeFailure = (r) => `Mirror Node ${r.status ? `answered HTTP ${r.status}` : "request failed"} for ${r.url}
+${r.text.slice(0, 500)}`;
+const NEXT_QS_RE = /^[A-Za-z0-9_.:=&%-]*$/;
+function validateNext(next, basePath) {
+  if (typeof next !== "string" || next.length > 600) throw new InvalidParams("next must be the relative links.next string returned by a previous call");
+  const prefix = `/api/v1/${basePath}?`;
+  if (!next.startsWith(prefix)) throw new InvalidParams(`next must start with ${prefix} (same endpoint, id and sub as this call)`);
+  const qs = next.slice(prefix.length);
+  if (!qs || !NEXT_QS_RE.test(qs) || qs.includes("..")) throw new InvalidParams("next contains characters that are not allowed");
+  return next.slice("/api/v1/".length);
+}
+async function handleMirrorNodeQuery({ endpoint, id, sub = "", network, limit, order, next } = {}) {
+  const net = requireNetwork(network, MIRROR_NETWORKS);
+  if (!(endpoint in MIRROR_ROUTES)) throw new InvalidParams(`endpoint must be one of: ${Object.keys(MIRROR_ROUTES).join(", ")}`);
+  const subs = MIRROR_ROUTES[endpoint];
+  let apiPath = endpoint;
   if (subs) {
-    if (!id || !ID_RE.test(String(id).trim())) throw new InvalidParams('id must be a Hedera ID (0.0.123), an EVM address (0x…) or a transaction ID')
-    if (!subs.includes(sub)) throw new InvalidParams(`sub for ${endpoint} must be one of: ${subs.map((s) => s || '(none)').join(', ')}`)
-    apiPath += `/${encodeURIComponent(String(id).trim())}${sub ? `/${sub}` : ''}`
+    if (!id || !ID_RE.test(String(id).trim())) throw new InvalidParams("id must be a Hedera ID (0.0.123), an EVM address (0x\u2026) or a transaction ID");
+    if (!subs.includes(sub)) throw new InvalidParams(`sub for ${endpoint} must be one of: ${subs.map((s) => s || "(none)").join(", ")}`);
+    apiPath += `/${encodeURIComponent(String(id).trim())}${sub ? `/${sub}` : ""}`;
   }
-  const qs = new URLSearchParams()
-  if (limit) qs.set('limit', String(Math.min(Math.max(Number(limit) || 10, 1), 100)))
-  if (order === 'asc' || order === 'desc') qs.set('order', order)
-  if (endpoint === 'accounts' && !sub) qs.set('transactions', 'false')
-  if ([...qs].length) apiPath += `?${qs}`
-  const r = await mirrorGet(network, apiPath)
-  if (!r.ok) return `Mirror Node answered HTTP ${r.status} for ${r.url}\n${r.text.slice(0, 500)}`
-  const data = r.data
-  if (endpoint === 'topics' && sub === 'messages' && Array.isArray(data?.messages)) {
-    for (const m of data.messages) m.message_decoded = decode64(m.message)
-  }
-  let json = JSON.stringify(data, null, 2)
-  if (json.length > 20000) json = json.slice(0, 20000) + '\n… (truncated; use limit to read less)'
-  return `### Mirror Node (${network}) — ${r.url}\n\`\`\`json\n${json}\n\`\`\``
-}
-
-// ============================================================================
-// FEES
-// ============================================================================
-
-// USD fees from the Hedera fee schedule (hedera.com/fees), checked against testnet charges.
-const FEES_USD = {
-  hbar_transfer: [0.0001, 'HBAR transfer (CryptoTransfer)'],
-  token_transfer: [0.001, 'HTS token transfer'],
-  account_create: [0.05, 'Account creation'],
-  account_update: [0.00022, 'Account update'],
-  allowance_approve: [0.05, 'Allowance approval'],
-  token_create: [1.0, 'Token creation'],
-  token_create_custom_fees: [2.0, 'Token creation with custom fees'],
-  token_associate: [0.05, 'Token association'],
-  token_mint_ft: [0.001, 'Fungible token mint'],
-  nft_mint: [0.02, 'NFT mint (per serial)'],
-  token_airdrop: [0.1, 'HIP-904 airdrop'],
-  topic_create: [0.01, 'Topic creation'],
-  topic_create_custom_fees: [2.0, 'HIP-991 topic with custom fees'],
-  topic_message: [0.0001, 'HCS message (small)'],
-  schedule_create: [0.01, 'Scheduled transaction'],
-  schedule_sign: [0.001, 'Schedule signature'],
-  file_create: [0.05, 'File creation (plus size/lifetime)'],
-  file_append: [0.05, 'File append (plus size/lifetime)'],
-  contract_create: [1.0, 'Contract deployment (plus gas)'],
-  contract_call: [0.0, 'Contract call (gas only)']
-}
-
-async function handleEstimateCost ({ operations = [], network = 'testnet' } = {}) {
-  if (!Array.isArray(operations) || operations.length === 0) throw new InvalidParams(`operations must list items like { "type": "token_create", "count": 1 }. Types: ${Object.keys(FEES_USD).join(', ')}`)
-  const [rate, fees] = await Promise.all([mirrorGet(network, 'network/exchangerate'), mirrorGet(network, 'network/fees')])
-  const cr = rate.data?.current_rate
-  const usdPerHbar = cr ? cr.cent_equivalent / cr.hbar_equivalent / 100 : null
-  const gasTinybars = {}
-  for (const f of fees.data?.fees || []) gasTinybars[f.transaction_type] = f.gas
-  const rows = []
-  let totalUsd = 0
-  let totalGasHbar = 0
-  for (const op of operations) {
-    const fee = FEES_USD[op.type]
-    if (!fee) throw new InvalidParams(`unknown operation type "${op.type}". Types: ${Object.keys(FEES_USD).join(', ')}`)
-    const count = Math.max(1, Number(op.count) || 1)
-    const usd = fee[0] * count
-    let gasHbar = 0
-    if (op.gas && /contract/.test(op.type)) {
-      const price = gasTinybars[op.type === 'contract_create' ? 'ContractCreate' : 'ContractCall'] || gasTinybars.ContractCall || 0
-      gasHbar = (Number(op.gas) * price * count) / 1e8
+  if (next !== void 0 && next !== null && next !== "") {
+    apiPath = validateNext(next, apiPath);
+  } else {
+    const qs = new URLSearchParams();
+    if (limit !== void 0 && limit !== null) {
+      if (!Number.isInteger(Number(limit)) || Number(limit) < 1 || Number(limit) > 100) throw new InvalidParams(`limit must be an integer from 1 to 100 (got ${JSON.stringify(limit)})`);
+      qs.set("limit", String(Number(limit)));
     }
-    totalUsd += usd
-    totalGasHbar += gasHbar
-    rows.push(`| ${fee[1]} | ${count} | $${usd.toFixed(4)} | ${usdPerHbar ? (usd / usdPerHbar).toFixed(4) : '?'} ℏ${gasHbar ? ` + ${gasHbar.toFixed(4)} ℏ gas` : ''} |`)
+    if (order === "asc" || order === "desc") qs.set("order", order);
+    if (endpoint === "accounts" && !sub) qs.set("transactions", "false");
+    if ([...qs].length) apiPath += `?${qs}`;
   }
-  const totalHbar = usdPerHbar ? totalUsd / usdPerHbar + totalGasHbar : null
-  return [`### Estimated cost on ${network}`,
-    usdPerHbar ? `Exchange rate now: 1 ℏ = $${usdPerHbar.toFixed(5)} (Mirror Node /network/exchangerate)` : 'Exchange rate unavailable: showing USD only.',
-    '', '| Operation | Count | USD | HBAR |', '| :--- | ---: | ---: | ---: |', ...rows,
-    `| **Total** | | **$${totalUsd.toFixed(4)}** | **${totalHbar != null ? totalHbar.toFixed(4) : '?'} ℏ** |`,
-    '', 'Fees are fixed in USD by the network fee schedule (https://hedera.com/fees); HCS messages and files also grow with size. Gas is charged on at least 80% of the gas limit you set.'].join('\n')
+  const r = await mirrorGet(net, apiPath);
+  if (!r.ok) throw new UpstreamError(describeFailure(r));
+  const data = r.data;
+  if (endpoint === "topics" && sub === "messages" && Array.isArray(data?.messages)) {
+    for (const m of data.messages) m.message_decoded = decode64(m.message);
+  }
+  let json = JSON.stringify(data, null, 2);
+  if (json.length > 2e4) json = json.slice(0, 2e4) + "\n\u2026 (truncated; use limit to read less)";
+  const nextLink = typeof data?.links?.next === "string" ? data.links.next : null;
+  return `### Mirror Node (${net}) \u2014 ${r.url}
+\`\`\`json
+${json}
+\`\`\`` + (nextLink ? `
+
+More results: call again with the same endpoint/id/sub/network and next = "${nextLink}"` : "");
 }
-
-// ============================================================================
-// TOOLS
-// ============================================================================
-
-class InvalidParams extends Error {}
-
-const LANG_PROP = { type: 'string', enum: ['en', 'es'], description: 'Course language (default "en")' }
+const FEES_USD = {
+  hbar_transfer: [1e-4, "HBAR transfer (CryptoTransfer)"],
+  token_transfer: [1e-3, "HTS token transfer"],
+  account_create: [0.05, "Account creation"],
+  account_update: [22e-5, "Account update"],
+  allowance_approve: [0.05, "Allowance approval"],
+  token_create: [1, "Token creation"],
+  token_create_custom_fees: [2, "Token creation with custom fees"],
+  token_associate: [0.05, "Token association"],
+  token_mint_ft: [1e-3, "Fungible token mint"],
+  nft_mint: [0.02, "NFT mint (per serial)"],
+  token_airdrop: [0.1, "HIP-904 airdrop"],
+  topic_create: [0.01, "Topic creation"],
+  topic_create_custom_fees: [2, "HIP-991 topic with custom fees"],
+  topic_message: [1e-4, "HCS message (small)"],
+  schedule_create: [0.01, "Scheduled transaction"],
+  schedule_sign: [1e-3, "Schedule signature"],
+  file_create: [0.05, "File creation (plus size/lifetime)"],
+  file_append: [0.05, "File append (plus size/lifetime)"],
+  contract_create: [1, "Contract deployment (plus gas)"],
+  contract_call: [0, "Contract call (gas only)"]
+};
+async function handleEstimateCost({ operations = [], network } = {}) {
+  const net = requireNetwork(network, ["testnet", "mainnet"]);
+  if (!Array.isArray(operations) || operations.length === 0) throw new InvalidParams(`operations must list items like { "type": "token_create", "count": 1 }. Types: ${Object.keys(FEES_USD).join(", ")}`);
+  const ops = operations.map((op) => {
+    const fee = FEES_USD[op?.type];
+    if (!fee) throw new InvalidParams(`unknown operation type "${op?.type}". Types: ${Object.keys(FEES_USD).join(", ")}`);
+    const count = op.count === void 0 || op.count === null ? 1 : Number(op.count);
+    if (!Number.isInteger(count) || count < 1) throw new InvalidParams(`count for "${op.type}" must be a positive integer (got ${JSON.stringify(op.count)})`);
+    const isContract = op.type === "contract_create" || op.type === "contract_call";
+    let gas = null;
+    if (op.gas !== void 0 && op.gas !== null) {
+      if (!isContract) throw new InvalidParams(`gas only applies to contract_create / contract_call (got it on "${op.type}")`);
+      gas = Number(op.gas);
+      if (!Number.isInteger(gas) || gas < 1 || gas > 15e6) throw new InvalidParams(`gas for "${op.type}" must be an integer from 1 to 15,000,000 (got ${JSON.stringify(op.gas)})`);
+    }
+    return { type: op.type, fee, count, isContract, gas };
+  });
+  const needsGas = ops.some((o) => o.isContract && o.gas);
+  const [rate, fees] = await Promise.all([mirrorGet(net, "network/exchangerate"), needsGas ? mirrorGet(net, "network/fees") : Promise.resolve(null)]);
+  const cr = rate.ok ? rate.data?.current_rate : null;
+  const usdPerHbar = cr && cr.hbar_equivalent ? cr.cent_equivalent / cr.hbar_equivalent / 100 : null;
+  const gasTinybars = {};
+  for (const f of (fees && fees.ok ? fees.data?.fees : null) || []) gasTinybars[f.transaction_type] = Number(f.gas);
+  const rows = [];
+  const notes = [];
+  let feeUsd = 0;
+  let gasHbarTotal = 0;
+  let incomplete = false;
+  for (const o of ops) {
+    const usd = o.fee[0] * o.count;
+    feeUsd += usd;
+    let gasCell = "";
+    if (o.isContract) {
+      if (!o.gas) {
+        incomplete = true;
+        gasCell = " + gas not included";
+        notes.push(`${o.type}: no gas limit given, so its gas is NOT in the total. Pass "gas" (estimate with the Mirror Node /api/v1/contracts/call, estimate: true).`);
+      } else {
+        const price = gasTinybars[o.type === "contract_create" ? "ContractCreate" : "ContractCall"] || gasTinybars.ContractCall;
+        if (!price) {
+          incomplete = true;
+          gasCell = " + gas price unavailable";
+          notes.push(`${o.type}: live gas price unavailable (Mirror Node /network/fees ${fees ? describeFailure(fees).split("\n")[0] : "not read"}), so gas is NOT in the total.`);
+        } else {
+          const g = o.gas * price * o.count / 1e8;
+          gasHbarTotal += g;
+          gasCell = ` + ${g.toFixed(4)} \u210F gas${usdPerHbar ? ` ($${(g * usdPerHbar).toFixed(4)})` : ""}`;
+        }
+      }
+    }
+    rows.push(`| ${o.fee[1]} | ${o.count} | $${usd.toFixed(4)} | ${usdPerHbar ? (usd / usdPerHbar).toFixed(4) : "?"} \u210F${gasCell} |`);
+  }
+  if (!usdPerHbar) notes.push(`Live exchange rate unavailable (${describeFailure(rate).split("\n")[0]}): HBAR amounts and gas in USD cannot be computed.`);
+  const gasUsd = usdPerHbar ? gasHbarTotal * usdPerHbar : null;
+  const totalUsd = gasUsd != null ? feeUsd + gasUsd : gasHbarTotal ? null : feeUsd;
+  const totalHbar = usdPerHbar ? feeUsd / usdPerHbar + gasHbarTotal : null;
+  const label = incomplete ? "**Total (incomplete: excludes gas, see notes)**" : "**Total**";
+  return [
+    `### Estimated cost on ${net}`,
+    usdPerHbar ? `Exchange rate now: 1 \u210F = $${usdPerHbar.toFixed(5)} (Mirror Node ${net} /network/exchangerate)` : "Exchange rate unavailable: showing USD fees only.",
+    "",
+    "| Operation | Count | USD | HBAR |",
+    "| :--- | ---: | ---: | ---: |",
+    ...rows,
+    `| ${label} | | **${totalUsd != null ? "$" + totalUsd.toFixed(4) : "?"}** | **${totalHbar != null ? totalHbar.toFixed(4) : "?"} \u210F** |`,
+    ...notes.length ? ["", ...notes.map((n) => `- ${n}`)] : [],
+    "",
+    "Assumptions: USD fees are approximate values of the network fee schedule (https://hedera.com/fees), not read live; HBAR uses the live Mirror Node exchange rate; gas uses the live Mirror Node gas price (tinybars per gas) times the gas limit you give, i.e. an upper bound (since HIP-1249 only gas actually used is charged). HCS messages and files also grow with size."
+  ].join("\n");
+}
+class InvalidParams extends Error {
+}
+const LANG_PROP = { type: "string", enum: ["en", "es"], description: 'Course language (default "en")' };
 const TOOLS = [
   {
-    name: 'search_labs',
-    title: 'Search the labs',
-    description: 'Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code.',
-    inputSchema: { type: 'object', properties: { query: { type: 'string', description: 'e.g. "nft royalties", "TopicMessageSubmitTransaction", "HIP-904 airdrop", "x402"' }, module: { type: 'string', description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: 'integer', minimum: 1, maximum: 20, description: 'Results (default 5)' } }, required: ['query'] },
+    name: "search_labs",
+    title: "Search the labs",
+    description: "Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code.",
+    inputSchema: { type: "object", properties: { query: { type: "string", description: 'e.g. "nft royalties", "TopicMessageSubmitTransaction", "HIP-904 airdrop", "x402"' }, module: { type: "string", description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: "integer", minimum: 1, maximum: 20, description: "Results (default 5)" } }, required: ["query"] },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'get_lab',
-    title: 'Get a lab',
-    description: 'Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code.',
-    inputSchema: { type: 'object', properties: { slug: { type: 'string', description: 'Lab slug from search_labs or list_labs, e.g. "m03-01-immutable-issuance"' }, lang: LANG_PROP, include_code: { type: 'boolean', description: 'Include the code (default true)' } }, required: ['slug'] },
+    name: "get_lab",
+    title: "Get a lab",
+    description: "Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code.",
+    inputSchema: { type: "object", properties: { slug: { type: "string", description: 'Lab slug from search_labs or list_labs, e.g. "m03-01-immutable-issuance"' }, lang: LANG_PROP, include_code: { type: "boolean", description: "Include the code (default true)" } }, required: ["slug"] },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'list_labs',
-    title: 'List the course',
-    description: 'The course map: 16 modules and 131 labs with their slugs, optionally for one module.',
-    inputSchema: { type: 'object', properties: { module: { type: 'string', description: 'Optional module, e.g. "M8"' }, lang: LANG_PROP } },
+    name: "list_labs",
+    title: "List the course",
+    description: "The course map: 16 modules and 131 labs with their slugs, optionally for one module.",
+    inputSchema: { type: "object", properties: { module: { type: "string", description: 'Optional module, e.g. "M8"' }, lang: LANG_PROP } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'query_curriculum',
-    title: 'Search labs with code',
-    description: 'Search the labs and return the best matches with their full code (heavier than search_labs + get_lab).',
-    inputSchema: { type: 'object', properties: { query: { type: 'string', description: 'Search term, concept or SDK class' }, module: { type: 'string', description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: 'integer', minimum: 1, maximum: 5, description: 'Labs with code (default 3)' } } },
+    name: "query_curriculum",
+    title: "Search labs with code",
+    description: "Search the labs and return the best matches with their full code (heavier than search_labs + get_lab).",
+    inputSchema: { type: "object", properties: { query: { type: "string", description: "Search term, concept or SDK class" }, module: { type: "string", description: 'Optional module, e.g. "M3"' }, lang: LANG_PROP, limit: { type: "integer", minimum: 1, maximum: 5, description: "Labs with code (default 3)" } } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'anti_hallucination_rules',
-    title: 'Hedera guardrails',
-    description: 'Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag.',
-    inputSchema: { type: 'object', properties: {} },
+    name: "anti_hallucination_rules",
+    title: "Hedera guardrails",
+    description: "Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag.",
+    inputSchema: { type: "object", properties: {} },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'architecture_decision_tree',
-    title: 'HCS vs HTS vs smart contracts',
-    description: 'When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide.',
-    inputSchema: { type: 'object', properties: { focus: { type: 'string', description: 'Optional section to keep, e.g. "fees", "keys", "NFT"' } } },
+    name: "architecture_decision_tree",
+    title: "HCS vs HTS vs smart contracts",
+    description: "When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide.",
+    inputSchema: { type: "object", properties: { focus: { type: "string", description: 'Optional section to keep, e.g. "fees", "keys", "NFT"' } } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'mirror_node_query',
-    title: 'Read Hedera state',
-    description: 'Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks.',
+    name: "mirror_node_query",
+    title: "Read Hedera state",
+    description: "Live read from the public Mirror Node (free): accounts, tokens, topics (with decoded messages), transactions, contracts, schedules, balances, exchange rate, gas prices, nodes, blocks. Upstream HTTP errors and timeouts return isError; follow links.next with the next argument.",
     inputSchema: {
-      type: 'object',
-      required: ['endpoint'],
+      type: "object",
+      required: ["endpoint"],
       properties: {
-        endpoint: { type: 'string', enum: Object.keys(MIRROR_ROUTES) },
-        id: { type: 'string', description: 'Entity ID (0.0.123), EVM address (0x…) or transaction ID; not needed for network/*, balances, blocks' },
-        sub: { type: 'string', description: 'Sub-resource: accounts → tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens → nfts | balances; topics → messages; contracts → results | state' },
-        network: { type: 'string', enum: ['testnet', 'mainnet', 'previewnet'], description: 'Default "testnet"' },
-        limit: { type: 'integer', minimum: 1, maximum: 100 },
-        order: { type: 'string', enum: ['asc', 'desc'] }
+        endpoint: { type: "string", enum: Object.keys(MIRROR_ROUTES) },
+        id: { type: "string", description: "Entity ID (0.0.123), EVM address (0x\u2026) or transaction ID; not needed for network/*, balances, blocks" },
+        sub: { type: "string", description: "Sub-resource: accounts \u2192 tokens | nfts | allowances/crypto | allowances/tokens | rewards; tokens \u2192 nfts | balances; topics \u2192 messages; contracts \u2192 results | state" },
+        network: { type: "string", enum: ["testnet", "mainnet", "previewnet"], description: 'Default "testnet"' },
+        limit: { type: "integer", minimum: 1, maximum: 100 },
+        next: { type: "string", description: "Pagination: the relative links.next value (/api/v1/\u2026) returned by a previous call for the same endpoint/id/sub/network" },
+        order: { type: "string", enum: ["asc", "desc"] }
       }
     },
     annotations: { readOnlyHint: true, openWorldHint: true }
   },
   {
-    name: 'estimate_cost',
-    title: 'Estimate HBAR cost',
-    description: 'Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price).',
+    name: "estimate_cost",
+    title: "Estimate HBAR cost",
+    description: "Price a set of Hedera operations in USD and in HBAR at the live exchange rate (and gas at the live gas price times the gas limit you give; without gas, contract totals are marked incomplete).",
     inputSchema: {
-      type: 'object',
-      required: ['operations'],
+      type: "object",
+      required: ["operations"],
       properties: {
-        operations: { type: 'array', items: { type: 'object', required: ['type'], properties: { type: { type: 'string', enum: Object.keys(FEES_USD) }, count: { type: 'integer', minimum: 1 }, gas: { type: 'integer', description: 'Gas limit, for contract_create / contract_call' } } } },
-        network: { type: 'string', enum: ['testnet', 'mainnet'] }
+        operations: { type: "array", items: { type: "object", required: ["type"], properties: { type: { type: "string", enum: Object.keys(FEES_USD) }, count: { type: "integer", minimum: 1 }, gas: { type: "integer", minimum: 1, maximum: 15e6, description: "Gas limit, for contract_create / contract_call (without it the total excludes gas and is marked incomplete)" } } } },
+        network: { type: "string", enum: ["testnet", "mainnet"], description: 'Default "testnet"' }
       }
     },
     annotations: { readOnlyHint: true, openWorldHint: true }
   },
   {
-    name: 'query_knowledge',
-    title: 'Hedera ecosystem map',
-    description: 'Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links.',
-    inputSchema: { type: 'object', properties: { query: { type: 'string' }, category: { type: 'string' }, audience: { type: 'string', enum: ['developer', 'architect', 'business', 'founder'] } } },
+    name: "query_knowledge",
+    title: "Hedera ecosystem map",
+    description: "Curated map of Hedera studios, SDKs, standards and solutions (AI agents, RWA/ATS, stablecoins, DePIN, identity, privacy) with official links.",
+    inputSchema: { type: "object", properties: { query: { type: "string" }, category: { type: "string" }, audience: { type: "string", enum: ["developer", "architect", "business", "founder"] } } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
   {
-    name: 'official_resources',
-    title: 'Official links',
-    description: 'Official Hedera documentation, repositories and specifications.',
-    inputSchema: { type: 'object', properties: { query: { type: 'string' } } },
+    name: "official_resources",
+    title: "Official links",
+    description: "Official Hedera documentation, repositories and specifications.",
+    inputSchema: { type: "object", properties: { query: { type: "string" } } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   }
-]
+];
 
 function handleSearchLabs (p = {}) {
   const lang = langOf(p.lang)
@@ -613,7 +682,7 @@ async function dispatchOne (msg) {
           const text = await callTool(name, params.arguments || {})
           return rpcResult(id, { content: [{ type: 'text', text: String(text) }] })
         } catch (err) {
-          return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : `Tool error: ${err.message}` }] })
+          return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : err instanceof UpstreamError ? err.message : `Tool error: ${err.message}` }] })
         }
       }
       case 'resources/list': return rpcResult(id, { resources: listResources() })

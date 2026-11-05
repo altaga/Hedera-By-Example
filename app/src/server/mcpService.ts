@@ -149,11 +149,11 @@ Each rule was checked against the SDK and testnet while building this course.
 ## Data limits
 10. **NFT metadata: 100 bytes.** Store a URI/CID (ipfs://…), not the JSON (METADATA_TOO_LONG otherwise).
 11. **Memos: 100 bytes** for transaction, account, token and topic memos.
-12. **HCS messages: 1,024 bytes per chunk.** \`TopicMessageSubmitTransaction\` chunks larger messages (SDK \`CHUNK_SIZE\` 1024, \`maxChunks\` 20 by default, so ~20 KB unless raised; each chunk is its own paid transaction). Transactions as a whole: 6 KB.
+12. **HCS messages: 1,024 bytes per chunk.** \`TopicMessageSubmitTransaction\` chunks larger messages (SDK \`CHUNK_SIZE\` 1024, \`maxChunks\` 20 by default, so ~20 KB unless raised; each chunk is its own paid transaction). A whole transaction, signatures included, is capped at 6,144 bytes (https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions).
 13. **HFS files: ~4 KB per transaction.** Create with the first chunk, then \`FileAppendTransaction\`; storage is billed by size and lifetime.
 
 ## Reading state
-14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` / \`AccountInfoQuery\` are being retired from consensus nodes; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
+14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` is deprecated in @hiero-ledger/sdk (its consensus-node endpoint \`cryptoGetBalance\` was removed) and \`AccountInfoQuery\` is a paid query; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
 15. **Receipts vs records.** \`getReceipt()\` gives status and new IDs (free); \`getRecord()\` adds transfers, fees and contract results (paid query).
 16. **Public Mirror Nodes are rate-limited** per IP: back off on HTTP 429 and avoid bursts.
 
