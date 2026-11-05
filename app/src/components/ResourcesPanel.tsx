@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Icon } from './Icon'
+import { FaucetNote } from './FaucetNote'
 import { LAB_BY_SLUG, type Lang } from '../lib/content'
 import { isAccountId } from '../lib/hederaBrowser'
 import type { WalletStore } from '../lib/wallets'
@@ -206,6 +207,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
       <header className='res-header'>
         <h1>{t.title}</h1>
         <p className='muted'>{t.intro}</p>
+        <FaucetNote lang={lang} />
       </header>
 
       {accounts.length === 0

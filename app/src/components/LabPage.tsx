@@ -17,6 +17,7 @@ import {
   type ExtractedCompanionModule,
 } from '../lib/labTabs'
 import { runBlock } from '../lib/labPrep'
+import { FaucetNote, OFFICIAL_FAUCET_URL } from './FaucetNote'
 
 export type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type Tab = 'walkthrough' | 'source'
@@ -446,13 +447,14 @@ export function LabPage (props: Props) {
                 ? `La primera ejecución declara ~${block.need} ℏ y esta billetera tiene ${block.have.toFixed(2)} ℏ.${again} Consigue más en el faucet o desde otra billetera.`
                 : `The first run is listed at ~${block.need} ℏ and this wallet has ${block.have.toFixed(2)} ℏ.${again} Get more from the faucet or from another wallet.`}
             </p>
-            <a className='btn btn-ghost btn-sm' href='https://portal.hedera.com/faucet' target='_blank' rel='noopener noreferrer'>
+            <a className='btn btn-ghost btn-sm' href={OFFICIAL_FAUCET_URL} target='_blank' rel='noopener noreferrer'>
               {lang === 'es' ? 'Faucet de Hedera' : 'Hedera faucet'}
             </a>
             <button type='button' className='btn btn-secondary btn-sm' onClick={onOpenAccount}>{lang === 'es' ? 'Billeteras' : 'Wallets'}</button>
             <button type='button' className='btn btn-ghost btn-sm' data-testid='run-anyway' onClick={() => onRun(true)}>
               {lang === 'es' ? 'Ejecutar igual' : 'Run anyway'}
             </button>
+            <FaucetNote lang={lang} />
           </div>
         )
       })()}

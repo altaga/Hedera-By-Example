@@ -1120,6 +1120,8 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   background: var(--bg-subtle); font-size: 14.5px;
 }
 .notice p { margin: 0; color: var(--text-2); }
+.faucet-more { margin: 8px 0 0; max-width: 72ch; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+.notice .faucet-more { flex-basis: 100%; }
 
 .lab-files { margin-top: 28px; }
 .lab-files > summary.section-title {

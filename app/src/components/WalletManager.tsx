@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Icon } from './Icon'
+import { FaucetNote, OFFICIAL_FAUCET_URL } from './FaucetNote'
 import type { Lang } from '../lib/content'
 import { isAccountId } from '../lib/hederaBrowser'
 import {
   WELCOME_DROP_HBAR, createWallet, fetchBalances, findWallet, fundWallet, importMnemonic, importWallet, keyFormats, lookUpAccount, waitForFunding, requestWelcomeDrop, welcomeDropClaim,
   type Curve, type KeyFormat, type Role, type Wallet, type WalletStore
 } from '../lib/wallets'
-
-const FAUCET_URL = 'https://portal.hedera.com/faucet'
 
 const TEXT = {
   en: {
@@ -360,8 +359,9 @@ function FaucetSteps ({ w, t, lang, onFound }: { w: Wallet; t: T; lang: Lang; on
         </summary>
         <ol style={{ marginTop: 8 }}>{t.faucetSteps.map((s) => <li key={s}>{s}</li>)}</ol>
         <p className='kv-value'><code>{w.evmAddress}</code><CopyButton value={w.evmAddress} t={t} /></p>
-        <a className='btn btn-ghost btn-sm' href={FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
+        <a className='btn btn-ghost btn-sm' href={OFFICIAL_FAUCET_URL} target='_blank' rel='noopener noreferrer'>{t.faucet} <Icon name='external' size={12} /></a>
       </details>
+      <FaucetNote lang={lang} />
     </div>
   )
 }
