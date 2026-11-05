@@ -10,6 +10,10 @@ export const HBE_APP_TAG = 'hedera-by-example'
 const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/'
 const DISTINCT_KEY = 'hbe_anon_id_v1'
 
+// Dedupe identical captures from double effects (same path/view within 750ms).
+let lastSentKey = ''
+let lastSentAt = 0
+
 type PageViewInput = {
   path: string
   lang?: string
@@ -97,6 +101,13 @@ export function recordPageView (input: PageViewInput): void {
     const screenW = typeof window.screen !== 'undefined' ? window.screen.width : undefined
     const screenH = typeof window.screen !== 'undefined' ? window.screen.height : undefined
 
+    const view = input.view || null
+    const dedupeKey = `${path}|${lang || ''}|${labSlug || ''}|${view || ''}`
+    const now = Date.now()
+    if (dedupeKey === lastSentKey && now - lastSentAt < 750) return
+    lastSentKey = dedupeKey
+    lastSentAt = now
+
     const payload = {
       api_key: apiKey,
       event: HBE_EVENT_PAGE_VIEWED,
@@ -108,7 +119,7 @@ export function recordPageView (input: PageViewInput): void {
         referrer: typeof document !== 'undefined' ? (document.referrer || null) : null,
         lang: lang || null,
         lab_slug: labSlug,
-        view: input.view || null,
+        view,
         screen_width: screenW ?? null,
         screen_height: screenH ?? null,
         timestamp: new Date().toISOString(),

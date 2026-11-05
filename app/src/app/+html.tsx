@@ -1,13 +1,16 @@
 import type { PropsWithChildren } from 'react'
-import { ScrollViewStyleReset } from 'expo-router/html'
+import { ScrollViewStyleReset, useServerDocumentContext } from 'expo-router/html'
 
 /**
- * Custom web document. Static discovery hints for agents (llms.txt + MCP) live here
- * so they appear in the raw HTML without waiting for client hydration.
+ * Custom web document for Expo Router (SDK 58).
+ * MUST render headNodes/bodyNodes from useServerDocumentContext so Expo can
+ * inject CSS and JS bundles. Discovery tags for agents stay in the static head.
  */
 export default function Root ({ children }: PropsWithChildren) {
+  const { htmlAttributes, bodyAttributes, headNodes, bodyNodes } = useServerDocumentContext()
+
   return (
-    <html lang='en'>
+    <html lang='en' {...htmlAttributes}>
       <head>
         <meta charSet='utf-8' />
         <meta httpEquiv='X-UA-Compatible' content='IE=edge' />
@@ -22,8 +25,12 @@ export default function Root ({ children }: PropsWithChildren) {
         <link rel='alternate' type='application/json' title='MCP manifest' href='/mcp/manifest.json' />
         <link rel='icon' href='/favicon.ico' />
         <ScrollViewStyleReset />
+        {headNodes}
       </head>
-      <body>{children}</body>
+      <body {...bodyAttributes}>
+        {children}
+        {bodyNodes}
+      </body>
     </html>
   )
 }
