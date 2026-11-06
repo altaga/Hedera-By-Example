@@ -51,7 +51,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "deploy:web": "node ./scripts/build-content.mjs && eas env:exec production 'npx expo export --platform web' --non-interactive && eas deploy --prod --environment production --non-interactive"
+    "deploy:web": "node ./scripts/build-content.mjs && npx --yes eas-cli env:exec production 'npx expo export --platform web' --non-interactive && npx --yes eas-cli deploy --prod --environment production --non-interactive"
   },
   "private": true
 }
