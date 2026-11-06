@@ -24,7 +24,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes HCS-26
- * - Siguiente: M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
+ * - Siguiente: M14 Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
  *
  * [SIMULADO]
  * Los 64 registros de inferencia son sintéticos. El árbol de Merkle, la prueba y el checkpoint en HCS son reales.

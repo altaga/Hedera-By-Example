@@ -16,7 +16,7 @@ In this module, we transition Hedera Consensus Service from a simple message que
 | **02** | **HCS-25 AI Trust Score** | Multi-dimensional reputation vectors (uptime, consensus proofs, feedback). | Web2 AI reputation is opaque; on Hedera, an agent's creditworthiness is a mathematical fact. |
 | **03** | **HCS-26 Agent Skills Registry** | Decentralized MCP tool manifests and semantic agent capability discovery. | Eliminating proprietary plugin app stores prevents platform deplatforming and censorship. |
 | **04** | **HCS-27 Merkle Transparency** | Committing off-chain Merkle tree checkpoints with inclusion proofs. | Batching 10,000 operations into a single HCS Merkle root cuts gas costs by 99.99%. |
-| **05** | **HCS-28 Cognitive Audit Trail** | Cryptographically signed reasoning traces and policy compliance logs. | When AI models manage real capital, immutable provenance separates liability from compliance. |
+| **05** | **Agent Audit Trail on HCS (HCS-28 Concepts)** | HCS-2 agent directory + per-agent change topic with signed decision records (record layout is the lab's own; HCS-28 is a draft). | When AI models manage real capital, immutable provenance separates liability from compliance. |
 | **06** | **Encrypted Swarm Chat** | Confidential P2P OTC agent negotiations using ECDH and AES-256-GCM over HCS. | Consensus gives you fair ordering; client-side cryptography gives you military-grade confidentiality. |
 | **07** | **HCS-15..18 Botanical Swarm** | Petal sub-accounts (HCS-15), peer discovery (HCS-18), multi-sig Floras (HCS-16) & state hashes (HCS-17). | Separating communication, transaction scheduling, and state checkpoints lets swarms scale securely. |
 | **08** | **HCS-12 HashLinks & HCS-21** | Actionable on-chain UI micro-apps (HCS-12) backed by SHA-256 verified adapters (HCS-21). | Combining on-chain UI assemblies with package digests prevents both phishing and supply-chain attacks. |
@@ -101,7 +101,7 @@ Public ledgers provide transparency and ordering, but leak confidential business
 - [HCS-25 Specification: AI Trust Score Methodology](https://docs.hashgraphonline.com/hcs-25)
 - [HCS-26 Specification: Decentralized Agent Skills Registry](https://docs.hashgraphonline.com/hcs-26)
 - [HCS-27 Specification: Transparency Log Checkpoints](https://docs.hashgraphonline.com/hcs-27)
-- [HCS-28 Specification: Agent Audit Stream](https://docs.hashgraphonline.com/hcs-28)
+- [HCS-28 (Draft): ANS Agent Transparency Registry](https://hol.org/standards)
 - [Hedera Consensus Service Developer Guide](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service)
 
 ---

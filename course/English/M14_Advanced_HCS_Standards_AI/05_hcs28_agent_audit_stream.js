@@ -1,32 +1,35 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 05: HCS-28 Verifiable AI Agent Audit Trail & Cognitive Provenance
- * [CONCEPT] Cryptographic Non-Repudiation for Autonomous Intelligence
+ * Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
+ * [CONCEPT] HCS-2 Agent Directory + Per-Agent Change Topics with Signed Records
  * ============================================================================
  * [ KEY CONCEPT ]
- * Cognitive Provenance & Liability: As autonomous AI agents execute financial
- * transactions, interact with real-world infrastructure, and negotiate contracts,
- * enterprises and regulators require complete auditability.
- * HCS-28 specifies an immutable consensus stream recording an agent's entire
- * cognitive lifecycle: prompt hashes, reasoning trace digests, tool parameters,
- * safety guardrail clearances, and cryptographic non-repudiation signatures.
+ * HCS-28 (Hashgraph Online, Draft) is the ANS Agent Transparency Registry: an HCS-2
+ * directory topic of published agents, one HCS-2 change topic per agent (`t_id`), and
+ * publication rules for agent changes, used together with HCS-27 Merkle checkpoints.
+ * This lab builds that topology for real on testnet:
+ * 1. An indexed HCS-2 directory topic (memo `hcs-2:0:86400`).
+ * 2. A per-agent change topic, registered in the directory with an HCS-2 `register`
+ *    message (`{"p":"hcs-2","op":"register","t_id":...}`, tx memo `hcs-2:op:0:0`).
+ * 3. A signed audit record of one agent decision cycle (prompt/reasoning/tool hashes,
+ *    guardrail results) appended to the agent's change topic.
  *
  * [ LEARNABLE MOMENT ]
- * When a self-driving car crashes or an autonomous trading bot incurs a deficit,
- * investigators need a tamper-proof flight data recorder ("black box").
- * HCS-28 turns Hedera into that immutable flight recorder for autonomous AI.
+ * Investigators need a tamper-proof "black box". Hashes + signatures on HCS give
+ * ordering, timestamps and non-repudiation without publishing the raw prompt.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hol.org/docs/standards/
+ * - https://hol.org/docs/standards/hcs-2
  * - https://hol.org/docs/standards/hcs-27/
+ * - https://hol.org/standards
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  * - Next:     M14 Lab 06: Encrypted AI Agent Swarm Chat (P2P Over HCS)
  *
  * [SIMULATED]
- * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit stream on HCS is real.
+ * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit-record layout is this lab's own: HCS-28's JWT/hash-input publication rules are not reproduced. The HCS-2 directory, change topic, registration and audit stream on HCS are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -57,8 +60,9 @@ const buildHCS28AuditRecord = ({ agentWallet, sessionId, cycleIndex, userPrompt,
   const decisionHash = ethers.keccak256(ethers.toUtf8Bytes(finalDecision))
 
   const auditCore = {
-    standard: 'hcs-28',
+    type: 'agent-audit-record',
     version: '1.0.0',
+    concept: 'hcs-28',
     sessionId,
     cycleIndex,
     agentAddress: agentWallet.address,
@@ -98,12 +102,19 @@ const main = async () => {
     console.log('[PROCESS] Creating dedicated HCS-28 Cognitive Audit Topic...')
     // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
     const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-28:AGENT:COGNITIVE:AUDIT')
+      .setTopicMemo('hcs-2:0:86400')
       .execute(client)
 
     // Wait for consensus: the receipt says whether the network accepted the transaction.
     const topicReceipt = await topicTx.getReceipt(client)
     const topicId = topicReceipt.topicId.toString()
+    // HCS-2 directory of agents (indexed) + registration of this agent's change topic
+    const directoryId = (await (await new TopicCreateTransaction().setTopicMemo('hcs-2:0:86400').execute(client)).getReceipt(client)).topicId.toString()
+    const regRes = await new TopicMessageSubmitTransaction().setTopicId(directoryId)
+      .setMessage(JSON.stringify({ p: 'hcs-2', op: 'register', t_id: topicId, m: 'agent atlas change topic' }))
+      .setTransactionMemo('hcs-2:op:0:0').execute(client)
+    await regRes.getReceipt(client)
+    console.log(`[SUCCESS] HCS-2 directory ${directoryId}: registered change topic ${topicId} (tx ${regRes.transactionId})`)
     console.log(`[SUCCESS] HCS-28 Audit Topic Deployed: ${topicId}`)
 
     // 2. Synthesize Autonomous Reasoning Cycle for Financial Risk Agent
@@ -159,6 +170,7 @@ const main = async () => {
 
     // Persist state
     updateState('HCS28_TOPIC_ID', topicId)
+    updateState('HCS28_DIRECTORY_TOPIC_ID', directoryId)
     updateState('HCS28_SESSION_ID', auditRecord.sessionId)
     updateState('HCS28_RECORD_HASH', auditRecord.recordHash)
     updateState('HCS28_AGENT_ADDRESS', agentWallet.address)

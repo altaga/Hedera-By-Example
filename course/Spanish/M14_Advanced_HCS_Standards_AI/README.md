@@ -16,7 +16,7 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 | **02** | **Confianza de IA HCS-25** | Vectores de reputación multidimensionales (uptime, exactitud en consenso, feedback). | La reputación en Web2 es opaca; en Hedera, la fiabilidad de un agente es un hecho matemático. |
 | **03** | **Habilidades HCS-26** | Manifiestos de herramientas MCP y descubrimiento semántico de capacidades de IA. | Eliminar tiendas de plugins propietarias previene la censura y despublicación arbitraria. |
 | **04** | **Transparencia Merkle HCS-27** | Compromiso de puntos de control de árboles Merkle off-chain con pruebas de inclusión. | Agrupar 10,000 operaciones en una sola raíz Merkle en HCS reduce costos de gas un 99.99%. |
-| **05** | **Auditoría Cognitiva HCS-28** | Registros inmutables de razonamiento y cumplimiento normativo firmados por el agente. | Cuando la IA gestiona capital real, la trazabilidad inmutable separa el dolo del cumplimiento. |
+| **05** | **Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)** | Directorio HCS-2 + topic de cambios por agente con registros firmados (formato propio del lab; HCS-28 es borrador). | Cuando la IA gestiona capital real, la trazabilidad inmutable separa el dolo del cumplimiento. |
 | **06** | **Chat Encriptado de Enjambre** | Negociación confidencial OTC entre agentes mediante ECDH y AES-256-GCM sobre HCS. | El consenso brinda ordenamiento justo; la criptografía en cliente brinda privacidad de grado militar. |
 | **07** | **Enjambre Botánico HCS-15..18** | Sub-cuentas Pétalo (HCS-15), descubrimiento (HCS-18), Floras multi-firma (HCS-16) y State Hash (HCS-17). | Separar charla, transacciones y estado en una Tríada HCS-16 permite escalar enjambres con custodia segura. |
 | **08** | **HashLinks HCS-12 y HCS-21** | Micro-apps interactivas on-chain (HCS-12) respaldadas por adaptadores con huella SHA-256 (HCS-21). | Unir ensamblajes UI on-chain con huellas SHA-256 elimina el phishing visual y el envenenamiento npm. |
@@ -101,7 +101,7 @@ Los ledgers públicos proveen transparencia y orden, pero exponen estrategias co
 - [Especificación HCS-25: Metodología de Puntuación de Confianza de IA](https://docs.hashgraphonline.com/hcs-25)
 - [Especificación HCS-26: Registro Descentralizado de Habilidades](https://docs.hashgraphonline.com/hcs-26)
 - [Especificación HCS-27: Puntos de Control de Transparencia](https://docs.hashgraphonline.com/hcs-27)
-- [Especificación HCS-28: Flujo de Auditoría de Agentes](https://docs.hashgraphonline.com/hcs-28)
+- [Especificación HCS-28: Flujo de Auditoría de Agentes](https://hol.org/standards)
 - [Guía para Desarrolladores de Hedera Consensus Service](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service)
 
 ---
