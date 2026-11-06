@@ -40,7 +40,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account is the sender; it creates 1 throwaway ECDSA recipient.
- * - Cost: ~0.3 ℏ funded to the recipient + fees.
+ * - Cost: ~1.5 ℏ funded to the recipient + fees.
  *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
@@ -102,7 +102,7 @@ const main = async () => {
   try {
     // 1. Recipient sets up its message box
     console.log('[PROCESS] Step 1: Creating the recipient (ECDSA secp256k1 account)...')
-    const recipient = await createLabAccount(client, { hbar: 0.3, ecdsa: true })
+    const recipient = await createLabAccount(client, { hbar: 1.5, ecdsa: true })
     const recipientId = recipient.accountId.toString()
     const rClient = createClient(recipientId, recipient.privateKey)
     const pubHex = recipient.privateKey.publicKey.toStringRaw()

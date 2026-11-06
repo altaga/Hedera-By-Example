@@ -40,7 +40,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet es el remitente; crea 1 destinatario ECDSA desechable.
- * - Costo: ~0.3 ℏ para el destinatario + comisiones.
+ * - Costo: ~1.5 ℏ para el destinatario + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
@@ -102,7 +102,7 @@ const main = async () => {
   try {
     // 1. El destinatario configura su buzón
     console.log('[PROCESO] Paso 1: Creando el destinatario (cuenta ECDSA secp256k1)...')
-    const recipient = await createLabAccount(client, { hbar: 0.3, ecdsa: true })
+    const recipient = await createLabAccount(client, { hbar: 1.5, ecdsa: true })
     const recipientId = recipient.accountId.toString()
     const rClient = createClient(recipientId, recipient.privateKey)
     const pubHex = recipient.privateKey.publicKey.toStringRaw()

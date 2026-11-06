@@ -46,7 +46,7 @@
  */
 
 import { Hbar, TokenCreateTransaction, TokenType, TransferTransaction } from '@hiero-ledger/sdk'
-import { createLabAccount, getClient, getHashscanUrl, getMirrorHbarTinybars, sleep, updateState } from '../M99_Utilities/index.js'
+import { createLabAccount, getClient, getHashscanUrl, getMirrorHbarTinybars, sleep, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 const FEE_BPS = 9 // 0.09% flash fee
 const SPREAD = 0.005 // Beta pays +0.5%
@@ -98,10 +98,11 @@ const main = async () => {
     for (const [name, p] of Object.entries(parties)) console.log(`[LOG] ${name.padEnd(6)} ${p.accountId}`)
 
     console.log('\n[PROCESS] Step 2: Creating the FLASH token and giving Alpha its inventory...')
-    const tokenId = (await (await new TokenCreateTransaction()
+    // Reused across runs (creating a token costs ~15 ℏ on testnet); FRESH_TOKENS=1 forces a new one
+    const tokenId = await reuseToken('REUSE_M4_09_FLASH_TOKEN', async () => (await (await new TokenCreateTransaction()
       .setTokenName('Flash Demo Asset').setTokenSymbol('FLASH').setTokenType(TokenType.FungibleCommon)
       .setDecimals(0).setInitialSupply(UNITS * 10).setTreasuryAccountId(client.operatorAccountId)
-      .execute(client)).getReceipt(client)).tokenId
+      .execute(client)).getReceipt(client)).tokenId, { minBalance: UNITS })
     await (await new TransferTransaction()
       .addTokenTransfer(tokenId, client.operatorAccountId, -UNITS)
       .addTokenTransfer(tokenId, parties.alpha.accountId, UNITS)
