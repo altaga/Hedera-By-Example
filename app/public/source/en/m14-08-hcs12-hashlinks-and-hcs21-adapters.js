@@ -27,8 +27,8 @@
  * - https://hol.org/docs/standards/hcs-21/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 07: HCS-15..18 Botanical Agent Swarms
- * - Next:     M14 Lab 09: HIP-1334 Private Message Box
+ * - Previous: M14 Lab 07: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
+ * - Next:     M14 Lab 09: HIP-1334 Private Message Box on HCS
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

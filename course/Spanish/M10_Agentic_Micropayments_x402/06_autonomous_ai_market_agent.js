@@ -18,10 +18,10 @@
  * - https://docs.hedera.com/solutions/ai/x402
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 05: Límites Financieros del Agente
- * - Siguiente: M10 Lab 07: Pasarela de Streaming de IA
+ * - Anterior:  M10 Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
+ * - Siguiente: M10 Lab 07: Pasarela Proxy de Streaming de IA (SSE + Liquidación x402)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente -> Proveedores: GET /api/v1/signals/macro (sin pago)
  * Proveedores -> Agente: Cotizaciones 402 (precio, payTo, feePayer)
  * Nota Agente: Elige la mejor confianza por HBAR dentro del presupuesto
@@ -29,7 +29,7 @@
  * Facilitador -> Hedera: Firma y envía
  * Proveedor -> Agente: 200 OK + señal
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los tres proveedores son simulados y todos cobran en ACCOUNT_2. Sus cotizaciones 402 siguen x402, y el pago es real.
  *
  * [ ANTES DE EJECUTAR ]

@@ -19,7 +19,7 @@
  * insufficient, Hedera's consensus engine rolls back all legs with zero partial execution.
  *
  * [ LEARNING PATH ]
- * - Previous: M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC)
+ * - Previous: M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC-SHA256)
  * - Next:     M15 Lab 04: Passkeys & WebAuthn P-256 Biometric Authenticator
  *
  * [ OFFICIAL REFERENCES ]
@@ -27,14 +27,14 @@
  * - Hedera Atomic Transfers Documentation: https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  * - CoW Protocol Architecture: https://docs.cow.fi/overview/introduction
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Alice -> Solver: Signed intent: USD for HBAR
  * Bob -> Solver: Signed intent: HBAR for USD
  * Note Solver: Matches the intents off-chain
  * Solver -> Hedera: One atomic transfer settles both
  * Solver -> Hedera: Settlement record on HCS
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * Alice, Bob and the solver run in one process, and their intents are matched locally. The settlement transfer and HCS record are real.
  *
  * [ BEFORE YOU RUN ]

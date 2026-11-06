@@ -20,9 +20,8 @@
  * - https://hashgraphonline.com/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 05: Reconstrucción de Datos
- * - Actual:   M6 Lab 06: Ecosistema de Hashinals
- * - Siguiente: M6 Lab 07: NFT Nativo HCS-1
+ * - Anterior:  M6 Lab 05: Reconstrucción Trustless de Datos desde HCS-1
+ * - Siguiente: M6 Lab 07: NFT Nativo HCS-1 (Metadatos + Imagen en HCS)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_hashinals_ecosystem.js
+ * node Spanish/M6_Mass_Storage_Hashinals/06_hashinals_ecosystem.js
  * ============================================================================
  */
 

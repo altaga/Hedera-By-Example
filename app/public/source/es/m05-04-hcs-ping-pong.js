@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M5 Lab 03: Paginación y Fragmentación
- * - Actual:   M5 Lab 04: HCS Ping-Pong
- * - Siguiente: M6 Lab 01: Almacenamiento Nativo HFS
+ * - Anterior:  M5 Lab 03: Fragmentación de Mensajes y Suscripciones gRPC
+ * - Siguiente: M5 Lab 05: Registro Descentralizado HCS-6
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_hcs_ping_pong.js
+ * node Spanish/M5_Hedera_Consensus_Service/04_hcs_ping_pong.js
  * ============================================================================
  */
 

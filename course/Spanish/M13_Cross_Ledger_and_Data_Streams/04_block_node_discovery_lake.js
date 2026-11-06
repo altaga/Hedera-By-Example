@@ -22,10 +22,10 @@
  * - https://testnet.mirrornode.hedera.com/api/v1/docs/#/network/getRegisteredNodes
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 03: Flujo de Bloques y Verificación TSS (HIP-1056)
- * - Siguiente: M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
+ * - Anterior:  M13 Lab 03: Flujo de Bloques en Hedera y Verificación TSS Agregada (HIP-1056)
+ * - Siguiente: M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain (CLPR + HIP-336)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Nada del descubrimiento es simulado: el registro, los endpoints y la latencia TCP son reales. El contenido de los bloques se lee de la API /blocks del Mirror Node, no se transmite desde el Block Node (aquí no se llama a su API gRPC).
  *
  * [ ANTES DE EJECUTAR ]

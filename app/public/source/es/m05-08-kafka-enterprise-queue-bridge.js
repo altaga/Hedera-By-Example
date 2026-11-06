@@ -31,10 +31,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M5 Lab 07: Motor de Ingesta por Lotes Merkle
- * - Siguiente: M6 Lab 01: HFS Nativo
+ * - Anterior:  M5 Lab 07: Motor de Ingesta Masiva de Lotes con Árboles Merkle y Pruebas de Inclusión en L1
+ * - Siguiente: M6 Lab 01: Almacenamiento Nativo en HFS
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * No se usa ningún broker Kafka ni Redpanda: los eventos de partición se generan en memoria. Los anclajes de marca de agua en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

@@ -19,8 +19,8 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 01: HCS-1 Storage
- * - Next:     M9 Lab 03: HCS-2 Search
+ * - Previous: M9 Lab 01: HCS-1 Static File Storage (Heavy Payloads)
+ * - Next:     M9 Lab 03: HCS-2 Registry Discovery
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 02_hcs2_registries.js
+ * node English/M9_AI_Orchestration/02_hcs2_registries.js
  * ============================================================================
  */
 

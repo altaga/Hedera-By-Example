@@ -31,10 +31,10 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 06: Multi-Asset Pool Tokens
- * - Next:     M12 Lab 01: Direct HTS ERC-20 Facade
+ * - Previous: M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
+ * - Next:     M11 Lab 08: Corporate Actions & Mass Payout (Asset Tokenization Studio Concepts)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * ERP -> Issuer: UBL 2.1 invoice
  * Issuer -> Hedera: Anchor the invoice hash on HCS
  * Issuer -> Compliance: ERC-3643 investor check
@@ -42,7 +42,7 @@
  * Issuer -> Investor: Grant KYC and deliver 250 units (DvP)
  * Investor -> Issuer: Payment in the same atomic transaction
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The SAP/Oracle invoice and the ERC-3643 compliance check are simulated. The HCS anchor, the tranche token and the transfers are real.
  *
  * [ BEFORE YOU RUN ]

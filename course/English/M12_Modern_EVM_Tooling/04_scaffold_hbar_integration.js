@@ -17,10 +17,10 @@
  * - https://github.com/hedera-dev/scaffold-hbar
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 03: Foundry & Hardhat Workflows
- * - Next:     M12 Lab 05: EIP-7702 Pectra Account Delegation
+ * - Previous: M12 Lab 03: Foundry & Hardhat Automation Workflows
+ * - Next:     M12 Lab 05: EIP-7702 Pectra Account Delegation on Hedera JSON-RPC Relay
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * This is an introduction: it shows the Scaffold-HBAR chain configuration and checks it against Hashio (real RPC reads). It does not scaffold or run the template; use `npx create-scaffold-hbar` for that.
  *
  * [ BEFORE YOU RUN ]

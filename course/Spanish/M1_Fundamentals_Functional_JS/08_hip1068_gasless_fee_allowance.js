@@ -24,8 +24,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M1 Lab 07: Motor de Tarifas Simples HIP-1261
- * - Siguiente: M2 Lab 01: Depreciación de Consultas Síncronas
+ * - Anterior:  M1 Lab 07: Motor de Tarifas Simples y Precios Deterministas HIP-1261
+ * - Siguiente: M2 Lab 01: Depreciación de Consultas Sincrónicas
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet es el patrocinador (dueño de la asignación).

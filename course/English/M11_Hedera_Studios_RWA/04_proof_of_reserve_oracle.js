@@ -20,7 +20,7 @@
  * - Previous: M11 Lab 03: Stablecoin Roles on HTS (Stablecoin Studio Concepts)
  * - Next:     M11 Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The custodian reserve figures are simulated. The on-chain reactions to them are real.
  *
  * [ BEFORE YOU RUN ]

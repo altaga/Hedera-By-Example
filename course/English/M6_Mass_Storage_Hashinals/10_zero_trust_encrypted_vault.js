@@ -28,8 +28,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 09: HCS-7 Smart Hashinals
- * - Next:     M7 Lab 01: Native Threshold Authority
+ * - Previous: M6 Lab 09: HCS-7 Smart Hashinals (EVM State + WASM Dynamic Inscriptions)
+ * - Next:     M7 Lab 01: Multi-signature Models and KeyLists
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

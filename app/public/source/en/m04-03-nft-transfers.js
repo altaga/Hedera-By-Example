@@ -17,8 +17,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#transfer-nfts
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 02: Token Transfers
- * - Next:     M4 Lab 04: Atomic Swaps
+ * - Previous: M4 Lab 02: Fungible Token Transfers (HTS)
+ * - Next:     M4 Lab 04: Atomic Swaps (Multi-Asset Exchange)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -27,7 +27,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_nft_transfers.js
+ * node English/M4_Token_Operations_Atomic_Swaps/03_nft_transfers.js
  * ============================================================================
  */
 

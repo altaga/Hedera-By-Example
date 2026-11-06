@@ -19,18 +19,17 @@
  * - https://hedera.com/learning/consensus-algorithms/what-is-asynchronous-byzantine-fault-tolerance-abft
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M0 Lab 04: Creación de Billetera Hija
- * - Actual:   M1 Lab 01: Simulación de Consenso
- * - Siguiente: M1 Lab 02: Renta de Cuentas
+ * - Anterior:  M0 Lab 06: Telemetría de Consenso con OpenTelemetry
+ * - Siguiente: M1 Lab 02: Renta de Estado y Ciclo de Vida de la Cuenta
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El gossip entre nodos corre localmente como modelo del hashgraph; no se hacen llamadas a la red.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_consensus_and_abft.js
+ * node Spanish/M1_Fundamentals_Functional_JS/01_consensus_and_abft.js
  * ============================================================================
  */
 

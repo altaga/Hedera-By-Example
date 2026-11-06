@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
+ * Lab 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
  * [CONCEPTO] Monitoreo Logístico de Bajo Consumo y Penalización Automática de SLA
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -21,15 +21,15 @@
  * proporciona prueba legal indiscutible para aseguradoras y penalizaciones automáticas.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware
- * - Siguiente: M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683)
+ * - Anterior:  M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
+ * - Siguiente: M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
  *
  * [ REFERENCIAS OFICIALES ]
  * - Descripción General de Hedera Consensus Service: https://docs.hedera.com/native/consensus
  * - RFC 2104: HMAC: Hashing con Clave para Autenticación de Mensajes
  * - Reporte Técnico OMS 961: Monitoreo de Temperatura y Humedad en Cadenas de Frío
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El rastreador IoT y sus solicitudes HTTP son emulados. Las verificaciones HMAC y los registros en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

@@ -30,8 +30,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M7 Lab 07: DAO de Tesorería Autónoma Guiada por Webhooks
- * - Siguiente: M8 Lab 01: Despliegue de Contratos Inteligentes
+ * - Anterior:  M7 Lab 07: DAO de Tesorería Autónoma con Webhooks (Gobernanza Reactiva)
+ * - Siguiente: M8 Lab 01: Despliegue de Smart Contracts (HSCS)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

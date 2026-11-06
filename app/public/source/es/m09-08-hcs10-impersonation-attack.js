@@ -21,11 +21,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 07: Comunicación Agente-a-Agente (A2A)
- * - Actual:   M9 Lab 08: Simulación de Ataque de Suplantación
- * - Siguiente: M9 Lab 09: Comunicación Segura y Verificada
+ * - Anterior:  M9 Lab 07: Orquestación Agente-a-Agente (A2A) HCS-10
+ * - Siguiente: M9 Lab 09: Comunicación A2A Paralela Segura
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente A -> Buzón del agente B: Mensaje legítimo
  * Atacante -> Buzón del agente B: Mensaje que dice ser del agente A
  * Nota Agente B: Sin firmas no puede distinguirlos
@@ -37,7 +36,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 08_hcs10_impersonation_attack.js
+ * node Spanish/M9_AI_Orchestration/08_hcs10_impersonation_attack.js
  * ============================================================================
  */
 

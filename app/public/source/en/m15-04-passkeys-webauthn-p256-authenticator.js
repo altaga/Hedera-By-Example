@@ -20,15 +20,15 @@
  * phishing and credential theft.
  *
  * [ LEARNING PATH ]
- * - Previous: M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683)
- * - Next:     M15 Lab 05: zk-TLS & Cryptographic Web Proofs (TLSNotary Model)
+ * - Previous: M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683 / CoW Swap Model)
+ * - Next:     M15 Lab 05: zk-TLS & Cryptographic Web Proofs (TLSNotary / Reclaim Model)
  *
  * [ OFFICIAL REFERENCES ]
  * - W3C Web Authentication (WebAuthn) Level 3: https://www.w3.org/TR/webauthn-3/
  * - FIDO Alliance Specifications: https://fidoalliance.org/specs/
  * - EIP-7212: Precompiled Contract for secp256r1 Curve Support: https://eips.ethereum.org/EIPS/eip-7212
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The biometric authenticator is emulated in software (the website lets you try a real passkey). The P-256 signatures and the HCS audit are real.
  *
  * [ BEFORE YOU RUN ]

@@ -16,8 +16,8 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 07: HCS-1 Native NFT
- * - Next:     M6 Lab 09: HCS-7 Smart Hashinals
+ * - Previous: M6 Lab 07: HCS-1 Native NFT (Metadata + Image on HCS)
+ * - Next:     M6 Lab 09: HCS-7 Smart Hashinals (EVM State + WASM Dynamic Inscriptions)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -25,7 +25,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 08_reconstruct_hcs1_nft.js
+ * node English/M6_Mass_Storage_Hashinals/08_reconstruct_hcs1_nft.js
  * ============================================================================
  */
 

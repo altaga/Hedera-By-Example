@@ -16,8 +16,8 @@
  * - https://docs.hedera.com/native/accounts/create
  *
  * [ LEARNING PATH ]
- * - Previous: Lab 03: Unlimited Association
- * - Next:     Lab 05: AWS KMS Enterprise Signer
+ * - Previous: M0 Lab 03: Activate Unlimited Auto-Associations
+ * - Next:     M0 Lab 05: AWS KMS Enterprise Signer
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -25,7 +25,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_create_child_wallet.js
+ * node English/M0_Setup_and_Test/04_create_child_wallet.js
  * ============================================================================
  */
 

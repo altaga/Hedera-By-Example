@@ -21,7 +21,7 @@
  * - https://hol.org/docs/standards/hcs-20/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
+ * - Anterior:  M13 Lab 06: Codificador/Parser Protobuf de Block Stream con los Esquemas HAPI Oficiales
  * - Siguiente: M14 Lab 02: Metodología de Puntuación de Confianza de IA HCS-25
  *
  * [ ANTES DE EJECUTAR ]

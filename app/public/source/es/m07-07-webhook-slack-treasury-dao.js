@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 07: DAO de Tesorería Autónoma con Webhooks (Gobernanza Reactiva)
+ * Lab 07: DAO de Tesorería Autónoma con Webhooks (Gobernanza Reactiva)
  * [CONCEPTO] Quórums de Umbral en Capa 1 y Orquestación Empresarial Dirigida por Eventos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -28,17 +28,17 @@
  * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M7 Lab 06: Verificación de Login Criptográfico
+ * - Anterior:  M7 Lab 06: Login Criptográfico con DID
  * - Siguiente: M7 Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Fideicomisario 1 -> Hedera: ScheduleCreate de pago (tesorería multifirma 2 de 3)
  * Monitor -> Hedera: Consultar el Mirror Node buscando propuestas pendientes
  * Monitor -> Fideicomisario 2: Webhook: propuesta esperando firma
  * Fideicomisario 2 -> Hedera: ScheduleSign
  * Hedera -> Tesorería: Umbral cumplido: el pago se ejecuta solo
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El webhook de Slack/Discord se imprime localmente, no se envía. La tesorería multifirma, el pago programado, las firmas y la consulta al Mirror Node son reales.
  *
  * [ ANTES DE EJECUTAR ]

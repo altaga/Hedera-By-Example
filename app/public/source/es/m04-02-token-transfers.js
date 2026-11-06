@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M4 Lab 01: Transferencias de HBAR
- * - Actual:   M4 Lab 02: Transferencias de Tokens
- * - Siguiente: M4 Lab 03: Transferencias de NFTs
+ * - Anterior:  M4 Lab 01: Transferencias Atómicas de HBAR
+ * - Siguiente: M4 Lab 03: Transferencias de NFT (Propiedad por Número de Serie)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_token_transfers.js
+ * node Spanish/M4_Token_Operations_Atomic_Swaps/02_token_transfers.js
  * ============================================================================
  */
 

@@ -24,8 +24,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M11 Lab 05: Factoraje de Facturas RWA
- * - Siguiente: M11 Lab 07: Puente de Integración ERP Institucional
+ * - Anterior:  M11 Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
+ * - Siguiente: M11 Lab 07: Puente de Integración ERP Institucional (Facturas UBL -> HCS -> Tramos HTS)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

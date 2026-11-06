@@ -28,16 +28,16 @@
  * - https://github.com/hashgraph/hedera-agent-kit-js
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 09: HIP-1334 Encrypted Message Box
+ * - Previous: M14 Lab 09: HIP-1334 Private Message Box on HCS
  * - Next:     M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Client -> Server: initialize + tools/list over stdio
  * Client -> Server: tools/call balance, HCS message, small transfer (allowed)
  * Server -> Hedera: Real reads and transactions
  * Client -> Server: tools/call 500 HBAR to unknown account (blocked by guard)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The "prompt-injection" call is scripted by the client to show the guard blocking it. The policy guard is custom code in this lab, not a third-party product.
  *
  * [ BEFORE YOU RUN ]

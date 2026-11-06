@@ -20,10 +20,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 01: Desafío 402 del Servidor
- * - Siguiente: M10 Lab 03: Liquidación del Facilitador
+ * - Anterior:  M10 Lab 01: Generación del Desafío Servidor HTTP 402
+ * - Siguiente: M10 Lab 03: Liquidación del Facilitador con Cero Gas
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Servidor -> Agente: 402 + PAYMENT-REQUIRED (0.01 ℏ, payTo, feePayer)
  * Nota Agente: Revisa su política de gasto (máximo 0.05 ℏ)
  * Nota Agente: Arma la TransferTransaction, id de transacción = feePayer, la firma

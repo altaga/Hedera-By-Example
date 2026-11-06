@@ -25,15 +25,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M4 Lab 08: Libro de Órdenes en Memoria y Liquidación L1 Triangular
- * - Siguiente: M5 Lab 01: Temas Inmutables
+ * - Anterior:  M4 Lab 08: Orderbook en Memoria y Liquidación Triangular Atómica en L1 (Ring Trade)
+ * - Siguiente: M5 Lab 01: Creación de Topic HCS Inmutable
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Vault, Arbitrajista, Alpha, Beta -> Hedera: Una transacción: préstamo + compra + venta + reembolso
  * Note Hedera: Todos los tramos se compensan por cuenta y se verifican en consenso
  * Hedera -> Arbitrajista: Se liquida solo si cada parte puede pagar su monto neto
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los dos "mercados" son cuentas desechables con precios fijos, no exchanges reales.
  *
  * [ ANTES DE EJECUTAR ]

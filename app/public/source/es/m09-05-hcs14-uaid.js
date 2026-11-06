@@ -20,16 +20,15 @@
  * - https://hol.org/docs/standards/hcs-14/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 04: Perfiles de Usuario (HCS-11)
- * - Actual:   M9 Lab 05: Identidad Única Agéntica (HCS-14)
- * - Siguiente: M9 Lab 06: Interacción Humano-a-Agente (HCS-10)
+ * - Anterior:  M9 Lab 04: Perfiles de IA HCS-11 (Provisión de Agente de Suplantación)
+ * - Siguiente: M9 Lab 06: Comunicación Humano-a-Agente HCS-10 (Pública)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
  * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_hcs14_uaid.js
+ * node Spanish/M9_AI_Orchestration/05_hcs14_uaid.js
  * ============================================================================
  */
 

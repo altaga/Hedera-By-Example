@@ -16,7 +16,7 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 06: Hashinals Ecosystem
+ * - Previous: M6 Lab 06: Digital Asset Evolution (Hashinals)
  * - Next:     M6 Lab 08: HCS-1 NFT Reconstruction
  *
  * [ BEFORE YOU RUN ]
@@ -24,7 +24,7 @@
  * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 07_hcs1_nft.js
+ * node English/M6_Mass_Storage_Hashinals/07_hcs1_nft.js
  * ============================================================================
  */
 

@@ -17,15 +17,15 @@
  * - https://hips.hedera.com/hip/hip-412
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 02: Financial Identity
- * - Next:     M3 Lab 04: Read NFT On-Chain
+ * - Previous: M3 Lab 02: Financial Identity and Compliance (KYC)
+ * - Next:     M3 Lab 04: Reading HFS-Backed NFT Data On-Chain
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~25 ℏ the first time (it creates a token and uploads a file, about 1.4 USD); ~9 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 03_nft_hip412.js
+ * node English/M3_Hedera_Token_Service/03_nft_hip412.js
  * ============================================================================
  */
 

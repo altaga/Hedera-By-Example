@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M7 Lab 02: Ejecución de Transferencia Multisig
- * - Actual:   M7 Lab 03: Automatización Nativa (Cron)
- * - Siguiente: M7 Lab 04: Orquestación Desacoplada
+ * - Anterior:  M7 Lab 02: Probando la Autoridad de la Multi-firma
+ * - Siguiente: M7 Lab 04: Orquestación Desacoplada y Quórum
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_native_cron.js
+ * node Spanish/M7_Governance_Cron/03_native_cron.js
  * ============================================================================
  */
 

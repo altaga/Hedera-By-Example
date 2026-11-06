@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 07: Puente de Integración ERP Institucional (Facturas UBL -> HCS -> Tramos HTS)
+ * Lab 07: Puente de Integración ERP Institucional (Facturas UBL -> HCS -> Tramos HTS)
  * [CONCEPTO] Tokenización de Finanzas Comerciales, Anclaje Legal y Filtro KYC ERC-3643
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -31,10 +31,10 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo
- * - Siguiente: M12 Lab 01: Fachada Directa HTS ERC-20
+ * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
+ * - Siguiente: M11 Lab 08: Acciones Corporativas y Pagos Masivos (Conceptos de Asset Tokenization Studio)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * ERP -> Emisor: Factura UBL 2.1
  * Emisor -> Hedera: Anclar el hash de la factura en HCS
  * Emisor -> Cumplimiento: Verificación del inversionista ERC-3643
@@ -42,7 +42,7 @@
  * Emisor -> Inversionista: Otorgar KYC y entregar 250 unidades (DvP)
  * Inversionista -> Emisor: Pago en la misma transacción atómica
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La factura de SAP/Oracle y la verificación de cumplimiento ERC-3643 son simuladas. El anclaje en HCS, el token del tramo y las transferencias son reales.
  *
  * [ ANTES DE EJECUTAR ]

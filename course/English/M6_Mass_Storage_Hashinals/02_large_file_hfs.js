@@ -18,15 +18,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service/append-to-a-file
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 01: Native HFS
- * - Next:     M6 Lab 03: Batch Uploading
+ * - Previous: M6 Lab 01: Native Hedera File Service (HFS) - Normal Files
+ * - Next:     M6 Lab 03: HFS Batch Operations (Multi-Asset Append)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~15 ℏ each run (it uploads a file, about 1.2 USD).
  *
  * [ HOW TO RUN ]
- * node 02_large_file_hfs.js
+ * node English/M6_Mass_Storage_Hashinals/02_large_file_hfs.js
  * ============================================================================
  */
 

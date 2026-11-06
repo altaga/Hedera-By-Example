@@ -27,10 +27,10 @@
  * - https://github.com/InternetOfPeers/hiero-message-box
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 08: HCS-12 HashLinks & HCS-21 Verified Adapters
+ * - Previous: M14 Lab 08: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
  * - Next:     M14 Lab 10: Hedera MCP Server with a Custom Policy Guard
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Recipient -> Hedera: Topic (admin key, [HIP-1334:account] memo) + signed HIP-1334_PUBLIC_KEY
  * Recipient -> Hedera: Account memo [HIP-1334:topic]
  * Sender -> Mirror Node: Discover topic, verify proof

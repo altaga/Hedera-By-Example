@@ -19,15 +19,15 @@
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 11: A2A Encrypted Handshake
- * - Next:     M10 Lab 02: Agent Payment Signature
+ * - Previous: M9 Lab 11: Encrypted A2A Communication (HCS-10)
+ * - Next:     M10 Lab 02: Autonomous Agent Payment Signature
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent -> Server: GET /api/v1/alpha-intelligence/market-depth
  * Note Server: No API key, token or cookie
  * Server -> Agent: 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The HTTP request and server run in the same process; no web server is started.
  *
  * [ BEFORE YOU RUN ]

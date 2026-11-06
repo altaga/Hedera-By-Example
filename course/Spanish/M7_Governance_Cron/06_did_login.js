@@ -19,9 +19,8 @@
  * - https://github.com/hiero-ledger/hiero-did-sdk-js
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M7 Lab 05: Identidad Descentralizada (DID)
- * - Actual:   M7 Lab 06: Verificación de Login Criptográfico
- * - Siguiente: M7 Lab 07: DAO de Tesorería Autónoma
+ * - Anterior:  M7 Lab 05: Identidad Descentralizada (DID) sobre Hedera
+ * - Siguiente: M7 Lab 07: DAO de Tesorería Autónoma con Webhooks (Gobernanza Reactiva)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_did_login.js
+ * node Spanish/M7_Governance_Cron/06_did_login.js
  * ============================================================================
  */
 

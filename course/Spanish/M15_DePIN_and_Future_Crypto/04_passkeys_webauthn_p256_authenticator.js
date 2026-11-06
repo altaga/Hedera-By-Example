@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 04: Autenticador Biométrico Passkeys y WebAuthn P-256
+ * Lab 04: Autenticador Biométrico Passkeys y WebAuthn P-256
  * [CONCEPTO] Criptografía de Hardware Sin Semilla (NIST P-256 / secp256r1) en Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -20,15 +20,15 @@
  * phishing remoto y del robo de credenciales.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683)
- * - Siguiente: M15 Lab 05: zk-TLS y Pruebas Criptográficas Web (Modelo TLSNotary)
+ * - Anterior:  M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
+ * - Siguiente: M15 Lab 05: zk-TLS y Pruebas Criptográficas Web (Modelo TLSNotary / Reclaim)
  *
  * [ REFERENCIAS OFICIALES ]
  * - Autenticación Web W3C (WebAuthn) Nivel 3: https://www.w3.org/TR/webauthn-3/
  * - Especificaciones de la Alianza FIDO: https://fidoalliance.org/specs/
  * - EIP-7212: Contrato Precompilado para la Curva secp256r1: https://eips.ethereum.org/EIPS/eip-7212
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El autenticador biométrico se emula por software (en el sitio puedes probar una passkey real). Las firmas P-256 y la auditoría en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

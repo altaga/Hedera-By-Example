@@ -20,16 +20,15 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 03: Carga Masiva (Bucket)
- * - Actual:   M6 Lab 04: Almacenamiento Económico HCS-1
- * - Siguiente: M6 Lab 05: Reconstrucción de Datos
+ * - Anterior:  M6 Lab 03: Carga por Lotes Multi-Activo (Manifiestos Compuestos)
+ * - Siguiente: M6 Lab 05: Reconstrucción Trustless de Datos desde HCS-1
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_economic_hcs1.js
+ * node Spanish/M6_Mass_Storage_Hashinals/04_economic_hcs1.js
  * ============================================================================
  */
 

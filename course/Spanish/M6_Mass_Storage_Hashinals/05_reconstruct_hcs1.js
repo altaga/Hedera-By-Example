@@ -19,9 +19,8 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 04: Almacenamiento Económico HCS-1
- * - Actual:   M6 Lab 05: Reconstrucción de Datos
- * - Siguiente: M6 Lab 06: Ecosistema de Hashinals
+ * - Anterior:  M6 Lab 04: Almacenamiento Económico con HCS-1 (Hashinals)
+ * - Siguiente: M6 Lab 06: El Ecosistema Hashinals
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_reconstruct_hcs1.js
+ * node Spanish/M6_Mass_Storage_Hashinals/05_reconstruct_hcs1.js
  * ============================================================================
  */
 

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
+ * Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
  * [CONCEPTO] Declaraciones Criptográficas Fuera de Cadena y Ejecución Atómica Multi-Pata
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -21,7 +21,7 @@
  * de Hedera revierte todas las transferencias sin ejecuciones parciales.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M15 Lab 02: Telemetría Ligera DePIN de Cadena de Frío (API Key + HMAC)
+ * - Anterior:  M15 Lab 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
  * - Siguiente: M15 Lab 04: Autenticador Biométrico Passkeys y WebAuthn P-256
  *
  * [ REFERENCIAS OFICIALES ]
@@ -29,14 +29,14 @@
  * - Documentación de Transferencias Atómicas en Hedera: https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  * - Arquitectura del Protocolo CoW: https://docs.cow.fi/overview/introduction
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Alice -> Solver: Intención firmada: USD por HBAR
  * Bob -> Solver: Intención firmada: HBAR por USD
  * Nota Solver: Empareja las intenciones fuera de la cadena
  * Solver -> Hedera: Una transferencia atómica liquida a ambos
  * Solver -> Hedera: Registro de liquidación en HCS
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. La transferencia de liquidación y el registro en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

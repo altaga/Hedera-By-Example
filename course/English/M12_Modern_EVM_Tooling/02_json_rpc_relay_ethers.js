@@ -17,8 +17,8 @@
  * - https://github.com/hiero-ledger/hiero-json-rpc-relay
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 01: Direct HTS ERC-20 Facade
- * - Next:     M12 Lab 03: Foundry & Hardhat Workflows
+ * - Previous: M12 Lab 01: Direct HTS Token ERC-20 Facade (Solidity Execution)
+ * - Next:     M12 Lab 03: Foundry & Hardhat Automation Workflows
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

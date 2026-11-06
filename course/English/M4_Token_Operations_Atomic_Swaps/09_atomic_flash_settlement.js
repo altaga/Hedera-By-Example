@@ -24,15 +24,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Clearing
- * - Next:     M5 Lab 01: Immutable Topics
+ * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Atomic Settlement (Ring Trade)
+ * - Next:     M5 Lab 01: Immutable HCS Primitives
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Vault, Arbitrageur, Alpha, Beta -> Hedera: One transaction: borrow + buy + sell + repay
  * Note Hedera: All legs netted per account and checked at consensus
  * Hedera -> Arbitrageur: Settles only if every party can pay its net amount
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The two "markets" are throwaway accounts with fixed prices, not real exchanges.
  *
  * [ BEFORE YOU RUN ]

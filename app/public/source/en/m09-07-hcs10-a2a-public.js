@@ -19,10 +19,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 06: HCS-10 U2A Public
- * - Next:     M9 Lab 08: Impersonation Attack
+ * - Previous: M9 Lab 06: User to Agent Communication (Parallel Orchestration)
+ * - Next:     M9 Lab 08: The Impersonation Attack (Security Gap)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent A -> Agent B Inbox: Round 1 message
  * Agent B -> Agent A Inbox: Reply
  * Agent A -> Agent B Inbox: Round 2 message
@@ -35,7 +35,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 07_hcs10_a2a_public.js
+ * node English/M9_AI_Orchestration/07_hcs10_a2a_public.js
  * ============================================================================
  */
 

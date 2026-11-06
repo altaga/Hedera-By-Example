@@ -26,16 +26,16 @@
  * - https://github.com/hashgraph/asset-tokenization-studio
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M11 Lab 01: Transferencias RWA con Permisos (KYC de HTS)
- * - Siguiente: M11 Lab 03: Roles de Stablecoin en HTS
+ * - Anterior:  M11 Lab 01: Transferencias RWA con Permisos — Registro de Identidad + KYC de HTS (Conceptos ERC-3643)
+ * - Siguiente: M11 Lab 03: Roles de Stablecoin en HTS (Conceptos de Stablecoin Studio)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Emisor -> Hedera: Crea los tokens de tramo Senior y Mezzanine
  * Emisor -> Inversores: Distribuye los bonos
  * Emisor -> MirrorNode: Lee los saldos de tenedores (tabla de capitalización)
  * Emisor -> Inversores: Una transferencia atómica de cupones a todos los tenedores
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La fecha del cupón es "ahora" en lugar de un cierre de trimestre real, y los montos están escalados a tinybars. Los tokens, tenedores, snapshot y pagos son reales y van a cuentas distintas.
  *
  * [ ANTES DE EJECUTAR ]

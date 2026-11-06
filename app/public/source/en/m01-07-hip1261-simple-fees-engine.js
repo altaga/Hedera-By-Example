@@ -23,7 +23,7 @@
  * - https://hips.hedera.com/hip/hip-1261
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 06: Native Staking
+ * - Previous: M1 Lab 06: Native Staking (HIP-584)
  * - Next:     M1 Lab 08: HBAR Allowances & Sponsored Spending (HIP-336)
  *
  * [ BEFORE YOU RUN ]

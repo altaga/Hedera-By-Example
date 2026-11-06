@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/custom-token-fees
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M3 Lab 04: Lectura de NFTs
- * - Actual:   M3 Lab 05: Tarifas Personalizadas
- * - Siguiente: M3 Lab 06: Regalías de Capa Base
+ * - Anterior:  M3 Lab 04: Resolución de Metadatos NFT On-Chain
+ * - Siguiente: M3 Lab 06: Regalías en la Capa Base
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_custom_fees.js
+ * node Spanish/M3_Hedera_Token_Service/05_custom_fees.js
  * ============================================================================
  */
 

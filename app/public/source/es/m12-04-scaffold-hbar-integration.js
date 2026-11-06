@@ -17,11 +17,10 @@
  * - https://github.com/hedera-dev/scaffold-hbar
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M12 Lab 03: Flujos con Foundry y Hardhat
- * - Actual:   M12 Lab 04: Arquitectura Scaffold-HBAR
- * - Siguiente: M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
+ * - Anterior:  M12 Lab 03: Flujos de Automatización con Foundry y Hardhat
+ * - Siguiente: M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra en el Relay JSON-RPC de Hedera
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Es una introducción: muestra la configuración de red de Scaffold-HBAR y la comprueba contra Hashio (lecturas RPC reales). No genera ni ejecuta la plantilla; para eso usa `npx create-scaffold-hbar`.
  *
  * [ ANTES DE EJECUTAR ]

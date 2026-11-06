@@ -18,16 +18,15 @@
  * - https://hips.hedera.com/hip/hip-23
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M0 Lab 02: Consulta de Saldo
- * - Actual:   M0 Lab 03: Asociación Ilimitada
- * - Siguiente: M0 Lab 04: Creación de Billetera Hija
+ * - Anterior:  M0 Lab 02: Verificación manual de cuenta
+ * - Siguiente: M0 Lab 04: Creación Nativa de Cuentas (Provisionamiento)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_unlimited_association.js
+ * node Spanish/M0_Setup_and_Test/03_unlimited_association.js
  * ============================================================================
  */
 

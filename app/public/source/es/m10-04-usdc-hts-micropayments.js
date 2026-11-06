@@ -20,10 +20,10 @@
  * - https://faucet.circle.com/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 03: Liquidación del Facilitador
- * - Siguiente: M10 Lab 05: Límites Financieros del Agente
+ * - Anterior:  M10 Lab 03: Liquidación del Facilitador con Cero Gas
+ * - Siguiente: M10 Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente -> Servidor: GET /api/v1/llm/prompt
  * Servidor -> Agente: 402 (25000 unidades de una stablecoin de 6 decimales = $0.025)
  * Nota Agente: Firma una transferencia de token HTS (no sale HBAR del agente)

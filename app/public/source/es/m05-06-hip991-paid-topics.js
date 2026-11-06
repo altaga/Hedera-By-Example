@@ -21,8 +21,8 @@
  * - https://hips.hedera.com/hip/hip-991
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M5 Lab 05: Registro HCS-6
- * - Siguiente: M5 Lab 07: Ingesta Masiva de Lotes con Árboles Merkle en HCS
+ * - Anterior:  M5 Lab 05: Registro Descentralizado HCS-6
+ * - Siguiente: M5 Lab 07: Motor de Ingesta Masiva de Lotes con Árboles Merkle y Pruebas de Inclusión en L1
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

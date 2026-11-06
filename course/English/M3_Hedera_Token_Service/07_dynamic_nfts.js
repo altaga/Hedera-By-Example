@@ -18,15 +18,15 @@
  * - https://hips.hedera.com/hip/hip-657
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 06: Base Layer Royalties
- * - Next:     M4 (Atomic Swaps)
+ * - Previous: M3 Lab 06: Base Layer Royalties (Secondary Protection)
+ * - Next:     M3 Lab 08: HIP-412 NFT Metadata
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 07_dynamic_nfts.js
+ * node English/M3_Hedera_Token_Service/07_dynamic_nfts.js
  * ============================================================================
  */
 

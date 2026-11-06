@@ -18,15 +18,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 04: HCS Ping-Pong
- * - Next:     M6 Lab 02: Large File HFS
+ * - Previous: M5 Lab 08: Enterprise Event Streaming Bridge (Kafka / Redpanda to HCS Anchor)
+ * - Next:     M6 Lab 02: Native Hedera File Service (HFS) - Large Files
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~5 ℏ each run (it uploads a file, about 0.3 USD).
  *
  * [ HOW TO RUN ]
- * node 01_native_hfs.js
+ * node English/M6_Mass_Storage_Hashinals/01_native_hfs.js
  * ============================================================================
  */
 

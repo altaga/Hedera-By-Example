@@ -27,9 +27,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
- * - Actual:    M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-336)
- * - Siguiente: M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
+ * - Anterior:  M13 Lab 01: Protocolo Cross-Ledger (CLPR) y Pruebas Criptográficas de Estado (HIP-1535)
+ * - Siguiente: M13 Lab 03: Flujo de Bloques en Hedera y Verificación TSS Agregada (HIP-1056)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

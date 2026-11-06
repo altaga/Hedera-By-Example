@@ -17,15 +17,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api#pagination
  *
  * [ LEARNING PATH ]
- * - Previous: M2 Lab 02: Secure Async REST
- * - Next:     M2 Lab 04: Real-Time Event Sourcing Reactor (SQLite CQRS)
+ * - Previous: M2 Lab 02: Secure Asynchronous REST Queries
+ * - Next:     M2 Lab 04: Real-Time Event Sourcing Reactor (Mirror Stream + SQLite In-Memory CQRS)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_recursive_pagination.js
+ * node English/M2_State_Interrogation_CQRS/03_recursive_pagination.js
  * ============================================================================
  */
 

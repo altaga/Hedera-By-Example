@@ -22,9 +22,9 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 02: Bonos por Tramos en HTS y Pago de Cupones (Conceptos ERC-1400)
- * - Siguiente: M11 Lab 04: Oráculo Proof-of-Reserve
+ * - Siguiente: M11 Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La transferencia bancaria y las decisiones AML/judiciales son narrativas; las claves de rol, la acuñación, KYC, freeze y wipe son reales. No se usan el SDK ni los contratos de Stablecoin Studio.
  *
  * [ ANTES DE EJECUTAR ]

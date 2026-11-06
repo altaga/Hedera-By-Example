@@ -27,16 +27,16 @@
  * - https://docs.hedera.com/solutions/tokenization/ats
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M11 Lab 04: Oráculo Proof-of-Reserve
- * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo RWA
+ * - Anterior:  M11 Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
+ * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * PyME -> Hedera: Ancla el hash de la factura en HCS y emite el token de factura
  * Inversor -> PyME: HBAR con descuento por todos los tokens (entrega contra pago atómica)
  * Deudor -> Inversor: Valor nominal completo al vencimiento
  * Inversor -> PyME: Tokens de factura redimidos en la misma transacción
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los datos de la factura son de ejemplo y el vencimiento ocurre de inmediato en lugar de a los 60 días; los montos están escalados a tinybars. Las tres partes son cuentas reales y cada pago es real.
  *
  * [ ANTES DE EJECUTAR ]

@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service/append-to-a-file
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 01: Almacenamiento Nativo HFS
- * - Actual:   M6 Lab 02: Gestión de Archivos Grandes
- * - Siguiente: M6 Lab 03: Carga Masiva (Bucket)
+ * - Anterior:  M6 Lab 01: Almacenamiento Nativo en HFS
+ * - Siguiente: M6 Lab 03: Carga por Lotes Multi-Activo (Manifiestos Compuestos)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ en cada ejecución (sube un archivo, cerca de 1.2 USD).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_large_file_hfs.js
+ * node Spanish/M6_Mass_Storage_Hashinals/02_large_file_hfs.js
  * ============================================================================
  */
 

@@ -16,17 +16,17 @@
  * - https://hedera.com/learning/consensus-algorithms/what-is-asynchronous-byzantine-fault-tolerance-abft
  *
  * [ LEARNING PATH ]
- * - Previous: M0 Lab 04: Environment Provisioning
- * - Next:     M1 Lab 02: Account Rent
+ * - Previous: M0 Lab 06: OpenTelemetry Consensus Telemetry
+ * - Next:     M1 Lab 02: State Rent & Account Lifecycle
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The gossip between nodes runs locally as a model of the hashgraph; no network calls are made.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
  *
  * [ HOW TO RUN ]
- * node 01_consensus_and_abft.js
+ * node English/M1_Fundamentals_Functional_JS/01_consensus_and_abft.js
  * ============================================================================
  */
 

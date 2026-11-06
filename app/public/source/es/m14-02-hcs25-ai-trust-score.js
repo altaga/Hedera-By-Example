@@ -27,10 +27,10 @@
  * - https://hol.org/docs/standards/hcs-14
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 01: Puntos Auditables HCS-20
- * - Siguiente: M14 Lab 03: Registro de Habilidades de Agentes HCS-26
+ * - Anterior:  M14 Lab 01: Puntos Auditables HCS-20 y Libros de Inscripciones
+ * - Siguiente: M14 Lab 03: Registro de Habilidades de Agentes y Manifiestos MCP HCS-26
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los valores de las señales del agente son datos de ejemplo. HCS-25 no define un formato de almacenamiento, así que el formato del registro en HCS (y las firmas de evaluadores) son elección de este lab. El algoritmo y la publicación en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

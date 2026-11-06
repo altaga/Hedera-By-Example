@@ -17,15 +17,15 @@
  * - https://hol.org/docs/standards/hcs-6/
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 04: HCS Ping-Pong
- * - Next:     M5 Lab 06: HIP-991 Paid Topics
+ * - Previous: M5 Lab 04: HCS Precision Benchmarking (Latency Teardown)
+ * - Next:     M5 Lab 06: Revenue-Generating Paid Topics & Tokenized Data Streams (HIP-991)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 05_hcs6_registry.js
+ * node English/M5_Hedera_Consensus_Service/05_hcs6_registry.js
  * ============================================================================
  */
 

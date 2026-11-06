@@ -19,10 +19,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 05: HCS-14 UAID
- * - Next:     M9 Lab 07: HCS-10 A2A Public
+ * - Previous: M9 Lab 05: HCS-14 Universal Agent ID (UAID)
+ * - Next:     M9 Lab 07: Autonomous Agent Orchestration
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * User -> Agent Inbox: Request message (HCS-10)
  * Agent -> Agent Inbox: Subscribe and read request
  * Note Agent: Processes the request
@@ -36,7 +36,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 06_hcs10_u2a_public.js
+ * node English/M9_AI_Orchestration/06_hcs10_u2a_public.js
  * ============================================================================
  */
 

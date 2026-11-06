@@ -27,10 +27,10 @@
  * - https://hol.org/docs/standards/hcs-14
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 01: HCS-20 Auditable Points
- * - Next:     M14 Lab 03: HCS-26 Agent Skills Registry
+ * - Previous: M14 Lab 01: HCS-20 Auditable Points & Inscription Ledgers
+ * - Next:     M14 Lab 03: HCS-26 Decentralized Agent Skills & Tool Manifest Registry
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The agent's signal values are sample data. HCS-25 does not define a storage format, so the HCS record layout (and the evaluator signatures) are this lab's choice. The algorithm and the HCS publication are real.
  *
  * [ BEFORE YOU RUN ]

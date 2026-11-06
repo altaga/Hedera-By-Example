@@ -20,11 +20,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 09: Comunicación Segura y Verificada
- * - Actual:   M9 Lab 10: Defensa Activa contra Adversarios
- * - Siguiente: M9 Lab 11: Comunicación Cifrada (Cipher enabled)
+ * - Anterior:  M9 Lab 09: Comunicación A2A Paralela Segura
+ * - Siguiente: M9 Lab 11: Comunicación A2A Cifrada (Full-Duplex Hybrid)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente A -> Buzón del agente B: Mensaje firmado
  * Atacante -> Buzón del agente B: Mensaje falsificado (llave incorrecta)
  * Nota Agente B: La verificación de firma rechaza la falsificación
@@ -36,7 +35,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 10_hcs10_a2a_secure_with_attack.js
+ * node Spanish/M9_AI_Orchestration/10_hcs10_a2a_secure_with_attack.js
  * ============================================================================
  */
 

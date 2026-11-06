@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/evm/hedera-services/system-contracts
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 03: Cambios Estructurales de la EVM
- * - Actual:   M8 Lab 04: Contratos de Sistema (System Contracts)
- * - Siguiente: M8 Lab 05: Protocolos de Autorización
+ * - Anterior:  M8 Lab 03: Ciclo de Vida de Contratos y Renta de Almacenamiento
+ * - Siguiente: M8 Lab 05: Protocolos de Autorización Nativa (Allowances)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_system_contracts.js
+ * node Spanish/M8_Smart_Contracts_EVM/04_system_contracts.js
  * ============================================================================
  */
 

@@ -21,8 +21,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 04: System Contracts
- * - Next:     M8 Lab 06: ERC20 USDC Interaction
+ * - Previous: M8 Lab 04: The Hedera System Oracle
+ * - Next:     M8 Lab 06: Advanced USDC Token Interactions (ERC-20)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -30,7 +30,7 @@
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 05_authorization_protocols.js
+ * node English/M8_Smart_Contracts_EVM/05_authorization_protocols.js
  * ============================================================================
  */
 

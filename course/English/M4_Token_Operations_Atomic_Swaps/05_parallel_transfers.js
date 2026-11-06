@@ -17,8 +17,8 @@
  * - https://docs.hedera.com/native/transactions/submit
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 04: Atomic Swaps
- * - Next:     M5 Lab 01: Immutable Topic
+ * - Previous: M4 Lab 04: Atomic Swaps (Multi-Asset Exchange)
+ * - Next:     M4 Lab 06: Native Airdrops (HIP-904)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -26,7 +26,7 @@
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 05_parallel_transfers.js
+ * node English/M4_Token_Operations_Atomic_Swaps/05_parallel_transfers.js
  * ============================================================================
  */
 

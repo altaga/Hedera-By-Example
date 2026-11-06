@@ -21,8 +21,8 @@
  * - https://hips.hedera.com/hip/hip-991
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 05: HCS-6 Registry
- * - Next:     M5 Lab 07: High-Throughput Merkle Batch Ingestion
+ * - Previous: M5 Lab 05: HCS-6 Decentralized Registry
+ * - Next:     M5 Lab 07: High-Throughput Merkle Batch Ingestion Engine & L1 Inclusion Proofs
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

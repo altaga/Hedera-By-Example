@@ -20,8 +20,8 @@
  * - https://opentelemetry.io/docs/concepts/signals/traces/
  *
  * [ LEARNING PATH ]
- * - Previous: Lab 05: AWS KMS Enterprise Signer
- * - Next:     M1 Lab 01: Consensus & aBFT
+ * - Previous: M0 Lab 05: AWS KMS Enterprise Signer
+ * - Next:     M1 Lab 01: Hedera Fundamentals - aBFT & Consensus Simulation
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

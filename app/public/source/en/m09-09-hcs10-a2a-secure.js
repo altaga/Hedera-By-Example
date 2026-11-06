@@ -21,10 +21,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 08: Impersonation Attack
- * - Next:     M9 Lab 10: Secure with Attack
+ * - Previous: M9 Lab 08: The Impersonation Attack (Security Gap)
+ * - Next:     M9 Lab 10: Secure A2A Communication with Active Attack
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent A -> Agent B Inbox: Payload + hash + signature (session key)
  * Note Agent B: Verifies the signature against Agent A key
  * Agent B -> Agent A Inbox: Signed reply
@@ -36,7 +36,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 09_hcs10_a2a_secure.js
+ * node English/M9_AI_Orchestration/09_hcs10_a2a_secure.js
  * ============================================================================
  */
 

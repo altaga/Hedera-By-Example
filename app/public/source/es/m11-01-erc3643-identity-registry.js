@@ -31,9 +31,9 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M10 Lab 08: Liquidación entre Dos Partes (el Comercio como Facilitador)
- * - Siguiente: M11 Lab 02: Bonos por Tramos en HTS (Conceptos ERC-1400)
+ * - Siguiente: M11 Lab 02: Bonos por Tramos en HTS y Pago de Cupones (Conceptos ERC-1400)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Emisor -> Hedera: Crea el token de seguridad con llave KYC
  * Emisor -> Emisor: El agente de cumplimiento revisa los claims del inversor
  * Emisor -> Hedera: Concede KYC solo a inversores elegibles
@@ -41,7 +41,7 @@
  * Nota Hedera: Las transferencias a cuentas sin KYC fallan en consenso
  * Emisor -> Hedera: Ancla las decisiones en HCS
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los claims de los inversores (país, acreditación) son datos de ejemplo locales y no se despliegan contratos ERC-3643/ATS. El token, las concesiones KYC, las transferencias aceptadas y rechazadas y la auditoría en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

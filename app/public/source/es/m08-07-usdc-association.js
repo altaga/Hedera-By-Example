@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 06: Interacción ERC-20 (USDC)
- * - Actual:   M8 Lab 07: Asociación de Tokens (USDC)
- * - Siguiente: M9 Lab 01: Persistencia IA (HCS-1)
+ * - Anterior:  M8 Lab 06: Integración con Activos ERC-20 (USDC en Hedera)
+ * - Siguiente: M8 Lab 08: Precompilados HTS Avanzados
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 07_usdc_association.js
+ * node Spanish/M8_Smart_Contracts_EVM/07_usdc_association.js
  * ============================================================================
  */
 

@@ -20,10 +20,10 @@
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 07: Pasarela de Streaming de IA
- * - Siguiente: M11 Lab 01: Transferencias RWA con Permisos (Conceptos ERC-3643)
+ * - Anterior:  M10 Lab 07: Pasarela Proxy de Streaming de IA (SSE + Liquidación x402)
+ * - Siguiente: M11 Lab 01: Transferencias RWA con Permisos — Registro de Identidad + KYC de HTS (Conceptos ERC-3643)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Comprador -> Vendedor: GET /api/v1/quantum-pricing/derivatives-matrix
  * Vendedor -> Comprador: 402 (payTo = feePayer = vendedor)
  * Nota Comprador: Firma la transferencia, como en el Lab 02

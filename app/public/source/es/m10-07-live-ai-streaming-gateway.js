@@ -20,10 +20,10 @@
  * - https://html.spec.whatwg.org/multipage/server-sent-events.html
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 06: Agente de Mercado Autónomo
+ * - Anterior:  M10 Lab 06: Agente de Mercado Autónomo (El Ciclo Completo)
  * - Siguiente: M10 Lab 08: Liquidación entre Dos Partes (el Comercio como Facilitador)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Cliente -> Pasarela: GET stream de inferencia (sin pago)
  * Pasarela -> Cliente: 402 + PAYMENT-REQUIRED (0.01 ℏ)
  * Nota Cliente: Firma la transferencia (Lab 02)
@@ -31,7 +31,7 @@
  * Pasarela -> Hedera: El facilitador firma y envía (Lab 03)
  * Pasarela -> Cliente: 200 + PAYMENT-RESPONSE, luego tokens text/event-stream
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los tokens de IA vienen de un generador sintético, no de un modelo real. La pasarela corre en el mismo proceso. El pago es real.
  *
  * [ ANTES DE EJECUTAR ]

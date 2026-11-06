@@ -21,9 +21,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 04: HTS USDC Micropayments
- * - Next:     M10 Lab 06: Autonomous Market Agent
+ * - Next:     M10 Lab 06: Autonomous AI Market Agent
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Server -> Agent: 402 (0.01 ℏ, verified merchant)
  * Note Agent: Policy approves, signs, facilitator settles
  * Server -> Agent: 402 (5 ℏ, verified merchant)

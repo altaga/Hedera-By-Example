@@ -22,10 +22,10 @@
  * - https://hol.org/docs/libraries/standards-sdk/hcs-27/overview
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes HCS-26
+ * - Anterior:  M14 Lab 03: Registro de Habilidades de Agentes y Manifiestos MCP HCS-26
  * - Siguiente: M14 Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Los 64 registros de inferencia son sintéticos. El árbol de Merkle, la prueba y el checkpoint en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

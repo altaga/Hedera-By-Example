@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 04: Contratos de Sistema (System Contracts)
- * - Actual:   M8 Lab 05: Protocolos de Autorización
- * - Siguiente: M8 Lab 06: Interacción ERC-20 (USDC)
+ * - Anterior:  M8 Lab 04: Contratos de Sistema (Precompiles Nativos)
+ * - Siguiente: M8 Lab 06: Integración con Activos ERC-20 (USDC en Hedera)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_authorization_protocols.js
+ * node Spanish/M8_Smart_Contracts_EVM/05_authorization_protocols.js
  * ============================================================================
  */
 

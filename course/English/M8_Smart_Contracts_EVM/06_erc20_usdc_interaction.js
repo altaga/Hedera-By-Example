@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/evm/development/addresses
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 05: Authorization Protocols
- * - Next:     M8 Lab 07: USDC Association
+ * - Previous: M8 Lab 05: Authorization Protocols and Allowances
+ * - Next:     M8 Lab 07: USDC Association Bridge
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: ~2 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 06_erc20_usdc_interaction.js
+ * node English/M8_Smart_Contracts_EVM/06_erc20_usdc_interaction.js
  * ============================================================================
  */
 

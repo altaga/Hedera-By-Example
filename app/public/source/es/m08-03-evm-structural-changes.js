@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/evm/development/rent
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 02: Ejecución de Lógica Híbrida
- * - Actual:   M8 Lab 03: Cambios Estructurales de la EVM
- * - Siguiente: M8 Lab 04: Contratos de Sistema (System Contracts)
+ * - Anterior:  M8 Lab 02: El Entorno Híbrido (SDK Nativo + Ethers.js)
+ * - Siguiente: M8 Lab 04: Contratos de Sistema (Precompiles Nativos)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_evm_structural_changes.js
+ * node Spanish/M8_Smart_Contracts_EVM/03_evm_structural_changes.js
  * ============================================================================
  */
 

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 05: Creación Perezosa de Cuentas (Abstracción de Cuentas)
+ * Lab 05: Creación Perezosa de Cuentas (Abstracción de Cuentas)
  * [CONCEPTO] Abstracción de Cuentas vía Alias ECDSA
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -19,15 +19,15 @@
  * - https://hips.hedera.com/hip/hip-32
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 04: Rotación de Claves
- * - Siguiente: M1 Lab 06: Staking Nativo
+ * - Anterior:  M1 Lab 04: Rotación de Llaves
+ * - Siguiente: M1 Lab 06: Staking Nativo (HIP-584)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_lazy_account_creation.js
+ * node Spanish/M1_Fundamentals_Functional_JS/05_lazy_account_creation.js
  * ============================================================================
  */
 

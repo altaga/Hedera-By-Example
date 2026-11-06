@@ -21,7 +21,7 @@
  * - https://hol.org/docs/standards/hcs-20/
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 05: Intent Settlement Engine
+ * - Previous: M13 Lab 06: Block Stream Protobuf Encoder/Parser with the Official HAPI Schemas
  * - Next:     M14 Lab 02: HCS-25 AI Trust Score Methodology
  *
  * [ BEFORE YOU RUN ]

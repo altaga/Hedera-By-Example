@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message#chunk-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M5 Lab 02: Estándares de Datos
- * - Actual:   M5 Lab 03: Paginación y Fragmentación
- * - Siguiente: M5 Lab 04: Comunicaciones Seguras (Ping-Pong)
+ * - Anterior:  M5 Lab 02: Estándares de Datos HCS-2
+ * - Siguiente: M5 Lab 04: Benchmark de Latencia HCS (Protocolo Ping-Pong)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_chunking_subscriptions.js
+ * node Spanish/M5_Hedera_Consensus_Service/03_chunking_subscriptions.js
  * ============================================================================
  */
 

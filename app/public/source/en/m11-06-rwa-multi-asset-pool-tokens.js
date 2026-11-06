@@ -24,7 +24,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
- * - Next:     M11 Lab 07: Institutional ERP Integration Bridge
+ * - Next:     M11 Lab 07: Institutional ERP Integration Bridge (UBL Invoice -> HCS -> HTS Tranches)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

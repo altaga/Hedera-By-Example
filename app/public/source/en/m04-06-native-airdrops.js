@@ -18,15 +18,15 @@
  * - https://hips.hedera.com/hip/hip-904
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 05: Parallel Transfers
- * - Next:     M4 Lab 07: Airdrop Cancel & Reject (HIP-904)
+ * - Previous: M4 Lab 05: High-Throughput Parallel Benchmarking
+ * - Next:     M4 Lab 07: Airdrop Cancellation & Anti-Spam Token Rejection (HIP-904)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); ~2 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 06_native_airdrops.js
+ * node English/M4_Token_Operations_Atomic_Swaps/06_native_airdrops.js
  * ============================================================================
  */
 

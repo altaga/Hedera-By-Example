@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/evm/development/rent
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 02: Hybrid Environment
- * - Next:     M8 Lab 04: System Contracts
+ * - Previous: M8 Lab 02: The Hybrid Execution Environment (Standard SDK + Ethers.js)
+ * - Next:     M8 Lab 04: The Hedera System Oracle
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_evm_structural_changes.js
+ * node English/M8_Smart_Contracts_EVM/03_evm_structural_changes.js
  * ============================================================================
  */
 

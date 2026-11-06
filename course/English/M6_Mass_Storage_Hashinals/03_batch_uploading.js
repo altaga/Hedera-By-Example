@@ -18,8 +18,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service/append-to-a-file
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 02: Large File HFS
- * - Next:     M6 Lab 04: Economic HCS-1
+ * - Previous: M6 Lab 02: Native Hedera File Service (HFS) - Large Files
+ * - Next:     M6 Lab 04: The Economic HCS-1 Standard (JSON Sharding)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -27,7 +27,7 @@
  * - Cost: ~9 ℏ each run (it uploads a file, about 0.5 USD).
  *
  * [ HOW TO RUN ]
- * node 03_batch_uploading.js
+ * node English/M6_Mass_Storage_Hashinals/03_batch_uploading.js
  * ============================================================================
  */
 

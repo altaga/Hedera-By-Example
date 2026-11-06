@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 01: Contratos Inteligentes Natos
- * - Actual:   M8 Lab 02: Ejecución de Lógica Híbrida
- * - Siguiente: M8 Lab 03: Cambios Estructurales de la EVM
+ * - Anterior:  M8 Lab 01: Despliegue de Smart Contracts (HSCS)
+ * - Siguiente: M8 Lab 03: Ciclo de Vida de Contratos y Renta de Almacenamiento
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_hybrid_environment.js
+ * node Spanish/M8_Smart_Contracts_EVM/02_hybrid_environment.js
  * ============================================================================
  */
 

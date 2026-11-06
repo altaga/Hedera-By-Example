@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/native/accounts/update
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 03: Criptografía y KMS
- * - Actual:   M1 Lab 04: Rotación de Llaves
- * - Siguiente: M2 Lab 01: Depreciación Sync
+ * - Anterior:  M1 Lab 03: Firmas Externas con HSM / KMS
+ * - Siguiente: M1 Lab 05: Creación Perezosa de Cuentas (Abstracción de Cuentas)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_key_rotation.js
+ * node Spanish/M1_Fundamentals_Functional_JS/04_key_rotation.js
  * ============================================================================
  */
 

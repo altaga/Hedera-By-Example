@@ -17,8 +17,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 06: Base Layer Royalties
- * - Next:     M4 Lab 02: Token Transfers
+ * - Previous: M3 Lab 10: Hedera NFT Studio — Rarity Inspector & Airdrop Pre-Flight Verifier
+ * - Next:     M4 Lab 02: Fungible Token Transfers (HTS)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -26,7 +26,7 @@
  * - Cost: ~1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 01_hbar_transfers.js
+ * node English/M4_Token_Operations_Atomic_Swaps/01_hbar_transfers.js
  * ============================================================================
  */
 

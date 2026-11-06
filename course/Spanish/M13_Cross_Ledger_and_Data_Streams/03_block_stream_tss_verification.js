@@ -21,11 +21,10 @@
  * - https://hips.hedera.com/hip/hip-1081
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-336)
- * - Actual:    M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
+ * - Anterior:  M13 Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-336)
  * - Siguiente: M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La verificación del quórum TSS usa un comité generado localmente: las pruebas de bloque TSS agregadas por la red (hinTS, HIP-1200) llegan con la transición a block streams de noviembre de 2026 (HIP-1193), y los archivos de bloque de testnet están en buckets requester-pays. El bloque y las transacciones leídos del Mirror Node son reales.
  *
  * [ ANTES DE EJECUTAR ]

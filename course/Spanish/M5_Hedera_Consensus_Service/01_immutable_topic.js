@@ -20,16 +20,15 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M4 Lab 05: Transferencias en Paralelo
- * - Actual:   M5 Lab 01: Mensajería Inmutable
- * - Siguiente: M5 Lab 02: Estándares de Datos
+ * - Anterior:  M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica en Capa 1
+ * - Siguiente: M5 Lab 02: Estándares de Datos HCS-2
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_immutable_topic.js
+ * node Spanish/M5_Hedera_Consensus_Service/01_immutable_topic.js
  * ============================================================================
  */
 

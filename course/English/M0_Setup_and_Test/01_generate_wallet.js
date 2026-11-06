@@ -16,14 +16,14 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/keys
  *
  * [ LEARNING PATH ]
- * - Previous: N/A (Course Start)
- * - Next:     Lab 02: Account Verification
+ * - Previous: (start of the course)
+ * - Next:     M0 Lab 02: Manual Account Verification
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
  *
  * [ HOW TO RUN ]
- * node 01_generate_wallet.js
+ * node English/M0_Setup_and_Test/01_generate_wallet.js
  * ============================================================================
  */
 

@@ -21,8 +21,8 @@
  * - https://opentelemetry.io/docs/concepts/signals/traces/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  Lab 05: Firmador Enterprise con AWS KMS
- * - Siguiente: M1 Lab 01: Consenso & aBFT
+ * - Anterior:  M0 Lab 05: Firmador Enterprise con AWS KMS
+ * - Siguiente: M1 Lab 01: Arquitectura aBFT y Simulación de Consenso
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

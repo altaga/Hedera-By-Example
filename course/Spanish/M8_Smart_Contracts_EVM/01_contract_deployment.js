@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M7 Lab 07: DAO de Tesorería Autónoma
- * - Actual:   M8 Lab 01: Contratos Inteligentes Natos
- * - Siguiente: M8 Lab 02: Ejecución de Lógica Híbrida
+ * - Anterior:  M7 Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad
+ * - Siguiente: M8 Lab 02: El Entorno Híbrido (SDK Nativo + Ethers.js)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_contract_deployment.js
+ * node Spanish/M8_Smart_Contracts_EVM/01_contract_deployment.js
  * ============================================================================
  */
 

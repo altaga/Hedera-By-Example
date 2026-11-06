@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 08: Precompilados HTS Avanzados
+ * Lab 08: Precompilados HTS Avanzados
  * [CONCEPTO] Contratos Inteligentes EVM Controlando Activos Nativos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -19,15 +19,15 @@
  * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M8 Lab 07: Asociación USDC
- * - Siguiente: M8 Lab 09: Fondo de Privacidad Zero-Knowledge
+ * - Anterior:  M8 Lab 07: Asociación de Tokens (USDC Bridge)
+ * - Siguiente: M8 Lab 09: Pool de Privacidad Zero-Knowledge en Hedera EVM (zk-SNARK Groth16)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~30 ℏ la primera vez (crea un token y un contrato, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 08_hts_precompiles_advanced.js
+ * node Spanish/M8_Smart_Contracts_EVM/08_hts_precompiles_advanced.js
  * ============================================================================
  */
 

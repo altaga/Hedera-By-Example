@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 10: Bóveda Cifrada Zero-Trust (Privacidad Corporativa en Consenso Público)
+ * Lab 10: Bóveda Cifrada Zero-Trust (Privacidad Corporativa en Consenso Público)
  * [CONCEPTO] Fragmentación Cifrada de Extremo a Extremo con Gzip, AES-256-GCM y HCS-1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -28,8 +28,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M6 Lab 09: Smart Hashinals HCS-7
- * - Siguiente: M7 Lab 01: Umbrales Multifirma Nativos
+ * - Anterior:  M6 Lab 09: Smart Hashinals HCS-7 (Estado EVM + Inscripciones Dinámicas WASM)
+ * - Siguiente: M7 Lab 01: Gobernanza con Multi-firma (KeyList y Thresholds)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

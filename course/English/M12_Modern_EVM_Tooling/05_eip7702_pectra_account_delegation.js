@@ -30,9 +30,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
- * - Next:     M12 Lab 06: ERC-4337 Paymaster & Gasless UserOperations
+ * - Next:     M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The EIP-7702 batch execution is simulated (status SIMULATED_CONFIRMED); the relay does not run Type 4 transactions here.
  *
  * [ BEFORE YOU RUN ]

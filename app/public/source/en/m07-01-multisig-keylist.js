@@ -18,15 +18,15 @@
  * - https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#key-lists
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 10: Zero-Trust Encrypted Vault
- * - Next:     M7 Lab 02: Multisig Transfer
+ * - Previous: M6 Lab 10: Zero-Trust Encrypted Vault (Enterprise Privacy over Public Consensus)
+ * - Next:     M7 Lab 02: Testing the Multisig Authority
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~1 ℏ (network fees and the accounts it creates).
  *
  * [ HOW TO RUN ]
- * node 01_multisig_keylist.js
+ * node English/M7_Governance_Cron/01_multisig_keylist.js
  * ============================================================================
  */
 

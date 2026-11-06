@@ -18,9 +18,8 @@
  * - https://docs.hedera.com/hedera/core-concepts/accounts/account-properties
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 01: Simulación de Consenso
- * - Actual:   M1 Lab 02: Renta de Cuentas
- * - Siguiente: M1 Lab 03: Criptografía y KMS
+ * - Anterior:  M1 Lab 01: Arquitectura aBFT y Simulación de Consenso
+ * - Siguiente: M1 Lab 03: Firmas Externas con HSM / KMS
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -28,7 +27,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_account_rent.js
+ * node Spanish/M1_Fundamentals_Functional_JS/02_account_rent.js
  * ============================================================================
  */
 

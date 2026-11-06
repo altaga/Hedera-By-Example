@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 07: NFTs Dinámicos (HIP-765)
+ * Lab 07: NFTs Dinámicos (HIP-765)
  * [CONCEPTO] Metadatos Mutables en HTS
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -19,15 +19,15 @@
  * - https://hips.hedera.com/hip/hip-657
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M3 Lab 06: Regalías de Capa Base
- * - Siguiente: M4 (Swaps Atómicos)
+ * - Anterior:  M3 Lab 06: Regalías en la Capa Base
+ * - Siguiente: M3 Lab 08: Metadatos NFT HIP-412
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 07_dynamic_nfts.js
+ * node Spanish/M3_Hedera_Token_Service/07_dynamic_nfts.js
  * ============================================================================
  */
 

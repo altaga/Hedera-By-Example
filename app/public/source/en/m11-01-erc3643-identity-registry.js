@@ -31,9 +31,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 08: Two-Party Settlement (Merchant as Facilitator)
- * - Next:     M11 Lab 02: Tranche Bonds on HTS (ERC-1400 Concepts)
+ * - Next:     M11 Lab 02: Tranche Bonds on HTS & Coupon Payouts (ERC-1400 Concepts)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Issuer -> Hedera: Create security token with KYC key
  * Issuer -> Issuer: Compliance agent checks investor claims
  * Issuer -> Hedera: Grant KYC only to eligible investors
@@ -41,7 +41,7 @@
  * Note Hedera: Transfers to accounts without KYC fail at consensus
  * Issuer -> Hedera: Anchor decisions on HCS
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The investor claims (country, accreditation) are local sample data and no ERC-3643/ATS contracts are deployed. The token, the KYC grants, the accepted and rejected transfers and the HCS audit trail are real.
  *
  * [ BEFORE YOU RUN ]

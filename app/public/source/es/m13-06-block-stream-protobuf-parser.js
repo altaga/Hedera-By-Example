@@ -28,10 +28,10 @@
  * - https://github.com/hiero-ledger/hiero-consensus-node/tree/main/hapi/hedera-protobuf-java-api/src/main/proto/block/stream
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain
- * - Siguiente: M14 Lab 01: Puntos Inscriptos y Auditables HCS-20
+ * - Anterior:  M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain (CLPR + HIP-336)
+ * - Siguiente: M14 Lab 01: Puntos Auditables HCS-20 y Libros de Inscripciones
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El Block se arma localmente con datos reales de testnet; no se descarga de un Block Node (los buckets de block stream de testnet son requester-pays y el acceso a Block Nodes está restringido). No incluye state_changes ni block_proof, así que no es un bloque verificable.
  *
  * [ ANTES DE EJECUTAR ]

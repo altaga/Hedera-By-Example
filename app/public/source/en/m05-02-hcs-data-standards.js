@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * LAB 02: Core Data Standards (HCS-2)
+ * Lab 02: Core Data Standards (HCS-2)
  * [CONCEPT] Decentralized Data Discoverability
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -18,8 +18,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 01: Immutable Topic
- * - Next:     M5 Lab 03: Chunking & Subscriptions
+ * - Previous: M5 Lab 01: Immutable HCS Primitives
+ * - Next:     M5 Lab 03: Automatic Chunking and Subscriptions (gRPC)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -27,7 +27,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 02_hcs_data_standards.js
+ * node English/M5_Hedera_Consensus_Service/02_hcs_data_standards.js
  * ============================================================================
  */
 

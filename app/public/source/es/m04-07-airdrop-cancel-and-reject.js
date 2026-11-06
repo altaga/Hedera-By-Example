@@ -24,7 +24,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 06: Airdrops Nativos (HIP-904)
- * - Siguiente: M4 Lab 08: Orderbook y Liquidación Triangular Atómica en L1
+ * - Siguiente: M4 Lab 08: Orderbook en Memoria y Liquidación Triangular Atómica en L1 (Ring Trade)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

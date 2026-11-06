@@ -26,8 +26,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 06: HIP-991 Paid Topics
- * - Next:     M5 Lab 08: Enterprise Kafka Streaming Bridge
+ * - Previous: M5 Lab 06: Revenue-Generating Paid Topics & Tokenized Data Streams (HIP-991)
+ * - Next:     M5 Lab 08: Enterprise Event Streaming Bridge (Kafka / Redpanda to HCS Anchor)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

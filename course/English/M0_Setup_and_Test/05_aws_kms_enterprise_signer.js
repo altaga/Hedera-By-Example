@@ -21,10 +21,10 @@
  * - https://docs.aws.amazon.com/kms/latest/developerguide/overview.html
  *
  * [ LEARNING PATH ]
- * - Previous: Lab 04: Native Account Creation
- * - Next:     Lab 06: OpenTelemetry Consensus Telemetry
+ * - Previous: M0 Lab 04: Native Account Creation
+ * - Next:     M0 Lab 06: OpenTelemetry Consensus Telemetry
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real.
  *
  * [ BEFORE YOU RUN ]

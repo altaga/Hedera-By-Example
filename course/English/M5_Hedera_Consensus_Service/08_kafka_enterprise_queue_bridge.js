@@ -31,10 +31,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 07: Merkle Batch Ingestion Engine
- * - Next:     M6 Lab 01: Native HFS
+ * - Previous: M5 Lab 07: High-Throughput Merkle Batch Ingestion Engine & L1 Inclusion Proofs
+ * - Next:     M6 Lab 01: Native Hedera File Service (HFS) - Normal Files
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * No Kafka or Redpanda broker is used: the partition events are generated in memory. The HCS watermark anchors are real.
  *
  * [ BEFORE YOU RUN ]

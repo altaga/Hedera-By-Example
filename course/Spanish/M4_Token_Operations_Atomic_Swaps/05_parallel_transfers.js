@@ -17,13 +17,8 @@
  * - https://docs.hedera.com/native/transactions/submit
  *
  * [ RUTA DE APRENDIZAJE ]
- * Escalado Horizontal: A diferencia de las blockchains secuenciales que
- * procesan una transacción tras otra creando cuellos de botella, Hedera
- * permite el procesamiento concurrente. Gracias a que el Hashgraph no es
- * lineal, múltiples nodos pueden recibir y procesar transacciones
- * simultáneamente. Lanzar transacciones en paralelo con `Promise.all()`
- * revela el verdadero poder de la red, que ha demostrado capacidades de más
- * de 10,000 TPS en entornos de producción.
+ * - Anterior:  M4 Lab 04: Intercambios Atómicos Multi-Activo (Atomic Swaps)
+ * - Siguiente: M4 Lab 06: Airdrops Nativos (HIP-904)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -31,7 +26,7 @@
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_parallel_transfers.js
+ * node Spanish/M4_Token_Operations_Atomic_Swaps/05_parallel_transfers.js
  * ============================================================================
  */
 

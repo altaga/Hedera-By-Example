@@ -17,15 +17,15 @@
  * - https://docs.hedera.com/evm/hedera-services/system-contracts/hts
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 07: USDC Association
- * - Next:     M8 Lab 09: Zero-Knowledge Privacy Pool
+ * - Previous: M8 Lab 07: USDC Association Bridge
+ * - Next:     M8 Lab 09: Zero-Knowledge Privacy Pool on Hedera EVM (Groth16 zk-SNARK)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~30 ℏ the first time (it creates a token and a contract, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 08_hts_precompiles_advanced.js
+ * node English/M8_Smart_Contracts_EVM/08_hts_precompiles_advanced.js
  * ============================================================================
  */
 

@@ -18,15 +18,15 @@
  * - https://hips.hedera.com/hip/hip-32
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 04: Key Rotation
- * - Next:     M1 Lab 06: Native Staking
+ * - Previous: M1 Lab 04: Account Key Rotation
+ * - Next:     M1 Lab 06: Native Staking (HIP-584)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 05_lazy_account_creation.js
+ * node English/M1_Fundamentals_Functional_JS/05_lazy_account_creation.js
  * ============================================================================
  */
 

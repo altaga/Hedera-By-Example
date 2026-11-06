@@ -34,10 +34,10 @@
  * - https://github.com/hashgraph/asset-tokenization-studio
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 07: Institutional ERP Invoicing Bridge
- * - Next:     M12 Lab 01: Modern EVM Tooling with Viem & Foundry
+ * - Previous: M11 Lab 07: Institutional ERP Integration Bridge (UBL Invoice -> HCS -> HTS Tranches)
+ * - Next:     M12 Lab 01: Direct HTS Token ERC-20 Facade (Solidity Execution)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The ATS smart contracts and mass-payout package are not used: this lab reproduces the corporate-action flow with a native HTS token. Investor names and jurisdictions are sample data; the token, holders, Mirror Node snapshot, payout and HCS certificate are real.
  *
  * [ BEFORE YOU RUN ]

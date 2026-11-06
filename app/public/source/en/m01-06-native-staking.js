@@ -17,15 +17,15 @@
  * - https://hips.hedera.com/hip/hip-584
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 05: Lazy Account Creation
- * - Next:     M1 Lab 07: HIP-1261 Simple Fees Engine
+ * - Previous: M1 Lab 05: Lazy Account Creation (Account Abstraction)
+ * - Next:     M1 Lab 07: HIP-1261 Simple Fees & Deterministic Pricing Engine
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 06_native_staking.js
+ * node English/M1_Fundamentals_Functional_JS/06_native_staking.js
  * ============================================================================
  */
 

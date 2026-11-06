@@ -26,10 +26,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M4 Lab 07: Cancelación de Airdrop y Rechazo de Tokens (HIP-904)
- * - Siguiente: M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica L1
+ * - Anterior:  M4 Lab 07: Cancelación de Airdrops y Rechazo Anti-Spam de Tokens (HIP-904)
+ * - Siguiente: M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica en Capa 1
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Alpha -> Solver: Orden límite firmada (USD → GOLD)
  * Beta -> Solver: Orden límite firmada (GOLD → HBAR)
  * Gamma -> Solver: Orden límite firmada (HBAR → USD)

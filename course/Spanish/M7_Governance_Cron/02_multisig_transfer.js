@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M7 Lab 01: Umbrales Multifirma
- * - Actual:   M7 Lab 02: Ejecución de Transferencia Multisig
- * - Siguiente: M7 Lab 03: Automatización Nativa (Cron)
+ * - Anterior:  M7 Lab 01: Gobernanza con Multi-firma (KeyList y Thresholds)
+ * - Siguiente: M7 Lab 03: Transacciones Programadas (Cron Nativo)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_multisig_transfer.js
+ * node Spanish/M7_Governance_Cron/02_multisig_transfer.js
  * ============================================================================
  */
 

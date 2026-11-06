@@ -20,9 +20,8 @@
  * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M7 Lab 03: Automatización Nativa (Cron)
- * - Actual:   M7 Lab 04: Orquestación Desacoplada
- * - Siguiente: M7 Lab 05: Identidad Descentralizada (DID)
+ * - Anterior:  M7 Lab 03: Transacciones Programadas (Cron Nativo)
+ * - Siguiente: M7 Lab 05: Identidad Descentralizada (DID) sobre Hedera
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -31,7 +30,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_decoupled_orchestration.js
+ * node Spanish/M7_Governance_Cron/04_decoupled_orchestration.js
  * ============================================================================
  */
 

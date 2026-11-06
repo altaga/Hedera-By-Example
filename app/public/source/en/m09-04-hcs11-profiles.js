@@ -20,8 +20,8 @@
  * - https://hol.org/docs/standards/hcs-11/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 03: HCS-2 Search and Resolution
- * - Next:     M9 Lab 05: Universal Agent Identifier (HCS-14)
+ * - Previous: M9 Lab 03: HCS-2 Registry Discovery
+ * - Next:     M9 Lab 05: HCS-14 Universal Agent ID (UAID)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -29,7 +29,7 @@
  * - Cost: ~8 ℏ (network fees and the accounts it creates).
  *
  * [ HOW TO RUN ]
- * node 04_hcs11_profiles.js
+ * node English/M9_AI_Orchestration/04_hcs11_profiles.js
  * ============================================================================
  */
 

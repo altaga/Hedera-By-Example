@@ -18,9 +18,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api#get-nft-info
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M3 Lab 03: NFTs con HIP-412
- * - Actual:   M3 Lab 04: Lectura de NFTs
- * - Siguiente: M3 Lab 05: Tarifas Personalizadas
+ * - Anterior:  M3 Lab 03: Emisión de NFT con Metadatos On-Chain (HIP-412)
+ * - Siguiente: M3 Lab 05: Implementación de Tarifas Personalizadas (Custom Fees)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -28,7 +27,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_read_nft_onchain.js
+ * node Spanish/M3_Hedera_Token_Service/04_read_nft_onchain.js
  * ============================================================================
  */
 

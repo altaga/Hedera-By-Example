@@ -20,21 +20,21 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M15 Lab 04: Passkeys & WebAuthn P-256 Biometric Authenticator
- * - Module Finish: Complete Frontier Architecture Suite
+ * - Next:     (end of the course)
  *
  * [ OFFICIAL REFERENCES ]
  * - TLSNotary Protocol Specifications: https://tlsnotary.org/
  * - Reclaim Protocol Whitepaper: https://docs.reclaimprotocol.org/
  * - Hedera Consensus Service: https://docs.hedera.com/native/consensus
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Prover -> Bank: TLS 1.3 session (simulated)
  * Notary -> Prover: Signs a commitment to the response (Ed25519)
  * Note Prover: Reveals only the claim, not the private data
  * Prover -> Hedera: Proof on HCS
  * Verifier -> Hedera: Check the notary signature and commitment
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The TLS session with the bank and the notary are emulated. The signatures and the HCS proof are real.
  *
  * [ BEFORE YOU RUN ]

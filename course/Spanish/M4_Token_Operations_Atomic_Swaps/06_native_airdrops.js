@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 06: Airdrops Nativos (HIP-904)
+ * Lab 06: Airdrops Nativos (HIP-904)
  * [CONCEPTO] Distribución de Tokens sin Fricción
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -18,15 +18,15 @@
  * - https://hips.hedera.com/hip/hip-904
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M4 Lab 05: Transferencias Paralelas
- * - Siguiente: M4 Lab 07: Cancelación de Airdrop y Rechazo de Tokens (HIP-904)
+ * - Anterior:  M4 Lab 05: Transferencias Paralelas y Escalabilidad Horizontal
+ * - Siguiente: M4 Lab 07: Cancelación de Airdrops y Rechazo Anti-Spam de Tokens (HIP-904)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~2 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_native_airdrops.js
+ * node Spanish/M4_Token_Operations_Atomic_Swaps/06_native_airdrops.js
  * ============================================================================
  */
 

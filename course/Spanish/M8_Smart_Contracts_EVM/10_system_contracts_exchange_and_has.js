@@ -28,7 +28,7 @@
  * - https://hips.hedera.com/hip/hip-351
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M8 Lab 09: Piscina de Privacidad con Pruebas de Conocimiento Cero
+ * - Anterior:  M8 Lab 09: Pool de Privacidad Zero-Knowledge en Hedera EVM (zk-SNARK Groth16)
  * - Siguiente: M8 Lab 11: Precompilación HSS Cron Autónomo en Solidity (0x16b)
  *
  * [ ANTES DE EJECUTAR ]

@@ -28,16 +28,16 @@
  * - https://github.com/hashgraph/hedera-agent-kit-js
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado HIP-1334
+ * - Anterior:  M14 Lab 09: Buzón de Mensajes Privado HIP-1334 en HCS
  * - Siguiente: M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Cliente -> Servidor: initialize + tools/list sobre stdio
  * Cliente -> Servidor: tools/call saldo, mensaje HCS, transferencia pequeña (permitidas)
  * Servidor -> Hedera: Lecturas y transacciones reales
  * Cliente -> Servidor: tools/call 500 HBAR a cuenta desconocida (bloqueada por el guardián)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La llamada de "inyección de prompt" la genera el cliente para mostrar cómo el guardián la bloquea. El guardián de políticas es código propio de este lab, no un producto de terceros.
  *
  * [ ANTES DE EJECUTAR ]

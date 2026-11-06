@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/evm/development/addresses
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 05: Protocolos de Autorización
- * - Actual:   M8 Lab 06: Interacción ERC-20 (USDC)
- * - Siguiente: M8 Lab 07: Asociación de Tokens (Bridge HTS)
+ * - Anterior:  M8 Lab 05: Protocolos de Autorización Nativa (Allowances)
+ * - Siguiente: M8 Lab 07: Asociación de Tokens (USDC Bridge)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: ~2 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_erc20_usdc_interaction.js
+ * node Spanish/M8_Smart_Contracts_EVM/06_erc20_usdc_interaction.js
  * ============================================================================
  */
 

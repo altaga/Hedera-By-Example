@@ -24,10 +24,10 @@
  * - https://hol.org/standards
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
- * - Next:     M14 Lab 06: Encrypted AI Agent Swarm Chat (P2P Over HCS)
+ * - Previous: M14 Lab 04: HCS-27 Transparency Log Checkpoints & Cryptographic Merkle Proofs
+ * - Next:     M14 Lab 06: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The agent prompt, reasoning and guardrails are canned text, not a live model. The audit-record layout is this lab's own: HCS-28's JWT/hash-input publication rules are not reproduced. The HCS-2 directory, change topic, registration and audit stream on HCS are real.
  *
  * [ BEFORE YOU RUN ]

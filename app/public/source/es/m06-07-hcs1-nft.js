@@ -16,15 +16,15 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 06: Ecosistema Hashinals
- * - Siguiente: M6 Lab 08: Reconstrucción de NFT
+ * - Anterior:  M6 Lab 06: El Ecosistema Hashinals
+ * - Siguiente: M6 Lab 08: Reconstrucción de NFT HCS-1
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 07_hcs1_nft.js
+ * node Spanish/M6_Mass_Storage_Hashinals/07_hcs1_nft.js
  * ============================================================================
  */
 

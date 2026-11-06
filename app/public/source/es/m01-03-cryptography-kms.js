@@ -18,18 +18,17 @@
  * - https://docs.hedera.com/hedera/core-concepts/keys-and-signatures
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 02: Renta de Cuentas
- * - Actual:   M1 Lab 03: Criptografía y KMS
+ * - Anterior:  M1 Lab 02: Renta de Estado y Ciclo de Vida de la Cuenta
  * - Siguiente: M1 Lab 04: Rotación de Llaves
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El HSM / bóveda es un mock en memoria. Las firmas son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_cryptography_kms.js
+ * node Spanish/M1_Fundamentals_Functional_JS/03_cryptography_kms.js
  * ============================================================================
  */
 

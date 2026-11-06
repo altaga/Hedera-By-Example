@@ -23,8 +23,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 07: HIP-1261 Simple Fees Engine
- * - Next:     M2 Lab 01: Legacy Query Deprecation
+ * - Previous: M1 Lab 07: HIP-1261 Simple Fees & Deterministic Pricing Engine
+ * - Next:     M2 Lab 01: Deprecation of Synchronous State Queries
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account is the sponsor (owner of the allowance).

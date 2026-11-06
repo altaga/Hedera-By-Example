@@ -23,10 +23,10 @@
  * - https://docs.hedera.com/reference/rest-api
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real
- * - Siguiente: M3 Lab 01: Emisión Inmutable
+ * - Anterior:  M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real del Ledger
+ * - Siguiente: M3 Lab 01: Emisión de Token Fungible con HTS
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * No hay servidor GraphQL ni subgrafo: un resolver local estilo GraphQL ejecuta llamadas REST paralelas al Mirror Node y devuelve solo los campos seleccionados. Los datos son reales.
  *
  * [ ANTES DE EJECUTAR ]

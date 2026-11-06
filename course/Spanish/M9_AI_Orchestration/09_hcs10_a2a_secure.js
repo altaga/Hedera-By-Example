@@ -21,11 +21,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 08: Simulación de Ataque de Suplantación
- * - Actual:   M9 Lab 09: Comunicación Segura y Verificada
- * - Siguiente: M9 Lab 10: Defensa Activa contra Adversarios
+ * - Anterior:  M9 Lab 08: Ataque de Suplantación HCS-10 (Hijacking)
+ * - Siguiente: M9 Lab 10: Auditoría de Seguridad con Defensa Activa
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente A -> Buzón del agente B: Contenido + hash + firma (llave de sesión)
  * Nota Agente B: Verifica la firma con la llave del agente A
  * Agente B -> Buzón del agente A: Respuesta firmada
@@ -37,7 +36,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 09_hcs10_a2a_secure.js
+ * node Spanish/M9_AI_Orchestration/09_hcs10_a2a_secure.js
  * ============================================================================
  */
 

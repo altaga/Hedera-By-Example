@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api#pagination
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M2 Lab 02: Consulta REST Segura
- * - Actual:   M2 Lab 03: Paginación Recursiva
- * - Siguiente: M2 Lab 04: Reactor de Event Sourcing en Tiempo Real (SQLite CQRS)
+ * - Anterior:  M2 Lab 02: Consultas REST Asíncronas al Mirror Node
+ * - Siguiente: M2 Lab 04: Reactor de Event Sourcing en Tiempo Real (Mirror Stream + SQLite CQRS en Memoria)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_recursive_pagination.js
+ * node Spanish/M2_State_Interrogation_CQRS/03_recursive_pagination.js
  * ============================================================================
  */
 

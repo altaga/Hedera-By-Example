@@ -21,16 +21,15 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M8 Lab 09: Fondo de Privacidad Zero-Knowledge
- * - Actual:   M9 Lab 01: Persistencia IA (HCS-1)
- * - Siguiente: M9 Lab 02: Registros de Identidad IA (HCS-2)
+ * - Anterior:  M8 Lab 11: Precompilación HSS Cron Autónomo en Solidity (0x16b)
+ * - Siguiente: M9 Lab 02: Registros de Temas HCS-2
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_hcs1_storage.js
+ * node Spanish/M9_AI_Orchestration/01_hcs1_storage.js
  * ============================================================================
  */
 

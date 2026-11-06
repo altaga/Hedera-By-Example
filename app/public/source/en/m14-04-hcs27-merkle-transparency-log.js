@@ -22,10 +22,10 @@
  * - https://hol.org/docs/libraries/standards-sdk/hcs-27/overview
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 03: HCS-26 Agent Skills Registry
+ * - Previous: M14 Lab 03: HCS-26 Decentralized Agent Skills & Tool Manifest Registry
  * - Next:     M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The 64 inference logs are synthetic. The Merkle tree, the proof and the HCS checkpoint are real.
  *
  * [ BEFORE YOU RUN ]

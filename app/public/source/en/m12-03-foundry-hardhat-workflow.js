@@ -22,10 +22,10 @@
  * - https://github.com/hiero-ledger/hiero-json-rpc-relay
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 02: JSON-RPC Relay via Ethers.js
+ * - Previous: M12 Lab 02: JSON-RPC Relay with Pure Ethers.js v6
  * - Next:     M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The Hardhat config is printed but Hardhat itself is not run. Foundry compiles (or solc-js when Foundry is missing) and the deployment and calls are real.
  *
  * [ BEFORE YOU RUN ]

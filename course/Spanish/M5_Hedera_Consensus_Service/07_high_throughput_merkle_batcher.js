@@ -26,8 +26,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M5 Lab 06: Tópicos Monetizados HIP-991
- * - Siguiente: M5 Lab 08: Puente Empresarial de Eventos Kafka a HCS
+ * - Anterior:  M5 Lab 06: Tópicos Monetizados Generadores de Ingresos en HBAR y HTS (HIP-991)
+ * - Siguiente: M5 Lab 08: Puente de Transmisión de Eventos Empresarial (Kafka / Redpanda hacia HCS)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

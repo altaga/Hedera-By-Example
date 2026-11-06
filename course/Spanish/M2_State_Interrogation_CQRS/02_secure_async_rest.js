@@ -18,16 +18,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M2 Lab 01: Depreciación Sync
- * - Actual:   M2 Lab 02: Consulta REST Segura
- * - Siguiente: M2 Lab 03: Paginación Recursiva
+ * - Anterior:  M2 Lab 01: Depreciación de Consultas Sincrónicas
+ * - Siguiente: M2 Lab 03: Paginación Recursiva y Transformación de Datos
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_secure_async_rest.js
+ * node Spanish/M2_State_Interrogation_CQRS/02_secure_async_rest.js
  * ============================================================================
  */
 

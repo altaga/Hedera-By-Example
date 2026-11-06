@@ -19,10 +19,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 09: HCS-10 A2A Secure
- * - Next:     M9 Lab 11: HCS-10 A2A Encrypted
+ * - Previous: M9 Lab 09: Secure A2A Communication (HCS-10)
+ * - Next:     M9 Lab 11: Encrypted A2A Communication (HCS-10)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent A -> Agent B Inbox: Signed message
  * Attacker -> Agent B Inbox: Forged message (wrong key)
  * Note Agent B: Signature check rejects the forgery
@@ -34,7 +34,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 10_hcs10_a2a_secure_with_attack.js
+ * node English/M9_AI_Orchestration/10_hcs10_a2a_secure_with_attack.js
  * ============================================================================
  */
 

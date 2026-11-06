@@ -23,10 +23,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api
  *
  * [ LEARNING PATH ]
- * - Previous: M2 Lab 05: Circuit Breaker & Rate Limiter
+ * - Previous: M2 Lab 05: Enterprise Resilience — Circuit Breaker & Rate Limiter
  * - Next:     M2 Lab 07: Mirror Node Query Aggregator (GraphQL-Style Resolvers)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The subscriber client runs in the same process as the server. The ledger events it relays are real.
  *
  * [ BEFORE YOU RUN ]

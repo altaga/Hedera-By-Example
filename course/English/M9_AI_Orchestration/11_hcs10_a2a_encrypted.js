@@ -20,10 +20,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 10: Secure with Attack
- * - Next:      GRADUATION: Curriculum Complete
+ * - Previous: M9 Lab 10: Secure A2A Communication with Active Attack
+ * - Next:     M10 Lab 01: Server HTTP 402 Challenge Generation
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent A -> Agent B Inbox: Request encrypted with Agent B RSA public key
  * Note Agent B: Only Agent B private key can decrypt it
  * Agent B -> Agent A Inbox: Reply encrypted with Agent A public key
@@ -35,7 +35,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 11_hcs10_a2a_encrypted.js
+ * node English/M9_AI_Orchestration/11_hcs10_a2a_encrypted.js
  * ============================================================================
  */
 

@@ -17,8 +17,8 @@
  * - https://docs.hedera.com/native/accounts/update
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 03: Cryptography & KMS
- * - Next:     M2 Lab 01: Sync Deprecation
+ * - Previous: M1 Lab 03: Cryptography and Signature Delegation (KMS / HSM)
+ * - Next:     M1 Lab 05: Lazy Account Creation (Account Abstraction)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -26,7 +26,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_key_rotation.js
+ * node English/M1_Fundamentals_Functional_JS/04_key_rotation.js
  * ============================================================================
  */
 

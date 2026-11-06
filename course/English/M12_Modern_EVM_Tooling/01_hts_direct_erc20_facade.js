@@ -20,8 +20,8 @@
  * - https://hips.hedera.com/hip/hip-719
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 07: Institutional ERP Integration Bridge
- * - Next:     M12 Lab 02: JSON-RPC Relay via Ethers.js
+ * - Previous: M11 Lab 08: Corporate Actions & Mass Payout (Asset Tokenization Studio Concepts)
+ * - Next:     M12 Lab 02: JSON-RPC Relay with Pure Ethers.js v6
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

@@ -22,10 +22,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
- * - Next:     M13 Lab 02: Native Delegated Fee Sponsorship (HIP-336)
+ * - Previous: M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
+ * - Next:     M13 Lab 02: Native Fee Sponsorship & Delegated Allowances (HIP-336)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The TSS council signatures and the HIP-1535 state proof are simulated (the protocol is not live yet). The HCS anchoring is real.
  *
  * [ BEFORE YOU RUN ]

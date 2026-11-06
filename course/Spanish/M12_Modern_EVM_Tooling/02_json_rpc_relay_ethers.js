@@ -17,9 +17,8 @@
  * - https://github.com/hiero-ledger/hiero-json-rpc-relay
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M12 Lab 01: Fachada Directa HTS ERC-20
- * - Actual:   M12 Lab 02: JSON-RPC Relay con Ethers.js
- * - Siguiente: M12 Lab 03: Flujos con Foundry y Hardhat
+ * - Anterior:  M12 Lab 01: Fachada Directa HTS como ERC-20 (Ejecución en Solidity)
+ * - Siguiente: M12 Lab 03: Flujos de Automatización con Foundry y Hardhat
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 05: zk-TLS y Pruebas Criptográficas Web (Modelo TLSNotary / Reclaim)
+ * Lab 05: zk-TLS y Pruebas Criptográficas Web (Modelo TLSNotary / Reclaim)
  * [CONCEPTO] Atestación Web2 de Conocimiento Cero Anclada al Consenso de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -20,22 +20,22 @@
  * validar que la prueba fue certificada por un enclave confiable preservando el 100% de la privacidad.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M15 Lab 04: Autenticador Biométrico Passkeys y WebAuthn P-256
- * - Fin de Módulo: Suite Completa de Arquitecturas de Frontera Criptográfica
+ * - Anterior:  M15 Lab 04: Autenticador Biométrico Passkeys y WebAuthn P-256
+ * - Siguiente: (fin del curso)
  *
  * [ REFERENCIAS OFICIALES ]
  * - Especificaciones del Protocolo TLSNotary: https://tlsnotary.org/
  * - Documentación Oficial del Protocolo Reclaim: https://docs.reclaimprotocol.org/
  * - Servicio de Consenso de Hedera (HCS): https://docs.hedera.com/native/consensus
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Probador -> Banco: Sesión TLS 1.3 (simulada)
  * Notario -> Probador: Firma un compromiso de la respuesta (Ed25519)
  * Nota Probador: Revela solo la afirmación, no los datos privados
  * Probador -> Hedera: Prueba en HCS
  * Verificador -> Hedera: Revisar la firma del notario y el compromiso
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La sesión TLS con el banco y el notario son emulados. Las firmas y la prueba en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

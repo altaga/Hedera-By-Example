@@ -20,9 +20,8 @@
  * - https://hol.org/docs/standards/hcs-11/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 03: Búsqueda y Resolución HCS-2
- * - Actual:   M9 Lab 04: Perfiles de Usuario (HCS-11)
- * - Siguiente: M9 Lab 05: Identidad Única Agéntica (HCS-14)
+ * - Anterior:  M9 Lab 03: Descubrimiento de Registros HCS-2
+ * - Siguiente: M9 Lab 05: HCS-14 UAID (Universal Agent ID)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: ~8 ℏ (comisiones de red y las cuentas que crea).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_hcs11_profiles.js
+ * node Spanish/M9_AI_Orchestration/04_hcs11_profiles.js
  * ============================================================================
  */
 

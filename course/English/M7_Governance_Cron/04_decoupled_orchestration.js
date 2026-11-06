@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/native/scheduled/sign
  *
  * [ LEARNING PATH ]
- * - Previous: M7 Lab 03: Native Cron
- * - Next:     M7 Lab 05: Decentralized Identity
+ * - Previous: M7 Lab 03: Native Cron Services (On-chain Scheduling)
+ * - Next:     M7 Lab 05: Decentralized Identity (DID) on HCS
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -29,7 +29,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_decoupled_orchestration.js
+ * node English/M7_Governance_Cron/04_decoupled_orchestration.js
  * ============================================================================
  */
 

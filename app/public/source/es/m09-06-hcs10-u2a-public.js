@@ -20,11 +20,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 05: Identidad Única Agéntica (HCS-14)
- * - Actual:   M9 Lab 06: Interacción Humano-a-Agente (HCS-10)
- * - Siguiente: M9 Lab 07: Comunicación Agente-a-Agente (A2A)
+ * - Anterior:  M9 Lab 05: HCS-14 UAID (Universal Agent ID)
+ * - Siguiente: M9 Lab 07: Orquestación Agente-a-Agente (A2A) HCS-10
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Usuario -> Buzón del agente: Mensaje de solicitud (HCS-10)
  * Agente -> Buzón del agente: Suscribirse y leer la solicitud
  * Nota Agente: Procesa la solicitud
@@ -37,7 +36,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_hcs10_u2a_public.js
+ * node Spanish/M9_AI_Orchestration/06_hcs10_u2a_public.js
  * ============================================================================
  */
 

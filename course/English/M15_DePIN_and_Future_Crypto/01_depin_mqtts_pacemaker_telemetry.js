@@ -21,14 +21,14 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 10: Hedera MCP Server with a Custom Policy Guard
- * - Next:     M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC)
+ * - Next:     M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC-SHA256)
  *
  * [ OFFICIAL REFERENCES ]
  * - Hedera Consensus Service: https://docs.hedera.com/native/consensus
  * - HIP-10 Zero-Fee HCS Topic Standards: https://hips.hedera.com/hip/hip-10
  * - NIST SP 800-140C Cryptographic Module Validation (Ed25519 Hardware Keystores)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The pacemaker and its MQTTS stream are emulated. The device signatures, the Merkle batch and the HCS messages are real.
  *
  * [ BEFORE YOU RUN ]

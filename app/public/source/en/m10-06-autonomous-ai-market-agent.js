@@ -18,10 +18,10 @@
  * - https://docs.hedera.com/solutions/ai/x402
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 05: Financial Guardrails
- * - Next:     M10 Lab 07: Live AI Streaming Gateway
+ * - Previous: M10 Lab 05: Autonomous Agent Financial Guardrails
+ * - Next:     M10 Lab 07: Live AI Streaming Proxy Gateway (SSE + x402 Settlement)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent -> Providers: GET /api/v1/signals/macro (no payment)
  * Providers -> Agent: 402 quotes (price, payTo, feePayer)
  * Note Agent: Picks the best confidence per HBAR within budget
@@ -29,7 +29,7 @@
  * Facilitator -> Hedera: Co-sign and submit
  * Provider -> Agent: 200 OK + signal
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The three providers are simulated and all collect into ACCOUNT_2. Their 402 quotes follow x402, and the payment is real.
  *
  * [ BEFORE YOU RUN ]

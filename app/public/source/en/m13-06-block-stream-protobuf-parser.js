@@ -28,10 +28,10 @@
  * - https://github.com/hiero-ledger/hiero-consensus-node/tree/main/hapi/hedera-protobuf-java-api/src/main/proto/block/stream
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
- * - Next:     M14 Lab 01: HCS-20 Auditable Points & Inscriptions
+ * - Previous: M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine (CLPR + HIP-336)
+ * - Next:     M14 Lab 01: HCS-20 Auditable Points & Inscription Ledgers
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The Block is assembled locally from real testnet data; it is not downloaded from a Block Node (testnet block-stream buckets are requester-pays and Block Node access is gated). It has no state_changes or block_proof, so it is not a verifiable block.
  *
  * [ BEFORE YOU RUN ]

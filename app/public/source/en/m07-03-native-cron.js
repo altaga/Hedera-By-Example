@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
  *
  * [ LEARNING PATH ]
- * - Previous: M7 Lab 02: Multisig Transfer
- * - Next:     M7 Lab 04: Decoupled Orchestration
+ * - Previous: M7 Lab 02: Testing the Multisig Authority
+ * - Next:     M7 Lab 04: Decoupled Orchestration and Quorum
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_native_cron.js
+ * node English/M7_Governance_Cron/03_native_cron.js
  * ============================================================================
  */
 

@@ -17,15 +17,15 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 05: Parallel Transfers
- * - Next:     M5 Lab 02: HCS Data Standards
+ * - Previous: M4 Lab 09: Zero-Capital Flash Loans & Atomic Layer 1 Settlement
+ * - Next:     M5 Lab 02: Core Data Standards (HCS-2)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 01_immutable_topic.js
+ * node English/M5_Hedera_Consensus_Service/01_immutable_topic.js
  * ============================================================================
  */
 

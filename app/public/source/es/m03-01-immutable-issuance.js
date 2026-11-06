@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/define-a-token
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M2 Lab 03: Paginación Recursiva
- * - Actual:   M3 Lab 01: Emisión de Token
- * - Siguiente: M3 Lab 02: Identidad Financiera
+ * - Anterior:  M2 Lab 07: Agregador de Consultas al Mirror Node (Resolvers Estilo GraphQL)
+ * - Siguiente: M3 Lab 02: Identidad Financiera y Cumplimiento Regulatorio
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_immutable_issuance.js
+ * node Spanish/M3_Hedera_Token_Service/01_immutable_issuance.js
  * ============================================================================
  */
 

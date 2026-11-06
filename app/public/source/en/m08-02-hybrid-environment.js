@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 01: Contract Deployment
- * - Next:     M8 Lab 03: Structural Changes
+ * - Previous: M8 Lab 01: Smart Contract Deployment (Integrated Compiler)
+ * - Next:     M8 Lab 03: Structural Differences and Rent Mechanics
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 02_hybrid_environment.js
+ * node English/M8_Smart_Contracts_EVM/02_hybrid_environment.js
  * ============================================================================
  */
 

@@ -24,7 +24,7 @@
  * - https://hips.hedera.com/hip/hip-1261
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M1 Lab 06: Staking Nativo
+ * - Anterior:  M1 Lab 06: Staking Nativo (HIP-584)
  * - Siguiente: M1 Lab 08: Asignaciones de HBAR y Gasto Patrocinado (HIP-336)
  *
  * [ ANTES DE EJECUTAR ]

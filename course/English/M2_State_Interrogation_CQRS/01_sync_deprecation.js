@@ -16,15 +16,15 @@
  * - https://docs.hedera.com/hedera/core-concepts/mirror-nodes
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 04: Key Rotation
- * - Next:     M2 Lab 02: Secure Async REST
+ * - Previous: M1 Lab 08: HBAR Allowances & Sponsored Spending (HIP-336)
+ * - Next:     M2 Lab 02: Secure Asynchronous REST Queries
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 01_sync_deprecation.js
+ * node English/M2_State_Interrogation_CQRS/01_sync_deprecation.js
  * ============================================================================
  */
 

@@ -20,9 +20,8 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 02: Registros de Identidad IA (HCS-2)
- * - Actual:   M9 Lab 03: Búsqueda y Resolución HCS-2
- * - Siguiente: M9 Lab 04: Perfiles de Usuario (HCS-11)
+ * - Anterior:  M9 Lab 02: Registros de Temas HCS-2
+ * - Siguiente: M9 Lab 04: Perfiles de IA HCS-11 (Provisión de Agente de Suplantación)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -30,7 +29,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 03_hcs2_search.js
+ * node Spanish/M9_AI_Orchestration/03_hcs2_search.js
  * ============================================================================
  */
 

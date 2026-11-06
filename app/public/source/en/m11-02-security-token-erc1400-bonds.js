@@ -27,16 +27,16 @@
  * - https://github.com/hashgraph/asset-tokenization-studio
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 01: Permissioned RWA Transfers (HTS KYC)
- * - Next:     M11 Lab 03: Stablecoin Roles on HTS
+ * - Previous: M11 Lab 01: Permissioned RWA Transfers — Identity Registry + HTS KYC (ERC-3643 Concepts)
+ * - Next:     M11 Lab 03: Stablecoin Roles on HTS (Stablecoin Studio Concepts)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Issuer -> Hedera: Create Senior and Mezzanine tranche tokens
  * Issuer -> Investors: Distribute bonds
  * Issuer -> MirrorNode: Read holder balances (cap table)
  * Issuer -> Investors: One atomic coupon transfer to all holders
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The coupon date is "now" instead of a real quarter end, and coupon amounts are scaled to tinybars. Tokens, holders, snapshot and payments are real and go to distinct accounts.
  *
  * [ BEFORE YOU RUN ]

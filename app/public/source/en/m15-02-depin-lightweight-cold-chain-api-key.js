@@ -19,15 +19,15 @@
  * HCS provides indisputable legal proof for insurance and automated carrier slashing.
  *
  * [ LEARNING PATH ]
- * - Previous: M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing
- * - Next:     M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683)
+ * - Previous: M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
+ * - Next:     M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683 / CoW Swap Model)
  *
  * [ OFFICIAL REFERENCES ]
  * - Hedera Consensus Service Overview: https://docs.hedera.com/native/consensus
  * - RFC 2104: HMAC: Keyed-Hashing for Message Authentication
  * - WHO Technical Report 961: Temperature & Humidity Monitoring in Cold Chains
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The IoT tracker and its HTTP requests are emulated. The HMAC checks and the HCS records are real.
  *
  * [ BEFORE YOU RUN ]

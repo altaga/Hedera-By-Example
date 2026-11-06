@@ -20,11 +20,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M9 Lab 06: Interacción Humano-a-Agente (U2A)
- * - Actual:   M9 Lab 07: Comunicación Agente-a-Agente (A2A)
- * - Siguiente: M9 Lab 08: Simulación de Ataque de Suplantación
+ * - Anterior:  M9 Lab 06: Comunicación Humano-a-Agente HCS-10 (Pública)
+ * - Siguiente: M9 Lab 08: Ataque de Suplantación HCS-10 (Hijacking)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente A -> Buzón del agente B: Mensaje de la ronda 1
  * Agente B -> Buzón del agente A: Respuesta
  * Agente A -> Buzón del agente B: Mensaje de la ronda 2
@@ -37,7 +36,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 07_hcs10_a2a_public.js
+ * node Spanish/M9_AI_Orchestration/07_hcs10_a2a_public.js
  * ============================================================================
  */
 

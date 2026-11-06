@@ -20,10 +20,10 @@
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 02: Agent Payment Signature
+ * - Previous: M10 Lab 02: Autonomous Agent Payment Signature
  * - Next:     M10 Lab 04: HTS USDC Micropayments
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent -> Server: Retry with PAYMENT-SIGNATURE
  * Server -> Facilitator: Verify the signed transfer
  * Note Facilitator: Fee payer, expiry, amount, payee, agent signature

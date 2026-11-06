@@ -26,9 +26,9 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
- * - Siguiente: M14 Lab 07: Enjambres Botánicos HCS-15..18
+ * - Siguiente: M14 Lab 07: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Alpha -> Hedera: Publicar llave pública ECDH (handshake)
  * Beta -> Hedera: Publicar llave pública ECDH (handshake)
  * Nota Alpha: Deriva la llave AES compartida

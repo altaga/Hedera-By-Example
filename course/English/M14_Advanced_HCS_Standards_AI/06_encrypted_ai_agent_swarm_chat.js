@@ -26,9 +26,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
- * - Next:     M14 Lab 07: HCS-15..18 Botanical Agent Swarms
+ * - Next:     M14 Lab 07: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Alpha -> Hedera: Publish ECDH public key (handshake)
  * Beta -> Hedera: Publish ECDH public key (handshake)
  * Note Alpha: Derives the shared AES key

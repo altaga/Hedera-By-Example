@@ -28,7 +28,7 @@
  * - https://hips.hedera.com/hip/hip-351
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool
+ * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool on Hedera EVM (Groth16 zk-SNARK)
  * - Next:     M8 Lab 11: Solidity Autonomous HSS Cron Precompile (0x16b)
  *
  * [ BEFORE YOU RUN ]

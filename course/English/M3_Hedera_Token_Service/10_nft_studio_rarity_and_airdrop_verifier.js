@@ -35,8 +35,8 @@
  * - https://hips.hedera.com/hip/hip-904
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 09: HIP-850 Treasury NFT Lock
- * - Next:     M4 Lab 01: HBAR & Token Atomic Transfers
+ * - Previous: M3 Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
+ * - Next:     M4 Lab 01: Native HBAR Transfers
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

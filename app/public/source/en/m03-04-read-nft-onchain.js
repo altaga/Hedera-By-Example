@@ -17,8 +17,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/rest-api#get-nft-info
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 03: NFT HIP-412
- * - Next:     M3 Lab 05: Custom Fees
+ * - Previous: M3 Lab 03: HIP-412 NFT Metadata & On-Chain Storage (HFS)
+ * - Next:     M3 Lab 05: Fee Modularity (Custom Fees)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -26,7 +26,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_read_nft_onchain.js
+ * node English/M3_Hedera_Token_Service/04_read_nft_onchain.js
  * ============================================================================
  */
 

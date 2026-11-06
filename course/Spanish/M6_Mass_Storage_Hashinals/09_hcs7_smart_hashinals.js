@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 09: Smart Hashinals HCS-7 (Estado EVM + Inscripciones Dinámicas WASM)
+ * Lab 09: Smart Hashinals HCS-7 (Estado EVM + Inscripciones Dinámicas WASM)
  * [CONCEPTO] NFTs Dinámicos Programables Cero-Gas mediante Reglas en Consenso
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -23,7 +23,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 08: Reconstrucción de NFT HCS-1
- * - Siguiente: M6 Lab 10: Bóveda Cifrada Zero-Trust
+ * - Siguiente: M6 Lab 10: Bóveda Cifrada Zero-Trust (Privacidad Corporativa en Consenso Público)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

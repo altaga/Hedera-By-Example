@@ -38,8 +38,8 @@
  * - https://hips.hedera.com/hip/hip-904
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M3 Lab 09: Bloqueo de Tesorería NFT HIP-850
- * - Siguiente: M4 Lab 01: Transferencias Atómicas de HBAR y Tokens
+ * - Anterior:  M3 Lab 09: Actualización en Tesorería con Supply-Key y Bloqueo Post-Envío (HIP-850)
+ * - Siguiente: M4 Lab 01: Transferencias Atómicas de HBAR
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

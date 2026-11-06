@@ -27,8 +27,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 01: CLPR State Proof Verification (HIP-1535)
- * - Next:     M13 Lab 03: Block Stream & TSS Signature Verification (HIP-1056)
+ * - Previous: M13 Lab 01: Cross-Ledger Protocol (CLPR) & Cryptographic State Proofs (HIP-1535)
+ * - Next:     M13 Lab 03: Hedera Block Streams & Aggregated TSS Verification (HIP-1056)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

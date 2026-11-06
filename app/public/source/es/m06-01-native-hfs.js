@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M5 Lab 04: HCS Ping-Pong
- * - Actual:   M6 Lab 01: Almacenamiento Nativo HFS
- * - Siguiente: M6 Lab 02: Gestión de Archivos Grandes
+ * - Anterior:  M5 Lab 08: Puente de Transmisión de Eventos Empresarial (Kafka / Redpanda hacia HCS)
+ * - Siguiente: M6 Lab 02: HFS Nativo — Archivos Grandes (Patrón Anchor + Append)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~5 ℏ en cada ejecución (sube un archivo, cerca de 0.3 USD).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_native_hfs.js
+ * node Spanish/M6_Mass_Storage_Hashinals/01_native_hfs.js
  * ============================================================================
  */
 

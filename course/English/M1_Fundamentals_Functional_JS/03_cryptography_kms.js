@@ -17,17 +17,17 @@
  * - https://docs.hedera.com/hedera/core-concepts/keys-and-signatures
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 02: Account Rent
- * - Next:     M1 Lab 04: Key Rotation
+ * - Previous: M1 Lab 02: State Rent & Account Lifecycle
+ * - Next:     M1 Lab 04: Account Key Rotation
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The HSM / vault is an in-memory mock. The signatures are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
  *
  * [ HOW TO RUN ]
- * node 03_cryptography_kms.js
+ * node English/M1_Fundamentals_Functional_JS/03_cryptography_kms.js
  * ============================================================================
  */
 

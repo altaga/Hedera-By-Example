@@ -21,10 +21,10 @@
  * - https://testnet.mirrornode.hedera.com/api/v1/docs/#/network/getRegisteredNodes
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 03: Block Stream & TSS Verification (HIP-1056)
- * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
+ * - Previous: M13 Lab 03: Hedera Block Streams & Aggregated TSS Verification (HIP-1056)
+ * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine (CLPR + HIP-336)
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * Nothing in discovery is simulated: the registry, endpoints and TCP latency are real. Block contents are read from the Mirror Node /blocks API, not streamed from the Block Node (its gRPC API is not called here).
  *
  * [ BEFORE YOU RUN ]

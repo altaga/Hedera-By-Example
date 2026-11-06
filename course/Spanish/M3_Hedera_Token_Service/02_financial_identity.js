@@ -19,9 +19,8 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M3 Lab 01: Emisión de Token
- * - Actual:   M3 Lab 02: Identidad Financiera
- * - Siguiente: M3 Lab 03: NFTs con HIP-412
+ * - Anterior:  M3 Lab 01: Emisión de Token Fungible con HTS
+ * - Siguiente: M3 Lab 03: Emisión de NFT con Metadatos On-Chain (HIP-412)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -29,7 +28,7 @@
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_financial_identity.js
+ * node Spanish/M3_Hedera_Token_Service/02_financial_identity.js
  * ============================================================================
  */
 

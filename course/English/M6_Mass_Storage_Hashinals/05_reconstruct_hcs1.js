@@ -18,8 +18,8 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 04: Economic HCS-1
- * - Next:     M6 Lab 06: Hashinals Ecosystem
+ * - Previous: M6 Lab 04: The Economic HCS-1 Standard (JSON Sharding)
+ * - Next:     M6 Lab 06: Digital Asset Evolution (Hashinals)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -27,7 +27,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 05_reconstruct_hcs1.js
+ * node English/M6_Mass_Storage_Hashinals/05_reconstruct_hcs1.js
  * ============================================================================
  */
 

@@ -24,10 +24,10 @@
  * - https://hol.org/standards
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
- * - Siguiente: M14 Lab 06: Chat Encriptado de Enjambre de Agentes (P2P sobre HCS)
+ * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27 y Pruebas Criptográficas
+ * - Siguiente: M14 Lab 06: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El prompt, el razonamiento y las reglas del agente son texto predefinido, no un modelo en vivo. El formato del registro de auditoría es propio de este lab: no se reproducen las reglas de publicación JWT/hash-input de HCS-28. El directorio HCS-2, el topic de cambios, el registro y el flujo de auditoría en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

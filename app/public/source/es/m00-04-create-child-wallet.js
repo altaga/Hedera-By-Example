@@ -18,9 +18,8 @@
  * - https://docs.hedera.com/native/accounts/create
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M0 Lab 03: Asociación Ilimitada
- * - Actual:   M0 Lab 04: Creación de Billetera Hija
- * - Siguiente: M1 Lab 01: Generación de Llaves
+ * - Anterior:  M0 Lab 03: Habilitar Auto-Asociaciones Ilimitadas
+ * - Siguiente: M0 Lab 05: Firmador Enterprise con AWS KMS
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -28,7 +27,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_create_child_wallet.js
+ * node Spanish/M0_Setup_and_Test/04_create_child_wallet.js
  * ============================================================================
  */
 

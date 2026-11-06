@@ -19,8 +19,8 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 02: HCS-2 Registries
- * - Next:     M9 Lab 04: HCS-11 Profiles
+ * - Previous: M9 Lab 02: HCS-2 Topic Registries
+ * - Next:     M9 Lab 04: HCS-11 AI Profiles (Spoofer Agent Provisioning)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_hcs2_search.js
+ * node English/M9_AI_Orchestration/03_hcs2_search.js
  * ============================================================================
  */
 

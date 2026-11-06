@@ -24,8 +24,8 @@
  * - https://hips.hedera.com/hip/hip-657
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 08: HIP-412 Metadata Schema
- * - Next:     M4 Lab 01: HBAR Transfers
+ * - Previous: M3 Lab 08: HIP-412 NFT Metadata
+ * - Next:     M3 Lab 10: Hedera NFT Studio — Rarity Inspector & Airdrop Pre-Flight Verifier
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

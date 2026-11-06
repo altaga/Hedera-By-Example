@@ -19,15 +19,15 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 03: Batch Uploading
- * - Next:     M6 Lab 05: Reconstruct HCS-1
+ * - Previous: M6 Lab 03: HFS Batch Operations (Multi-Asset Append)
+ * - Next:     M6 Lab 05: HCS-1 Data Reconstruction (Image Example)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_economic_hcs1.js
+ * node English/M6_Mass_Storage_Hashinals/04_economic_hcs1.js
  * ============================================================================
  */
 

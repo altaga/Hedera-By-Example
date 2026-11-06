@@ -24,9 +24,9 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 02: Metodología de Puntuación de Confianza de IA HCS-25
- * - Siguiente: M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
+ * - Siguiente: M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27 y Pruebas Criptográficas
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El agente que descubre las habilidades es simulado. El registro en HCS es real.
  *
  * [ ANTES DE EJECUTAR ]

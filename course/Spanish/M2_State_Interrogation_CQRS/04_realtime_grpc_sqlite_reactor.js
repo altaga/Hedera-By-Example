@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 04: Reactor de Event Sourcing en Tiempo Real (Mirror Stream + SQLite CQRS en Memoria)
+ * Lab 04: Reactor de Event Sourcing en Tiempo Real (Mirror Stream + SQLite CQRS en Memoria)
  * [CONCEPTO] Modelo de Lectura Relacional de Sub-Milisegundo sobre Eventos de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -26,9 +26,8 @@
  * - https://nodejs.org/api/sqlite.html
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M2 Lab 03: Paginación Recursiva
- * - Actual:   M2 Lab 04: Reactor de Event Sourcing en Tiempo Real (SQLite CQRS)
- * - Siguiente: M2 Lab 05: Circuit Breaker y Limitador de Tasa
+ * - Anterior:  M2 Lab 03: Paginación Recursiva y Transformación de Datos
+ * - Siguiente: M2 Lab 05: Resiliencia Enterprise — Circuit Breaker y Limitador de Tasa
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

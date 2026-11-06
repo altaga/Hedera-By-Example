@@ -17,10 +17,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/custom-token-fees#royalty-fee
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 05: Custom Fees
- * - Next:     M4 Lab 01: HBAR Transfers
+ * - Previous: M3 Lab 05: Fee Modularity (Custom Fees)
+ * - Next:     M3 Lab 07: Dynamic NFTs (HIP-765)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback
  * Artist -> Hedera: Mint NFT #1
  * Buyer -> Artist: Pay 1 ℏ for NFT #1 (one atomic transfer)
@@ -33,7 +33,7 @@
  * - Cost: ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 06_base_layer_royalties.js
+ * node English/M3_Hedera_Token_Service/06_base_layer_royalties.js
  * ============================================================================
  */
 

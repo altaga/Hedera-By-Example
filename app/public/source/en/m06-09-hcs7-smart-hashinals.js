@@ -23,7 +23,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 08: HCS-1 NFT Reconstruction
- * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault
+ * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault (Enterprise Privacy over Public Consensus)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

@@ -19,10 +19,10 @@
  * - https://hol.org/docs/standards/hcs-10/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 07: HCS-10 A2A Public
- * - Next:     M9 Lab 09: HCS-10 A2A Secure
+ * - Previous: M9 Lab 07: Autonomous Agent Orchestration
+ * - Next:     M9 Lab 09: Secure A2A Communication (HCS-10)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent A -> Agent B Inbox: Legitimate message
  * Attacker -> Agent B Inbox: Message claiming to be Agent A
  * Note Agent B: Without signatures it cannot tell them apart
@@ -34,7 +34,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 08_hcs10_impersonation_attack.js
+ * node English/M9_AI_Orchestration/08_hcs10_impersonation_attack.js
  * ============================================================================
  */
 

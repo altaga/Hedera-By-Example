@@ -19,15 +19,15 @@
  * - https://hol.org/docs/standards/hcs-1/
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 09: Zero-Knowledge Privacy Pool
- * - Next:     M9 Lab 02: HCS-2 Registries
+ * - Previous: M8 Lab 11: Solidity Autonomous HSS Cron Precompile (0x16b)
+ * - Next:     M9 Lab 02: HCS-2 Topic Registries
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 01_hcs1_storage.js
+ * node English/M9_AI_Orchestration/01_hcs1_storage.js
  * ============================================================================
  */
 

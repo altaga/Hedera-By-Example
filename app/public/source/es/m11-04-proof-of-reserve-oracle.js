@@ -17,11 +17,10 @@
  * - https://docs.hedera.com/solutions/tokenization/stablecoin
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M11 Lab 03: Roles de Stablecoin en HTS (Conceptos de Stablecoin Studio)
- * - Actual:   M11 Lab 04: Oráculo Proof-of-Reserve
- * - Siguiente: M11 Lab 05: Factoraje de Facturas RWA
+ * - Anterior:  M11 Lab 03: Roles de Stablecoin en HTS (Conceptos de Stablecoin Studio)
+ * - Siguiente: M11 Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * Las cifras de reservas del custodio son simuladas. Las reacciones en la red a esas cifras son reales.
  *
  * [ ANTES DE EJECUTAR ]

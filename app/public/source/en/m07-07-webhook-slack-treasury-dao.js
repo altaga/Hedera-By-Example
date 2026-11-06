@@ -28,16 +28,16 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M7 Lab 06: Cryptographic Login with DID
- * - Next:     M7 Lab 08: Timelock Governance Controller & Security Council Veto
+ * - Next:     M7 Lab 08: Enterprise Timelock Governance Controller & Security Council Veto
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Trustee 1 -> Hedera: ScheduleCreate payout (2-of-3 multisig treasury)
  * Monitor -> Hedera: Poll Mirror Node for pending schedules
  * Monitor -> Trustee 2: Webhook: proposal awaiting signature
  * Trustee 2 -> Hedera: ScheduleSign
  * Hedera -> Treasury: Threshold met: payout executes automatically
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The Slack/Discord webhook is printed locally, not sent. The multisig treasury, the scheduled payout, the signatures and the Mirror Node polling are real.
  *
  * [ BEFORE YOU RUN ]

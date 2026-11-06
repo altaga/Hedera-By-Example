@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
+ * Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
  * [CONCEPTO] Ingesta IoT de Misión Crítica y Agrupamiento en Consenso
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -20,15 +20,15 @@
  * de banda cuando se violan umbrales críticos de seguridad biológica.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M14 Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
- * - Siguiente: M15 Lab 02: Telemetría Ligera DePIN de Cadena de Frío (API Key + HMAC)
+ * - Anterior:  M14 Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
+ * - Siguiente: M15 Lab 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
  *
  * [ REFERENCIAS OFICIALES ]
  * - Servicio de Consenso de Hedera: https://docs.hedera.com/native/consensus
  * - Estándares de Temas HCS HIP-10: https://hips.hedera.com/hip/hip-10
  * - Validación de Módulos Criptográficos NIST SP 800-140C (Almacenes Hardware Ed25519)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El marcapasos y su flujo MQTTS son emulados. Las firmas del dispositivo, el lote de Merkle y los mensajes en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]

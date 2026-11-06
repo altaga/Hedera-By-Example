@@ -16,15 +16,15 @@
  * - https://hips.hedera.com/hip/hip-23
  *
  * [ LEARNING PATH ]
- * - Previous: Lab 02: Account Verification
- * - Next:     Lab 04: Environment Provisioning
+ * - Previous: M0 Lab 02: Manual Account Verification
+ * - Next:     M0 Lab 04: Native Account Creation
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_unlimited_association.js
+ * node English/M0_Setup_and_Test/03_unlimited_association.js
  * ============================================================================
  */
 

@@ -33,9 +33,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 08: Advanced HTS Precompiles
- * - Next:     M8 Lab 10: System Contracts Deep-Dive (0x168 & 0x16a)
+ * - Next:     M8 Lab 10: System Contracts Deep-Dive: 0x168 Exchange Rate & 0x16a HAS Precompile
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Depositor -> Pool: deposit(Poseidon(nullifier, secret)) + 0.01 ℏ
  * Note Pool: Inserts the leaf into the on-chain Poseidon Merkle tree
  * Owner -> Owner: snarkjs Groth16 proof (off-chain, private inputs stay local)

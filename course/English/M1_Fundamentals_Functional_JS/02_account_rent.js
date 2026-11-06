@@ -16,8 +16,8 @@
  * - https://docs.hedera.com/hedera/core-concepts/accounts/account-properties
  *
  * [ LEARNING PATH ]
- * - Previous: M1 Lab 01: Consensus & aBFT
- * - Next:     M1 Lab 03: Cryptography & KMS
+ * - Previous: M1 Lab 01: Hedera Fundamentals - aBFT & Consensus Simulation
+ * - Next:     M1 Lab 03: Cryptography and Signature Delegation (KMS / HSM)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -25,7 +25,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 02_account_rent.js
+ * node English/M1_Fundamentals_Functional_JS/02_account_rent.js
  * ============================================================================
  */
 

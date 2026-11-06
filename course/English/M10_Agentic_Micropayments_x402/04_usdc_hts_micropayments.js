@@ -20,10 +20,10 @@
  * - https://faucet.circle.com/
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 03: Facilitator Settlement
- * - Next:     M10 Lab 05: Financial Guardrails
+ * - Previous: M10 Lab 03: Zero-Gas Facilitator Settlement
+ * - Next:     M10 Lab 05: Autonomous Agent Financial Guardrails
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Agent -> Server: GET /api/v1/llm/prompt
  * Server -> Agent: 402 (25000 units of a 6-decimal stablecoin = $0.025)
  * Note Agent: Signs an HTS token transfer (no HBAR leaves the agent)

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Laboratorio 06: Staking Nativo (HIP-584)
+ * Lab 06: Staking Nativo (HIP-584)
  * [CONCEPTO] Delegación a Nodos de Consenso y Recompensas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -17,15 +17,15 @@
  * - https://hips.hedera.com/hip/hip-584
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 05: Creación Perezosa de Cuentas
- * - Siguiente: M1 Lab 07: Motor de Tarifas Simples HIP-1261
+ * - Anterior:  M1 Lab 05: Creación Perezosa de Cuentas (Abstracción de Cuentas)
+ * - Siguiente: M1 Lab 07: Motor de Tarifas Simples y Precios Deterministas HIP-1261
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_native_staking.js
+ * node Spanish/M1_Fundamentals_Functional_JS/06_native_staking.js
  * ============================================================================
  */
 

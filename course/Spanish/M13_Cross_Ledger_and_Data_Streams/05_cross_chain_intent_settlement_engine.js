@@ -22,17 +22,17 @@
  * - https://eips.ethereum.org/EIPS/eip-7683
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos
+ * - Anterior:  M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  * - Siguiente: M13 Lab 06: Codificador/Parser Protobuf de Block Stream con los Esquemas HAPI Oficiales
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Trader -> Relayer: Otorgar una asignación de HBAR (HIP-336)
  * Trader -> Hedera: Intención firmada en HCS (comisiones patrocinadas)
  * Relayer -> Otra cadena: Completar la parte externa
  * Nota Relayer: Prueba de estado de la parte externa (CLPR simulado)
  * Relayer -> Hedera: Liquidar la parte de Hedera usando la asignación
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * La ejecución en Arbitrum y la prueba CLPR son simuladas. La asignación, la intención en HCS y la liquidación en Hedera son reales.
  *
  * [ ANTES DE EJECUTAR ]

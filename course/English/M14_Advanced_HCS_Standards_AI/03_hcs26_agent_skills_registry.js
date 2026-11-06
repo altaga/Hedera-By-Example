@@ -22,9 +22,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 02: HCS-25 AI Trust Score Methodology
- * - Next:     M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
+ * - Next:     M14 Lab 04: HCS-27 Transparency Log Checkpoints & Cryptographic Merkle Proofs
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The peer agent that discovers the skills is simulated. The registry on HCS is real.
  *
  * [ BEFORE YOU RUN ]

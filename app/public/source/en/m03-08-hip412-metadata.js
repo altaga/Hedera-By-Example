@@ -17,15 +17,15 @@
  * - https://hips.hedera.com/hip/hip-412
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 07: Dynamic NFTs
- * - Next:     M3 Lab 09: HIP-850 Treasury NFT Lock
+ * - Previous: M3 Lab 07: Dynamic NFTs (HIP-765)
+ * - Next:     M3 Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created).
  *
  * [ HOW TO RUN ]
- * node 08_hip412_metadata.js
+ * node English/M3_Hedera_Token_Service/08_hip412_metadata.js
  * ============================================================================
  */
 

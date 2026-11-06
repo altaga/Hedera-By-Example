@@ -18,9 +18,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M5 Lab 01: Mensajería Inmutable
- * - Actual:   M5 Lab 02: Estándares de Datos
- * - Siguiente: M5 Lab 03: Paginación y Fragmentación
+ * - Anterior:  M5 Lab 01: Creación de Topic HCS Inmutable
+ * - Siguiente: M5 Lab 03: Fragmentación de Mensajes y Suscripciones gRPC
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -28,7 +27,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_hcs_data_standards.js
+ * node Spanish/M5_Hedera_Consensus_Service/02_hcs_data_standards.js
  * ============================================================================
  */
 

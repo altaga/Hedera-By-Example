@@ -18,8 +18,8 @@
  * - https://github.com/hiero-ledger/hiero-did-sdk-js
  *
  * [ LEARNING PATH ]
- * - Previous: M7 Lab 05: Decentralized Identity
- * - Next:     M7 Lab 07: Autonomous Treasury DAO
+ * - Previous: M7 Lab 05: Decentralized Identity (DID) on HCS
+ * - Next:     M7 Lab 07: Webhook-Driven Autonomous Treasury DAO (Real-Time Reactive Governance)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 06_did_login.js
+ * node English/M7_Governance_Cron/06_did_login.js
  * ============================================================================
  */
 

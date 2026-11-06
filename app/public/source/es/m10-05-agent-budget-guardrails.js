@@ -20,10 +20,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 04: Micropagos USDC con HTS
- * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo
+ * - Anterior:  M10 Lab 04: Micropagos en Stablecoins (USDC) con HTS
+ * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo (El Ciclo Completo)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Servidor -> Agente: 402 (0.01 ℏ, comercio verificado)
  * Nota Agente: La política aprueba, firma y el facilitador liquida
  * Servidor -> Agente: 402 (5 ℏ, comercio verificado)

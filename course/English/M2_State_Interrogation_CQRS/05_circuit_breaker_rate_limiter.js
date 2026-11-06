@@ -24,10 +24,10 @@
  * - https://docs.hedera.com/reference/rest-api
  *
  * [ LEARNING PATH ]
- * - Previous: M2 Lab 04: Real-Time Event Sourcing Reactor
- * - Next:     M2 Lab 06: Real-Time WebSocket Event Bus
+ * - Previous: M2 Lab 04: Real-Time Event Sourcing Reactor (Mirror Stream + SQLite In-Memory CQRS)
+ * - Next:     M2 Lab 06: Real-Time WebSocket Ledger Event Bus
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The HTTP 429 responses are injected on purpose to trip the circuit breaker. The fallback Mirror Node query is real.
  *
  * [ BEFORE YOU RUN ]

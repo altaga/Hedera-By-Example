@@ -19,8 +19,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message#chunk-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 02: HCS Data Standards
- * - Next:     M5 Lab 04: HCS Ping-Pong
+ * - Previous: M5 Lab 02: Core Data Standards (HCS-2)
+ * - Next:     M5 Lab 04: HCS Precision Benchmarking (Latency Teardown)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -28,7 +28,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 03_chunking_subscriptions.js
+ * node English/M5_Hedera_Consensus_Service/03_chunking_subscriptions.js
  * ============================================================================
  */
 

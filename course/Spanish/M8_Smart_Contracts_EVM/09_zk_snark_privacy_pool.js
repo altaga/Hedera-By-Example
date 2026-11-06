@@ -33,9 +33,9 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 08: Precompilados HTS Avanzados
- * - Siguiente: M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)
+ * - Siguiente: M8 Lab 10: Inmersión en Contratos del Sistema: Tasa de Cambio 0x168 y Precompilación HAS 0x16a
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Depositante -> Pool: deposit(Poseidon(nullifier, secret)) + 0.01 ℏ
  * Nota Pool: Inserta la hoja en el árbol Merkle Poseidon on-chain
  * Dueño -> Dueño: Prueba Groth16 con snarkjs (off-chain, las entradas privadas no salen)

@@ -19,16 +19,15 @@
  * - https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#key-lists
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M6 Lab 10: Bóveda Cifrada Zero-Trust
- * - Actual:   M7 Lab 01: Umbrales Multifirma
- * - Siguiente: M7 Lab 02: Ejecución de Transferencia Multisig
+ * - Anterior:  M6 Lab 10: Bóveda Cifrada Zero-Trust (Privacidad Corporativa en Consenso Público)
+ * - Siguiente: M7 Lab 02: Probando la Autoridad de la Multi-firma
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~1 ℏ (comisiones de red y las cuentas que crea).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_multisig_keylist.js
+ * node Spanish/M7_Governance_Cron/01_multisig_keylist.js
  * ============================================================================
  */
 

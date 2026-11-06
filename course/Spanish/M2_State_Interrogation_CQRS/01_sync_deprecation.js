@@ -18,16 +18,15 @@
  * - https://docs.hedera.com/hedera/core-concepts/mirror-nodes
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M1 Lab 04: Rotación de Llaves
- * - Actual:   M2 Lab 01: Depreciación Sync
- * - Siguiente: M2 Lab 02: Consulta REST Segura
+ * - Anterior:  M1 Lab 08: Asignaciones de HBAR y Gasto Patrocinado (HIP-336)
+ * - Siguiente: M2 Lab 02: Consultas REST Asíncronas al Mirror Node
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 01_sync_deprecation.js
+ * node Spanish/M2_State_Interrogation_CQRS/01_sync_deprecation.js
  * ============================================================================
  */
 

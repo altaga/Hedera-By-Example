@@ -20,10 +20,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 01: Server 402 Challenge
- * - Next:     M10 Lab 03: Facilitator Settlement
+ * - Previous: M10 Lab 01: Server HTTP 402 Challenge Generation
+ * - Next:     M10 Lab 03: Zero-Gas Facilitator Settlement
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Server -> Agent: 402 + PAYMENT-REQUIRED (0.01 ℏ, payTo, feePayer)
  * Note Agent: Checks its budget policy (max 0.05 ℏ)
  * Note Agent: Builds TransferTransaction, transaction id = feePayer, signs it

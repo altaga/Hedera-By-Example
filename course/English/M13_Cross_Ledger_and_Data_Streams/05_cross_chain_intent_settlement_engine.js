@@ -22,17 +22,17 @@
  * - https://eips.ethereum.org/EIPS/eip-7683
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
+ * - Previous: M13 Lab 04: Block Node Discovery & Decentralized Data Lake (HIP-1081 / HIP-1137)
  * - Next:     M13 Lab 06: Block Stream Protobuf Encoder/Parser with the Official HAPI Schemas
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Trader -> Relayer: Grant an HBAR allowance (HIP-336)
  * Trader -> Hedera: Signed intent on HCS (fees sponsored)
  * Relayer -> Other Chain: Fill the foreign leg
  * Note Relayer: State proof of the foreign fill (simulated CLPR)
  * Relayer -> Hedera: Settle the Hedera leg via the allowance
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The Arbitrum fill and the CLPR proof are simulated. The allowance, the HCS intent and the Hedera settlement are real.
  *
  * [ BEFORE YOU RUN ]

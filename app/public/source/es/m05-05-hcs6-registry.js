@@ -18,16 +18,15 @@
  * - https://hol.org/docs/standards/hcs-6/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M5 Lab 04: HCS Ping-Pong
- * - Actual:   M5 Lab 05: Registro Descentralizado HCS-6
- * - Siguiente: M5 Lab 06: Tópicos Pagados HIP-991
+ * - Anterior:  M5 Lab 04: Benchmark de Latencia HCS (Protocolo Ping-Pong)
+ * - Siguiente: M5 Lab 06: Tópicos Monetizados Generadores de Ingresos en HBAR y HTS (HIP-991)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 05_hcs6_registry.js
+ * node Spanish/M5_Hedera_Consensus_Service/05_hcs6_registry.js
  * ============================================================================
  */
 

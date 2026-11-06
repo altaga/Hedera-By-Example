@@ -20,9 +20,8 @@
  * - https://hips.hedera.com/hip/hip-719
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M11 Lab 07: Puente de Integración ERP Institucional
- * - Actual:   M12 Lab 01: Fachada Directa HTS ERC-20
- * - Siguiente: M12 Lab 02: JSON-RPC Relay con Ethers.js
+ * - Anterior:  M11 Lab 08: Acciones Corporativas y Pagos Masivos (Conceptos de Asset Tokenization Studio)
+ * - Siguiente: M12 Lab 02: JSON-RPC Relay con Ethers.js v6 Puro
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

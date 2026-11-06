@@ -29,8 +29,8 @@
  * - https://hips.hedera.com/hip/hip-1215
  *
  * [ LEARNING PATH ]
- * - Previous: M8 Lab 10: System Contracts Deep-Dive (0x168 & 0x16a)
- * - Next:     M9 Lab 01: AI Orchestration (HCS-1 Policy Storage)
+ * - Previous: M8 Lab 10: System Contracts Deep-Dive: 0x168 Exchange Rate & 0x16a HAS Precompile
+ * - Next:     M9 Lab 01: HCS-1 Static File Storage (Heavy Payloads)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

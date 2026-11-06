@@ -27,16 +27,16 @@
  * - https://docs.hedera.com/solutions/tokenization/ats
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 04: Proof-of-Reserve Oracle
- * - Next:     M11 Lab 06: RWA Multi-Asset Pool Tokens
+ * - Previous: M11 Lab 04: Proof-of-Reserve (PoR) Oracle & Circuit Breakers
+ * - Next:     M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * SME -> Hedera: Anchor invoice hash on HCS, mint invoice token
  * Investor -> SME: Discounted HBAR for all invoice tokens (atomic DvP)
  * Debtor -> Investor: Full face value at maturity
  * Investor -> SME: Invoice tokens redeemed in the same transaction
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The invoice data is sample data and maturity happens immediately instead of after 60 days; amounts are scaled to tinybars. All three parties are real accounts and every payment is real.
  *
  * [ BEFORE YOU RUN ]

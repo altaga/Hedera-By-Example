@@ -18,8 +18,8 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 03: Chunking & Subscriptions
- * - Next:     M6 Lab 01: Native HFS
+ * - Previous: M5 Lab 03: Automatic Chunking and Subscriptions (gRPC)
+ * - Next:     M5 Lab 05: HCS-6 Decentralized Registry
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -27,7 +27,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node 04_hcs_ping_pong.js
+ * node English/M5_Hedera_Consensus_Service/04_hcs_ping_pong.js
  * ============================================================================
  */
 

@@ -19,10 +19,10 @@
  * - https://html.spec.whatwg.org/multipage/server-sent-events.html
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 06: Autonomous Market Agent
+ * - Previous: M10 Lab 06: Autonomous AI Market Agent
  * - Next:     M10 Lab 08: Two-Party Settlement (Merchant as Facilitator)
  *
- * [SEQUENCE]
+ * [ SEQUENCE ]
  * Client -> Gateway: GET inference stream (no payment)
  * Gateway -> Client: 402 + PAYMENT-REQUIRED (0.01 ℏ)
  * Note Client: Signs the transfer (Lab 02)
@@ -30,7 +30,7 @@
  * Gateway -> Hedera: Facilitator co-signs and submits (Lab 03)
  * Gateway -> Client: 200 + PAYMENT-RESPONSE, then text/event-stream tokens
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The AI tokens come from a synthetic generator, not a real model. The gateway runs in the same process. The payment is real.
  *
  * [ BEFORE YOU RUN ]

@@ -19,11 +19,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/custom-token-fees#royalty-fee
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M3 Lab 05: Tarifas Personalizadas
- * - Actual:   M3 Lab 06: Regalías de Capa Base
- * - Siguiente: M4 Lab 01: Mensajería Pública
+ * - Anterior:  M3 Lab 05: Implementación de Tarifas Personalizadas (Custom Fees)
+ * - Siguiente: M3 Lab 07: NFTs Dinámicos (HIP-765)
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Artista -> Hedera: TokenCreate NFT con regalía 10% + respaldo 0.01 ℏ
  * Artista -> Hedera: Acuñar NFT #1
  * Comprador -> Artista: Pagar 1 ℏ por el NFT #1 (una transferencia atómica)
@@ -36,7 +35,7 @@
  * - Costo: ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
- * node 06_base_layer_royalties.js
+ * node Spanish/M3_Hedera_Token_Service/06_base_layer_royalties.js
  * ============================================================================
  */
 

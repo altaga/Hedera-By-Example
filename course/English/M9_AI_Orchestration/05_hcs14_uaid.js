@@ -19,15 +19,15 @@
  * - https://hol.org/docs/standards/hcs-14/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 04: HCS-11 Profiles
- * - Next:     M9 Lab 06: HCS-10 U2A Public
+ * - Previous: M9 Lab 04: HCS-11 AI Profiles (Spoofer Agent Provisioning)
+ * - Next:     M9 Lab 06: User to Agent Communication (Parallel Orchestration)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
  * - Run first: M9 Lab 04 (this lab reads what it saved).
  *
  * [ HOW TO RUN ]
- * node 05_hcs14_uaid.js
+ * node English/M9_AI_Orchestration/05_hcs14_uaid.js
  * ============================================================================
  */
 

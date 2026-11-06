@@ -30,8 +30,8 @@
  * - https://hol.org/docs/standards/hcs-18/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 06: Encrypted AI Agent Swarm Chat
- * - Next:     M14 Lab 08: HCS-12 HashLinks & HCS-21 Adapter Registry
+ * - Previous: M14 Lab 06: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
+ * - Next:     M14 Lab 08: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

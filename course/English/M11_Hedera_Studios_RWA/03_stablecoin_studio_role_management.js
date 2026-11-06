@@ -22,9 +22,9 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 02: Tranche Bonds on HTS & Coupon Payouts (ERC-1400 Concepts)
- * - Next:     M11 Lab 04: Proof-of-Reserve Oracle
+ * - Next:     M11 Lab 04: Proof-of-Reserve (PoR) Oracle & Circuit Breakers
  *
- * [SIMULATED]
+ * [ SIMULATED ]
  * The bank wire and the AML/court decisions are narrative; the role keys, mint, KYC, freeze and wipe are real. The Stablecoin Studio SDK and contracts are not used.
  *
  * [ BEFORE YOU RUN ]

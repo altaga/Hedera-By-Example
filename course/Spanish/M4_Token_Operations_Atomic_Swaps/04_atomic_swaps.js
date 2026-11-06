@@ -18,11 +18,10 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M4 Lab 03: Transferencias de NFTs
- * - Actual:   M4 Lab 04: Swaps Atómicos
- * - Siguiente: M4 Lab 05: Transferencias en Paralelo
+ * - Anterior:  M4 Lab 03: Transferencias de NFT (Propiedad por Número de Serie)
+ * - Siguiente: M4 Lab 05: Transferencias Paralelas y Escalabilidad Horizontal
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Tesorería -> Comprador: NFT #1
  * Comprador -> Tesorería: Pago en HBAR
  * Nota Hedera: Ambas partes en UNA TransferTransaction firmada por los dos
@@ -35,7 +34,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 04_atomic_swaps.js
+ * node Spanish/M4_Token_Operations_Atomic_Swaps/04_atomic_swaps.js
  * ============================================================================
  */
 

@@ -30,10 +30,10 @@
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
- * - Siguiente: M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
+ * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra en el Relay JSON-RPC de Hedera
+ * - Siguiente: M13 Lab 01: Protocolo Cross-Ledger (CLPR) y Pruebas Criptográficas de Estado (HIP-1535)
  *
- * [SIMULADO]
+ * [ SIMULADO ]
  * El bundler de ERC-4337 y el flujo de UserOperation son simulados. La liquidación final en Hedera es real.
  *
  * [ ANTES DE EJECUTAR ]

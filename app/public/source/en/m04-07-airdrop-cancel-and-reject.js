@@ -24,7 +24,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 06: Native Airdrops (HIP-904)
- * - Next:     M4 Lab 08: Orderbook & Triangular L1 Settlement
+ * - Next:     M4 Lab 08: In-Memory Orderbook & Triangular L1 Atomic Settlement (Ring Trade)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

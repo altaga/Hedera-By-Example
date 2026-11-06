@@ -30,8 +30,8 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
  *
  * [ LEARNING PATH ]
- * - Previous: M7 Lab 07: Webhook-Driven Autonomous Treasury DAO
- * - Next:     M8 Lab 01: Smart Contract Deployment
+ * - Previous: M7 Lab 07: Webhook-Driven Autonomous Treasury DAO (Real-Time Reactive Governance)
+ * - Next:     M8 Lab 01: Smart Contract Deployment (Integrated Compiler)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

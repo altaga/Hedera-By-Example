@@ -18,16 +18,15 @@
  * - https://docs.hedera.com/hedera/core-concepts/mirror-nodes
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M0 Lab 01: Generación de Billetera
- * - Actual:   M0 Lab 02: Consulta de Saldo
- * - Siguiente: M0 Lab 03: Asociación Ilimitada
+ * - Anterior:  M0 Lab 01: Generación de billetera local (ECDSA sin conexión)
+ * - Siguiente: M0 Lab 03: Habilitar Auto-Asociaciones Ilimitadas
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node 02_check_balance.js
+ * node Spanish/M0_Setup_and_Test/02_check_balance.js
  * ============================================================================
  */
 

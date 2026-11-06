@@ -26,8 +26,8 @@
  * - https://nodejs.org/api/sqlite.html
  *
  * [ LEARNING PATH ]
- * - Previous: M2 Lab 03: Recursive Pagination
- * - Next:     M2 Lab 05: Circuit Breaker & Rate Limiter
+ * - Previous: M2 Lab 03: Data Transformation and Pagination
+ * - Next:     M2 Lab 05: Enterprise Resilience — Circuit Breaker & Rate Limiter
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

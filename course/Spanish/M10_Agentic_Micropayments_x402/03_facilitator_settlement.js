@@ -20,10 +20,10 @@
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 02: Firma de Pago del Agente
- * - Siguiente: M10 Lab 04: Micropagos USDC con HTS
+ * - Anterior:  M10 Lab 02: Firma de Pago del Agente Autónomo
+ * - Siguiente: M10 Lab 04: Micropagos en Stablecoins (USDC) con HTS
  *
- * [SECUENCIA]
+ * [ SECUENCIA ]
  * Agente -> Servidor: Reintenta con PAYMENT-SIGNATURE
  * Servidor -> Facilitador: Verificar la transferencia firmada
  * Nota Facilitador: Quién paga la comisión, caducidad, monto, receptor, firma del agente
