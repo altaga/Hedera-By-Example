@@ -204,7 +204,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[ERROR] Falló el Gateway con Circuit Breaker: ${error.message}`)
+    console.error(`\n[FALLO] Falló el Gateway con Circuit Breaker: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)

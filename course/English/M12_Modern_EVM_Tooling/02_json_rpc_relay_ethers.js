@@ -30,9 +30,9 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, getJsonRpcUrl, updateState } from '../M99_Utilities/index.js'
 
-const HEDERA_TESTNET_RPC = 'https://testnet.hashio.io/api'
+const HEDERA_TESTNET_RPC = getJsonRpcUrl()
 const HEDERA_TESTNET_CHAIN_ID = 296
 
 const main = async () => {
@@ -98,7 +98,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] JSON-RPC Relay interaction failed:', error.message)
+    console.error('\n[FAILED] JSON-RPC Relay interaction failed:', error.message)
     process.exit(1)
   }
 }

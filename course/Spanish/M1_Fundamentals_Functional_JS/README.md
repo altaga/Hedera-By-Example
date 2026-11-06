@@ -76,6 +76,23 @@ En Hedera, el almacenamiento no es gratuito para siempre. Las cuentas deben paga
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | gratis (no se envía ninguna transacción) |
+| **02** | — | Sí | <0.1 ℏ (solo comisiones de red) |
+| **03** | — | — | gratis (no se envía ninguna transacción) |
+| **04** | — | Sí | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | — | ~1 ℏ (solo comisiones de red) |
+| **06** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **07** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **08** | — | — | <1 ℏ |
+
+---
+
 ## Referencias Oficiales
 - [Whitepaper de Hedera Hashgraph](https://hedera.com/whitepaper)
 - [Documentación de Cuentas (Hedera Docs)](https://docs.hedera.com/hedera/networks/mainnet/account-rent)

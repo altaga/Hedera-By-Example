@@ -115,7 +115,7 @@ const main = async () => {
       { adapterId: 'oss-popularity', weight: 0.7, contributionMode: 'conditional', components: {} },
       { adapterId: 'erc8004-feedback', weight: 1, contributionMode: 'scoped', applicable: false }
     ], { mStale: 0.8, configVersion: 3 })
-    for (const [k, v] of Object.entries(result.trustScores)) console.log(`[LOG] ${k.padEnd(24)} ${v}`)
+    for (const [k, v] of Object.entries(result.trustScores)) console.log(`[REGISTRO] ${k.padEnd(24)} ${v}`)
 
     // 3. Los evaluadores firman el registro (elección del lab; HCS-25 deja abierto el transporte/almacenamiento)
     const record = { p: 'hcs-25', subject, ...result }
@@ -141,7 +141,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló la ejecución de HCS-25:', error.message)
+    console.error('\n[FALLO] Falló la ejecución de HCS-25:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -152,7 +152,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

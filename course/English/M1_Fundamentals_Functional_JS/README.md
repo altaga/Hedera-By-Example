@@ -76,6 +76,23 @@ In Hedera, storage is not free forever. Accounts must pay a small rent fee to re
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | free (no transactions are sent) |
+| **02** | — | Yes | <0.1 ℏ (network fees only) |
+| **03** | — | — | free (no transactions are sent) |
+| **04** | — | Yes | <0.1 ℏ (network fees only) |
+| **05** | — | — | ~1 ℏ (network fees only) |
+| **06** | — | — | <0.1 ℏ (network fees only) |
+| **07** | — | — | <0.1 ℏ (network fees only) |
+| **08** | — | — | <1 ℏ |
+
+---
+
 ## Official References
 - [Hedera Hashgraph Whitepaper](https://hedera.com/whitepaper)
 - [Account Documentation (Hedera Docs)](https://docs.hedera.com/hedera/networks/mainnet/account-rent)

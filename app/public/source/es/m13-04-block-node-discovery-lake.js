@@ -177,7 +177,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo al Consultar el Block Node Lake:', error.message)
+    console.error('\n[FALLO] Fallo al Consultar el Block Node Lake:', error.message)
     process.exit(1)
   }
 }

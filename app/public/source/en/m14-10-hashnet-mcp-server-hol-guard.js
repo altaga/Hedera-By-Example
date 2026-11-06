@@ -174,7 +174,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] MCP lab failed:', error.message)
+    console.error('\n[FAILED] MCP lab failed:', error.message)
     process.exitCode = 1
   } finally {
     if (mcp) await mcp.close()

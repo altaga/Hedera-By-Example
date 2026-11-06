@@ -169,7 +169,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Ejecución de Pool Token RWA:', error.message)
+    console.error('\n[FALLO] Fallo en Ejecución de Pool Token RWA:', error.message)
     process.exit(1)
   } finally {
     client.close()

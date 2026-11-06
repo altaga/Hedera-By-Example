@@ -236,7 +236,7 @@ const main = async () => {
 
     // 4. Recuperación en Mirror Node y Reensamblaje Inalterable Zero-Trust
     console.log('\n[PROCESO] Paso 4: Interrogando Mirror Node para Reensamblar Flujo de la Bóveda...')
-    console.log('[INFORMACIÓN] Esperando ingestión en Mirror Node (4 segundos)...')
+    console.log('[INFO] Esperando ingestión en Mirror Node (4 segundos)...')
     await sleep(4000)
 
     const mirrorUrl = `${getMirrorNodeBaseUrl()}/api/v1/topics/${vaultTopicId}/messages?order=asc`
@@ -282,7 +282,7 @@ const main = async () => {
       tamperedShards[0].d = tamperedBytes.toString('base64')
 
       reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
-      console.error('[ERROR] Violación de seguridad: ¡Se aceptó un texto cifrado alterado!')
+      console.error('[FALLO] Violación de seguridad: ¡Se aceptó un texto cifrado alterado!')
       process.exitCode = 1
     } catch (tamperErr) {
       console.log(`[ÉXITO] Intento de alteración detectado y bloqueado por GMAC de AES-GCM: "${tamperErr.message}"`)
@@ -300,7 +300,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Bóveda Zero-Trust:', error.message)
+    console.error('\n[FALLO] Fallo en la Bóveda Zero-Trust:', error.message)
     process.exit(1)
   } finally {
     client.close()

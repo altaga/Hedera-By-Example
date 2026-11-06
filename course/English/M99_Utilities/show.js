@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * Visual output for the web runner. In Node.js the visual helpers print
  * nothing extra (the labs already print their results as text); the course

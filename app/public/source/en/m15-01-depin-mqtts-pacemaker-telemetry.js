@@ -237,7 +237,7 @@ async function main () {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Pacemaker DePIN Execution Failure:', error.message)
+    console.error('\n[FAILED] Pacemaker DePIN Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

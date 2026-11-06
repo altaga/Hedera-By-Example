@@ -176,7 +176,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] HIP-1334 flow failed:', error.message)
+    console.error('\n[FAILED] HIP-1334 flow failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

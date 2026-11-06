@@ -285,7 +285,7 @@ async function main () {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Passkeys WebAuthn Execution Failure:', error.message)
+    console.error('\n[FAILED] Passkeys WebAuthn Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

@@ -1,6 +1,10 @@
 # Módulo 15: DePIN y Arquitecturas Cripto de Frontera
+## Dispositivos de Borde, Intenciones Firmadas, Passkeys y Pruebas Privadas en Hedera
 
 Bienvenido al **Módulo 15**. Este módulo explora arquitecturas Web3 de vanguardia integradas de forma nativa con Hedera: **DePIN (Redes de Infraestructura Física Descentralizada)**, **Solvers de Liquidación Basados en Intenciones (ERC-7683)**, **Passkeys / Biometría WebAuthn (NIST P-256)** y **Pruebas Web zk-TLS (TLSNotary)**.
+
+> [!IMPORTANT]
+> **OBJETIVO:** Conectar dispositivos físicos, intenciones firmadas, passkeys biométricas y datos privados de Web2 con Hedera, dejando en el ledger solo lo que debe ser público y probando el resto con firmas, raíces Merkle y compromisos.
 
 ---
 
@@ -32,19 +36,19 @@ Bienvenido al **Módulo 15**. Este módulo explora arquitecturas Web3 de vanguar
 
 ---
 
-## Directorio de Laboratorios
+## Mapa del Módulo
 
 | Lab | Nombre | Enfoque | Estándar de la Industria |
 | :--- | :--- | :--- | :--- |
-| **01** | `01_depin_mqtts_pacemaker_telemetry.js` | Telemetría Médica IoT de Misión Crítica | MQTTS, Firma Hardware Ed25519, Lotes Merkle |
-| **02** | `02_depin_lightweight_cold_chain_api_key.js` | Logística de Vacunas y Cadena de Frío | HTTP REST, API Key, HMAC-SHA256, Penalización SLA |
-| **03** | `03_intent_based_defi_solver.js` | Liquidación Resistente a MEV entre Activos | ERC-7683, Coincidencia de Deseos (CoW), Multi-Pata Atómica |
-| **04** | `04_passkeys_webauthn_p256_authenticator.js` | Autenticación Biométrica de Hardware Sin Semilla | W3C WebAuthn, FIDO2, NIST P-256 (secp256r1) |
-| **05** | `05_zktls_cryptographic_web_proofs.js` | Atestación Web2 de Conocimiento Cero | TLSNotary, Reclaim Protocol, Compromisos de Cegado |
+| **01** | **Telemetría MQTTS de Marcapasos** | Telemetría Médica IoT de Misión Crítica | MQTTS, Firma Hardware Ed25519, Lotes Merkle |
+| **02** | **Telemetría REST de Cadena de Frío** | Logística de Vacunas y Cadena de Frío | HTTP REST, API Key, HMAC-SHA256, Penalización SLA |
+| **03** | **Solver DeFi por Intenciones** | Liquidación Resistente a MEV entre Activos | ERC-7683, Coincidencia de Deseos (CoW), Multi-Pata Atómica |
+| **04** | **Passkeys (WebAuthn P-256)** | Autenticación Biométrica de Hardware Sin Semilla | W3C WebAuthn, FIDO2, NIST P-256 (secp256r1) |
+| **05** | **Pruebas Web zk-TLS** | Atestación Web2 de Conocimiento Cero | TLSNotary, Reclaim Protocol, Compromisos de Cegado |
 
 ---
 
-## Puntos Clave de Aprendizaje
+## Conceptos Clave
 
 1. **Agrupamiento en el Borde (DePIN Edge Batching):** Nunca envíes cada lectura de sensor de alta frecuencia directamente a la cadena. Agrupa cuadros rutinarios en Raíces Merkle en HCS ($0.0001 USD) y reserva envíos inmediatos de consenso para anomalías críticas y alertas de emergencia.
 2. **Seguridad de Bajo Consumo:** Los dispositivos limitados ahorran batería utilizando encabezados HTTP + HMAC-SHA256 sin pesados handshakes TLS, garantizando cadenas de custodia a prueba de manipulaciones.
@@ -54,7 +58,21 @@ Bienvenido al **Módulo 15**. Este módulo explora arquitecturas Web3 de vanguar
 
 ---
 
-## Referencias
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **02** | — | — | <1 ℏ (solo comisiones de red) |
+| **03** | — | Sí | <1 ℏ (solo comisiones de red) |
+| **04** | — | Sí | <1 ℏ (solo comisiones de red) |
+| **05** | — | — | <0.1 ℏ (solo comisiones de red) |
+
+---
+
+## Referencias Oficiales
 
 - [Documentación de Hedera Consensus Service](https://docs.hedera.com/native/consensus)
 - [Especificación W3C Web Authentication (WebAuthn)](https://www.w3.org/TR/webauthn-3/)

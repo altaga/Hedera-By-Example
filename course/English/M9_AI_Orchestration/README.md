@@ -1,12 +1,12 @@
 # Module 9: The Agentic AI Economy
-## Atomic Protocol Orchestration and Autonomous Trade
+## Agent Storage, Registries, Identity and Secure Messaging over HCS
 
 > [!IMPORTANT]
-> **OBJECTIVE:** Transition from reactive Large Language Models (LLMs) to autonomous and economically independent agentic swarms using Hedera communication standards.
+> **OBJECTIVE:** Give AI agents what they need to work together on Hedera: shared storage (HCS-1), discoverable registries (HCS-2), profiles and identities (HCS-11, HCS-14), and agent-to-agent messaging (HCS-10) that resists impersonation, replays and eavesdropping.
 
 ---
 
-## Atomic Curriculum Map
+## Module Map
 This module focuses on the communication and sovereignty of AI agents.
 
 | Lab | Topic | Description |
@@ -81,6 +81,26 @@ Although Hedera is a public ledger, agents can communicate privately. We use **R
 
 ### 3. Autonomous Orchestration
 Unlike traditional bots, Hedera agents can make economic decisions, pay for their own resources (gas, storage), and charge for their services without human intervention.
+
+---
+
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (network fees only) |
+| **02** | M9 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **03** | M9 Lab 02 | — | <0.1 ℏ (network fees only) |
+| **04** | — | Yes | ~8 ℏ (network fees and the accounts it creates) |
+| **05** | M9 Lab 04 | — | free (no transactions are sent) |
+| **06** | M9 Lab 04 | Yes | <0.1 ℏ (network fees only) |
+| **07** | M9 Lab 04 | — | <0.1 ℏ (network fees only) |
+| **08** | M9 Lab 04 | — | <0.1 ℏ (network fees only) |
+| **09** | M9 Lab 04 | — | <0.1 ℏ (network fees only) |
+| **10** | M9 Lab 04 | — | <0.1 ℏ (network fees only) |
+| **11** | M9 Lab 04 | — | <0.1 ℏ (network fees only) |
 
 ---
 

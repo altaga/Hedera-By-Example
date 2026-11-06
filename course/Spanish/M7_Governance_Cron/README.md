@@ -74,6 +74,23 @@ Utilizando HCS, podemos anclar metadatos de identidad que permiten a los usuario
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~1 ℏ (comisiones de red y las cuentas que crea) |
+| **02** | Lab 01 de M7 | — | <0.1 ℏ (solo comisiones de red) |
+| **03** | — | Sí | <1 ℏ (solo comisiones de red) |
+| **04** | Lab 03 de M7 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | — | <1 ℏ (solo comisiones de red) |
+| **06** | Lab 05 de M7 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **07** | — | Sí | ~2 ℏ (comisiones de red y las cuentas que crea) |
+| **08** | — | — | <0.1 ℏ (solo comisiones de red) |
+
+---
+
 ## Referencias Oficiales
 - [Multi-signature Accounts (Hedera Docs)](https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#multi-signature-signing)
 - [Scheduled Transactions Documentation](https://docs.hedera.com/hedera/sdks-and-apis/sdks/scheduled-transactions)

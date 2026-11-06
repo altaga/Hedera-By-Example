@@ -166,7 +166,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Proof-of-Reserve oracle simulation failed:', error.message)
+    console.error('\n[FAILED] Proof-of-Reserve oracle simulation failed:', error.message)
     process.exit(1)
   }
 }

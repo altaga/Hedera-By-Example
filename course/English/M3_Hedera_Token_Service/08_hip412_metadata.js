@@ -17,7 +17,7 @@
  * - https://hips.hedera.com/hip/hip-412
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 07: Dynamic NFTs (HIP-765)
+ * - Previous: M3 Lab 07: Dynamic NFTs (HIP-657)
  * - Next:     M3 Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
  *
  * [ BEFORE YOU RUN ]

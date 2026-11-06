@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * Salida visual para el ejecutor web. En Node.js las funciones visuales no
  * imprimen nada extra (los labs ya imprimen sus resultados como texto); el

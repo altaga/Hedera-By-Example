@@ -166,7 +166,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Bond lab failed:', error.message)
+    console.error('\n[FAILED] Bond lab failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

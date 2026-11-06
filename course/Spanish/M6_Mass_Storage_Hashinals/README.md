@@ -89,6 +89,25 @@ El protocolo `hcs://` es un formato de URI impulsado por la comunidad que permit
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~5 ℏ en cada ejecución (sube un archivo, cerca de 0.3 USD) |
+| **02** | — | — | ~15 ℏ en cada ejecución (sube un archivo, cerca de 1.2 USD) |
+| **03** | Lab 01 de M6 | — | ~9 ℏ en cada ejecución (sube un archivo, cerca de 0.5 USD) |
+| **04** | — | — | <1 ℏ (solo comisiones de red) |
+| **05** | Lab 01 de M5 | — | <0.1 ℏ (solo comisiones de red) |
+| **06** | Lab 01 de M6 | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **08** | Lab 03 de M3, Lab 07 de M6 | — | <0.1 ℏ (solo comisiones de red) |
+| **09** | — | — | <1 ℏ (solo comisiones de red) |
+| **10** | — | — | <1 ℏ (solo comisiones de red) |
+
+---
+
 ## Referencias Oficiales
 - [Hedera File Service (HFS) Guide](https://docs.hedera.com/hedera/core-concepts/file-service)
 - [HCS-1: Atomic Storage Standard](https://hashinals.com/)

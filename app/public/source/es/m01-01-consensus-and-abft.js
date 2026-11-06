@@ -27,6 +27,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
+ * - Costo: gratis (no se envía ninguna transacción).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M1_Fundamentals_Functional_JS/01_consensus_and_abft.js

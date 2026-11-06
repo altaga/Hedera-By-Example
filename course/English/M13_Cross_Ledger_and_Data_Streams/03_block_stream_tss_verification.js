@@ -219,7 +219,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Block Stream Verification Failure:', error.message)
+    console.error('\n[FAILED] Block Stream Verification Failure:', error.message)
     process.exit(1)
   }
 }

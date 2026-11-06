@@ -234,7 +234,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en el Chat Encriptado:', error.message)
+    console.error('\n[FALLO] Fallo en el Chat Encriptado:', error.message)
     process.exit(1)
   } finally {
     client.close()

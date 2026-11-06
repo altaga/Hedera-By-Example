@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import { Client, AccountId, PrivateKey, Hbar } from '@hiero-ledger/sdk'
 import dotenv from 'dotenv'
 import path from 'path'
@@ -96,6 +95,8 @@ export const getMirrorNodeBaseUrl = () => {
  * @returns {string} JSON-RPC Relay URL.
  */
 export const getJsonRpcUrl = () => {
+  // JSON_RPC_URL in .env overrides the public Hashio relay (useful if it is down or rate-limited).
+  if (process.env.JSON_RPC_URL) return process.env.JSON_RPC_URL
   const network = (process.env.NETWORK || 'testnet').toLowerCase()
   switch (network) {
     case 'mainnet': return 'https://mainnet.hashio.io/api'

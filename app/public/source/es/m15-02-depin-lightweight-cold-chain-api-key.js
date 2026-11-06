@@ -269,7 +269,7 @@ async function main () {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución de DePIN Cadena de Frío:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución de DePIN Cadena de Frío:', error.message)
     process.exit(1)
   } finally {
     client.close()

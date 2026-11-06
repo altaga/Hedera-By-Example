@@ -258,7 +258,7 @@ async function main () {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Intent Solver Execution Failure:', error.message)
+    console.error('\n[FAILED] Intent Solver Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

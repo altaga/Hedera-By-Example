@@ -82,6 +82,24 @@ Each transfer transaction in Hedera has a limit of "transfer points" (usually 10
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | Yes | ~1 ℏ (network fees only) |
+| **02** | M3 Lab 01 | Yes | <0.1 ℏ (network fees only) |
+| **03** | M3 Lab 03 | Yes | <0.1 ℏ (network fees only) |
+| **04** | M3 Lab 03 | Yes | <0.1 ℏ (network fees only) |
+| **05** | — | Yes | <1 ℏ (network fees only) |
+| **06** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~2 ℏ when you run it again (it reuses what it created) |
+| **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
+| **08** | — | — | ~35 ℏ the first time (it creates 2 tokens, about 2 USD); ~6 ℏ when you run it again (it reuses what it created) |
+| **09** | — | — | ~17 ℏ (FLASH token creation ~15 ℏ on testnet) + ~0.6 ℏ to throwaway accounts + fees |
+
+---
+
 ## Official References
 - [Transfer Transactions (Hedera Docs)](https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transfer-tokens)
 - [Understanding Atomicity in DLT](https://hedera.com/learning/hedera-hashgraph/what-is-atomicity)

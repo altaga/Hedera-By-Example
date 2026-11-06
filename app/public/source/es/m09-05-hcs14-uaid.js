@@ -26,6 +26,7 @@
  * [ ANTES DE EJECUTAR ]
  * - Wallet: ninguna. Este lab corre por completo en tu máquina (sin llamadas a la red).
  * - Ejecuta antes: Lab 04 de M9 (este lab lee lo que guardó).
+ * - Costo: gratis (no se envía ninguna transacción).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M9_AI_Orchestration/05_hcs14_uaid.js

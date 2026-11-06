@@ -152,7 +152,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Timelock Controller Failure:', error.message)
+    console.error('\n[FAILED] Timelock Controller Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

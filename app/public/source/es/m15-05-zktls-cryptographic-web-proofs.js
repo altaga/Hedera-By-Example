@@ -236,7 +236,7 @@ async function main () {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución de Pruebas zk-TLS:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución de Pruebas zk-TLS:', error.message)
     process.exit(1)
   } finally {
     client.close()

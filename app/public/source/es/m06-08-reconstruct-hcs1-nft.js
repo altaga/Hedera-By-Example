@@ -69,8 +69,8 @@ const main = async () => {
     const query = new URLSearchParams(queryPart || '')
     const metaFid = query.get('fid')
 
-    console.log(`[LOG] Topic Destino: ${topicId}`)
-    console.log(`[LOG] FID de Metadatos: ${metaFid}`)
+    console.log(`[REGISTRO] Topic Destino: ${topicId}`)
+    console.log(`[REGISTRO] FID de Metadatos: ${metaFid}`)
 
     // 2. Obtener todos los mensajes del Topic HCS
     console.log(`\n[PROCESO] Obteniendo mensajes HCS del Topic ${topicId}...`)

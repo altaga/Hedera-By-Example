@@ -103,7 +103,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Scaffold-HBAR diagnostic failed:', error.message)
+    console.error('\n[FAILED] Scaffold-HBAR diagnostic failed:', error.message)
     process.exit(1)
   }
 }

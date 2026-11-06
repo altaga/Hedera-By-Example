@@ -77,6 +77,21 @@ To prevent state bloat, Hedera decouples high-speed transaction ordering from te
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (network fees only) |
+| **02** | — | — | <1 ℏ (network fees only) |
+| **03** | — | — | <0.1 ℏ (network fees only) |
+| **04** | — | — | <1 ℏ (network fees only) |
+| **05** | — | — | ~1 ℏ (network fees and the accounts it creates) |
+| **06** | — | — | <0.1 ℏ (network fees only). Downloads ~160 .proto files from GitHub |
+
+---
+
 ## Official References
 - [HIP-1535: Cross-Ledger Protocol (CLPR), draft](https://hips.hedera.com/hip/hip-1535)
 - [HIP-336: Approval and Allowance API](https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md)

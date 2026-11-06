@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 /**
  * x402 on Hedera, written with the Hedera SDK only (Module 10).
  *

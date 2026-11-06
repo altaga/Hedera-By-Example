@@ -177,7 +177,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Block Node Lake Retrieval Failure:', error.message)
+    console.error('\n[FAILED] Block Node Lake Retrieval Failure:', error.message)
     process.exit(1)
   }
 }

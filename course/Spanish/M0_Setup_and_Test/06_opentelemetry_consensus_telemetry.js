@@ -200,7 +200,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[ERROR] Fallo en Telemetría: ${error.message}`)
+    console.error(`\n[FALLO] Fallo en Telemetría: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)

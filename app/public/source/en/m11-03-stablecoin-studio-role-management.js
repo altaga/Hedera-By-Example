@@ -145,7 +145,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Stablecoin governance failed:', error.message)
+    console.error('\n[FAILED] Stablecoin governance failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

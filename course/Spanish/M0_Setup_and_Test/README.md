@@ -71,6 +71,21 @@ En Hedera, para recibir un token, primero debes "asociarte" a él. Sin embargo, 
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | gratis (no se envía ninguna transacción) |
+| **02** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **03** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **04** | — | Sí | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **06** | — | — | <0.1 ℏ (solo comisiones de red) |
+
+---
+
 ## Referencias Oficiales
 - [Hedera Developer Portal](https://portal.hedera.com/)
 - [Mirror Node API Reference](https://docs.hedera.com/hedera/sdks-and-apis/rest-api)

@@ -132,7 +132,7 @@ const main = async () => {
     spenderClient.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[ERROR] Falló la Ejecución de Asignación Sin Gas: ${error.message}`)
+    console.error(`\n[FALLO] Falló la Ejecución de Asignación Sin Gas: ${error.message}`)
     process.exitCode = 1
     if (client) client.close()
     process.exit(1)

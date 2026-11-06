@@ -281,7 +281,7 @@ const main = async () => {
         await (await associateTx.execute(client)).getReceipt(client)
         console.log(`[ÉXITO] Inversor ${investorAccountId} asociado con ${trancheTokenId}`)
       } catch (assocErr) {
-        console.log(`[INFORMACIÓN] Nota de asociación: ${assocErr.message}`)
+        console.log(`[INFO] Nota de asociación: ${assocErr.message}`)
       }
     }
 
@@ -344,7 +344,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en el Puente ERP Institucional:', error.message)
+    console.error('\n[FALLO] Fallo en el Puente ERP Institucional:', error.message)
     process.exit(1)
   } finally {
     client.close()

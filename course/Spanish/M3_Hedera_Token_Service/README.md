@@ -75,6 +75,25 @@ Hedera permite definir reglas de cobro a nivel de protocolo. Puedes configurar q
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **02** | — | Sí | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **03** | — | — | ~25 ℏ la primera vez (crea un token y sube un archivo, cerca de 1.4 USD); ~9 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **04** | Lab 03 de M3 | — | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | Sí | ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **06** | — | Sí | ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **08** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **09** | — | — | ~15 ℏ en cada ejecución (crea un token, cerca de 1 USD) |
+| **10** | — | Sí | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+
+---
+
 ## Referencias Oficiales
 - [Hedera Token Service (HTS) Overview](https://docs.hedera.com/hedera/core-concepts/tokens)
 - [HIP-412: NFT Metadata JSON Schema](https://hips.hedera.com/hip/hip-412)

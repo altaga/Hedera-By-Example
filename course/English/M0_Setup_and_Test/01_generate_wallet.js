@@ -21,6 +21,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
+ * - Cost: free (no transactions are sent).
  *
  * [ HOW TO RUN ]
  * node English/M0_Setup_and_Test/01_generate_wallet.js

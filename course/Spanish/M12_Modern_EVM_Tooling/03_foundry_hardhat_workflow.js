@@ -133,7 +133,7 @@ const main = async () => {
     fs.mkdirSync(path.join(dir, 'src'))
     fs.writeFileSync(path.join(dir, 'foundry.toml'), FOUNDRY_CONFIG_BLUEPRINT.trim() + '\n')
     fs.writeFileSync(path.join(dir, 'src', 'Counter.sol'), COUNTER_SOL)
-    console.log(`[LOG] Proyecto: ${dir}`)
+    console.log(`[REGISTRO] Proyecto: ${dir}`)
 
     // 2. Compilar
     console.log('\n[PROCESO] Paso 2: Compilando...')
@@ -155,7 +155,7 @@ const main = async () => {
     await contract.waitForDeployment()
     const address = await contract.getAddress()
     console.log(`[ÉXITO] Counter en ${address} — tx ${deployTx.hash}`)
-    console.log(`[EXPLORER] https://hashscan.io/testnet/contract/${address}`)
+    console.log(`[EXPLORADOR] https://hashscan.io/testnet/contract/${address}`)
 
     // 4. Escribir + leer
     console.log('\n[PROCESO] Paso 4: increment() y luego count()...')
@@ -175,7 +175,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el flujo de Foundry:', error.message)
+    console.error('\n[FALLO] Falló el flujo de Foundry:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -186,7 +186,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

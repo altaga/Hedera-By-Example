@@ -72,54 +72,57 @@ Whenever you modify, refactor, or create files, **YOU MUST ADHERE TO THESE 5 RUL
 - Pedagogical comments, console logs, and strings must be professionally translated.
 
 ### Rule 2: Mandatory Pedagogical Markers
-Every lab file header **MUST** contain the standardized header block:
+Every lab file starts with this header block (no `eslint-disable` line: labs must pass `standard` as they are):
 ```javascript
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab XX: <Lab Title>
  * [CONCEPT] <Concept Subtitle>
  * ============================================================================
  * [ KEY CONCEPT ]
- * <Detailed theoretical explanation of the underlying distributed ledger mechanism>
+ * <What the learner should understand about the underlying mechanism>
  *
  * [ LEARNABLE MOMENT ]
- * <Concise engineering insight highlighting why this pattern matters in production>
+ * <One production insight: why this pattern matters>
  *
  * [ OFFICIAL REFERENCES ]
- * - <Direct URL to official Hedera Docs / HIP / RFC specification>
+ * - <URL to official Hedera docs / HIP / spec>
  *
  * [ LEARNING PATH ]
  * - Previous: M<X> Lab <Y>: <Previous Title>
  * - Next:     M<X> Lab <Z>: <Next Title>
+ *
+ * [ SEQUENCE ]            (optional) Actor -> Actor: message lines, rendered as a diagram on the web
+ * [ SIMULATED ]           (optional) what is mocked and what is real
+ *
+ * [ BEFORE YOU RUN ]
+ * - Wallet: which account pays and what it does
+ * - Practice wallets: which ACCOUNT_1 / ACCOUNT_2 roles are used
+ * - Run first: M<X> Lab <Y> (only when the lab reads state another lab saved)
+ * - Cost: honest estimate in HBAR
  *
  * [ HOW TO RUN ]
  * node English/<Module>/<file>.js
  * ============================================================================
  */
 ```
-For Spanish files, the markers are translated to:
-`[ CONCEPTO CLAVE ]`, `[ MOMENTO DE APRENDIZAJE ]`, `[ REFERENCIAS OFICIALES ]`, `[ RUTA DE APRENDIZAJE ]`, `[ CÓMO EJECUTAR ]`.
+Spanish markers: `[ CONCEPTO CLAVE ]`, `[ MOMENTO DE APRENDIZAJE ]`, `[ REFERENCIAS OFICIALES ]`, `[ RUTA DE APRENDIZAJE ]`, `[ SECUENCIA ]`, `[ SIMULADO ]`, `[ ANTES DE EJECUTAR ]`, `[ CÓMO EJECUTAR ]`. Spanish titles use "Lab NN".
 
 ### Rule 3: Clean Lifecycle & Graceful Teardown
-To prevent hanging gRPC channels or dangling event loops:
-1. Always close the SDK client in a `finally` block:
-   ```javascript
-   } finally {
-     client.close()
-   }
-   ```
-2. Always implement the deterministic self-terminating CLI launcher at the bottom:
+1. Close every SDK client you create (`client.close()` in a `finally`, or before `process.exit()` in event-driven labs).
+2. Labs that wait on subscriptions call `exitIfStuck(ms, reason)` so they never hang, and stop their own background loops when they finish.
+3. End every lab with the launcher (it lets the web runner import the lab without running it twice):
    ```javascript
    if (process.argv[1] && import.meta.filename === process.argv[1]) {
-     main().then(() => {
-       process.exit(0)
-     }).catch((error) => {
-       console.error('[ERROR] Execution Failure:', error.message)
-       process.exit(1)
-     })
+     main()
+       .then(() => process.exit())
+       .catch((error) => {
+         console.error('[FAILED] Execution Error:', error.message)
+         process.exit(1)
+       })
    }
    ```
+4. Log tags: `[PROCESS]`, `[LOG]`, `[INFO]`, `[SUCCESS]`, `[FAILED]` (Spanish: `[PROCESO]`, `[REGISTRO]`, `[INFO]`, `[ÉXITO]`, `[FALLO]`). The web runner colors lines by these tags.
 
 ### Rule 4: StandardJS Code Style
 - Single quotes `'string'` exclusively.
@@ -129,7 +132,7 @@ To prevent hanging gRPC channels or dangling event loops:
 - Never leave unused imports or variables.
 
 ### Rule 5: Inter-Lab State Persistence
-Labs communicate sequentially via state variables stored in `state.json`:
+Labs communicate through the course-wide `course/state.json` (in the browser, local storage). Credentials always come from `.env` (`process.env.ACCOUNT_1_ID`, ...), never from state. Use `reuseToken` / `reuseTopic` / `reuseContract` so a re-run does not pay to create the same thing again:
 - Store state: `updateState('KEY_NAME', value)`
 - Retrieve state: `getState('KEY_NAME')`
 - Source: `import { getClient, getState, updateState, getHashscanUrl } from '../M99_Utilities/index.js'`
@@ -160,7 +163,7 @@ When designing or debugging modules, always recognize the dual operational patte
 
 1. **NEVER use `.plus()` or `.negated()` on Hbar objects:** Hedera SDK `Hbar` objects are immutable value representations without BigNumber arithmetic methods. To compute dynamic balances, use native `BigInt` tinybars: `BigInt(hbar.toTinybars())`.
 2. **NEVER exceed 100 bytes in NFT metadata on HTS:** `TokenMintTransaction` limits metadata bytes to 100 bytes per serial. Store standard IPFS URIs (`ipfs://.../<id>.json`), not raw stringified JSON payloads.
-3. **NEVER invent your own x402 wire format:** Use the official `@x402/*` packages. On Hedera the buyer signs a `TransferTransaction` whose transaction id belongs to the facilitator's fee payer and never submits it; replay protection comes from Hedera transaction ids (one execution, ~120 s validity), not from memo nonces. For IoT telemetry, bind a single-use nonce into the signed payload.
+3. **NEVER invent your own x402 wire format:** Follow the x402 v2 `exact` scheme for Hedera (`PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE`, Base64 JSON), as implemented in `M99_Utilities/x402.js`. The buyer signs a `TransferTransaction` whose transaction id belongs to the facilitator's fee payer and never submits it; replay protection comes from Hedera transaction ids (one execution, ~120 s validity), not from memo nonces. For IoT telemetry, bind a single-use nonce into the signed payload.
 4. **NEVER implement infinite polling loops:** When waiting for consensus receipts or mirror node updates, always use bounded retries with exponential backoff or native gRPC streaming.
 
 ---

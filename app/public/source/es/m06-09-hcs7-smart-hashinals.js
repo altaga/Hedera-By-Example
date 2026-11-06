@@ -162,7 +162,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Smart Hashinal HCS-7:', error.message)
+    console.error('\n[FALLO] Fallo en Smart Hashinal HCS-7:', error.message)
     process.exit(1)
   } finally {
     client.close()

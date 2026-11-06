@@ -74,6 +74,23 @@ El límite de tamaño de un mensaje en Hedera es de 1024 bytes. Para enviar arch
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (solo comisiones de red) |
+| **02** | Lab 01 de M5 | — | <0.1 ℏ (solo comisiones de red) |
+| **03** | Lab 01 de M5 | — | <0.1 ℏ (solo comisiones de red) |
+| **04** | Lab 01 de M5 | — | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | — | <1 ℏ (solo comisiones de red) |
+| **06** | — | — | ~45 ℏ la primera vez (crea un token y un tópico de pago HIP-991, cerca de 3 USD); ~2 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **07** | — | — | <1 ℏ (solo comisiones de red) |
+| **08** | — | — | <0.1 ℏ (solo comisiones de red) |
+
+---
+
 ## Referencias Oficiales
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
 - [Working with Topics and Messages](https://docs.hedera.com/native/consensus)

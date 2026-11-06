@@ -163,7 +163,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] HIP-904 Cancel/Reject Failure:', error.message)
+    console.error('\n[FAILED] HIP-904 Cancel/Reject Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

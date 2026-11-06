@@ -106,12 +106,12 @@ const main = async () => {
         .setAdminKey(adminKey) // Permite actualizaciones y gestión de renta
         .freezeWith(client), client, { gas: 2000000 })
       const contractReceipt = await contractResponse.getReceipt(client)
-      console.log(`[LOG] Tx de despliegue en HashScan: ${getHashscanUrl(contractResponse)}`)
+      console.log(`[REGISTRO] Tx de despliegue en HashScan: ${getHashscanUrl(contractResponse)}`)
       return contractReceipt.contractId
     })
 
     console.log(`[ÉXITO] Contrato anclado exitosamente: ${contractId}`)
-    console.log(`[LOG] Contrato en HashScan: https://hashscan.io/testnet/contract/${contractId}`)
+    console.log(`[REGISTRO] Contrato en HashScan: https://hashscan.io/testnet/contract/${contractId}`)
     updateState('SC_STORAGE_ID', contractId.toString())
 
     // FASE C: Interacción (Escritura de Estado)
@@ -122,7 +122,7 @@ const main = async () => {
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
     await setTx.getReceipt(client)
-    console.log(`[LOG] Tx set(42) en HashScan: ${getHashscanUrl(setTx)}`)
+    console.log(`[REGISTRO] Tx set(42) en HashScan: ${getHashscanUrl(setTx)}`)
     console.log('[ÉXITO] Estado del contrato actualizado a 42.')
 
     // FASE D: Consulta (Lectura de Estado)

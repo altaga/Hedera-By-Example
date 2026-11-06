@@ -250,7 +250,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] ZK privacy pool failed:', error.message)
+    console.error('\n[FAILED] ZK privacy pool failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

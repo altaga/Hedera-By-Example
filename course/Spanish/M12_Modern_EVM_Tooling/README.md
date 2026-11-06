@@ -84,6 +84,24 @@ Mientras que las transacciones en Ethereum queman montos impredecibles de ETH se
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+> [!TIP]
+> Los labs que usan el JSON-RPC Relay se conectan al relay público de Hashio (`testnet.hashio.io`). Si está caído o limitado, define `JSON_RPC_URL` en el `.env` con otro relay JSON-RPC de Hedera (por ejemplo de Validation Cloud o QuickNode, o tu propio `hedera-json-rpc-relay`).
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~30 ℏ la primera vez (token + contrato a ~15 ℏ cada uno en testnet); <1 ℏ cuando los reutiliza |
+| **02** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **03** | — | — | ~5 ℏ (gas del despliegue vía relay; el firmante se recarga hasta 5 ℏ) |
+| **04** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **06** | — | — | <1 ℏ (solo comisiones de red) |
+
+---
+
 ## Referencias Oficiales
 - [Documentación del Hedera Smart Contract Service](https://docs.hedera.com/hedera/sdks-and-apis/smart-contracts)
 - [Repositorio GitHub de Scaffold-HBAR](https://github.com/hedera-dev/scaffold-hbar)

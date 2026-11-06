@@ -17,7 +17,7 @@
  * - https://hips.hedera.com/hip/hip-412
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M3 Lab 07: NFTs Dinámicos (HIP-765)
+ * - Anterior:  M3 Lab 07: NFTs Dinámicos (HIP-657)
  * - Siguiente: M3 Lab 09: Actualización en Tesorería con Supply-Key y Bloqueo Post-Envío (HIP-850)
  *
  * [ ANTES DE EJECUTAR ]

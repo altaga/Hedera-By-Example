@@ -81,15 +81,15 @@ const main = async () => {
     const discountTinybars = Math.floor(faceTinybars * INVOICE.annualDiscountRate * (INVOICE.termDays / 365))
     const advanceTinybars = faceTinybars - discountTinybars
     console.log('[PROCESO] Paso 1: Economía de la factura')
-    console.log(`[LOG] ${INVOICE.invoiceId}  | Deudor: ${INVOICE.debtor} | PyME: ${INVOICE.supplierSme}`)
-    console.log(`[LOG] Nominal ${faceTinybars} tinybars | Anticipo ${advanceTinybars} | Descuento del inversor ${discountTinybars} (${INVOICE.annualDiscountRate * 100}% anual, ${INVOICE.termDays} días)`)
+    console.log(`[REGISTRO] ${INVOICE.invoiceId}  | Deudor: ${INVOICE.debtor} | PyME: ${INVOICE.supplierSme}`)
+    console.log(`[REGISTRO] Nominal ${faceTinybars} tinybars | Anticipo ${advanceTinybars} | Descuento del inversor ${discountTinybars} (${INVOICE.annualDiscountRate * 100}% anual, ${INVOICE.termDays} días)`)
 
     // 2. Tres partes reales
     console.log('\n[PROCESO] Paso 2: Creando las cuentas de PyME, inversor y deudor...')
     const sme = await createLabAccount(client, { hbar: 0.3 })
     const investor = await createLabAccount(client, { hbar: 0.2 })
     const debtor = await createLabAccount(client, { hbar: 0.2 })
-    console.log(`[LOG] PyME ${sme.accountId} | Inversor ${investor.accountId} | Deudor ${debtor.accountId}`)
+    console.log(`[REGISTRO] PyME ${sme.accountId} | Inversor ${investor.accountId} | Deudor ${debtor.accountId}`)
     const smeClient = createClient(sme.accountId.toString(), sme.privateKey)
 
     // 3. La PyME ancla la factura y emite el token de la cuenta por cobrar (la PyME es tesorería)
@@ -160,7 +160,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el factoraje de facturas:', error.message)
+    console.error('\n[FALLO] Falló el factoraje de facturas:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -171,7 +171,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

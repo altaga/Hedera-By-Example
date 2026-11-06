@@ -181,7 +181,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Ejecución de Tarifa Patrocinada:', error.message)
+    console.error('\n[FALLO] Fallo en Ejecución de Tarifa Patrocinada:', error.message)
     process.exit(1)
   } finally {
     client.close()

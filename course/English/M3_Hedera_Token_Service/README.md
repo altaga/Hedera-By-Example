@@ -75,6 +75,25 @@ Hedera allows you to define collection rules at the protocol level. You can conf
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created) |
+| **02** | — | Yes | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **03** | — | — | ~25 ℏ the first time (it creates a token and uploads a file, about 1.4 USD); ~9 ℏ when you run it again (it reuses what it created) |
+| **04** | M3 Lab 03 | — | <0.1 ℏ (network fees only) |
+| **05** | — | Yes | ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **06** | — | Yes | ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created) |
+| **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **08** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **09** | — | — | ~15 ℏ each run (it creates a token, about 1 USD) |
+| **10** | — | Yes | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+
+---
+
 ## Official References
 - [Hedera Token Service (HTS) Overview](https://docs.hedera.com/hedera/core-concepts/tokens)
 - [HIP-412: NFT Metadata JSON Schema](https://hips.hedera.com/hip/hip-412)

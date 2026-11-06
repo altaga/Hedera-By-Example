@@ -136,9 +136,9 @@ const main = async () => {
       committedAt: new Date().toISOString()
     }
 
-    console.log(`[LOG] Total de Particiones:  ${watermarks.length}`)
-    console.log(`[LOG] Total de Logs Ingeridos: ${watermarks.reduce((acc, w) => acc + w.totalRecords, 0)}`)
-    console.log(`[LOG] Checksum del Estado:   ${clusterStateChecksum}`)
+    console.log(`[REGISTRO] Total de Particiones:  ${watermarks.length}`)
+    console.log(`[REGISTRO] Total de Logs Ingeridos: ${watermarks.reduce((acc, w) => acc + w.totalRecords, 0)}`)
+    console.log(`[REGISTRO] Checksum del Estado:   ${clusterStateChecksum}`)
 
     // 4. Crear Tema de Anclaje HCS en Hedera Testnet
     console.log('\n[PROCESO] Paso 4: Creando Tópico de Consenso de Anclaje HCS...')
@@ -158,8 +158,8 @@ const main = async () => {
     const submitReceipt = await submitTx.getReceipt(client)
 
     console.log(`\n[ÉXITO] ¡Punto de Control Kafka Anclado en HCS! Estado: ${submitReceipt.status.toString()}`)
-    console.log(`[LOG] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
-    console.log(`[LOG] ID de Transacción:      ${submitTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] Secuencia de Consenso: #${submitReceipt.topicSequenceNumber.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción:      ${submitTx.transactionId.toString()}`)
     console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(submitTx)}`)
 
     updateState('KAFKA_HCS_TOPIC_ID', topicId.toString())
@@ -177,7 +177,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución del Puente Kafka:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución del Puente Kafka:', error.message)
     process.exit(1)
   } finally {
     client.close()

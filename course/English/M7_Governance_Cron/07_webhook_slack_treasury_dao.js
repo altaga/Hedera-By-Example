@@ -233,7 +233,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Autonomous Treasury DAO Failure:', error.message)
+    console.error('\n[FAILED] Autonomous Treasury DAO Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

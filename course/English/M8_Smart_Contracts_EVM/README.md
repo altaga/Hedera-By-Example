@@ -76,6 +76,26 @@ In Hedera, the gas price does not fluctuate with network demand. The execution c
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~15 ℏ the first time (it creates a contract, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
+| **02** | M8 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **03** | M8 Lab 01 | — | <1 ℏ (network fees only) |
+| **04** | M3 Lab 01 | — | ~15 ℏ the first time (it creates a contract, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **05** | M8 Lab 01 | — | <1 ℏ (network fees only) |
+| **06** | — | Yes | ~2 ℏ (network fees only) |
+| **07** | — | — | <1 ℏ (network fees only) |
+| **08** | — | — | ~30 ℏ the first time (it creates a token and a contract, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created) |
+| **09** | — | — | ~50-60 ℏ the first time (3 contract deployments: ~15 ℏ create + ~6 ℏ per 4 KB bytecode append each, plus 2 ℏ to a depositor); ~3 ℏ when contracts are reused. A gas retry re-uploads the bytecode, so the hasher starts at 3M gas |
+| **10** | — | — | ~15 ℏ the first time (it creates a contract, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created) |
+| **11** | — | — | ~15 ℏ the first time (it creates a contract, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+
+---
+
 ## Official References
 - [Hedera Smart Contract Service (HSCS)](https://docs.hedera.com/hedera/core-concepts/smart-contracts)
 - [HIP-206: HTS System Contract](https://hips.hedera.com/hip/hip-206)

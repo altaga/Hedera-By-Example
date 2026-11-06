@@ -82,6 +82,24 @@ Cada transacción de transferencia en Hedera tiene un límite de "puntos de tran
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | Sí | ~1 ℏ (solo comisiones de red) |
+| **02** | Lab 01 de M3 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **03** | Lab 03 de M3 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **04** | Lab 03 de M3 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **05** | — | Sí | <1 ℏ (solo comisiones de red) |
+| **06** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~2 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **08** | — | — | ~35 ℏ la primera vez (crea 2 tokens, cerca de 2 USD); ~6 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **09** | — | — | ~17 ℏ (crear el token FLASH ~15 ℏ en testnet) + ~0.6 ℏ para cuentas desechables + comisiones |
+
+---
+
 ## Referencias Oficiales
 - [Transfer Transactions (Hedera Docs)](https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transfer-tokens)
 - [Understanding Atomicity in DLT](https://hedera.com/learning/hedera-hashgraph/what-is-atomicity)

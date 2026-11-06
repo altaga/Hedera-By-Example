@@ -105,7 +105,7 @@ const main = async () => {
     const recipientId = recipient.accountId.toString()
     const rClient = createClient(recipientId, recipient.privateKey)
     const pubHex = recipient.privateKey.publicKey.toStringRaw()
-    console.log(`[LOG] Destinatario ${recipientId}`)
+    console.log(`[REGISTRO] Destinatario ${recipientId}`)
 
     console.log('\n[PROCESO] Paso 2: Topic con admin key + memo [HIP-1334:<cuenta>], luego el primer mensaje firmado...')
     const topicId = (await (await new TopicCreateTransaction()
@@ -163,7 +163,7 @@ const main = async () => {
     console.log('\n[PROCESO] Paso 5: El destinatario lee el buzón desde el Mirror Node y descifra...')
     const msg = await waitForMirror(async () => (await mirror(`/topics/${boxId}/messages?sequencenumber=gt:1`))?.messages?.[0], { timeoutMs: 60_000 })
     const env = decodeMsg(msg)
-    console.log(`[LOG] Texto cifrado on-chain: ${env.data.encryptedData.slice(0, 40)}...`)
+    console.log(`[REGISTRO] Texto cifrado on-chain: ${env.data.encryptedData.slice(0, 40)}...`)
     const plain = eciesDecrypt(Buffer.from(recipient.privateKey.toBytesRaw()), env.data)
     console.log(`[ÉXITO] Descifrado: "${plain}" | coincide: ${plain === secret}`)
     rClient.close()
@@ -176,7 +176,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el flujo HIP-1334:', error.message)
+    console.error('\n[FALLO] Falló el flujo HIP-1334:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -187,7 +187,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

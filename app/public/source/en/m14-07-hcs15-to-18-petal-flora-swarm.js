@@ -223,7 +223,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Botanical Swarm Execution Failure:', error.message)
+    console.error('\n[FAILED] Botanical Swarm Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

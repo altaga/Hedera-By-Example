@@ -218,7 +218,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Verificación de Block Stream:', error.message)
+    console.error('\n[FALLO] Fallo en Verificación de Block Stream:', error.message)
     process.exit(1)
   }
 }

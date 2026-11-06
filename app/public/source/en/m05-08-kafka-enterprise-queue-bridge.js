@@ -177,7 +177,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Kafka Bridge Execution Failure:', error.message)
+    console.error('\n[FAILED] Kafka Bridge Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

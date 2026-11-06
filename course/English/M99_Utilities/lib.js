@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import * as crypto from 'crypto'
 import { EventEmitter } from 'events'
 import * as fs from 'fs' // Required for utility functions in HybridEncryption

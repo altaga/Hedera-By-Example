@@ -20,7 +20,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M3 Lab 05: Implementación de Tarifas Personalizadas (Custom Fees)
- * - Siguiente: M3 Lab 07: NFTs Dinámicos (HIP-765)
+ * - Siguiente: M3 Lab 07: NFTs Dinámicos (HIP-657)
  *
  * [ SECUENCIA ]
  * Artista -> Hedera: TokenCreate NFT con regalía 10% + respaldo 0.01 ℏ

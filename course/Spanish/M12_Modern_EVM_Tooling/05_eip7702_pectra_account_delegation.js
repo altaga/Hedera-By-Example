@@ -116,9 +116,9 @@ const main = async () => {
     const delegatorWallet = ethers.Wallet.createRandom()
     const batchContractAddress = '0x0000000000000000000000000000000000abacba' // Dirección del ejecutor por lotes
 
-    console.log(`[LOG] Dirección EOA Delegante:    ${delegatorWallet.address}`)
-    console.log(`[LOG] Contrato Destino Delegado:   ${batchContractAddress}`)
-    console.log('[LOG] Red de Destino:              Hedera Testnet (Chain ID 296)')
+    console.log(`[REGISTRO] Dirección EOA Delegante:    ${delegatorWallet.address}`)
+    console.log(`[REGISTRO] Contrato Destino Delegado:   ${batchContractAddress}`)
+    console.log('[REGISTRO] Red de Destino:              Hedera Testnet (Chain ID 296)')
 
     // 2. Construir y Firmar la Tupla de Autorización EIP-7702
     console.log('\n[PROCESO] Paso 2: Construyendo la Tupla de Autorización EIP-7702...')
@@ -171,7 +171,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución de EIP-7702:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución de EIP-7702:', error.message)
     process.exit(1)
   } finally {
     client.close()

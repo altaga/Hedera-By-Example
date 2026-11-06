@@ -108,8 +108,8 @@ const main = async () => {
     const record = await waitForMirror(async () => (await mirror(`/transactions/${mirrorId}`))?.transactions?.[0], { timeoutMs: 60_000 })
     if (!record) throw new Error('La transacción aún no está en el Mirror Node')
     const block = (await mirror(`/blocks?timestamp=lte:${record.consensus_timestamp}&order=desc&limit=1`)).blocks[0]
-    console.log(`[LOG] Block #${block.number} | hapi ${block.hapi_version} | archivo origen ${block.name}`)
-    console.log(`[LOG] Resultado ${record.result} | comisión ${record.charged_tx_fee} tinybars | ${record.transfers.length} transferencias`)
+    console.log(`[REGISTRO] Block #${block.number} | hapi ${block.hapi_version} | archivo origen ${block.name}`)
+    console.log(`[REGISTRO] Resultado ${record.result} | comisión ${record.charged_tx_fee} tinybars | ${record.transfers.length} transferencias`)
 
     console.log('\n[PROCESO] Paso 4: Codificando un com.hedera.hapi.block.stream.Block con esos datos...')
     const [major, minor, patch] = block.hapi_version.split('.').map(Number)
@@ -152,7 +152,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el lab de block stream:', error.message)
+    console.error('\n[FALLO] Falló el lab de block stream:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -163,7 +163,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

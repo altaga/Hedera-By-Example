@@ -227,7 +227,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Prueba de Estado CLPR:', error.message)
+    console.error('\n[FALLO] Fallo en Prueba de Estado CLPR:', error.message)
     process.exit(1)
   } finally {
     client.close()

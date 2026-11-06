@@ -197,7 +197,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error(`\n[ERROR] Falló el Bus de Eventos: ${error.message}`)
+    console.error(`\n[FALLO] Falló el Bus de Eventos: ${error.message}`)
     process.exitCode = 1
     await eventBus.close()
     if (client) client.close()

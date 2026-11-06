@@ -77,6 +77,21 @@ Para evitar la saturación de los validadores, Hedera desacopla el ordenamiento 
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (solo comisiones de red) |
+| **02** | — | — | <1 ℏ (solo comisiones de red) |
+| **03** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **04** | — | — | <1 ℏ (solo comisiones de red) |
+| **05** | — | — | ~1 ℏ (comisiones de red y las cuentas que crea) |
+| **06** | — | — | <0.1 ℏ (solo comisiones de red). Descarga ~160 archivos .proto desde GitHub |
+
+---
+
 ## Referencias Oficiales
 - [HIP-1535: Cross-Ledger Protocol (CLPR), borrador](https://hips.hedera.com/hip/hip-1535)
 - [HIP-336: API de Aprobaciones y Asignaciones](https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md)

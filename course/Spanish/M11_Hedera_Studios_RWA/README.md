@@ -92,6 +92,23 @@ Para evitar catástrofes de desanclaje estilo Terra/Luna, las stablecoins en Hed
 
 ---
 
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~16 ℏ (crear el token ~15 ℏ en testnet) + ~0.3 ℏ para cuentas desechables + comisiones |
+| **02** | — | — | ~18 ℏ (crear el token ~15 ℏ en testnet) + ~0.3 ℏ para cuentas desechables + comisiones |
+| **03** | — | — | ~17 ℏ (crear el token ~15 ℏ en testnet) + 0.05 ℏ para el titular + comisiones |
+| **04** | — | — | ~15 ℏ (solo comisiones de red) |
+| **05** | — | — | ~18 ℏ (el operador paga la creación del token, ~15 ℏ) + ~0.7 ℏ para cuentas desechables + comisiones |
+| **06** | — | — | ~60 ℏ la primera vez (4 tokens a ~15 ℏ cada uno en testnet); ~3 ℏ cuando los reutiliza |
+| **07** | — | Sí | ~15 ℏ en cada ejecución (crea un token, cerca de 1 USD) |
+| **08** | — | — | ~16 ℏ (crear el token ~15 ℏ en testnet) + ~0.1 ℏ para titulares + comisiones |
+
+---
+
 ## Referencias Oficiales
 - [Hedera Asset Tokenization Studio (ATS)](https://docs.hedera.com/solutions/tokenization/ats)
 - [Repositorio GitHub de ATS](https://github.com/hashgraph/asset-tokenization-studio)

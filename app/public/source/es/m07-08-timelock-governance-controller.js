@@ -81,9 +81,9 @@ const main = async () => {
     const trusteeKey = PrivateKey.generateED25519()
     const maliciousRecipient = '0.0.9999999' // Cuenta en lista negra para la simulación
 
-    console.log(`[LOG] Operador / Tesorería:        ${operatorId.toString()}`)
-    console.log(`[LOG] Clave Guardiana de Consejo:  ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
-    console.log(`[LOG] Clave Multifirma Fideicomiso: ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[REGISTRO] Operador / Tesorería:        ${operatorId.toString()}`)
+    console.log(`[REGISTRO] Clave Guardiana de Consejo:  ${securityCouncilKey.publicKey.toStringDer().substring(0, 32)}...`)
+    console.log(`[REGISTRO] Clave Multifirma Fideicomiso: ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
 
     // 2. Programar una Acción de Tesorería con Bloqueo Temporal (Timelock)
     console.log('\n[PROCESO] Paso 2: Programando Pago de Tesorería con Timelock (Ventana de 48h)...')
@@ -112,7 +112,7 @@ const main = async () => {
     const scheduleId = scheduleReceipt.scheduleId
 
     console.log(`[ÉXITO] ¡Propuesta Bloqueada en Capa 1! ID de Programación: ${scheduleId.toString()}`)
-    console.log(`[LOG] ID de Transacción:  ${scheduleCreateTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción:  ${scheduleCreateTx.transactionId.toString()}`)
     console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(scheduleCreateTx)}`)
 
     // 3. El Monitor de Seguridad detecta una infracción durante la Ventana Timelock
@@ -133,7 +133,7 @@ const main = async () => {
 
     const deleteReceipt = await deleteTx.getReceipt(client)
     console.log(`\n[ÉXITO] ¡Veto de Emergencia Ejecutado! Estado de Consenso: ${deleteReceipt.status.toString()}`)
-    console.log(`[LOG] ID de Transacción de Eliminación: ${deleteTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción de Eliminación: ${deleteTx.transactionId.toString()}`)
     console.log(`[EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(deleteTx)}`)
 
     updateState('TIMELOCK_SCHEDULE_ID', scheduleId.toString())
@@ -152,7 +152,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en el Controlador Timelock:', error.message)
+    console.error('\n[FALLO] Fallo en el Controlador Timelock:', error.message)
     process.exit(1)
   } finally {
     client.close()

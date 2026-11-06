@@ -123,7 +123,7 @@ const main = async () => {
       updateState('AUTONOMOUS_CRON_VAULT_ID', contractIdStr)
 
       console.log(`[ÉXITO] AutonomousCronVault Desplegado con Contract ID: ${contractIdStr}`)
-      console.log(`[LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
+      console.log(`[REGISTRO] Dirección EVM: 0x${contractId.toEvmAddress()}`)
       console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
@@ -137,7 +137,7 @@ const main = async () => {
 
     const heartbeatRecord = await heartbeatTx.getRecord(client)
     console.log(`[ÉXITO] ¡Latido Ejecutado! Estado: ${heartbeatRecord.receipt.status.toString()}`)
-    console.log(`[LOG] ID de Transacción de Consenso: ${heartbeatTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción de Consenso: ${heartbeatTx.transactionId.toString()}`)
 
     // 3. Programar Ejecución Futura mediante Precompilación HSS 0x16b
     console.log('\n[PROCESO] Paso 3: Disparando scheduleNextHeartbeat() mediante Precompilación 0x16b...')
@@ -150,7 +150,7 @@ const main = async () => {
 
     const scheduleRecord = await scheduleCallTx.getRecord(client)
     console.log(`[ÉXITO] ¡Tarea Cron Autónoma Programada! Estado: ${scheduleRecord.receipt.status.toString()}`)
-    console.log(`[LOG] ID de Transacción de Programación: ${scheduleCallTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] ID de Transacción de Programación: ${scheduleCallTx.transactionId.toString()}`)
     console.log(`[EXPLORADOR] Ver en HashScan:             ${getHashscanUrl(scheduleCallTx)}`)
 
     updateState('AUTONOMOUS_CRON_LAST_TX_ID', scheduleCallTx.transactionId.toString())
@@ -167,7 +167,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución de Cron Autónomo:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución de Cron Autónomo:', error.message)
     process.exit(1)
   } finally {
     client.close()

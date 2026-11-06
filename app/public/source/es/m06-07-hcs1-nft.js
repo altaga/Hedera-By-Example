@@ -85,7 +85,7 @@ const main = async () => {
     const imageHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
 
     console.log(`[INFO] Activo: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
-    console.log(`[LOG] FID del Activo: ${imageHash}`)
+    console.log(`[REGISTRO] FID del Activo: ${imageHash}`)
 
     // 1. Crear el Topic de Almacenamiento HCS
     console.log('\n[PROCESO] Creando Topic de Almacenamiento HCS...')
@@ -181,7 +181,7 @@ const main = async () => {
     await mintRes.getReceipt(client)
 
     console.log('\n[ÉXITO] ¡NFT Nativo HCS-1 Minado!')
-    console.log(`[LOG] Ver NFT en Hashscan: ${getHashscanUrl(mintRes)}`)
+    console.log(`[REGISTRO] Ver NFT en Hashscan: ${getHashscanUrl(mintRes)}`)
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('Inscripción Autónoma de Confianza Cero: Los metadatos y la imagen se almacenan')

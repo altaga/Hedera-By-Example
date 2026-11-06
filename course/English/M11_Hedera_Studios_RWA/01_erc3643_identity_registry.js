@@ -216,7 +216,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Permissioned transfer lab failed:', error.message)
+    console.error('\n[FAILED] Permissioned transfer lab failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

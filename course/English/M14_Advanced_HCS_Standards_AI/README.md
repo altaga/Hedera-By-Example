@@ -95,6 +95,25 @@ Public ledgers provide transparency and ordering, but leak confidential business
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (network fees only) |
+| **02** | — | — | <0.1 ℏ (network fees only) |
+| **03** | — | — | <1 ℏ (network fees only) |
+| **04** | — | — | <1 ℏ (network fees only) |
+| **05** | — | — | <1 ℏ (network fees only) |
+| **06** | — | — | <0.1 ℏ (network fees only) |
+| **07** | — | — | ~5 ℏ (network fees only) |
+| **08** | — | — | <1 ℏ (network fees only) |
+| **09** | — | — | ~1.5 ℏ funded to the recipient + fees |
+| **10** | — | — | ~0.1 ℏ + fees. Node only (spawns a child process) |
+
+---
+
 ## Official References
 - [Hashgraph Online Standards Registry](https://standards.hashgraphonline.com/)
 - [HCS-20 Specification: Inscriptions & Auditable Points](https://docs.hashgraphonline.com/hcs-20)

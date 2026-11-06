@@ -74,6 +74,23 @@ Using HCS, we can anchor identity metadata that allows users to prove who they a
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~1 ℏ (network fees and the accounts it creates) |
+| **02** | M7 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **03** | — | Yes | <1 ℏ (network fees only) |
+| **04** | M7 Lab 03 | Yes | <0.1 ℏ (network fees only) |
+| **05** | — | — | <1 ℏ (network fees only) |
+| **06** | M7 Lab 05 | Yes | <0.1 ℏ (network fees only) |
+| **07** | — | Yes | ~2 ℏ (network fees and the accounts it creates) |
+| **08** | — | — | <0.1 ℏ (network fees only) |
+
+---
+
 ## Official References
 - [Multi-signature Accounts (Hedera Docs)](https://docs.hedera.com/hedera/core-concepts/keys-and-signatures#multi-signature-signing)
 - [Scheduled Transactions Documentation](https://docs.hedera.com/hedera/sdks-and-apis/sdks/scheduled-transactions)

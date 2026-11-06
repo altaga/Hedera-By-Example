@@ -165,7 +165,7 @@ const main = async () => {
         .addAddress(hasherId.toEvmAddress())
         .addAddress(verifierId.toEvmAddress())
         .addUint256(DENOMINATION_TINYBARS), 2_000_000))
-    console.log(`[SUCCESS] Hasher ${hasherId} | Verifier ${verifierId} | Pool ${poolId}`)
+    console.log(`[ÉXITO] Hasher ${hasherId} | Verifier ${verifierId} | Pool ${poolId}`)
 
     // 2. Dos depositantes distintos ponen notas en el pool (conjunto de anonimato >= 2)
     console.log('\n[PROCESO] Paso 2: Dos depositantes independientes depositan 0.01 ℏ cada uno con notas secretas...')
@@ -192,7 +192,7 @@ const main = async () => {
     if (myIndex < 0) throw new Error('Tu compromiso aún no está en el árbol on-chain')
     const { root, pathElements, pathIndices } = await merklePath(leaves, myIndex)
     const [known] = await mirrorCall(poolId, poolIface, 'isKnownRoot', [root])
-    console.log(`[LOG] Conjunto de anonimato: ${leaves.length} depósitos | Raíz conocida on-chain: ${known}`)
+    console.log(`[REGISTRO] Conjunto de anonimato: ${leaves.length} depósitos | Raíz conocida on-chain: ${known}`)
 
     const recipient = await createLabAccount(client, { hbar: 0, ecdsa: true })
     const recipientAddress = `0x${recipient.privateKey.publicKey.toEvmAddress()}`
@@ -228,7 +228,7 @@ const main = async () => {
     const withdrawTx = await execute(client, poolId, poolIface, 'withdraw', [a, b, c, root, nullifierHash, recipientAddress], { gas: 600_000 })
     const receipt = await withdrawTx.getReceipt(client)
     console.log(`[ÉXITO] Retiro ${receipt.status.toString()} — ${withdrawTx.transactionId}`)
-    console.log(`[EXPLORER] ${getHashscanUrl(withdrawTx)}`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(withdrawTx)}`)
     await sleep(6000)
     const after = await getMirrorHbarTinybars(recipient.accountId.toString())
     console.log(`[VERIFICACIÓN] El destinatario ${recipient.accountId} recibió ${after - before} tinybars; el calldata solo reveló raíz + nullifierHash, no la hoja.`)
@@ -250,7 +250,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el pool de privacidad ZK:', error.message)
+    console.error('\n[FALLO] Falló el pool de privacidad ZK:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -261,7 +261,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

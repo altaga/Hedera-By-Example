@@ -92,6 +92,23 @@ To avoid Terra/Luna style de-pegging catastrophes, fiat-backed stablecoins on He
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~16 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ funded to throwaway accounts + fees |
+| **02** | — | — | ~18 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ to throwaway accounts + fees |
+| **03** | — | — | ~17 ℏ (token creation ~15 ℏ on testnet) + 0.05 ℏ for the holder + fees |
+| **04** | — | — | ~15 ℏ (network fees only) |
+| **05** | — | — | ~18 ℏ (the operator pays the ~15 ℏ token creation) + ~0.7 ℏ to throwaway accounts + fees |
+| **06** | — | — | ~60 ℏ the first time (4 tokens at ~15 ℏ each on testnet); ~3 ℏ when it reuses them |
+| **07** | — | Yes | ~15 ℏ each run (it creates a token, about 1 USD) |
+| **08** | — | — | ~16 ℏ (token creation ~15 ℏ on testnet) + ~0.1 ℏ to holders + fees |
+
+---
+
 ## Official References
 - [Hedera Asset Tokenization Studio (ATS)](https://docs.hedera.com/solutions/tokenization/ats)
 - [ATS GitHub Repository](https://github.com/hashgraph/asset-tokenization-studio)

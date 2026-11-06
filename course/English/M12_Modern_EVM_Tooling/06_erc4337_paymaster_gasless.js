@@ -225,7 +225,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] ERC-4337 Paymaster Failure:', error.message)
+    console.error('\n[FAILED] ERC-4337 Paymaster Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

@@ -158,7 +158,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Tópico Monetizado HIP-991:', error.message)
+    console.error('\n[FALLO] Fallo en Tópico Monetizado HIP-991:', error.message)
     process.exit(1)
   } finally {
     client.close()

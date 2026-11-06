@@ -151,9 +151,9 @@ const main = async () => {
     const userWallet = ethers.Wallet.createRandom()
     const paymasterWallet = ethers.Wallet.createRandom()
 
-    console.log(`[LOG] Cuenta de Usuario (Emisor):   ${userWallet.address}`)
-    console.log(`[LOG] Patrocinador Paymaster:      ${paymasterWallet.address}`)
-    console.log(`[LOG] EntryPoint ERC-4337:         ${ENTRY_POINT_ADDRESS}`)
+    console.log(`[REGISTRO] Cuenta de Usuario (Emisor):   ${userWallet.address}`)
+    console.log(`[REGISTRO] Patrocinador Paymaster:      ${paymasterWallet.address}`)
+    console.log(`[REGISTRO] EntryPoint ERC-4337:         ${ENTRY_POINT_ADDRESS}`)
 
     // 2. Ensamblar Estructura UserOperation
     console.log('\n[PROCESO] Paso 2: Ensamblando UserOperation ERC-4337 para Transferencia Sin Gas...')
@@ -187,9 +187,9 @@ const main = async () => {
 
     userOp.paymasterAndData = sponsorship.paymasterAndData
     console.log('[ÉXITO] ¡Política Aprobada: Patrocinio de Gas Concedido por el Paymaster!')
-    console.log(`[LOG] Digest del Paymaster: ${sponsorship.paymasterDigest}`)
-    console.log(`[LOG] Ventana de Patrocinio: ${validAfter} ➔ ${validUntil}`)
-    console.log(`[LOG] Longitud de paymasterAndData: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
+    console.log(`[REGISTRO] Digest del Paymaster: ${sponsorship.paymasterDigest}`)
+    console.log(`[REGISTRO] Ventana de Patrocinio: ${validAfter} ➔ ${validUntil}`)
+    console.log(`[REGISTRO] Longitud de paymasterAndData: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
 
     // 4. El Usuario Firma la UserOperation Patrocinada
     console.log('\n[PROCESO] Paso 4: El Usuario Firma el Hash Definitivo de la UserOperation...')
@@ -199,8 +199,8 @@ const main = async () => {
     userOp.signature = ethers.concat([userSig.r, userSig.s, ethers.toBeHex(userSig.v, 1)])
 
     console.log('[ÉXITO] ¡UserOperation Sellada Criptográficamente!')
-    console.log(`[LOG] Hash Final de UserOp: ${finalUserOpHash}`)
-    console.log(`[LOG] Firma del Usuario:    ${userOp.signature.substring(0, 24)}...`)
+    console.log(`[REGISTRO] Hash Final de UserOp: ${finalUserOpHash}`)
+    console.log(`[REGISTRO] Firma del Usuario:    ${userOp.signature.substring(0, 24)}...`)
 
     // 5. Simulación del Bundler y Liquidación en Hedera
     console.log('\n[PROCESO] Paso 5: El Bundler Verifica el Patrocinio y Transmite a Hedera...')
@@ -225,7 +225,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Paymaster ERC-4337:', error.message)
+    console.error('\n[FALLO] Fallo en Paymaster ERC-4337:', error.message)
     process.exit(1)
   } finally {
     client.close()

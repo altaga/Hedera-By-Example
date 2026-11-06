@@ -132,7 +132,7 @@ const main = async () => {
     compliance.registerInvestor(operatorId.toString(), { isKycVerified: true, countryCode: 'USA', isAccredited: true })
     for (const [name, inv] of Object.entries(investors)) {
       compliance.registerInvestor(inv.accountId.toString(), inv.claims)
-      console.log(`[LOG] Inversor ${name} ${inv.accountId}: ${inv.claims.countryCode} | Claim KYC: ${inv.claims.isKycVerified} | Acreditado: ${inv.claims.isAccredited}`)
+      console.log(`[REGISTRO] Inversor ${name} ${inv.accountId}: ${inv.claims.countryCode} | Claim KYC: ${inv.claims.isKycVerified} | Acreditado: ${inv.claims.isAccredited}`)
     }
 
     // 2. Token de seguridad real con llave KYC
@@ -216,7 +216,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el lab de transferencias con permisos:', error.message)
+    console.error('\n[FALLO] Falló el lab de transferencias con permisos:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -227,7 +227,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

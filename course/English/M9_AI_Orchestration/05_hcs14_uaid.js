@@ -25,6 +25,7 @@
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
  * - Run first: M9 Lab 04 (this lab reads what it saved).
+ * - Cost: free (no transactions are sent).
  *
  * [ HOW TO RUN ]
  * node English/M9_AI_Orchestration/05_hcs14_uaid.js

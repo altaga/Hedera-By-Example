@@ -1,12 +1,12 @@
 # Módulo 9: La Economía de la IA Agéntica
-## Orquestación de Protocolos Atómicos y Comercio Autónomo
+## Almacenamiento, Registros, Identidad y Mensajería Segura de Agentes sobre HCS
 
 > [!IMPORTANT]
-> **OBJETIVO:** Transicionar de Modelos de Lenguaje (LLMs) reactivos a enjambres agénticos autónomos y económicamente independientes utilizando los estándares de comunicación de Hedera.
+> **OBJETIVO:** Darle a los agentes de IA lo que necesitan para trabajar juntos en Hedera: almacenamiento compartido (HCS-1), registros que se pueden descubrir (HCS-2), perfiles e identidades (HCS-11, HCS-14) y mensajería entre agentes (HCS-10) que resiste suplantación, repeticiones y espionaje.
 
 ---
 
-## Mapa del Currículo Atómico
+## Mapa del Módulo
 Este módulo se enfoca en la comunicación y soberanía de los agentes de IA.
 
 | Lab | Tema | Descripción |
@@ -81,6 +81,26 @@ Aunque Hedera es un ledger público, los agentes pueden comunicarse de forma pri
 
 ### 3. Orquestación Autónoma
 A diferencia de los bots tradicionales, los agentes de Hedera pueden tomar decisiones económicas, pagar por sus propios recursos (gas, almacenamiento) y cobrar por sus servicios sin intervención humana.
+
+---
+
+## Antes de Ejecutar
+
+Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y paga las comisiones; algunos labs usan además las wallets de práctica `ACCOUNT_1` y `ACCOUNT_2` (créalas en el panel Wallets de la web, o defínelas en `.env`). Un lab con algo en **Ejecuta antes** lee lo que ese lab anterior guardó en `state.json`, así que córrelos en ese orden.
+
+| Lab | Ejecuta antes | Wallets de práctica | Costo |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (solo comisiones de red) |
+| **02** | Lab 01 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **03** | Lab 02 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **04** | — | Sí | ~8 ℏ (comisiones de red y las cuentas que crea) |
+| **05** | Lab 04 de M9 | — | gratis (no se envía ninguna transacción) |
+| **06** | Lab 04 de M9 | Sí | <0.1 ℏ (solo comisiones de red) |
+| **07** | Lab 04 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **08** | Lab 04 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **09** | Lab 04 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **10** | Lab 04 de M9 | — | <0.1 ℏ (solo comisiones de red) |
+| **11** | Lab 04 de M9 | — | <0.1 ℏ (solo comisiones de red) |
 
 ---
 

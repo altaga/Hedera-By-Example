@@ -121,7 +121,7 @@ const main = async () => {
       updateState('SYSTEM_CONTRACTS_FACADE_ID', contractIdStr)
 
       console.log(`[ÉXITO] SystemContractsFacade Desplegado con Contract ID: ${contractIdStr}`)
-      console.log(`[LOG] Dirección EVM: 0x${contractId.toEvmAddress()}`)
+      console.log(`[REGISTRO] Dirección EVM: 0x${contractId.toEvmAddress()}`)
       console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
@@ -141,8 +141,8 @@ const main = async () => {
     const hbarPriceUsd = (1e8 / Number(tinybarsPerDollar)).toFixed(4)
 
     console.log('[ÉXITO] ¡Consulta de Tasa de Cambio On-Chain Resuelta!')
-    console.log(`[LOG] 1 USD ($1.00) en Tinybars: ${tinybarsPerDollar.toString()} tinybars`)
-    console.log(`[LOG] Precio de Consenso Implícito:  $${hbarPriceUsd} USD / HBAR`)
+    console.log(`[REGISTRO] 1 USD ($1.00) en Tinybars: ${tinybarsPerDollar.toString()} tinybars`)
+    console.log(`[REGISTRO] Precio de Consenso Implícito:  $${hbarPriceUsd} USD / HBAR`)
     console.log(`[EXPLORADOR] Ver en HashScan:          ${getHashscanUrl(execTx)}`)
     console.log('[INFO] Precio obtenido directamente del estado de consenso en 1 llamada sin costo de oráculos.')
 
@@ -168,7 +168,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución de Contratos del Sistema:', error.message)
+    console.error('\n[FALLO] Fallo en la Ejecución de Contratos del Sistema:', error.message)
     process.exit(1)
   } finally {
     client.close()

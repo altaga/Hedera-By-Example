@@ -152,7 +152,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Block stream lab failed:', error.message)
+    console.error('\n[FAILED] Block stream lab failed:', error.message)
     process.exit(1)
   } finally {
     client.close()

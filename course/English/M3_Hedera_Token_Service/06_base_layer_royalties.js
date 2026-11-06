@@ -18,7 +18,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 05: Fee Modularity (Custom Fees)
- * - Next:     M3 Lab 07: Dynamic NFTs (HIP-765)
+ * - Next:     M3 Lab 07: Dynamic NFTs (HIP-657)
  *
  * [ SEQUENCE ]
  * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback

@@ -147,7 +147,7 @@ const main = async () => {
 
     // 3. Monitor Reactivo Basado en Eventos y Despacho de Webhook
     console.log('\n[PROCESO] Paso 3: Monitor de Eventos detectando propuesta y despachando Webhook...')
-    console.log('[INFORMACIÓN] Obteniendo estado de la propuesta desde Mirror Node (3 segundos)...')
+    console.log('[INFO] Obteniendo estado de la propuesta desde Mirror Node (3 segundos)...')
     await sleep(3000)
 
     const mirrorScheduleUrl = `${getMirrorNodeBaseUrl()}/api/v1/schedules/${scheduleId}`
@@ -183,7 +183,7 @@ const main = async () => {
 
     // 4. Custodio 2 Evalúa y Envía la Segunda Firma
     console.log('\n[PROCESO] Paso 4: Custodio 2 (Oficial Financiero) revisa webhook y autoriza pago...')
-    console.log('[INFORMACIÓN] Generando aprobación criptográfica vía ScheduleSignTransaction...')
+    console.log('[INFO] Generando aprobación criptográfica vía ScheduleSignTransaction...')
 
     const signTx = await new ScheduleSignTransaction()
       .setScheduleId(scheduleId)
@@ -198,7 +198,7 @@ const main = async () => {
 
     // 5. Verificar Ejecución Autónoma en Capa 1
     console.log('\n[PROCESO] Paso 5: Verificando Ejecución Autónoma en Capa 1 de Consenso...')
-    console.log('[INFORMACIÓN] Esperando asentamiento de balances en consenso (3 segundos)...')
+    console.log('[INFO] Esperando asentamiento de balances en consenso (3 segundos)...')
     await sleep(3000)
 
     const treasuryBalance = await getAccountHbarBalance(treasuryAccountId)
@@ -234,7 +234,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la DAO de Tesorería Autónoma:', error.message)
+    console.error('\n[FALLO] Fallo en la DAO de Tesorería Autónoma:', error.message)
     process.exit(1)
   } finally {
     client.close()

@@ -73,7 +73,7 @@ const main = async () => {
     try {
       const response = await failTx.execute(client)
       await response.getReceipt(client)
-      console.log('[ERROR] Crítico: La red permitió una transacción sin el quorum requerido.')
+      console.log('[FALLO] Crítico: La red permitió una transacción sin el quorum requerido.')
     } catch (e) {
       console.log('└─ [ÉXITO] La red rechazó la transacción como se esperaba (INVALID_SIGNATURE).')
       console.log(`└─ Razón del consenso: ${e.message}`)

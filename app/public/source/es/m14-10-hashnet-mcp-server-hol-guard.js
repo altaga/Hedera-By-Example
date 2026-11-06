@@ -134,7 +134,7 @@ const main = async () => {
     console.log('[PROCESO] Paso 1: Creando un topic HCS y una cuenta receptora permitida...')
     const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:mcp-agent-log').execute(client)).getReceipt(client)).topicId
     const recipient = await createLabAccount(client, { hbar: 0.01 })
-    console.log(`[LOG] Topic ${topicId} | Receptor permitido ${recipient.accountId}`)
+    console.log(`[REGISTRO] Topic ${topicId} | Receptor permitido ${recipient.accountId}`)
 
     // 2. Lanza este archivo como servidor MCP stdio y conéctate como cliente
     console.log('\n[PROCESO] Paso 2: Lanzando el servidor MCP sobre stdio y conectando un cliente...')
@@ -174,7 +174,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el lab MCP:', error.message)
+    console.error('\n[FALLO] Falló el lab MCP:', error.message)
     process.exitCode = 1
   } finally {
     if (mcp) await mcp.close()
@@ -189,7 +189,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
     main()
       .then(() => process.exit())
       .catch((error) => {
-        console.error('[FALLIDO] Error de ejecución:', error.message)
+        console.error('[FALLO] Error de ejecución:', error.message)
         process.exit(1)
       })
   }

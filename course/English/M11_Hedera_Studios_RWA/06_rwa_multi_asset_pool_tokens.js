@@ -168,7 +168,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] RWA Pool Token Execution Failure:', error.message)
+    console.error('\n[FAILED] RWA Pool Token Execution Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

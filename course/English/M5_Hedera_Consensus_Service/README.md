@@ -74,6 +74,23 @@ The size limit of a message in Hedera is 1024 bytes. To send larger files or dat
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | <1 ℏ (network fees only) |
+| **02** | M5 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **03** | M5 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **04** | M5 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **05** | — | — | <1 ℏ (network fees only) |
+| **06** | — | — | ~45 ℏ the first time (it creates a token and a paid HIP-991 topic, about 3 USD); ~2 ℏ when you run it again (it reuses what it created) |
+| **07** | — | — | <1 ℏ (network fees only) |
+| **08** | — | — | <0.1 ℏ (network fees only) |
+
+---
+
 ## Official References
 - [Hedera Consensus Service (HCS) Whitepaper](https://hedera.com/consensus-service)
 - [Working with Topics and Messages](https://docs.hedera.com/native/consensus)

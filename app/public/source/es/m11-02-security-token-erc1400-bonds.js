@@ -102,7 +102,7 @@ const main = async () => {
     console.log(`[PROCESO] Paso 1: Emitiendo tokens de tramo para ${BOND.issuer} (ISIN ${BOND.isin})...`)
     for (const t of BOND.tranches) {
       t.tokenId = await createTranche(client, operatorId, t)
-      console.log(`[SUCCESS] ${t.id} tramo: ${t.tokenId} | ${t.units} unidades | ${(t.couponApy * 100).toFixed(1)}% APY`)
+      console.log(`[ÉXITO] ${t.id} tramo: ${t.tokenId} | ${t.units} unidades | ${(t.couponApy * 100).toFixed(1)}% APY`)
     }
 
     // 2. Inversores reales y asignación
@@ -120,7 +120,7 @@ const main = async () => {
     const allocRes = await allocation.execute(client)
     await allocRes.getReceipt(client)
     console.log(`[ÉXITO] Asignación ${allocRes.transactionId}`)
-    investors.forEach((inv, i) => console.log(`[LOG] Inversor ${i + 1}: ${inv.accountId}`))
+    investors.forEach((inv, i) => console.log(`[REGISTRO] Inversor ${i + 1}: ${inv.accountId}`))
 
     // 3. Snapshot de tenedores desde el Mirror Node
     console.log('\n[PROCESO] Paso 3: Leyendo la tabla de capitalización on-chain desde el Mirror Node...')
@@ -147,7 +147,7 @@ const main = async () => {
     const couponRes = await couponTx.execute(client)
     const couponReceipt = await couponRes.getReceipt(client)
     console.log(`[ÉXITO] Pago de cupones ${couponReceipt.status} — ${couponRes.transactionId}`)
-    console.log(`[EXPLORER] ${getHashscanUrl(couponRes)}`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(couponRes)}`)
 
     await sleep(6000)
     for (const [account, amount] of payouts) {
@@ -165,7 +165,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló el lab de bonos:', error.message)
+    console.error('\n[FALLO] Falló el lab de bonos:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -176,7 +176,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

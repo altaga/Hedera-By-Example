@@ -71,7 +71,7 @@ const main = async () => {
       wipe: PrivateKey.generateECDSA(),
       kyc: PrivateKey.generateECDSA()
     }
-    for (const [name, key] of Object.entries(roles)) console.log(`[LOG] ${name.padEnd(6)} clave: ${key.publicKey.toStringRaw().substring(0, 20)}...`)
+    for (const [name, key] of Object.entries(roles)) console.log(`[REGISTRO] ${name.padEnd(6)} clave: ${key.publicKey.toStringRaw().substring(0, 20)}...`)
 
     // 2. Token donde cada poder es una clave distinta
     console.log('\n[PROCESO] Paso 2: Creando la stablecoin con una clave por rol...')
@@ -145,7 +145,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló la gobernanza de la stablecoin:', error.message)
+    console.error('\n[FALLO] Falló la gobernanza de la stablecoin:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -156,7 +156,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

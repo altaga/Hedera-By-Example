@@ -89,6 +89,25 @@ The `hcs://` protocol is a community-driven URI format that enables recursive as
 
 ---
 
+## Before You Run
+
+Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
+
+| Lab | Run first | Practice wallets | Cost |
+| :--- | :--- | :--- | :--- |
+| **01** | — | — | ~5 ℏ each run (it uploads a file, about 0.3 USD) |
+| **02** | — | — | ~15 ℏ each run (it uploads a file, about 1.2 USD) |
+| **03** | M6 Lab 01 | — | ~9 ℏ each run (it uploads a file, about 0.5 USD) |
+| **04** | — | — | <1 ℏ (network fees only) |
+| **05** | M5 Lab 01 | — | <0.1 ℏ (network fees only) |
+| **06** | M6 Lab 01 | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
+| **08** | M3 Lab 03, M6 Lab 07 | — | <0.1 ℏ (network fees only) |
+| **09** | — | — | <1 ℏ (network fees only) |
+| **10** | — | — | <1 ℏ (network fees only) |
+
+---
+
 ## Official References
 - [Hedera File Service (HFS) Guide](https://docs.hedera.com/hedera/core-concepts/file-service)
 - [HCS-1: Atomic Storage Standard](https://hashinals.com/)

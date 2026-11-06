@@ -98,7 +98,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] JSON-RPC Relay interaction failed:', error.message)
+    console.error('\n[FAILED] JSON-RPC Relay interaction failed:', error.message)
     process.exit(1)
   }
 }

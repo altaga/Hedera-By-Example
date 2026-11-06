@@ -282,7 +282,7 @@ const main = async () => {
       tamperedShards[0].d = tamperedBytes.toString('base64')
 
       reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
-      console.error('[ERROR] Security violation: Tampered ciphertext was accepted!')
+      console.error('[FAILED] Security violation: Tampered ciphertext was accepted!')
       process.exitCode = 1
     } catch (tamperErr) {
       console.log(`[SUCCESS] Adversarial tamper detected and blocked by AES-GCM GMAC: "${tamperErr.message}"`)
@@ -300,7 +300,7 @@ const main = async () => {
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Zero-Trust Vault Failure:', error.message)
+    console.error('\n[FAILED] Zero-Trust Vault Failure:', error.message)
     process.exit(1)
   } finally {
     client.close()

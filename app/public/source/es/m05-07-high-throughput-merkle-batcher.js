@@ -193,7 +193,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Motor Merkle Batcher:', error.message)
+    console.error('\n[FALLO] Fallo en Motor Merkle Batcher:', error.message)
     process.exit(1)
   } finally {
     client.close()

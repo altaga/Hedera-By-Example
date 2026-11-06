@@ -95,7 +95,7 @@ const main = async () => {
       alpha: await createLabAccount(client, { hbar: 0.05 }),
       beta: await createLabAccount(client, { hbar: 0.3 })
     }
-    for (const [name, p] of Object.entries(parties)) console.log(`[LOG] ${name.padEnd(6)} ${p.accountId}`)
+    for (const [name, p] of Object.entries(parties)) console.log(`[REGISTRO] ${name.padEnd(6)} ${p.accountId}`)
 
     console.log('\n[PROCESO] Paso 2: Creando el token FLASH y entregando inventario a Alpha...')
     // Reused across runs (creating a token costs ~15 ℏ on testnet); FRESH_TOKENS=1 forces a new one
@@ -116,7 +116,7 @@ const main = async () => {
     const res = await (await signAll(tx, parties)).execute(client)
     const receipt = await res.getReceipt(client)
     console.log(`[ÉXITO] Estado ${receipt.status} — ${res.transactionId} | ${getHashscanUrl(res)}`)
-    console.log(`[LOG] Comisión al vault: ${fee} tinybars | Ganancia esperada del arbitrajista: ${profit} tinybars`)
+    console.log(`[REGISTRO] Comisión al vault: ${fee} tinybars | Ganancia esperada del arbitrajista: ${profit} tinybars`)
 
     await sleep(6000)
     const arbAfter = await getMirrorHbarTinybars(parties.arb.accountId.toString())
@@ -144,7 +144,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Falló la liquidación del préstamo flash:', error.message)
+    console.error('\n[FALLO] Falló la liquidación del préstamo flash:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -155,7 +155,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLIDO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

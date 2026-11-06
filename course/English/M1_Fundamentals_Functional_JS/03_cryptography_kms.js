@@ -25,6 +25,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none. This lab runs entirely on your machine (no network calls).
+ * - Cost: free (no transactions are sent).
  *
  * [ HOW TO RUN ]
  * node English/M1_Fundamentals_Functional_JS/03_cryptography_kms.js

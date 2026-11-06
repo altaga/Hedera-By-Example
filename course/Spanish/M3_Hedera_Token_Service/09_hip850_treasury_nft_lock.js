@@ -165,7 +165,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Ejecución de HIP-850:', error.message)
+    console.error('\n[FALLO] Fallo en Ejecución de HIP-850:', error.message)
     process.exit(1)
   } finally {
     client.close()

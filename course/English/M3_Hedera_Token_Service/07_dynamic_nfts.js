@@ -1,11 +1,11 @@
 /**
  * ============================================================================
- * Lab 07: Dynamic NFTs (HIP-765)
+ * Lab 07: Dynamic NFTs (HIP-657)
  * [CONCEPT] Mutable Metadata on HTS
  * ============================================================================
  * [ KEY CONCEPT ]
  * Historically, NFTs on Hedera were strictly immutable once minted.
- * With HIP-765, developers can assign a `metadataKey` to a token collection.
+ * With HIP-657, developers can assign a `metadataKey` to a token collection.
  * This allows the key holder to use `TokenUpdateNftsTransaction` to alter the
  * metadata of specific serial numbers AFTER they have been minted, enabling
  * dynamic NFTs (e.g., leveling up an RPG sword, changing real estate ownership,
