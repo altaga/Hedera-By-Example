@@ -1,220 +1,187 @@
-/* eslint-disable camelcase, new-cap */
+/* eslint-disable camelcase */
 /**
- * Shared plumbing for Module 10 (x402 on Hedera).
+ * x402 on Hedera, written with the Hedera SDK only (Module 10).
  *
- * Labs 01–03 build each x402 role by hand with the official packages; later labs
- * reuse these small helpers so their code can focus on the new idea. Nothing
- * here hides protocol logic: the verification, signing and settlement all come
- * from @x402/core and @x402/hedera.
+ * Labs 01-03 build each step by hand so you can see it. Later labs reuse the
+ * same steps from here:
  *
- *   createBuyer()             the buyer role (an x402Client that signs Hedera payments)
- *   createLocalFacilitator()  the facilitator role (verifies and pays the fee)
- *   paywall()                 an x402 resource server for node:http
- *   readPaymentRequired()     decode the 402 PAYMENT-REQUIRED header
- *   readPaymentResponse()     decode the 200 PAYMENT-RESPONSE header
- *   describePayment()         what is inside a signed x402 payment
+ *   createPaymentRequired()  the server's 402 terms (PAYMENT-REQUIRED)
+ *   signExactPayment()       the agent signs a transfer it does not submit (PAYMENT-SIGNATURE)
+ *   verifyExactPayment()     the facilitator's checks before it pays the fee
+ *   settleExactPayment()     the facilitator co-signs, submits and answers (PAYMENT-RESPONSE)
+ *   encodeHeader() / decodeHeader()   Base64 JSON, the format of the three x402 headers
  *
- * No Node built-ins are imported, so the same file also runs in the browser.
+ * Wire format: x402 v2, "exact" scheme on hedera:testnet.
+ * https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  */
-import { x402Client } from '@x402/core/client'
-import { x402Facilitator } from '@x402/core/facilitator'
-import { x402HTTPResourceServer } from '@x402/core/server'
-import { decodePaymentRequiredHeader, decodePaymentResponseHeader } from '@x402/core/http'
-import { ExactHederaScheme as FacilitatorScheme } from '@x402/hedera/exact/facilitator'
-import { ExactHederaScheme as ClientScheme } from '@x402/hedera/exact/client'
-import {
-  HBAR_ASSET_ID,
-  createClientHederaSigner,
-  createHederaClient,
-  createHederaPreflightTransfer,
-  createHederaSignAndSubmitTransaction,
-  createHederaVerifyPayerSignature,
-  inspectHederaTransaction
-} from '@x402/hedera'
-import { PrivateKey, Transaction, TransferTransaction } from '@hiero-ledger/sdk'
+import { Hbar, PrivateKey, PublicKey, TokenId, Transaction, TransactionId, TransferTransaction } from '@hiero-ledger/sdk'
 
-/** CAIP-2 id of Hedera testnet, as x402 writes it. */
+// Kept free of Node-only imports so the course website can run it too.
+const mirrorNode = () => `https://${process.env.NETWORK === 'mainnet' ? 'mainnet-public' : process.env.NETWORK || 'testnet'}.mirrornode.hedera.com`
+
+/** CAIP-2 name of Hedera testnet, as x402 writes it. */
 export const X402_NETWORK = 'hedera:testnet'
+/** In x402, HBAR is the asset "0.0.0"; any other asset is an HTS token id. */
+export const HBAR_ASSET = '0.0.0'
 
-/** Accepts DER or raw hex private keys (the same formats as the course .env). */
-export const toPrivateKey = (value) => {
-  if (value instanceof PrivateKey) return value
-  const text = String(value).trim()
-  return /^30[0-9a-fA-F]{60,}$/.test(text) ? PrivateKey.fromStringDer(text) : PrivateKey.fromString(text)
-}
+/** The three x402 headers carry JSON encoded as Base64. */
+export const encodeHeader = (value) => Buffer.from(JSON.stringify(value)).toString('base64')
+export const decodeHeader = (header) => JSON.parse(Buffer.from(header, 'base64').toString('utf8'))
 
-/** Tinybars → "0.01 ℏ" for logs. */
-export const formatHbar = (tinybars) => `${(Number(tinybars) / 1e8).toFixed(8).replace(/\.?0+$/, '')} ℏ`
+const toKey = (key) => (key instanceof PrivateKey ? key : /^30[0-9a-fA-F]{60,}$/.test(String(key).trim()) ? PrivateKey.fromStringDer(String(key).trim()) : PrivateKey.fromString(String(key).trim()))
 
 /**
- * The buyer: an x402Client that answers a 402 by signing a Hedera transfer.
- * x402 clients refuse any asset they were not told about, so HBAR is allowed
- * here with a per-payment cap (in tinybars); `tokens` adds HTS tokens the same way.
+ * The body of a 402 response (and, Base64-encoded, its PAYMENT-REQUIRED header).
  *
- * @param {string} accountId - Buyer account (0.0.x)
- * @param {string|PrivateKey} privateKey - Its key
- * @param {{ maxTinybars?: string|number, tokens?: Array<{ asset: string, maxAmountPerPayment?: string }> }} [options]
+ * @param {{ resource: string, description: string, payTo: string, amount: number|string, feePayer: string, asset?: string }} terms
+ *   amount is an integer in the asset's smallest unit (tinybars for HBAR).
  */
-export function createBuyer (accountId, privateKey, { maxTinybars = 5_000_000, tokens = [] } = {}) {
-  const signer = createClientHederaSigner(String(accountId), toPrivateKey(privateKey), { network: X402_NETWORK })
-  return new x402Client()
-    .register(X402_NETWORK, new ClientScheme(signer))
-    .setSpendControls({
-      allowedAssets: [
-        { network: X402_NETWORK, asset: HBAR_ASSET_ID, maxAmountPerPayment: String(maxTinybars) },
-        ...tokens.map((t) => ({ network: X402_NETWORK, ...t }))
-      ]
-    })
-}
+export const createPaymentRequired = ({ resource, description, payTo, amount, feePayer, asset = HBAR_ASSET }) => ({
+  x402Version: 2,
+  error: 'Payment required',
+  resource: { url: resource, description, mimeType: 'application/json' },
+  accepts: [{
+    scheme: 'exact',
+    network: X402_NETWORK,
+    amount: String(amount),
+    asset,
+    payTo: String(payTo),
+    maxTimeoutSeconds: 120,
+    extra: { feePayer: String(feePayer) }
+  }]
+})
 
 /**
- * A facilitator that runs inside the lab (the same role https://x402.org/facilitator
- * plays). Its account is the `feePayer`: it co-signs every payment and pays the
- * Hedera network fee, so the buyer only spends the price.
+ * The agent's side (Lab 02): a TransferTransaction from the agent to payTo whose
+ * transaction id belongs to the fee payer, signed by the agent only.
  *
- * @param {string} accountId - Fee payer account (0.0.x)
- * @param {string|PrivateKey} privateKey - Its key
- * @returns {{ facilitator: x402Facilitator, client: object, feePayer: string }}
- *   `client` has the FacilitatorClient shape (verify / settle / getSupported) that
- *   x402ResourceServer expects, so it is interchangeable with HTTPFacilitatorClient.
+ * @param {import('@hiero-ledger/sdk').Client} client - Any testnet client (used to pick nodes).
+ * @param {object} paymentRequired - The decoded 402 body.
+ * @param {string} payerId - The agent's account.
+ * @param {string|PrivateKey} payerKey - The agent's key.
+ * @returns {Promise<object>} The x402 payment payload (send it Base64-encoded as PAYMENT-SIGNATURE).
  */
-export function createLocalFacilitator (accountId, privateKey) {
-  const key = toPrivateKey(privateKey)
-  const feePayer = String(accountId)
-  const signer = {
-    getAddresses: () => [feePayer],
-    // Reads the payer's public key from the Mirror Node and checks the signature.
-    verifyPayerSignature: createHederaVerifyPayerSignature(),
-    // Checks the payer's balance (and the payee's token association) before settling.
-    preflightTransfer: createHederaPreflightTransfer(),
-    // Adds the fee payer's signature and submits the transfer to Hedera.
-    signAndSubmitTransaction: createHederaSignAndSubmitTransaction((network) => {
-      const client = createHederaClient(network)
-      client.setOperator(feePayer, key)
-      return client
-    }, key)
+export const signExactPayment = async (client, paymentRequired, payerId, payerKey) => {
+  const accepted = paymentRequired.accepts[0]
+  const amount = Number(accepted.amount)
+  const tx = new TransferTransaction()
+  if (accepted.asset === HBAR_ASSET) {
+    tx.addHbarTransfer(payerId, Hbar.fromTinybars(-amount)).addHbarTransfer(accepted.payTo, Hbar.fromTinybars(amount))
+  } else {
+    tx.addTokenTransfer(accepted.asset, payerId, -amount).addTokenTransfer(accepted.asset, accepted.payTo, amount)
   }
-  const facilitator = new x402Facilitator().register(X402_NETWORK, new FacilitatorScheme(signer))
-  const client = {
-    verify: (payload, requirements) => facilitator.verify(payload, requirements),
-    settle: (payload, requirements) => facilitator.settle(payload, requirements),
-    getSupported: async () => facilitator.getSupported()
-  }
-  return { facilitator, client, feePayer }
-}
-
-/** node:http request → the HTTPAdapter interface x402HTTPResourceServer reads. */
-function adapterFor (req, url) {
-  const header = (name) => {
-    const value = req.headers[name.toLowerCase()]
-    return Array.isArray(value) ? value[0] : value
-  }
+  tx.setTransactionId(TransactionId.generate(accepted.extra.feePayer)).freezeWith(client)
+  const signed = await tx.sign(toKey(payerKey))
   return {
-    getHeader: header,
-    getMethod: () => req.method,
-    getPath: () => url.pathname,
-    getUrl: () => url.href,
-    getAcceptHeader: () => header('accept') || '',
-    getUserAgent: () => header('user-agent') || '',
-    getQueryParams: () => Object.fromEntries(url.searchParams),
-    getQueryParam: (name) => url.searchParams.get(name) ?? undefined
+    x402Version: 2,
+    resource: paymentRequired.resource,
+    accepted,
+    payload: { transaction: Buffer.from(signed.toBytes()).toString('base64') }
   }
 }
 
-function send (res, status, headers, body) {
-  const isText = typeof body === 'string'
-  res.writeHead(status, { 'Content-Type': isText ? 'text/plain; charset=utf-8' : 'application/json', ...headers })
-  res.end(isText ? body : JSON.stringify(body ?? {}))
-}
-
-/**
- * An x402 resource server for node:http: http.createServer(paywall(...)).
- *
- * For every request it does what the official @x402/express middleware does:
- *   1. no PAYMENT-SIGNATURE → 402 with a PAYMENT-REQUIRED header
- *   2. a payment → the facilitator verifies it
- *   3. the route handler runs (the work being sold)
- *   4. the facilitator settles on Hedera, and only then is the response sent,
- *      with a PAYMENT-RESPONSE header carrying the transaction id.
- * If the handler fails (status ≥ 400) nothing is settled: the buyer is not charged.
- *
- * @param {import('@x402/core/server').x402ResourceServer} resourceServer
- * @param {Record<string, object>} routes - x402 route config: { 'GET /path': { accepts, description } }
- * @param {Record<string, (req, url) => any>} handlers - same keys; return { status?, headers?, body } or a body
- * @param {{ onSettled?: (settlement, route) => void }} [options]
- */
-export function paywall (resourceServer, routes, handlers, { onSettled } = {}) {
-  const httpServer = new x402HTTPResourceServer(resourceServer, routes)
-  const ready = httpServer.initialize() // asks the facilitator which networks it supports
-  return async (req, res) => {
-    try {
-      await ready
-      const url = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
-      const adapter = adapterFor(req, url)
-      const routeKey = `${req.method} ${url.pathname}`
-      const handler = handlers[routeKey]
-      const context = { adapter, path: url.pathname, method: req.method, paymentHeader: adapter.getHeader('payment-signature') }
-      const result = httpServer.requiresPayment(context)
-        ? await httpServer.processHTTPRequest(context)
-        : { type: 'no-payment-required' }
-
-      if (result.type === 'payment-error') {
-        const { status, headers, body } = result.response
-        return send(res, status, headers, body)
-      }
-      if (!handler) return send(res, 404, {}, { error: 'not_found' })
-
-      const out = await handler(req, url)
-      const reply = out && typeof out === 'object' && 'body' in out ? out : { body: out }
-      const status = reply.status || 200
-      if (result.type === 'no-payment-required' || status >= 400) {
-        return send(res, status, reply.headers || {}, reply.body)
-      }
-
-      const settled = await httpServer.processSettlement(result.paymentPayload, result.paymentRequirements, result.declaredExtensions)
-      if (!settled.success) {
-        const { status: failStatus, headers, body } = settled.response
-        return send(res, failStatus, headers, body)
-      }
-      onSettled?.(settled, routeKey)
-      send(res, status, { ...(reply.headers || {}), ...settled.headers }, reply.body)
-    } catch (error) {
-      send(res, 500, {}, { error: error.message })
+/** The payer's public key, read from the Mirror Node (single-key accounts). Retries briefly if the Mirror Node is busy. */
+const payerPublicKey = async (accountId) => {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(`${mirrorNode()}/api/v1/accounts/${accountId}`).catch(() => null)
+    if (res?.ok) {
+      const { key } = await res.json()
+      if (key?._type === 'ED25519') return PublicKey.fromStringED25519(key.key)
+      if (key?._type === 'ECDSA_SECP256K1') return PublicKey.fromStringECDSA(key.key)
+      return null // threshold or key-list accounts are out of scope here
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
   }
-}
-
-/** Decodes the Base64 PAYMENT-REQUIRED header of a 402 response (or null). */
-export const readPaymentRequired = (response) => {
-  const raw = response.headers.get('payment-required')
-  return raw ? decodePaymentRequiredHeader(raw) : null
-}
-
-/** Decodes the Base64 PAYMENT-RESPONSE header of a paid response (or null). */
-export const readPaymentResponse = (response) => {
-  const raw = response.headers.get('payment-response')
-  return raw ? decodePaymentResponseHeader(raw) : null
+  throw new Error(`Could not read the key of ${accountId} from the Mirror Node`)
 }
 
 /**
- * Opens a signed x402 payment payload: the Hedera transaction inside it, who
- * pays the fee (the transaction id's account), the transfers it would make and
- * which public keys have signed it so far.
+ * The facilitator's checks (Lab 03) before it agrees to pay the fee.
+ *
+ * @param {object} paymentPayload - The decoded PAYMENT-SIGNATURE.
+ * @param {string} feePayerId - The facilitator's account.
+ * @returns {Promise<{ isValid: boolean, invalidReason?: string, payer?: string, transaction?: Transaction }>}
  */
-export const describePayment = (paymentPayload) => {
-  const base64 = paymentPayload.payload.transaction
-  const inspected = inspectHederaTransaction(base64)
-  const tx = Transaction.fromBytes(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)))
-  const signers = new Set()
-  for (const [, byTx] of tx.getSignatures()) for (const [, byKey] of byTx) for (const [publicKey] of byKey) signers.add(publicKey.toString())
-  return {
-    type: tx instanceof TransferTransaction ? 'TransferTransaction' : inspected.transactionType,
-    transactionId: inspected.transactionId,
-    feePayer: inspected.transactionIdAccountId,
-    hbarTransfers: inspected.hbarTransfers,
-    tokenTransfers: Object.entries(inspected.tokenTransfers).flatMap(([tokenId, list]) => list.map((t) => ({ ...t, tokenId }))),
-    signers: [...signers],
-    validForSeconds: tx.transactionValidDuration,
-    maxFee: tx.maxTransactionFee?.toString()
+export const verifyExactPayment = async (paymentPayload, feePayerId) => {
+  const fail = (invalidReason) => ({ isValid: false, invalidReason })
+  const accepted = paymentPayload.accepted
+  const amount = BigInt(accepted.amount)
+  let tx
+  try {
+    tx = Transaction.fromBytes(Buffer.from(paymentPayload.payload.transaction, 'base64'))
+  } catch (_) {
+    return fail('transaction_could_not_be_decoded')
   }
+  // 1. Only a plain transfer, and the fee payer is the one written in the terms.
+  if (!(tx instanceof TransferTransaction)) return fail('not_a_transfer')
+  if (accepted.extra?.feePayer !== feePayerId || tx.transactionId.accountId.toString() !== feePayerId) return fail('fee_payer_mismatch')
+
+  // 2. Still valid: Hedera only accepts it until valid start + valid duration (120 s).
+  const expiresMs = tx.transactionId.validStart.toDate().getTime() + tx.transactionValidDuration * 1000
+  if (Date.now() > expiresMs) return fail('payment_expired')
+
+  // 3. It moves exactly the amount to payTo, and nothing else.
+  let payer
+  if (accepted.asset === HBAR_ASSET) {
+    if (tx.tokenTransfers.size > 0) return fail('unexpected_token_transfer')
+    const moves = [...tx.hbarTransfers].map(([id, hbar]) => [id.toString(), BigInt(hbar.toTinybars().toString())])
+    if (moves.length !== 2) return fail('unexpected_transfers')
+    const credit = moves.find(([, v]) => v > 0n)
+    const debit = moves.find(([, v]) => v < 0n)
+    if (!credit || !debit || credit[0] !== accepted.payTo || credit[1] !== amount || debit[1] !== -amount) return fail('amount_or_payee_mismatch')
+    payer = debit[0]
+  } else {
+    if (tx.hbarTransfers.size > 0) return fail('unexpected_hbar_transfer')
+    const list = tx.tokenTransfers.get(TokenId.fromString(accepted.asset)) || tx.tokenTransfers.get(accepted.asset)
+    if (tx.tokenTransfers.size !== 1 || !list) return fail('wrong_asset')
+    const moves = [...list].map(([id, v]) => [id.toString(), BigInt(v.toString())])
+    const credit = moves.find(([, v]) => v > 0n)
+    const debit = moves.find(([, v]) => v < 0n)
+    if (moves.length !== 2 || !credit || !debit || credit[0] !== accepted.payTo || credit[1] !== amount || debit[1] !== -amount) return fail('amount_or_payee_mismatch')
+    payer = debit[0]
+  }
+  if (payer === feePayerId) return fail('fee_payer_cannot_pay')
+
+  // 4. The payer really signed it (public key from the Mirror Node).
+  let publicKey
+  try {
+    publicKey = await payerPublicKey(payer)
+  } catch (_) {
+    return fail('payer_key_unavailable')
+  }
+  if (!publicKey) return fail('unsupported_payer_key')
+  if (!publicKey.verifyTransaction(tx)) return fail('invalid_payer_signature')
+
+  return { isValid: true, payer, transaction: tx }
+}
+
+/**
+ * The facilitator settles (Lab 03): verify, add the fee payer's signature,
+ * submit, and answer with the x402 settlement response.
+ *
+ * @param {import('@hiero-ledger/sdk').Client} client - Its operator is the fee payer.
+ * @param {object} paymentPayload - The decoded PAYMENT-SIGNATURE.
+ * @param {string|PrivateKey} feePayerKey - The fee payer's key (it co-signs).
+ * @returns {Promise<{ success: boolean, network: string, payer?: string, transaction: string, errorReason?: string }>}
+ *   Send it Base64-encoded as PAYMENT-RESPONSE.
+ */
+export const settleExactPayment = async (client, paymentPayload, feePayerKey) => {
+  const feePayerId = client.operatorAccountId.toString()
+  const check = await verifyExactPayment(paymentPayload, feePayerId)
+  if (!check.isValid) return { success: false, network: X402_NETWORK, transaction: '', errorReason: check.invalidReason }
+  try {
+    await check.transaction.sign(toKey(feePayerKey)) // the fee payer's signature, next to the payer's
+    const response = await check.transaction.execute(client)
+    const receipt = await response.getReceipt(client)
+    return { success: true, network: X402_NETWORK, payer: check.payer, transaction: response.transactionId.toString(), status: receipt.status.toString() }
+  } catch (error) {
+    return { success: false, network: X402_NETWORK, payer: check.payer, transaction: '', errorReason: String(error.status || error.message) }
+  }
+}
+
+/** Mirror Node record of a settled payment (null if it has not arrived yet). */
+export const getTransactionRecord = async (transactionId) => {
+  const id = String(transactionId).replace('@', '-').replace(/\.(\d+)$/, '-$1')
+  const res = await fetch(`${mirrorNode()}/api/v1/transactions/${id}`)
+  return res.ok ? (await res.json()).transactions?.[0] || null : null
 }

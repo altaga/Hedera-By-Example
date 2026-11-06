@@ -443,20 +443,6 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
       const v = await loadVendor(ctx)
       return { ...v, default: v }
     }
-    case '@x402/core/client':
-    case '@x402/core/server':
-    case '@x402/core/facilitator':
-    case '@x402/core/http':
-    case '@x402/hedera':
-    case '@x402/hedera/exact/client':
-    case '@x402/hedera/exact/server':
-    case '@x402/hedera/exact/facilitator':
-    case '@x402/fetch': {
-      // Same namespace names as scripts/build-vendor.mjs (x402Namespace).
-      const v = await loadVendor(ctx)
-      const ns = v['X402_' + spec.replace(/^@x402\//, '').replace(/[^a-z0-9]+/gi, '_')]
-      return { ...ns, default: ns }
-    }
     case 'solc': {
       const solc = await loadSolc()
       return { ...solc, default: solc }
@@ -596,7 +582,7 @@ export function createVirtualHttp (EventEmitter: any, realFetch: typeof fetch) {
   const virtualFetch = async (input: any, init: any = {}): Promise<Response> => {
     const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url, 'http://127.0.0.1')
     if (!servers.has(targetPort(url))) return realFetch(input, init)
-    // fetch(new Request(...)) carries method, headers and body on the Request (x402's fetch wrapper does this).
+    // fetch(new Request(...)) carries method, headers and body on the Request object.
     const req = typeof Request !== 'undefined' && input instanceof Request ? input : null
     const method = String(init.method || req?.method || 'GET').toUpperCase()
     const rawBody = init.body ?? (req && !['GET', 'HEAD'].includes(method) ? new Uint8Array(await req.arrayBuffer()) : null)

@@ -1,166 +1,178 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 05: Límites de Gasto para Agentes
- * [CONCEPTO] Un pagador autónomo necesita límites que aplique antes de firmar
+ * Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
+ * [CONCEPTO] Políticas de Gasto Deterministas y Registros de Auditoría Inmutables
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Un agente que paga cualquier 402 que recibe puede quedar vacío por un solo
- * endpoint malicioso, así que necesita límites que aplique antes de firmar.
- *
- * El cliente x402 tiene tres lugares para decir que no, y todos se revisan
- * antes de firmar, así que un pago rechazado nunca sale del agente:
- *   - controles de gasto (spend controls): los activos con los que puede pagar y un
- *     tope por pago;
- *   - políticas: funciones que filtran las ofertas de un 402 (aquí, una lista de
- *     comercios en los que el agente confía);
- *   - hooks: onBeforePaymentCreation puede abortar, aquí cuando se pasaría del
- *     presupuesto de la sesión.
- *
- * Cada decisión se escribe en un tópico de HCS, un registro de auditoría que
- * cualquiera puede leer.
- *
+ * Radio de Impacto Financiero: Darle llaves privadas a un agente autónomo sin
+ * límites programáticos es catastrófico: un bucle recursivo del LLM o una
+ * inyección de prompts podría vaciar la wallet en minutos. Un agente en producción
+ * evalúa cada desafío x402 con un Motor de Políticas determinista (techo por
+ * petición, presupuesto diario, lista blanca de comercios, red y activo
+ * aceptados) antes de firmar nada. Un 402 rechazado nunca produce una firma, así
+ * que no hay nada que liquidar.
+ * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los límites van del lado del comprador. El servidor escribe las condiciones, así
- * que una revisión que confía en el precio o el receptor que dice el servidor no
- * protege nada. Y como el agente solo firma y nunca envía, rechazar no cuesta nada.
+ * Los límites son del pagador, no del servidor: el servidor escribe las condiciones, así que el agente debe revisarlas por sí mismo. Anclar cada decisión en HCS le da al dueño humano un registro a prueba de manipulaciones de lo que el agente pagó y de lo que rechazó.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/solutions/ai/x402/pay-with-x402
- * - https://www.npmjs.com/package/@x402/core
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 04: Precios en Dólares con una Stablecoin HTS
- * - Siguiente: M10 Lab 06: Un Agente que Compra Datos
+ * - Anterior:  M10 Lab 04: Micropagos USDC con HTS
+ * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo
  *
- * [ SECUENCIA ]
- * Agente -> Servidor: GET /api/rogue
- * Servidor -> Agente: 402 (payTo no es un comercio de confianza)
- * Nota Agente: la política descarta la oferta, no se firma nada
- * Agente -> Servidor: GET /api/premium
- * Servidor -> Agente: 402 (0.5 ℏ)
- * Nota Agente: el tope por pago es 0.02 ℏ, no se firma nada
- * Agente -> Servidor: GET /api/quote (tres veces)
- * Nota Agente: paga dos veces, el hook de presupuesto frena la tercera
- * Agente -> Hedera: registro de auditoría en un tópico HCS
+ * [SECUENCIA]
+ * Servidor -> Agente: 402 (0.01 ℏ, comercio verificado)
+ * Nota Agente: La política aprueba, firma y el facilitador liquida
+ * Servidor -> Agente: 402 (5 ℏ, comercio verificado)
+ * Nota Agente: La política rechaza: techo superado, no se firma nada
+ * Servidor -> Agente: 402 (0.01 ℏ, comercio desconocido)
+ * Nota Agente: La política rechaza: el receptor no está en la lista blanca
+ * Agente -> Hedera: Registro de auditoría de las tres decisiones en HCS
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet es el facilitador y paga el mensaje de auditoría.
- * - Wallets de práctica: ACCOUNT_1 es el agente, ACCOUNT_2 el comercio de confianza.
- * - Costo: 0.02 ℏ de ACCOUNT_1 a ACCOUNT_2; unos 0.003 ℏ en comisiones (más 0.01 USD por el tópico de auditoría la primera vez).
+ * - Wallet: tu cuenta de testnet es el facilitador y paga el registro de auditoría.
+ * - Wallets de práctica: ACCOUNT_1 (agente) paga a ACCOUNT_2 (comercio verificado).
+ * - Costo: <0.1 ℏ (comisiones de red; el tópico de auditoría se crea una vez y se reutiliza); 0.01 ℏ pasa entre las wallets de práctica.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================
  */
 
-import http from 'node:http'
 import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
-import { x402ResourceServer } from '@x402/core/server'
-import { wrapFetchWithPayment } from '@x402/fetch'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
 import {
   getClient,
+  updateState,
   getHashscanUrl,
   ensureFunded,
   reuseTopic,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentResponse,
-  formatHbar
+  createPaymentRequired,
+  signExactPayment,
+  settleExactPayment
 } from '../M99_Utilities/index.js'
 
-// ─── Configuración ────────────────────────────────────────────────────────────
-const PORT = 4025
-const MAX_PER_PAYMENT = 2_000_000n // 0.02 ℏ
-const SESSION_BUDGET = 2_500_000n // 0.025 ℏ
+class AgentPolicyEngine {
+  constructor (config) {
+    this.dailyLimitTinybars = config.dailyLimitTinybars
+    this.maxPerRequestTinybars = config.maxPerRequestTinybars
+    this.merchantAllowlist = new Set(config.allowedMerchants)
+    this.currentDailySpend = 0
+  }
 
-// ─── Principal ─────────────────────────────────────────────────────────────────
+  // Revisa las condiciones decodificadas de PAYMENT-REQUIRED antes de firmar nada.
+  evaluate (paymentRequired) {
+    const { payTo, amount, network, asset } = paymentRequired.accepts[0]
+    const tinybars = Number(amount)
+
+    if (network !== 'hedera:testnet' || asset !== '0.0.0') {
+      return { approved: false, reason: `UNSUPPORTED_ASSET: ${asset} en ${network}` }
+    }
+    if (!this.merchantAllowlist.has(payTo)) {
+      return { approved: false, reason: `UNAUTHORIZED_PAYEE: el comercio ${payTo} no está en la lista blanca verificada.` }
+    }
+    if (tinybars > this.maxPerRequestTinybars) {
+      return { approved: false, reason: `CEILING_EXCEEDED: ${tinybars / 1e8} HBAR supera el límite de ${this.maxPerRequestTinybars / 1e8} HBAR por petición.` }
+    }
+    if (this.currentDailySpend + tinybars > this.dailyLimitTinybars) {
+      return { approved: false, reason: `BUDGET_DEPLETED: se superaría el límite diario de ${this.dailyLimitTinybars / 1e8} HBAR.` }
+    }
+
+    this.currentDailySpend += tinybars
+    return { approved: true, remainingDailyBudget: (this.dailyLimitTinybars - this.currentDailySpend) / 1e8 }
+  }
+}
+
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Límites de Gasto para Agentes ---\n')
+  console.log('--- INICIO DE SESIÓN: Límites Financieros del Agente Autónomo ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const agentId = process.env.ACCOUNT_1_ID
   const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
-  const merchantId = process.env.ACCOUNT_2_ID
-  if (!agentId || !agentKey || !merchantId) throw new Error('Falta ACCOUNT_1 (agente) o ACCOUNT_2 (comercio). Crea las wallets de práctica o defínelas en .env.')
+  const verifiedMerchant = process.env.ACCOUNT_2_ID
+  const rogueMerchant = '0.0.66699' // una cuenta a la que el agente nunca aceptó pagar
 
-  let server
+  if (!agentId || !agentKey || !verifiedMerchant) {
+    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_1 agente, ACCOUNT_2 comercio).')
+    process.exitCode = 1
+    return
+  }
+
   try {
     await ensureFunded(client, agentId, 1)
 
-    // 1. Un servidor con una ruta justa y dos que un agente cuidadoso debería rechazar.
-    const { client: facilitator } = createLocalFacilitator(operatorId, operatorKey)
-    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
-    const offer = (payTo, amount, description) => ({ accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo, price: { amount, asset: HBAR_ASSET_ID } }], description })
-    const routes = {
-      'GET /api/quote': offer(merchantId, '1000000', 'Cotización (0.01 ℏ)'),
-      'GET /api/premium': offer(merchantId, '50000000', 'Reporte premium (0.5 ℏ)'),
-      'GET /api/rogue': offer(operatorId, '1000000', 'Paga a alguien con quien el agente nunca acordó')
-    }
-    const handlers = Object.fromEntries(Object.keys(routes).map((key) => [key, () => ({ route: key, data: 'ok' })]))
-    server = http.createServer(paywall(resourceServer, routes, handlers))
-    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
-
-    // 2. Los límites del agente.
-    const trustedMerchants = new Set([merchantId])
-    let spent = 0n
-    const agent = createBuyer(agentId, agentKey, { maxTinybars: MAX_PER_PAYMENT }) // control de gasto: tope por pago
-      // Política: solo quedan las ofertas que pagan a un comercio de la lista.
-      .registerPolicy((_version, offers) => offers.filter((o) => trustedMerchants.has(o.payTo)))
-      // Hook: rechaza si este pago llevaría la sesión por encima del presupuesto.
-      .onBeforePaymentCreation(async ({ selectedRequirements }) => {
-        const amount = BigInt(selectedRequirements.amount)
-        if (spent + amount > SESSION_BUDGET) return { abort: true, reason: `presupuesto de la sesión: ${formatHbar(spent)} gastados de ${formatHbar(SESSION_BUDGET)}` }
-      })
-      .onAfterPaymentCreation(async ({ selectedRequirements }) => { spent += BigInt(selectedRequirements.amount) })
-    const fetchWithPayment = wrapFetchWithPayment(fetch, agent)
-
-    // 3. Probar cada ruta y anotar qué pasó.
-    const decisions = []
-    for (const path of ['/api/rogue', '/api/premium', '/api/quote', '/api/quote', '/api/quote']) {
-      try {
-        const res = await fetchWithPayment(`http://127.0.0.1:${PORT}${path}`)
-        const receipt = readPaymentResponse(res)
-        decisions.push({ ruta: path, decision: receipt?.success ? 'PAGADO' : `HTTP ${res.status}`, detalle: receipt?.transaction || '' })
-        console.log(`[ÉXITO] ${path} → pagado, ${getHashscanUrl(receipt.transaction)}`)
-      } catch (error) {
-        // El cliente lanzó el error antes de firmar: nada salió del agente.
-        const reason = error.message.replace(/^Failed to create payment payload: /, '')
-        decisions.push({ ruta: path, decision: 'RECHAZADO', detalle: reason.slice(0, 90) })
-        console.log(`[BLOQUEADO] ${path} → ${reason.slice(0, 120)}`)
-      }
-    }
-    show.table(decisions)
-    console.log(`[REGISTRO] Gastado en esta sesión: ${formatHbar(spent)} (presupuesto ${formatHbar(SESSION_BUDGET)})`)
-
-    // 4. Registro de auditoría en HCS: un mensaje con todas las decisiones.
-    const topicId = await reuseTopic('REUSE_M10_05_AUDIT_TOPIC', async () => {
-      const tx = await new TopicCreateTransaction().setTopicMemo('x402 agent spending audit').execute(client)
-      return (await tx.getReceipt(client)).topicId
+    console.log('[PROCESO] Inicializando el Motor de Políticas determinista del agente...')
+    const policy = new AgentPolicyEngine({
+      dailyLimitTinybars: 5_000_000, // 0.05 HBAR por día
+      maxPerRequestTinybars: 2_000_000, // 0.02 HBAR por petición
+      allowedMerchants: [verifiedMerchant]
     })
-    const audit = await new TopicMessageSubmitTransaction()
-      .setTopicId(topicId)
-      .setMessage(JSON.stringify({ agent: agentId, budget: SESSION_BUDGET.toString(), spent: spent.toString(), decisions: decisions.map(({ ruta, decision }) => ({ path: ruta, decision })) }))
-      .execute(client)
-    await audit.getReceipt(client)
-    console.log(`[REGISTRO] Mensaje de auditoría en el tópico ${topicId}: ${getHashscanUrl(audit)}`)
+    console.log('[REGISTRO] Presupuesto diario:      0.05 HBAR')
+    console.log('[REGISTRO] Costo máximo por petición: 0.02 HBAR')
+    console.log(`[REGISTRO] Comercios verificados:   ${verifiedMerchant}`)
 
-    const paid = decisions.filter((d) => d.decision === 'PAGADO').length
-    if (paid !== 2 || decisions.filter((d) => d.decision === 'RECHAZADO').length !== 3) throw new Error('Los límites no se comportaron como se esperaba')
+    const challenge = (payTo, tinybars, resource) => createPaymentRequired({ resource, description: resource, payTo, amount: tinybars, feePayer: operatorId.toString() })
+    const decisions = []
+
+    // Escenario 1: consulta legítima dentro de la política -> firmar y liquidar
+    console.log('\n--- ESCENARIO 1: Consulta Legítima ---')
+    const req1 = challenge(verifiedMerchant, 1_000_000, '/api/v1/sentiment')
+    const res1 = policy.evaluate(req1)
+    console.log(`[PETICIÓN]  Receptor: ${verifiedMerchant} | Costo: 0.01 HBAR`)
+    console.log(`[RESULTADO] Aprobado: ${res1.approved} | Presupuesto restante: ${res1.remainingDailyBudget} HBAR`)
+    const payment = await signExactPayment(client, req1, agentId, agentKey)
+    const settlement = await settleExactPayment(client, payment, operatorKey)
+    if (!settlement.success) throw new Error(`Liquidación rechazada: ${settlement.errorReason}`)
+    console.log(`[ÉXITO] Pagado y liquidado: ${getHashscanUrl(settlement.transaction)}`)
+    decisions.push({ resource: '/api/v1/sentiment', payTo: verifiedMerchant, hbar: 0.01, decision: 'PAID', tx: settlement.transaction })
+
+    // Escenario 2: precio abusivo -> rechazado antes de firmar
+    console.log('\n--- ESCENARIO 2: Ataque de Paywall Abusivo ---')
+    const req2 = challenge(verifiedMerchant, 500_000_000, '/api/v1/private-weights')
+    const res2 = policy.evaluate(req2)
+    console.log(`[PETICIÓN]  Receptor: ${verifiedMerchant} | Costo: 5 HBAR`)
+    console.log(`[RESULTADO] Aprobado: ${res2.approved} | Motivo del rechazo: ${res2.reason}`)
+    decisions.push({ resource: '/api/v1/private-weights', payTo: verifiedMerchant, hbar: 5, decision: 'REJECTED', reason: res2.reason.split(':')[0] })
+
+    // Escenario 3: comercio no verificado -> rechazado antes de firmar
+    console.log('\n--- ESCENARIO 3: Comercio Fraudulento fuera de la Lista Blanca ---')
+    const req3 = challenge(rogueMerchant, 1_000_000, '/api/v1/malicious-proxy')
+    const res3 = policy.evaluate(req3)
+    console.log(`[PETICIÓN]  Receptor: ${rogueMerchant} | Costo: 0.01 HBAR`)
+    console.log(`[RESULTADO] Aprobado: ${res3.approved} | Motivo del rechazo: ${res3.reason}`)
+    decisions.push({ resource: '/api/v1/malicious-proxy', payTo: rogueMerchant, hbar: 0.01, decision: 'REJECTED', reason: res3.reason.split(':')[0] })
+
+    // 4. Anclar las decisiones en un registro de auditoría inmutable en HCS
+    console.log('\n[PROCESO] Anclando las decisiones de gasto en Hedera Consensus Service...')
+    const auditTopicId = await reuseTopic('REUSE_M10_05_AUDIT_TOPIC', async () => {
+      const topicTx = await new TopicCreateTransaction()
+        .setTopicMemo('x402:agent_guardrail_audit')
+        .freezeWith(client)
+      return (await (await topicTx.execute(client)).getReceipt(client)).topicId
+    })
+    const auditMessage = JSON.stringify({ agentAccount: agentId, decisions, timestamp: Date.now() })
+    const submitResponse = await new TopicMessageSubmitTransaction()
+      .setTopicId(auditTopicId)
+      .setMessage(auditMessage)
+      .execute(client)
+    await submitResponse.getReceipt(client)
+    console.log(`[ÉXITO] Evento de auditoría registrado en el tópico HCS: ${auditTopicId}`)
+    console.log(`[EXPLORADOR] HashScan: ${getHashscanUrl(submitResponse)}`)
+
+    updateState('X402_AUDIT_TOPIC_ID', auditTopicId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Tres de cinco peticiones se rechazaron del lado del agente, antes de que')
-    console.log('existiera una firma: un receptor no confiable, un precio sobre el tope y un')
-    console.log('pago fuera de presupuesto. Las dos llamadas justas se pagaron y todo quedó registrado.')
-    console.log('\n--- SESIÓN COMPLETADA ---')
-  } finally {
-    server?.close()
+    console.log('Solo el pago que cumplió todas las reglas se firmó y liquidó; los otros dos')
+    console.log('nunca produjeron una firma. Anclar las decisiones en HCS crea un registro a')
+    console.log('prueba de manipulaciones de cada HBAR que el agente gastó o se negó a gastar.')
+
     client.close()
+    console.log('\n--- SESIÓN COMPLETADA ---')
+  } catch (error) {
+    console.error('\n[FALLÓ] Falló la simulación de límites:', error.message)
+    process.exitCode = 1
   }
 }
 

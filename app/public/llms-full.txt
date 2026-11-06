@@ -133,8 +133,8 @@ Lab count: 131
 
 ### M10 — Agentic Micropayments (x402 Protocol)
 - Directory: `course/English/M10_Agentic_Micropayments_x402/` (and Spanish parity)
-- Stack: official `@x402/core`, `@x402/hedera` and `@x402/fetch` on `hedera:testnet`; the labs run their own facilitator (Lab 08 serves it over HTTP; `https://x402.org/facilitator` is a hosted one)
-- Labs (8): m10-01-http-402-server-challenge, m10-02-agent-payment-signature, m10-03-facilitator-settlement, m10-04-usdc-hts-micropayments, m10-05-agent-budget-guardrails, m10-06-autonomous-ai-market-agent, m10-07-live-ai-streaming-gateway, m10-08-self-hosted-facilitator
+- Official x402 v2 `exact` scheme on `hedera:testnet`, built with the Hedera SDK: Labs 01-03 build the 402, the agent-signed transfer (transaction id = facilitator fee payer) and the facilitator settlement by hand; Labs 04-08 reuse them (stablecoin, guardrails, market agent, SSE gateway, merchant as facilitator)
+- Labs (8): m10-01-http-402-server-challenge, m10-02-agent-payment-signature, m10-03-facilitator-settlement, m10-04-usdc-hts-micropayments, m10-05-agent-budget-guardrails, m10-06-autonomous-ai-market-agent, m10-07-live-ai-streaming-gateway, m10-08-self-hosted-facilitator (two-party settlement: merchant as facilitator)
 
 ### M11 — Hedera Studios & Real-World Assets (RWA)
 - Directory: `course/English/M11_Hedera_Studios_RWA/` (and Spanish parity)

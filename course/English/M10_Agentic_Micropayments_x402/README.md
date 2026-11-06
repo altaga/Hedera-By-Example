@@ -1,38 +1,38 @@
-# Module 10: Agentic Micropayments (x402)
-## Pay-per-request APIs for AI agents, settled on Hedera
+# Module 10: Agentic Micropayments (x402 Protocol)
+## Machine-to-Machine Autonomous Commerce on Hedera
 
 > [!IMPORTANT]
-> **OBJECTIVE:** Understand x402 end to end, then build with it: a paid API that answers HTTP 402, an agent that pays it without a human, and a facilitator that settles each payment on Hedera testnet. Every lab uses the official packages (`@x402/core`, `@x402/hedera`, `@x402/fetch`) and runs both in Node.js and in the course website.
+> **OBJECTIVE:** Transform autonomous AI agents from mere analytical reasoning tools into economically sovereign entities capable of discovering, pricing, and settling on-chain micropayments per request via the HTTP 402 standard on Hedera.
 
 ---
 
 ## Module Map
 
-| Lab | Topic | What you learn |
-| :--- | :--- | :--- |
-| **01** | **The HTTP 402 Payment Challenge** | Build a paid route and decode the `PAYMENT-REQUIRED` terms: amount, asset, payTo, feePayer. Free. |
-| **02** | **The Agent Signs a Payment** | The payment is a `TransferTransaction` whose transaction id belongs to the fee payer, signed by the agent but not sent. The facilitator verifies it. Free. |
-| **03** | **The Facilitator Settles on Hedera** | The full round trip over HTTP: verify, deliver, settle, `PAYMENT-RESPONSE`. Who pays what, and why a replay fails. |
-| **04** | **Pricing in Dollars with an HTS Stablecoin** | Quote `"$0.01"`, settle in a 6-decimal HTS token (USDC, or the course's tUSD). Associations still apply. |
-| **05** | **Spending Guardrails for Agents** | Spend caps, payee policies and a budget hook, all enforced before signing; an audit log on HCS. |
-| **06** | **An Agent That Shops for Data** | Free 402 quotes from three providers, a score, one payment to the winner. |
-| **07** | **Paying for an AI Stream in Batches** | x402 sells credits; a Server-Sent Events stream spends them; the agent buys again when they run out. |
-| **08** | **Run Your Own Facilitator** | The facilitator as an HTTP service (`/supported`, `/verify`, `/settle`), hosted by the merchant, reached through `HTTPFacilitatorClient`. |
+In this module, we close the missing link between artificial intelligence and decentralized finance: autonomous micro-settlement without human intervention, credit cards, or API subscription paywalls. Labs 01–03 build each step of the protocol by hand; Labs 04–08 reuse those steps (`M99_Utilities/x402.js`) to build complete scenarios.
+
+| Lab | Topic | Description | Operational Architecture |
+| :--- | :--- | :--- | :--- |
+| **01** | **Server 402 Challenge** | A protected resource answers HTTP 402 with a `PAYMENT-REQUIRED` header: amount, asset, payTo and fee payer. | Foundation |
+| **02** | **Agent Payment Signature** | The agent builds the real `TransferTransaction`, with the facilitator's account in the transaction id, and signs it without submitting it. | Sponsored Facilitator |
+| **03** | **Facilitator Settlement** | The facilitator verifies the signed transfer, co-signs as fee payer and settles on Hedera; a replay fails with `DUPLICATE_TRANSACTION`. | Sponsored Facilitator |
+| **04** | **HTS USDC Micropayments** | Settling a $0.025 prompt in a 6-decimal HTS stablecoin, with the economic benchmark against card rails. | HTS Token Engine |
+| **05** | **Financial Guardrails** | A deterministic policy engine (ceilings, budget, merchant allowlist) that refuses before signing, with an HCS audit log. | Risk Governance |
+| **06** | **Autonomous Market Agent** | Free 402 quotes from three providers, a price-performance score, one payment to the winner. | Autonomous Agent Loop |
+| **07** | **Live AI Streaming Gateway** | Server-Sent Events inference that opens only after the x402 payment settles on Hedera. | Real-Time Proxy |
+| **08** | **Two-Party Settlement** | The merchant is its own facilitator: it verifies, co-signs, pays the fee and audits on the Mirror Node. | Merchant as Facilitator (2 Actors) |
 
 ---
 
-## The three roles
+## Dual Architectural Topologies
 
-| Role | In these labs | Does | Pays |
-| :--- | :--- | :--- | :--- |
-| **Buyer** (agent) | `ACCOUNT_1` | Reads the 402, signs a transfer, retries the request | Only the price |
-| **Resource server** (merchant) | `ACCOUNT_2` | Prices routes, asks the facilitator to verify and settle, delivers | Nothing (receives the price) |
-| **Facilitator** | Your account (Lab 08: the merchant) | Verifies payments, co-signs as fee payer, submits to Hedera | The network fee |
+On Hedera, the x402 `exact` scheme always works the same way for the buyer: it signs a `TransferTransaction` whose transaction id belongs to the fee payer (`extra.feePayer`) and never submits it. What changes is **who** plays the facilitator.
 
-## How a payment flows
+### Architecture 1: Sponsored Facilitator Pattern (3 Actors: Buyer + Seller + Facilitator)
+
+Ideal for gasless AI agents, web frontends or microservices that do not hold HBAR for gas (Labs 01–07):
 
 ```mermaid
-%%{init: {
+%{init: {
   'theme': 'base',
   'themeVariables': {
     'primaryColor': '#ffffff',
@@ -49,64 +49,103 @@
     'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
     'nodeRadius': '0px'
   }
-}}%%
+}}%
 sequenceDiagram
     autonumber
-    actor Agent as Agent (buyer)
-    participant Server as Resource server
-    participant Facilitator
-    participant Hedera
-    Agent->>Server: GET /resource
-    Server-->>Agent: 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
-    Note over Agent: Builds a TransferTransaction<br/>transaction id = feePayer<br/>signs it, does not send it
-    Agent->>Server: GET /resource + PAYMENT-SIGNATURE
-    Server->>Facilitator: verify
-    Facilitator-->>Server: isValid
-    Note over Server: Runs the paid handler
-    Server->>Facilitator: settle
-    Facilitator->>Hedera: adds fee payer signature, submits
-    Hedera-->>Facilitator: SUCCESS
-    Server-->>Agent: 200 + resource + PAYMENT-RESPONSE (transaction id)
+    actor Agent as AI Agent (Buyer)
+    participant Server as API Server (Seller)
+    participant Facilitator as x402 Facilitator
+    participant Hedera as ℏ Hedera Hashgraph
+
+    Agent->>Server: GET /api/v1/alpha-intelligence (No Auth)
+    Server-->>Agent: HTTP 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
+    Note over Agent: Checks its budget policy<br/>Signs a TransferTransaction (tx id = feePayer)<br/>Does not submit it
+    Agent->>Server: GET /api/v1/alpha-intelligence + PAYMENT-SIGNATURE
+    Server->>Facilitator: Verify and settle
+    Note over Facilitator: Fee payer, expiry, amount, payee, agent signature
+    Facilitator->>Hedera: Co-signs as fee payer and submits
+    Hedera-->>Facilitator: Consensus finality (seconds, transaction id)
+    Server-->>Agent: HTTP 200 OK + PAYMENT-RESPONSE (transaction id) + data
+```
+
+### Architecture 2: Merchant as Facilitator (2 Actors: Buyer + Seller)
+
+No third-party infrastructure: the seller verifies, co-signs and pays the fee itself (Lab 08). The buyer's side does not change:
+
+```mermaid
+%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'primaryColor': '#ffffff',
+    'primaryTextColor': '#000000',
+    'primaryBorderColor': '#000000',
+    'lineColor': '#000000',
+    'secondaryColor': '#0066cc',
+    'tertiaryColor': '#ffffff',
+    'mainBkg': '#ffffff',
+    'nodeBorder': '#000000',
+    'clusterBkg': '#F9F9F6',
+    'clusterBorder': '#000000',
+    'fontSize': '14px',
+    'fontFamily': 'Inter, system-ui, -apple-system, sans-serif',
+    'nodeRadius': '0px'
+  }
+}}%
+sequenceDiagram
+    autonumber
+    actor Agent as AI Agent (Buyer)
+    participant Server as API Server (Seller + Facilitator)
+    participant Hedera as ℏ Hedera Hashgraph
+
+    Agent->>Server: GET /api/v1/derivatives-matrix (No Auth)
+    Server-->>Agent: HTTP 402 + PAYMENT-REQUIRED (payTo = feePayer = seller)
+    Note over Agent: Signs the transfer, exactly as with Architecture 1
+    Agent->>Server: GET /api/v1/derivatives-matrix + PAYMENT-SIGNATURE
+    Note over Server: Verifies, co-signs with its own key
+    Server->>Hedera: Submits, paying the fee from the price it receives
+    Hedera-->>Server: Consensus finality (transaction id)
+    Note over Server: Audits the settlement on the Mirror Node
+    Server-->>Agent: HTTP 200 OK + PAYMENT-RESPONSE + resource
 ```
 
 ---
+
+## Architectural Comparison: When to Use Which?
+
+| Architectural Dimension | Merchant as Facilitator (Buyer + Seller) | Sponsored Facilitator (Buyer + Seller + Facilitator) |
+| :--- | :--- | :--- |
+| **Actor Model** | 2 Actors | 3 Actors (Buyer, Seller, Facilitator) |
+| **Network Fee** | Paid by the seller, out of the price it receives | Paid by the facilitator |
+| **Buyer Balance Requirements** | Only the payment asset (no HBAR for gas) | Only the payment asset (no HBAR for gas) |
+| **Intermediary Dependency** | **None**: the seller runs everything | Requires an online facilitator (hosted or your own) |
+| **Anti-Replay Mechanism** | Hedera transaction id: executes once, valid 120 s | Hedera transaction id: executes once, valid 120 s |
+| **Best Used For** | Sellers that already run infrastructure and hold HBAR | Sellers that prefer not to hold a funded signing key |
 
 ## Key Concepts
 
-### 1. The 402 is a machine-readable price tag
-`PAYMENT-REQUIRED` is Base64 JSON (`x402Version: 2`). Each entry in `accepts` names a scheme (`exact`), a network (`hedera:testnet`), an asset (`0.0.0` for HBAR or an HTS token id), an integer `amount` in the asset's smallest unit, the `payTo` account and `extra.feePayer`.
+### 1. The three headers
+`PAYMENT-REQUIRED` (402 terms), `PAYMENT-SIGNATURE` (the signed transfer) and `PAYMENT-RESPONSE` (the settlement receipt) all carry JSON encoded as Base64, version `x402Version: 2`.
 
-### 2. The buyer signs, the facilitator submits
-On Hedera the `exact` scheme is a partially signed `TransferTransaction`. Its transaction id uses the facilitator's account, so the facilitator pays the fee; the buyer needs no HBAR for gas. The facilitator refuses anything else: other operations, a fee payer that sends HBAR, transfers that do not match the terms.
+### 2. Gasless for the buyer
+The transaction id decides who pays the network fee. Because it belongs to the facilitator, the buyer only needs the price, in HBAR (`0.0.0`) or an HTS token.
 
-### 3. Settlement and replay protection come from Hedera
-The server only answers 200 after settlement succeeds, and the `PAYMENT-RESPONSE` header carries the Hedera transaction id as a receipt. A transaction id can execute once and is valid for about 120 seconds, so a replayed payment fails with `DUPLICATE_TRANSACTION` and a stale one expires. No nonce registry is needed.
+### 3. Replay protection is native
+A Hedera transaction id can execute only once and expires 120 seconds after signing. A replayed payment fails with `DUPLICATE_TRANSACTION`; no nonce registry is needed.
 
-### 4. Guardrails live in the buyer
-Spend controls (allowed assets and a per-payment cap), policies (filters over the offers) and `onBeforePaymentCreation` hooks run before anything is signed. A buyer that trusts the server's terms is not protected.
+## Before You Run
 
-### 5. Facilitators are interchangeable
-A resource server talks to any facilitator through the same three calls. The labs run one in process (`createLocalFacilitator` in `M99_Utilities/x402.js`), Lab 08 serves it over HTTP, and `https://x402.org/facilitator` is a hosted one: set `X402_FACILITATOR_URL` in Lab 08 to use it.
+Labs 01–03 are a chain (each reads what the previous one saved in `state.json`): run them in order, and Lab 03 within two minutes of Lab 02 (if the signed payment expired, the agent signs it again). Every lab uses your testnet account plus the practice wallets `ACCOUNT_1` (agent) and `ACCOUNT_2` (merchant); in the course website they run in the browser.
 
 ---
 
-## Before you run
-
-```bash
-# course/.env
-OPERATOR_ID=0.0.x            # your account: the facilitator (pays network fees)
-OPERATOR_PRIVATE_KEY=...
-ACCOUNT_1_ID=0.0.y           # the agent (buyer)
-ACCOUNT_1_PRIVATE_KEY=...
-ACCOUNT_2_ID=0.0.z           # the merchant (payTo)
-ACCOUNT_2_PRIVATE_KEY=...
-```
-
-On the course website, create the practice wallets in **Wallets** and every lab runs in the browser: the API servers and the facilitator run inside the page, and the payments are real testnet transactions. Prices are 0.01 ℏ or less and move between your own practice wallets.
-
 ## Official References
-- https://docs.hedera.com/solutions/ai/x402
-- https://docs.hedera.com/solutions/ai/x402/how-it-works
-- https://docs.hedera.com/solutions/ai/x402/facilitators
-- https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
-- https://www.npmjs.com/package/@x402/hedera
+- [x402 on Hedera Documentation](https://docs.hedera.com/solutions/ai/x402)
+- [How x402 Works (Architecture Spec)](https://docs.hedera.com/solutions/ai/x402/how-it-works)
+- [x402 Facilitators on Hedera](https://docs.hedera.com/solutions/ai/x402/facilitators)
+- [x402 Foundation Protocol Repository](https://github.com/x402-foundation/x402)
+- [Hedera Exact Payment Scheme Specification](https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md)
+- [Hedera Agent Kit](https://github.com/hedera-dev/hedera-agent-kit)
+
+---
+
+ 2026 **HEDERA FOR DUMMIES**. CODE IS CURRENCY. SETTLEMENT IS INSTANT.

@@ -1,149 +1,130 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 02: El Agente Firma un Pago
- * [CONCEPTO] Un pago x402 en Hedera es una transferencia firmada que nadie ha enviado todavía
+ * Lab 02: Firma de Pago del Agente Autónomo
+ * [CONCEPTO] Una Transferencia Firmada que Nadie ha Enviado Todavía
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Cuando el comprador recibe un 402, su cliente x402 construye una
- * TransferTransaction de Hedera a partir de las condiciones: -monto del
- * comprador, +monto a payTo.
- *
- * Dos detalles la convierten en un pago x402:
- *   - su id de transacción pertenece al facilitador (extra.feePayer), así que la
- *     comisión de red la paga el facilitador, no el comprador;
- *   - el comprador la firma pero no la envía. Los bytes firmados vuelven al
- *     servidor, en Base64, en la cabecera PAYMENT-SIGNATURE.
- *
- * El comprador no necesita HBAR para gas: solo necesita el precio.
- *
- * En este lab el agente firma un pago, abres el pago para ver qué contiene y el
- * facilitador lo verifica. No se envía nada, así que no se mueve dinero.
- *
+ * Autorización sin Gas: Cuando un agente de IA acepta un 402, no firma un
+ * mensaje suelto de "intención". Arma la TransferTransaction real de Hedera con
+ * las condiciones (-monto del agente, +monto a payTo) y la firma. Dos detalles
+ * la convierten en un pago x402: su id de transacción pertenece al facilitador
+ * (extra.feePayer), así que el facilitador paga la comisión de red, y el agente
+ * nunca la envía. Los bytes firmados vuelven al servidor, en Base64, en la
+ * cabecera PAYMENT-SIGNATURE.
+ * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Una transferencia firmada todavía no es un pago. Se vuelve uno solo cuando quien
- * paga la comisión agrega su firma y la envía, y caduca unos 120 segundos después
- * de firmarse (la duración válida de una transacción en Hedera). La verificación
- * también detecta manipulaciones: si cambias cualquier condición que el comprador
- * aceptó, el facilitador la rechaza.
+ * Los agentes autónomos no pueden tener tarjetas de crédito, y tampoco deberían necesitar gas: con quien paga la comisión en el id de transacción, al agente solo le hace falta el precio. Su firma cubre cada byte, así que nadie puede cambiar el monto ni el receptor sin invalidarla.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/solutions/ai/x402/pay-with-x402
- * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 01: El Desafío de Pago HTTP 402
- * - Siguiente: M10 Lab 03: El Facilitador Liquida en Hedera
+ * - Anterior:  M10 Lab 01: Desafío 402 del Servidor
+ * - Siguiente: M10 Lab 03: Liquidación del Facilitador
  *
- * [ SECUENCIA ]
- * Agente -> Servidor: GET /api/sentiment
- * Servidor -> Agente: 402 + PAYMENT-REQUIRED
- * Nota Agente: arma la TransferTransaction, id de transacción = feePayer, la firma
- * Agente -> Facilitador: verify(pago, condiciones)
- * Facilitador -> Agente: isValid: true (no se envió nada)
+ * [SECUENCIA]
+ * Servidor -> Agente: 402 + PAYMENT-REQUIRED (0.01 ℏ, payTo, feePayer)
+ * Nota Agente: Revisa su política de gasto (máximo 0.05 ℏ)
+ * Nota Agente: Arma la TransferTransaction, id de transacción = feePayer, la firma
+ * Agente -> Servidor: Reintenta con la cabecera PAYMENT-SIGNATURE
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet es el facilitador.
- * - Wallets de práctica: ACCOUNT_1 es el agente (comprador), ACCOUNT_2 el comercio.
- * - Costo: gratis (el pago se verifica, no se envía).
+ * - Wallets de práctica: ACCOUNT_1 es el agente que firma.
+ * - Ejecuta antes: Lab 01 de M10 (este lab lee lo que guardó).
+ * - Costo: gratis (el pago se firma, no se envía).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/02_agent_payment_signature.js
  * ============================================================================
  */
 
-import http from 'node:http'
-import { x402ResourceServer } from '@x402/core/server'
-import { encodePaymentSignatureHeader } from '@x402/core/http'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
-import {
-  getClient,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentRequired,
-  describePayment,
-  toPrivateKey,
-  formatHbar
-} from '../M99_Utilities/index.js'
+import { Hbar, TransactionId, TransferTransaction } from '@hiero-ledger/sdk'
+import { getClient, getState, updateState, parsePrivateKey, decodeHeader, encodeHeader } from '../M99_Utilities/index.js'
 
-// ─── Configuración ────────────────────────────────────────────────────────────
-const PORT = 4022
-const ROUTE = '/api/sentiment'
-const PRICE_TINYBARS = '1000000' // 0.01 ℏ
+const MAX_PRICE_PER_CALL_TINYBARS = 5_000_000 // límite propio del agente: 0.05 HBAR
 
-// ─── Principal ─────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: El Agente Firma un Pago ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  console.log('--- INICIO DE SESIÓN: Firma de Pago del Agente Autónomo ---\n')
+  const { client } = getClient()
   const agentId = process.env.ACCOUNT_1_ID
   const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
-  const merchantId = process.env.ACCOUNT_2_ID
-  if (!agentId || !agentKey || !merchantId) throw new Error('Falta ACCOUNT_1 (agente) o ACCOUNT_2 (comercio). Crea las wallets de práctica o defínelas en .env.')
+  const header = getState('X402_PAYMENT_REQUIRED')
 
-  let server
+  if (!agentId || !agentKey) {
+    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_1, el agente).')
+    process.exitCode = 1
+    return
+  }
+  if (!header) {
+    console.error('[FALLÓ] Falta X402_PAYMENT_REQUIRED en el estado. Ejecuta primero el Lab 01 de M10.')
+    process.exitCode = 1
+    return
+  }
+
   try {
-    // 1. Lado del comercio, como en el Lab 01: una ruta de pago y un facilitador (tu cuenta paga las comisiones).
-    const { client: facilitator, feePayer } = createLocalFacilitator(operatorId, operatorKey)
-    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
-    const routes = {
-      [`GET ${ROUTE}`]: {
-        accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: { amount: PRICE_TINYBARS, asset: HBAR_ASSET_ID } }],
-        description: 'Índice de sentimiento del mercado'
-      }
+    // 1. Decodificar el desafío 402 del Lab 01
+    console.log('[PROCESO] El agente decodifica la cabecera PAYMENT-REQUIRED...')
+    const paymentRequired = decodeHeader(header)
+    const accept = paymentRequired.accepts[0]
+    const amount = Number(accept.amount)
+    console.log(`[REGISTRO] Recurso:          ${paymentRequired.resource.url}`)
+    console.log(`[REGISTRO] Precio cotizado:  ${amount} tinybars (${amount / 1e8} HBAR)`)
+    console.log(`[REGISTRO] Pagar a:          ${accept.payTo}`)
+    console.log(`[REGISTRO] Paga la comisión: ${accept.extra.feePayer}`)
+
+    // 2. Evaluación autónoma de la política (límite de gasto)
+    console.log(`\n[PROCESO] Evaluando la política interna de gasto (máximo permitido: ${MAX_PRICE_PER_CALL_TINYBARS / 1e8} HBAR)...`)
+    if (accept.network !== 'hedera:testnet' || accept.asset !== '0.0.0') {
+      throw new Error(`Forma de pago no soportada: ${accept.asset} en ${accept.network}`)
     }
-    server = http.createServer(paywall(resourceServer, routes, { [`GET ${ROUTE}`]: () => ({ sentiment: 0.72 }) }))
-    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
+    if (amount > MAX_PRICE_PER_CALL_TINYBARS) {
+      throw new Error(`El precio cotizado (${amount / 1e8} HBAR) supera el techo de la política del agente (${MAX_PRICE_PER_CALL_TINYBARS / 1e8} HBAR).`)
+    }
+    console.log('[ÉXITO] El precio está dentro del límite de gasto. Se aprueba el pago.')
 
-    // 2. El agente pide el recurso y recibe las condiciones del 402.
-    const response = await fetch(`http://127.0.0.1:${PORT}${ROUTE}`)
-    const challenge = readPaymentRequired(response)
-    console.log(`[REGISTRO] HTTP ${response.status}: pagar ${formatHbar(challenge.accepts[0].amount)} a ${merchantId}, comisión a cargo de ${feePayer}`)
+    // 3. Armar la transferencia: agente -> comercio, con la cuenta del facilitador en el id de transacción
+    console.log('\n[PROCESO] Armando la TransferTransaction con las condiciones del 402...')
+    const transferTx = new TransferTransaction()
+      .addHbarTransfer(agentId, Hbar.fromTinybars(-amount))
+      .addHbarTransfer(accept.payTo, Hbar.fromTinybars(amount))
+      // La cuenta del id de transacción paga la comisión de red: el facilitador, no el agente.
+      .setTransactionId(TransactionId.generate(accept.extra.feePayer))
+      .freezeWith(client)
 
-    // 3. El cliente x402 del agente. Rechaza activos que no conoce, así que se permite HBAR con un tope.
-    const agent = createBuyer(agentId, agentKey, { maxTinybars: 5_000_000 }) // como máximo 0.05 ℏ por pago
+    // 4. Firmar solo con la llave del agente. No se envía nada a Hedera.
+    console.log('[PROCESO] Firmando la transferencia con la llave del agente (sin enviarla)...')
+    const signedTx = await transferTx.sign(parsePrivateKey(agentKey))
+    const paymentPayload = {
+      x402Version: 2,
+      resource: paymentRequired.resource,
+      accepted: accept,
+      payload: { transaction: Buffer.from(signedTx.toBytes()).toString('base64') }
+    }
+    const paymentSignatureHeader = encodeHeader(paymentPayload)
 
-    // 4. Firmar el pago. Solo arma y firma una transacción; no se envía nada a Hedera.
-    console.log('\n[PROCESO] El agente firma el pago...')
-    const payment = await agent.createPaymentPayload(challenge)
+    console.log('\n[ÉXITO] Pago x402 generado:')
+    console.log(`[REGISTRO] Id de transacción:  ${signedTx.transactionId.toString()}`)
+    console.log(`[REGISTRO] Comisión pagada por: ${signedTx.transactionId.accountId.toString()} (el facilitador)`)
+    console.log(`[REGISTRO] Transferencias:     ${agentId} -${amount / 1e8} HBAR, ${accept.payTo} +${amount / 1e8} HBAR`)
+    console.log(`[REGISTRO] Válida por:         ${signedTx.transactionValidDuration} s después de firmarse`)
+    console.log(`[REGISTRO] Tamaño cabecera:    ${paymentSignatureHeader.length} bytes (base64)`)
+    console.log(`[REGISTRO] PAYMENT-SIGNATURE:  ${paymentSignatureHeader.substring(0, 48)}...`)
 
-    // 5. Ver qué contiene: quién paga la comisión, quién mueve qué, quién ha firmado.
-    const inside = describePayment(payment)
-    console.log('[ÉXITO] Pago armado. Contiene:')
-    show.table([
-      { campo: 'tipo de transacción', valor: inside.type },
-      { campo: 'id de transacción', valor: inside.transactionId },
-      { campo: 'paga la comisión (cuenta del id)', valor: `${inside.feePayer} (el facilitador)` },
-      ...inside.hbarTransfers.map((t) => ({ campo: `transferencia ${t.accountId}`, valor: formatHbar(t.amount) })),
-      { campo: 'firmada por', valor: inside.signers.length === 1 && inside.signers[0] === toPrivateKey(agentKey).publicKey.toString() ? 'solo el agente' : inside.signers.join(', ') },
-      { campo: 'válida por', valor: `${inside.validForSeconds} s después de firmarse` }
-    ])
-    const header = encodePaymentSignatureHeader(payment)
-    console.log(`[REGISTRO] Viaja como PAYMENT-SIGNATURE: ${header.slice(0, 60)}… (${header.length} caracteres)`)
-
-    // 6. El facilitador lo verifica: firma (vía el Mirror Node), montos, receptor, quién paga la comisión, saldo.
-    console.log('\n[PROCESO] El facilitador verifica el pago (solo lectura)...')
-    const verdict = await facilitator.verify(payment, payment.accepted)
-    console.log(`[ÉXITO] verify → isValid: ${verdict.isValid}, pagador: ${verdict.payer}`)
-    if (!verdict.isValid) throw new Error(`verify falló: ${verdict.invalidReason} ${verdict.invalidMessage || ''}`)
-
-    // 7. Manipulación: un pago para un comercio distinto al de las condiciones se rechaza.
-    const tampered = { ...payment, accepted: { ...payment.accepted, payTo: operatorId } }
-    const rejected = await facilitator.verify(tampered, payment.accepted)
-    console.log(`[PRUEBA] Misma firma, payTo cambiado → isValid: ${rejected.isValid} (${rejected.invalidReason})`)
+    // Guardar para el Lab 03 (Liquidación del Facilitador)
+    updateState('X402_PAYMENT_SIGNATURE', paymentSignatureHeader)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('El agente firmó una transferencia cuyo id de transacción pertenece al')
-    console.log('facilitador. Es válida pero no se envió: no se movió ningún HBAR. En el Lab 03')
-    console.log('el facilitador agrega su firma, paga la comisión y la envía a Hedera.')
-    console.log('\n--- SESIÓN COMPLETADA ---')
-  } finally {
-    server?.close()
+    console.log('El agente firmó una transferencia real de Hedera, pero todavía no es un pago:')
+    console.log('solo el facilitador del id de transacción puede completarla y enviarla, y')
+    console.log('caduca 120 segundos después de firmarse. Ejecuta ahora el Lab 03 para liquidarla.')
+
     client.close()
+    console.log('\n--- SESIÓN COMPLETADA ---')
+  } catch (error) {
+    console.error('\n[FALLÓ] No se pudo firmar el pago:', error.message)
+    process.exitCode = 1
   }
 }
 

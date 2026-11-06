@@ -1,51 +1,39 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 01: The HTTP 402 Payment Challenge
- * [CONCEPT] A paid API answers "402 Payment Required" with machine-readable terms
+ * Lab 01: Server HTTP 402 Challenge Generation
+ * [CONCEPT] Machine-Readable Payment Challenges
  * ============================================================================
  * [ KEY CONCEPT ]
- * x402 turns any HTTP endpoint into a pay-per-call API, and an AI agent can
- * pay it without a human or an API key.
- *
- * There are three roles:
- *   - the buyer (an AI agent or any client) wants a resource,
- *   - the resource server (the merchant's API) sells it,
- *   - the facilitator checks payments and submits them to Hedera.
- *
- * When a request arrives without a payment, the server does not ask for an API
- * key or redirect to a checkout page. It answers HTTP 402 with a PAYMENT-REQUIRED
- * header: Base64 JSON that says exactly what to pay (amount and asset), to whom
- * (payTo), on which network (hedera:testnet) and who pays the network fee
- * (extra.feePayer, the facilitator's account). An agent can read it and pay
- * without a human.
- *
- * In this lab you build the resource server with the official @x402/core and
- * @x402/hedera packages, call it without paying, and decode the challenge.
- *
+ * The Paywall Header: Instead of redirecting an AI agent to a checkout page or
+ * demanding a static API key, the server answers HTTP 402 (Payment Required)
+ * with a PAYMENT-REQUIRED header: Base64 JSON that states exactly what to pay
+ * (amount and asset), to whom (payTo), on which network (hedera:testnet) and
+ * which account will pay the network fee (extra.feePayer, the facilitator).
+ * This turns any HTTP endpoint into a pay-per-call API.
+ * *
  * [ LEARNABLE MOMENT ]
- * The 402 is free: nothing is signed and nothing reaches Hedera yet. The price is
- * an integer in the asset's smallest unit (tinybars for HBAR, whose asset id in
- * x402 is "0.0.0"), so there is no rounding between server and buyer.
+ * HTTP 402 bridges Web2 APIs with Web3 settlement: the challenge is free, nothing is signed or sent to Hedera yet, and the price is an integer in the asset's smallest unit (tinybars for HBAR, whose x402 asset id is "0.0.0"), so server and agent never disagree on rounding.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/ai/x402
- * - https://docs.hedera.com/solutions/ai/x402/merchant-integration
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  *
  * [ LEARNING PATH ]
  * - Previous: M9 Lab 11: A2A Encrypted Handshake
- * - Next:     M10 Lab 02: The Agent Signs a Payment
+ * - Next:     M10 Lab 02: Agent Payment Signature
  *
- * [ SEQUENCE ]
- * Server -> Facilitator: GET /supported (which networks, which feePayer)
- * Agent -> Server: GET /api/market-depth (no payment)
- * Server -> Agent: 402 + PAYMENT-REQUIRED (exact, hedera:testnet, amount, payTo, feePayer)
- * Note Agent: decodes the Base64 JSON and reads the terms
+ * [SEQUENCE]
+ * Agent -> Server: GET /api/v1/alpha-intelligence/market-depth
+ * Note Server: No API key, token or cookie
+ * Server -> Agent: 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
+ *
+ * [SIMULATED]
+ * The HTTP request and server run in the same process; no web server is started.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account plays the facilitator (it pays network fees in later labs).
- * - Practice wallets: ACCOUNT_2 is the merchant that gets paid (payTo).
+ * - Wallet: your testnet account is the facilitator (it pays the network fee in Lab 03).
+ * - Practice wallets: ACCOUNT_2 is the merchant that gets paid.
  * - Cost: free (no transaction is sent).
  *
  * [ HOW TO RUN ]
@@ -53,93 +41,83 @@
  * ============================================================================
  */
 
-import http from 'node:http'
-import { x402ResourceServer } from '@x402/core/server'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
-import {
-  getClient,
-  updateState,
-  show,
-  X402_NETWORK,
-  createLocalFacilitator,
-  paywall,
-  readPaymentRequired,
-  formatHbar
-} from '../M99_Utilities/index.js'
+import { getClient, updateState, encodeHeader, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const PORT = 4021
-const ROUTE = '/api/market-depth'
-const PRICE_TINYBARS = '1000000' // 0.01 ℏ
+const create402Challenge = (resourcePath, priceTinybars, payTo, feePayer) => {
+  // x402 v2 "PaymentRequired": the resource, and the list of payment options the server accepts.
+  const paymentRequired = {
+    x402Version: 2,
+    error: 'Payment required',
+    resource: {
+      url: resourcePath,
+      description: 'Alpha intelligence market-depth feed',
+      mimeType: 'application/json'
+    },
+    accepts: [{
+      scheme: 'exact', // pay this exact amount
+      network: X402_NETWORK, // hedera:testnet
+      amount: String(priceTinybars), // integer, smallest unit of the asset
+      asset: HBAR_ASSET, // "0.0.0" = HBAR, otherwise an HTS token id
+      payTo, // the merchant's account
+      maxTimeoutSeconds: 120, // a Hedera transaction is valid for 120 s
+      extra: { feePayer } // the facilitator account that pays the network fee
+    }]
+  }
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
+  // HTTP 402: the same terms travel Base64-encoded in the PAYMENT-REQUIRED header.
+  return {
+    status: 402,
+    headers: { 'PAYMENT-REQUIRED': encodeHeader(paymentRequired) },
+    body: paymentRequired
+  }
+}
+
 const main = async () => {
-  console.log('--- SESSION START: The HTTP 402 Payment Challenge ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  console.log('--- SESSION START: x402 Server Challenge Generator ---\n')
+  const { client, operatorId } = getClient()
   const merchantId = process.env.ACCOUNT_2_ID
-  if (!merchantId) throw new Error('Missing ACCOUNT_2_ID (the merchant). Create practice wallets or set it in .env.')
 
-  let server
+  if (!merchantId) {
+    console.error('[FAILED] Missing credentials in .env (ACCOUNT_2, the merchant).')
+    process.exitCode = 1
+    return
+  }
+
   try {
-    // 1. The facilitator. Your account is its fee payer; it only answers /supported here.
-    const { client: facilitator, feePayer } = createLocalFacilitator(operatorId, operatorKey)
-    console.log(`[INFO] Facilitator fee payer: ${feePayer}`)
-    console.log(`[INFO] Merchant (payTo):      ${merchantId}`)
+    const resourcePath = '/api/v1/alpha-intelligence/market-depth'
+    const priceTinybars = 1_000_000 // 0.01 HBAR per request
 
-    // 2. The resource server: which payment schemes it accepts, and which facilitator it trusts.
-    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
+    console.log(`[PROCESS] Simulating unauthenticated request to: ${resourcePath}`)
+    console.log('[INFO] No API Key, OAuth Bearer token, or Session Cookie present.')
 
-    // 3. The price list. One route, paid in HBAR (asset "0.0.0") with the "exact" scheme.
-    const routes = {
-      [`GET ${ROUTE}`]: {
-        accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: { amount: PRICE_TINYBARS, asset: HBAR_ASSET_ID } }],
-        description: 'Order-book depth for HBAR/USD',
-        mimeType: 'application/json'
-      }
-    }
-    const handlers = { [`GET ${ROUTE}`]: () => ({ pair: 'HBAR/USD', bids: [[0.281, 120000]], asks: [[0.283, 98000]] }) }
+    // 1. The server answers a protected request with payment terms instead of the data.
+    console.log('\n[PROCESS] Server interceptor triggering HTTP 402 challenge...')
+    const challenge = create402Challenge(resourcePath, priceTinybars, merchantId, operatorId.toString())
+    const accept = challenge.body.accepts[0]
 
-    // 4. Serve it over HTTP, like any API.
-    server = http.createServer(paywall(resourceServer, routes, handlers))
-    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
-    console.log(`[INFO] Paid API listening on http://127.0.0.1:${PORT}${ROUTE}`)
+    console.log('\n[SUCCESS] HTTP 402 Payment Required Challenge Generated:')
+    console.log(`[LOG] HTTP Status:       ${challenge.status} Payment Required`)
+    console.log(`[LOG] Target Resource:   ${challenge.body.resource.url}`)
+    console.log(`[LOG] x402 Version:      ${challenge.body.x402Version}`)
+    console.log(`[LOG] Scheme / Network:  ${accept.scheme} / ${accept.network}`)
+    console.log(`[LOG] Price:             ${accept.amount} tinybars (${priceTinybars / 1e8} HBAR, asset ${accept.asset})`)
+    console.log(`[LOG] Pay To (merchant): ${accept.payTo}`)
+    console.log(`[LOG] Fee Payer:         ${accept.extra.feePayer} (the facilitator)`)
+    console.log(`[LOG] PAYMENT-REQUIRED:  ${challenge.headers['PAYMENT-REQUIRED'].substring(0, 48)}...`)
 
-    // 5. Call it like a client that has never heard of payments.
-    console.log(`\n[PROCESS] GET ${ROUTE} without any payment...`)
-    const response = await fetch(`http://127.0.0.1:${PORT}${ROUTE}`)
-    console.log(`[LOG] HTTP ${response.status} ${response.statusText || 'Payment Required'}`)
-    console.log(`[LOG] PAYMENT-REQUIRED header: ${response.headers.get('payment-required').slice(0, 60)}… (Base64)`)
-    if (response.status !== 402) throw new Error(`Expected HTTP 402, got ${response.status}`)
-
-    // 6. Decode the challenge: this is everything a buyer needs to pay.
-    const challenge = readPaymentRequired(response)
-    console.log('\n[SUCCESS] Decoded PAYMENT-REQUIRED:')
-    show.json(challenge)
-
-    const offer = challenge.accepts[0]
-    show.table([
-      { field: 'x402Version', value: challenge.x402Version, meaning: 'protocol version' },
-      { field: 'scheme', value: offer.scheme, meaning: 'pay this exact amount' },
-      { field: 'network', value: offer.network, meaning: 'CAIP-2 id of Hedera testnet' },
-      { field: 'asset', value: offer.asset, meaning: '0.0.0 is HBAR, otherwise an HTS token id' },
-      { field: 'amount', value: offer.amount, meaning: `${formatHbar(offer.amount)} in tinybars` },
-      { field: 'payTo', value: offer.payTo, meaning: 'merchant account that gets paid' },
-      { field: 'extra.feePayer', value: offer.extra.feePayer, meaning: 'facilitator account that pays the network fee' },
-      { field: 'maxTimeoutSeconds', value: offer.maxTimeoutSeconds, meaning: 'how long the offer stands' }
-    ])
-
-    updateState('X402_MERCHANT_ID', merchantId)
-    updateState('X402_FEE_PAYER', offer.extra.feePayer)
+    // 2. Persist the header for Lab 02, as an agent would receive it.
+    updateState('X402_PAYMENT_REQUIRED', challenge.headers['PAYMENT-REQUIRED'])
 
     console.log('\n KEY CONCEPT:')
-    console.log('The 402 is a price tag a machine can read. Nothing was signed or paid:')
-    console.log('the buyer now knows the amount, the asset, the merchant and the fee payer,')
-    console.log('and decides whether to pay. Lab 02 builds that payment.')
-    console.log('\n--- SESSION COMPLETE ---')
-  } finally {
-    server?.close()
+    console.log('The HTTP 402 response is completely self-describing. Any compliant machine')
+    console.log('agent can decode the header, check the price against its budget policy and')
+    console.log('build the payment by itself. Nothing has been signed or paid yet.')
+
     client.close()
+    console.log('\n--- SESSION COMPLETE ---')
+  } catch (error) {
+    console.error('\n[FAILED] Failed to generate 402 challenge:', error.message)
+    process.exitCode = 1
   }
 }
 

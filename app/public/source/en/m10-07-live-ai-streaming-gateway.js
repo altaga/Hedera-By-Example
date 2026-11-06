@@ -1,50 +1,43 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 07: Paying for an AI Stream in Batches
- * [CONCEPT] x402 pays for credits; the stream spends them
+ * Lab 07: Live AI Streaming Proxy Gateway (SSE + x402 Settlement)
+ * [CONCEPT] Pay-Per-Stream Inference via HTTP Server-Sent Events
  * ============================================================================
  * [ KEY CONCEPT ]
- * x402's "exact" scheme pays for one HTTP request at a fixed price, but a
- * token stream (Server-Sent Events) is one long response of unknown length.
- * The usual answer is to sell credits.
- *
- * How it works:
- *   1. a paid route sells a session good for N tokens (one x402 payment),
- *   2. a free streaming route spends the session's credits and stops at zero,
- *   3. the agent buys another session when it needs more.
- *
- * The agent here needs 16 tokens and buys two sessions of 8. Each purchase is a
- * separate x402 payment settled on Hedera.
- *
+ * Modern LLMs stream their answers token by token with HTTP Server-Sent Events
+ * (`text/event-stream`). Web2 platforms gate this behind monthly subscriptions
+ * because card rails cannot settle sub-cent amounts. An x402 streaming gateway
+ * answers the first request with 402, the client pays with PAYMENT-SIGNATURE,
+ * the gateway settles the payment on Hedera through its facilitator, and only
+ * then opens the stream, with the receipt in the PAYMENT-RESPONSE header.
+ * *
  * [ LEARNABLE MOMENT ]
- * The metering inside the stream is the merchant's own logic, not x402. What
- * x402 guarantees is the purchase: every session was paid before its first
- * token was sent, and each one has its own Hedera receipt.
+ * Hedera finality in a few seconds and a fixed sub-cent fee let a client fund an ephemeral stream on the fly, with no account or subscription. The gateway needs no nonce table: a replayed PAYMENT-SIGNATURE fails at settlement with DUPLICATE_TRANSACTION.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/solutions/ai/x402/how-it-works
+ * - https://docs.hedera.com/solutions/ai/x402
  * - https://html.spec.whatwg.org/multipage/server-sent-events.html
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 06: An Agent That Shops for Data
- * - Next:     M10 Lab 08: Run Your Own Facilitator
+ * - Previous: M10 Lab 06: Autonomous Market Agent
+ * - Next:     M10 Lab 08: Two-Party Settlement (Merchant as Facilitator)
  *
- * [ SEQUENCE ]
- * Agent -> Gateway: GET /api/session (x402, 0.01 ℏ)
- * Gateway -> Agent: 200 + session (8 tokens) + PAYMENT-RESPONSE
- * Agent -> Gateway: GET /api/stream?session=… (SSE)
- * Gateway -> Agent: 8 tokens, then "credits_exhausted"
- * Agent -> Gateway: GET /api/session (second x402 payment)
- * Gateway -> Agent: 8 more tokens, then "done"
+ * [SEQUENCE]
+ * Client -> Gateway: GET inference stream (no payment)
+ * Gateway -> Client: 402 + PAYMENT-REQUIRED (0.01 ℏ)
+ * Note Client: Signs the transfer (Lab 02)
+ * Client -> Gateway: Retry with PAYMENT-SIGNATURE
+ * Gateway -> Hedera: Facilitator co-signs and submits (Lab 03)
+ * Gateway -> Client: 200 + PAYMENT-RESPONSE, then text/event-stream tokens
  *
- * [ SIMULATED ]
- * The "AI" output is canned text sent token by token. The payments and the streaming are real.
+ * [SIMULATED]
+ * The AI tokens come from a synthetic generator, not a real model. The gateway runs in the same process. The payment is real.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account is the facilitator.
- * - Practice wallets: ACCOUNT_1 is the agent, ACCOUNT_2 the gateway operator.
- * - Cost: 0.02 ℏ from ACCOUNT_1 to ACCOUNT_2 (two sessions); about 0.006 ℏ in fees for you.
+ * - Wallet: your testnet account is the gateway's facilitator (it pays the network fee).
+ * - Practice wallets: ACCOUNT_1 (client) pays ACCOUNT_2 (gateway operator).
+ * - Cost: <0.1 ℏ (network fees only); 0.01 ℏ moves between the practice wallets.
  *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/07_live_ai_streaming_gateway.js
@@ -52,136 +45,165 @@
  */
 
 import http from 'node:http'
-import crypto from 'node:crypto'
-import { x402ResourceServer } from '@x402/core/server'
-import { wrapFetchWithPayment } from '@x402/fetch'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
 import {
   getClient,
   getHashscanUrl,
   ensureFunded,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentResponse
+  exitIfStuck,
+  encodeHeader,
+  decodeHeader,
+  createPaymentRequired,
+  signExactPayment,
+  settleExactPayment
 } from '../M99_Utilities/index.js'
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const PORT = 4027
-const TOKENS_PER_SESSION = 8
-const SESSION_PRICE = '1000000' // 0.01 ℏ per 8 tokens
-const ANSWER = 'Hedera settles each x402 payment in a few seconds, so an agent can buy compute in small batches and stop paying the moment it has enough.'.split(/(?= )/)
+/**
+ * Synthetic AI LLM Token Generator (Simulates live LLM inference)
+ */
+const INFERENCE_TOKENS = [
+  'Hedera', ' Hashgraph', ' uses', ' asynchronous', ' Byzantine',
+  ' Fault', ' Tolerance', ' (aBFT)', ' to', ' reach',
+  ' proven', ' consensus', ' finality.', ' Micro-settlements', ' execute',
+  ' in', ' seconds', ' at', ' fixed', ' sub-cent', ' fees.'
+]
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- SESSION START: Paying for an AI Stream in Batches ---\n')
+  // Never hang: fail with a clear message if the network never answers.
+  exitIfStuck(180_000, 'the demo gateway to finish')
+  console.log('--- SESSION START: Live AI Streaming Proxy Gateway (SSE + x402) ---\n')
   const { client, operatorId, operatorKey } = getClient()
-  const agentId = process.env.ACCOUNT_1_ID
-  const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
-  const merchantId = process.env.ACCOUNT_2_ID
-  if (!agentId || !agentKey || !merchantId) throw new Error('Missing ACCOUNT_1 (agent) or ACCOUNT_2 (merchant). Create practice wallets or set them in .env.')
-
+  const clientId = process.env.ACCOUNT_1_ID
+  const clientKey = process.env.ACCOUNT_1_PRIVATE_KEY
+  const gatewayOwner = process.env.ACCOUNT_2_ID
+  const serverPort = 8402
+  const streamPath = '/api/v1/inference/stream'
   let server
+
+  if (!clientId || !clientKey || !gatewayOwner) {
+    console.error('[FAILED] Missing credentials in .env (ACCOUNT_1 client, ACCOUNT_2 gateway owner).')
+    process.exitCode = 1
+    return
+  }
+
   try {
-    await ensureFunded(client, agentId, 1)
+    await ensureFunded(client, clientId, 1)
 
-    // 1. Gateway state: paid sessions and their remaining credits.
-    const sessions = new Map() // id -> { credits }
-    let position = 0 // where the answer continues (a single conversation in this demo)
+    // 1. Initialize the x402 AI streaming gateway
+    console.log(`[PROCESS] Step 1: Bootstrapping Embedded x402 AI Inference Gateway on port ${serverPort}...`)
+    server = http.createServer(async (req, res) => {
+      if (new URL(req.url, 'http://127.0.0.1').pathname !== streamPath) {
+        res.writeHead(404, { 'Content-Type': 'application/json' })
+        return res.end(JSON.stringify({ error: 'Endpoint not found' }))
+      }
 
-    // 2. Paid route: sells a session of TOKENS_PER_SESSION tokens.
-    const { client: facilitator } = createLocalFacilitator(operatorId, operatorKey)
-    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
-    const routes = {
-      'GET /api/session': {
-        accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: { amount: SESSION_PRICE, asset: HBAR_ASSET_ID } }],
-        description: `${TOKENS_PER_SESSION} tokens of streamed inference`
+      // A. No payment: answer 402 with the terms in PAYMENT-REQUIRED
+      const paymentHeader = req.headers['payment-signature']
+      if (!paymentHeader) {
+        const paymentRequired = createPaymentRequired({
+          resource: streamPath,
+          description: `${INFERENCE_TOKENS.length} tokens of streamed inference`,
+          payTo: gatewayOwner,
+          amount: 1_000_000, // 0.01 HBAR per stream
+          feePayer: operatorId.toString()
+        })
+        res.writeHead(402, { 'Content-Type': 'application/json', 'PAYMENT-REQUIRED': encodeHeader(paymentRequired) })
+        return res.end(JSON.stringify(paymentRequired))
       }
-    }
-    const sell = paywall(resourceServer, routes, {
-      'GET /api/session': () => {
-        const id = crypto.randomBytes(8).toString('hex')
-        sessions.set(id, { credits: TOKENS_PER_SESSION })
-        return { session: id, credits: TOKENS_PER_SESSION, stream: `/api/stream?session=${id}` }
+
+      // B. Payment present: the gateway's facilitator verifies and settles it on Hedera
+      const settlement = await settleExactPayment(client, decodeHeader(paymentHeader), operatorKey)
+      if (!settlement.success) {
+        res.writeHead(402, { 'Content-Type': 'application/json', 'PAYMENT-RESPONSE': encodeHeader(settlement) })
+        return res.end(JSON.stringify({ error: 'settlement_failed', reason: settlement.errorReason }))
       }
+
+      // C. Settled: open the Server-Sent Events stream, receipt in PAYMENT-RESPONSE
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'PAYMENT-RESPONSE': encodeHeader(settlement)
+      })
+      // D. Stream inference tokens in real time
+      let tokenIndex = 0
+      const streamInterval = setInterval(() => {
+        if (tokenIndex < INFERENCE_TOKENS.length) {
+          res.write(`data: ${JSON.stringify({ chunk: tokenIndex + 1, totalChunks: INFERENCE_TOKENS.length, token: INFERENCE_TOKENS[tokenIndex] })}\n\n`)
+          tokenIndex++
+        } else {
+          clearInterval(streamInterval)
+          res.write(`data: ${JSON.stringify({ event: 'STREAM_COMPLETED', totalDelivered: INFERENCE_TOKENS.length })}\n\n`)
+          res.end()
+        }
+      }, 80) // 80 ms per token, like a model generating text
     })
+    await new Promise((resolve) => server.listen(serverPort, '127.0.0.1', resolve))
+    console.log(`[SUCCESS] AI Inference Streaming Gateway listening on http://127.0.0.1:${serverPort}`)
 
-    // 3. Free route: streams tokens while the session has credits (application logic, not x402).
-    const stream = (req, res) => {
-      const id = new URL(req.url, 'http://127.0.0.1').searchParams.get('session')
-      const session = sessions.get(id)
-      if (!session) {
-        res.writeHead(402, { 'Content-Type': 'application/json' })
-        return res.end(JSON.stringify({ error: 'buy a session at /api/session first' }))
-      }
-      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' })
-      const timer = setInterval(() => {
-        if (position >= ANSWER.length) {
-          clearInterval(timer)
-          res.write('event: done\ndata: {}\n\n')
-          return res.end()
-        }
-        if (session.credits === 0) {
-          clearInterval(timer)
-          sessions.delete(id)
-          res.write('event: credits_exhausted\ndata: {}\n\n')
-          return res.end()
-        }
-        session.credits--
-        res.write(`data: ${JSON.stringify({ token: ANSWER[position++], credits: session.credits })}\n\n`)
-      }, 30)
-    }
-    server = http.createServer((req, res) => (req.url.startsWith('/api/stream') ? stream(req, res) : sell(req, res)))
-    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
+    // 2. Client requests the stream without paying
+    console.log('\n[PROCESS] Step 2: Client requesting AI Inference Stream without payment...')
+    const rawRes = await fetch(`http://127.0.0.1:${serverPort}${streamPath}`)
+    const paymentRequired = decodeHeader(rawRes.headers.get('payment-required'))
+    const accept = paymentRequired.accepts[0]
+    console.log(`[LOG] Gateway HTTP Response Status: ${rawRes.status} (Payment Required)`)
+    console.log(`[LOG] Quoted Cost: ${Number(accept.amount) / 1e8} HBAR to ${accept.payTo}, fee payer ${accept.extra.feePayer}`)
 
-    // 4. Agent: buy a session, read the stream, buy again when credits run out.
-    const fetchWithPayment = wrapFetchWithPayment(fetch, createBuyer(agentId, agentKey, { maxTinybars: 2_000_000 }))
-    const purchases = []
-    let text = ''
-    let event = null
-    // The agent wants 16 tokens: two sessions, unless the answer ends first.
-    while (purchases.length < 2 && event !== 'done') {
-      const res = await fetchWithPayment(`http://127.0.0.1:${PORT}/api/session`)
-      const receipt = readPaymentResponse(res)
-      if (res.status !== 200 || !receipt?.success) throw new Error(`Session purchase failed: ${receipt?.errorReason || res.status}`)
-      const { stream: streamPath, credits } = await res.json()
-      purchases.push({ purchase: purchases.length + 1, credits, transaction: receipt.transaction })
-      console.log(`[SUCCESS] Bought ${credits} tokens: ${getHashscanUrl(receipt.transaction)}`)
+    // 3. Client signs the payment (it does not submit it)
+    console.log('\n[PROCESS] Step 3: Client signing the x402 payment...')
+    const payment = await signExactPayment(client, paymentRequired, clientId, clientKey)
+    const paymentSignature = encodeHeader(payment)
+    console.log(`[LOG] PAYMENT-SIGNATURE: ${paymentSignature.substring(0, 48)}...`)
 
-      // Read Server-Sent Events: "event: name" lines and "data: json" lines, separated by a blank line.
-      const sse = await fetch(`http://127.0.0.1:${PORT}${streamPath}`)
-      const reader = sse.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      event = null
-      while (!event) {
-        const { value, done } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        let cut
-        while ((cut = buffer.indexOf('\n\n')) >= 0) {
-          const block = buffer.slice(0, cut)
-          buffer = buffer.slice(cut + 2)
-          const name = block.match(/^event: (.+)$/m)?.[1]
-          if (name) { event = name; continue }
-          text += JSON.parse(block.replace(/^data: /, '')).token
+    // 4. Client retries with the payment and consumes the SSE stream
+    console.log('\n[PROCESS] Step 4: Retrying with PAYMENT-SIGNATURE and consuming the SSE stream...')
+    const sseResponse = await fetch(`http://127.0.0.1:${serverPort}${streamPath}`, { headers: { 'PAYMENT-SIGNATURE': paymentSignature } })
+    const settlement = decodeHeader(sseResponse.headers.get('payment-response'))
+    console.log(`[SUCCESS] Gateway settled the payment! HTTP Status: ${sseResponse.status}`)
+    console.log(`[LOG] Content-Type: "${sseResponse.headers.get('content-type')}"`)
+    console.log(`[LOG] Settlement Tx ID: ${settlement.transaction}`)
+    console.log(`[EXPLORER] HashScan: ${getHashscanUrl(settlement.transaction)}`)
+
+    // Read the Server-Sent Events: each "data: {...}" block ends with a blank line
+    const reader = sseResponse.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let fullText = ''
+    let deliveredTokens = 0
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const events = buffer.split('\n\n')
+      buffer = events.pop()
+      for (const event of events) {
+        const data = JSON.parse(event.replace(/^data: /, ''))
+        if (data.token) {
+          fullText += data.token
+          deliveredTokens++
         }
       }
-      console.log(`[LOG] Stream so far: "${text.trim()}"`)
-      console.log(`[LOG] Stream ended with: ${event}`)
     }
-    show.table(purchases)
+    console.log(`[SUCCESS] Stream completed! Total tokens delivered: ${deliveredTokens}`)
+    console.log(`[LOG] AI STREAM OUTPUT: "${fullText}"`)
+
+    // 5. Replay defense: the same PAYMENT-SIGNATURE must not open a second stream
+    console.log('\n[PROCESS] Step 5: Replaying the same PAYMENT-SIGNATURE...')
+    const replayRes = await fetch(`http://127.0.0.1:${serverPort}${streamPath}`, { headers: { 'PAYMENT-SIGNATURE': paymentSignature } })
+    const replayBody = await replayRes.json()
+    console.log(`[LOG] Replay Request HTTP Status: ${replayRes.status} (${replayBody.reason})`)
+    if (replayRes.status !== 402) throw new Error('The gateway accepted a replayed payment.')
+    console.log('[SUCCESS] Gateway refused the duplicate stream: Hedera rejected the reused transaction.')
 
     console.log('\n KEY CONCEPT:')
-    console.log('Each batch of tokens was bought with its own x402 payment, settled on')
-    console.log('Hedera before the first token was sent. The stream only spends credits')
-    console.log('that are already paid for, so neither side carries credit risk.')
+    console.log('HTTP 402 turns streaming APIs into micro-economies. Instead of a monthly')
+    console.log('subscription, the client paid 0.01 HBAR for this one stream, the gateway saw')
+    console.log('the settlement on Hedera before the first token, and a replay got nothing.')
+
     console.log('\n--- SESSION COMPLETE ---')
+  } catch (error) {
+    console.error('\n[FAILED] AI Streaming Gateway Failure:', error.message)
+    process.exitCode = 1
   } finally {
-    server?.close()
+    if (server) server.close()
     client.close()
   }
 }

@@ -1,220 +1,187 @@
-/* eslint-disable camelcase, new-cap */
+/* eslint-disable camelcase */
 /**
- * Piezas compartidas del Módulo 10 (x402 en Hedera).
+ * x402 en Hedera, escrito solo con el SDK de Hedera (Módulo 10).
  *
- * Los labs 01–03 construyen a mano cada rol de x402 con los paquetes oficiales;
- * los siguientes reutilizan estas funciones pequeñas para que su código se
- * centre en la idea nueva. Nada aquí esconde lógica del protocolo: la
- * verificación, la firma y la liquidación vienen de @x402/core y @x402/hedera.
+ * Los Labs 01-03 construyen cada paso a mano para que lo veas. Los labs
+ * siguientes reutilizan esos mismos pasos desde aquí:
  *
- *   createBuyer()             el rol de comprador (un x402Client que firma pagos en Hedera)
- *   createLocalFacilitator()  el rol de facilitador (verifica y paga la comisión)
- *   paywall()                 un servidor de recursos x402 para node:http
- *   readPaymentRequired()     decodifica la cabecera PAYMENT-REQUIRED del 402
- *   readPaymentResponse()     decodifica la cabecera PAYMENT-RESPONSE del 200
- *   describePayment()         qué hay dentro de un pago x402 firmado
+ *   createPaymentRequired()  las condiciones 402 del servidor (PAYMENT-REQUIRED)
+ *   signExactPayment()       el agente firma una transferencia que no envía (PAYMENT-SIGNATURE)
+ *   verifyExactPayment()     las revisiones del facilitador antes de pagar la comisión
+ *   settleExactPayment()     el facilitador firma, envía y responde (PAYMENT-RESPONSE)
+ *   encodeHeader() / decodeHeader()   JSON en Base64, el formato de las tres cabeceras x402
  *
- * No importa módulos nativos de Node, así que el mismo archivo corre en el navegador.
+ * Formato: x402 v2, esquema "exact" en hedera:testnet.
+ * https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
  */
-import { x402Client } from '@x402/core/client'
-import { x402Facilitator } from '@x402/core/facilitator'
-import { x402HTTPResourceServer } from '@x402/core/server'
-import { decodePaymentRequiredHeader, decodePaymentResponseHeader } from '@x402/core/http'
-import { ExactHederaScheme as FacilitatorScheme } from '@x402/hedera/exact/facilitator'
-import { ExactHederaScheme as ClientScheme } from '@x402/hedera/exact/client'
-import {
-  HBAR_ASSET_ID,
-  createClientHederaSigner,
-  createHederaClient,
-  createHederaPreflightTransfer,
-  createHederaSignAndSubmitTransaction,
-  createHederaVerifyPayerSignature,
-  inspectHederaTransaction
-} from '@x402/hedera'
-import { PrivateKey, Transaction, TransferTransaction } from '@hiero-ledger/sdk'
+import { Hbar, PrivateKey, PublicKey, TokenId, Transaction, TransactionId, TransferTransaction } from '@hiero-ledger/sdk'
 
-/** Identificador CAIP-2 de Hedera testnet, como lo escribe x402. */
+// Sin imports exclusivos de Node, para que la web del curso también pueda ejecutarlo.
+const mirrorNode = () => `https://${process.env.NETWORK === 'mainnet' ? 'mainnet-public' : process.env.NETWORK || 'testnet'}.mirrornode.hedera.com`
+
+/** Nombre CAIP-2 de Hedera testnet, como lo escribe x402. */
 export const X402_NETWORK = 'hedera:testnet'
+/** En x402, HBAR es el activo "0.0.0"; cualquier otro activo es el id de un token HTS. */
+export const HBAR_ASSET = '0.0.0'
 
-/** Acepta llaves privadas DER o hex sin formato (los mismos formatos del .env del curso). */
-export const toPrivateKey = (value) => {
-  if (value instanceof PrivateKey) return value
-  const text = String(value).trim()
-  return /^30[0-9a-fA-F]{60,}$/.test(text) ? PrivateKey.fromStringDer(text) : PrivateKey.fromString(text)
-}
+/** Las tres cabeceras x402 llevan JSON codificado en Base64. */
+export const encodeHeader = (value) => Buffer.from(JSON.stringify(value)).toString('base64')
+export const decodeHeader = (header) => JSON.parse(Buffer.from(header, 'base64').toString('utf8'))
 
-/** Tinybars → "0.01 ℏ" para los logs. */
-export const formatHbar = (tinybars) => `${(Number(tinybars) / 1e8).toFixed(8).replace(/\.?0+$/, '')} ℏ`
+const toKey = (key) => (key instanceof PrivateKey ? key : /^30[0-9a-fA-F]{60,}$/.test(String(key).trim()) ? PrivateKey.fromStringDer(String(key).trim()) : PrivateKey.fromString(String(key).trim()))
 
 /**
- * El comprador: un x402Client que responde a un 402 firmando una transferencia en Hedera.
- * Los clientes x402 rechazan cualquier activo que no se les haya indicado, así que
- * aquí se permite HBAR con un tope por pago (en tinybars); `tokens` agrega tokens HTS igual.
+ * El cuerpo de una respuesta 402 (y, en Base64, su cabecera PAYMENT-REQUIRED).
  *
- * @param {string} accountId - Cuenta del comprador (0.0.x)
- * @param {string|PrivateKey} privateKey - Su llave
- * @param {{ maxTinybars?: string|number, tokens?: Array<{ asset: string, maxAmountPerPayment?: string }> }} [options]
+ * @param {{ resource: string, description: string, payTo: string, amount: number|string, feePayer: string, asset?: string }} terms
+ *   amount es un entero en la unidad más pequeña del activo (tinybars para HBAR).
  */
-export function createBuyer (accountId, privateKey, { maxTinybars = 5_000_000, tokens = [] } = {}) {
-  const signer = createClientHederaSigner(String(accountId), toPrivateKey(privateKey), { network: X402_NETWORK })
-  return new x402Client()
-    .register(X402_NETWORK, new ClientScheme(signer))
-    .setSpendControls({
-      allowedAssets: [
-        { network: X402_NETWORK, asset: HBAR_ASSET_ID, maxAmountPerPayment: String(maxTinybars) },
-        ...tokens.map((t) => ({ network: X402_NETWORK, ...t }))
-      ]
-    })
-}
+export const createPaymentRequired = ({ resource, description, payTo, amount, feePayer, asset = HBAR_ASSET }) => ({
+  x402Version: 2,
+  error: 'Payment required',
+  resource: { url: resource, description, mimeType: 'application/json' },
+  accepts: [{
+    scheme: 'exact',
+    network: X402_NETWORK,
+    amount: String(amount),
+    asset,
+    payTo: String(payTo),
+    maxTimeoutSeconds: 120,
+    extra: { feePayer: String(feePayer) }
+  }]
+})
 
 /**
- * Un facilitador que corre dentro del lab (el mismo papel que cumple
- * https://x402.org/facilitator). Su cuenta es el `feePayer`: firma también cada pago
- * y paga la comisión de red de Hedera, así el comprador solo gasta el precio.
+ * El lado del agente (Lab 02): una TransferTransaction del agente a payTo cuyo id
+ * de transacción pertenece a quien paga la comisión, firmada solo por el agente.
  *
- * @param {string} accountId - Cuenta que paga la comisión (0.0.x)
- * @param {string|PrivateKey} privateKey - Su llave
- * @returns {{ facilitator: x402Facilitator, client: object, feePayer: string }}
- *   `client` tiene la forma de FacilitatorClient (verify / settle / getSupported) que
- *   espera x402ResourceServer, así que es intercambiable con HTTPFacilitatorClient.
+ * @param {import('@hiero-ledger/sdk').Client} client - Cualquier cliente de testnet (se usa para elegir nodos).
+ * @param {object} paymentRequired - El cuerpo 402 decodificado.
+ * @param {string} payerId - La cuenta del agente.
+ * @param {string|PrivateKey} payerKey - La llave del agente.
+ * @returns {Promise<object>} El pago x402 (envíalo en Base64 como PAYMENT-SIGNATURE).
  */
-export function createLocalFacilitator (accountId, privateKey) {
-  const key = toPrivateKey(privateKey)
-  const feePayer = String(accountId)
-  const signer = {
-    getAddresses: () => [feePayer],
-    // Lee la llave pública del pagador en el Mirror Node y comprueba la firma.
-    verifyPayerSignature: createHederaVerifyPayerSignature(),
-    // Comprueba el saldo del pagador (y la asociación al token del receptor) antes de liquidar.
-    preflightTransfer: createHederaPreflightTransfer(),
-    // Agrega la firma de quien paga la comisión y envía la transferencia a Hedera.
-    signAndSubmitTransaction: createHederaSignAndSubmitTransaction((network) => {
-      const client = createHederaClient(network)
-      client.setOperator(feePayer, key)
-      return client
-    }, key)
+export const signExactPayment = async (client, paymentRequired, payerId, payerKey) => {
+  const accepted = paymentRequired.accepts[0]
+  const amount = Number(accepted.amount)
+  const tx = new TransferTransaction()
+  if (accepted.asset === HBAR_ASSET) {
+    tx.addHbarTransfer(payerId, Hbar.fromTinybars(-amount)).addHbarTransfer(accepted.payTo, Hbar.fromTinybars(amount))
+  } else {
+    tx.addTokenTransfer(accepted.asset, payerId, -amount).addTokenTransfer(accepted.asset, accepted.payTo, amount)
   }
-  const facilitator = new x402Facilitator().register(X402_NETWORK, new FacilitatorScheme(signer))
-  const client = {
-    verify: (payload, requirements) => facilitator.verify(payload, requirements),
-    settle: (payload, requirements) => facilitator.settle(payload, requirements),
-    getSupported: async () => facilitator.getSupported()
-  }
-  return { facilitator, client, feePayer }
-}
-
-/** Petición de node:http → la interfaz HTTPAdapter que lee x402HTTPResourceServer. */
-function adapterFor (req, url) {
-  const header = (name) => {
-    const value = req.headers[name.toLowerCase()]
-    return Array.isArray(value) ? value[0] : value
-  }
+  tx.setTransactionId(TransactionId.generate(accepted.extra.feePayer)).freezeWith(client)
+  const signed = await tx.sign(toKey(payerKey))
   return {
-    getHeader: header,
-    getMethod: () => req.method,
-    getPath: () => url.pathname,
-    getUrl: () => url.href,
-    getAcceptHeader: () => header('accept') || '',
-    getUserAgent: () => header('user-agent') || '',
-    getQueryParams: () => Object.fromEntries(url.searchParams),
-    getQueryParam: (name) => url.searchParams.get(name) ?? undefined
+    x402Version: 2,
+    resource: paymentRequired.resource,
+    accepted,
+    payload: { transaction: Buffer.from(signed.toBytes()).toString('base64') }
   }
 }
 
-function send (res, status, headers, body) {
-  const isText = typeof body === 'string'
-  res.writeHead(status, { 'Content-Type': isText ? 'text/plain; charset=utf-8' : 'application/json', ...headers })
-  res.end(isText ? body : JSON.stringify(body ?? {}))
-}
-
-/**
- * Un servidor de recursos x402 para node:http: http.createServer(paywall(...)).
- *
- * En cada petición hace lo mismo que el middleware oficial @x402/express:
- *   1. sin PAYMENT-SIGNATURE → 402 con la cabecera PAYMENT-REQUIRED
- *   2. con un pago → el facilitador lo verifica
- *   3. corre el handler de la ruta (el trabajo que se vende)
- *   4. el facilitador liquida en Hedera, y solo entonces se envía la respuesta,
- *      con una cabecera PAYMENT-RESPONSE que lleva el id de la transacción.
- * Si el handler falla (status ≥ 400) no se liquida nada: al comprador no se le cobra.
- *
- * @param {import('@x402/core/server').x402ResourceServer} resourceServer
- * @param {Record<string, object>} routes - configuración x402 de rutas: { 'GET /ruta': { accepts, description } }
- * @param {Record<string, (req, url) => any>} handlers - mismas claves; devuelven { status?, headers?, body } o un body
- * @param {{ onSettled?: (settlement, route) => void }} [options]
- */
-export function paywall (resourceServer, routes, handlers, { onSettled } = {}) {
-  const httpServer = new x402HTTPResourceServer(resourceServer, routes)
-  const ready = httpServer.initialize() // pregunta al facilitador qué redes soporta
-  return async (req, res) => {
-    try {
-      await ready
-      const url = new URL(req.url, `http://${req.headers.host || '127.0.0.1'}`)
-      const adapter = adapterFor(req, url)
-      const routeKey = `${req.method} ${url.pathname}`
-      const handler = handlers[routeKey]
-      const context = { adapter, path: url.pathname, method: req.method, paymentHeader: adapter.getHeader('payment-signature') }
-      const result = httpServer.requiresPayment(context)
-        ? await httpServer.processHTTPRequest(context)
-        : { type: 'no-payment-required' }
-
-      if (result.type === 'payment-error') {
-        const { status, headers, body } = result.response
-        return send(res, status, headers, body)
-      }
-      if (!handler) return send(res, 404, {}, { error: 'not_found' })
-
-      const out = await handler(req, url)
-      const reply = out && typeof out === 'object' && 'body' in out ? out : { body: out }
-      const status = reply.status || 200
-      if (result.type === 'no-payment-required' || status >= 400) {
-        return send(res, status, reply.headers || {}, reply.body)
-      }
-
-      const settled = await httpServer.processSettlement(result.paymentPayload, result.paymentRequirements, result.declaredExtensions)
-      if (!settled.success) {
-        const { status: failStatus, headers, body } = settled.response
-        return send(res, failStatus, headers, body)
-      }
-      onSettled?.(settled, routeKey)
-      send(res, status, { ...(reply.headers || {}), ...settled.headers }, reply.body)
-    } catch (error) {
-      send(res, 500, {}, { error: error.message })
+/** La llave pública del pagador, leída del Mirror Node (cuentas de una sola llave). Reintenta un poco si el Mirror Node está ocupado. */
+const payerPublicKey = async (accountId) => {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const res = await fetch(`${mirrorNode()}/api/v1/accounts/${accountId}`).catch(() => null)
+    if (res?.ok) {
+      const { key } = await res.json()
+      if (key?._type === 'ED25519') return PublicKey.fromStringED25519(key.key)
+      if (key?._type === 'ECDSA_SECP256K1') return PublicKey.fromStringECDSA(key.key)
+      return null // las cuentas con llaves umbral o listas de llaves quedan fuera de este ejemplo
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
   }
-}
-
-/** Decodifica la cabecera Base64 PAYMENT-REQUIRED de una respuesta 402 (o null). */
-export const readPaymentRequired = (response) => {
-  const raw = response.headers.get('payment-required')
-  return raw ? decodePaymentRequiredHeader(raw) : null
-}
-
-/** Decodifica la cabecera Base64 PAYMENT-RESPONSE de una respuesta pagada (o null). */
-export const readPaymentResponse = (response) => {
-  const raw = response.headers.get('payment-response')
-  return raw ? decodePaymentResponseHeader(raw) : null
+  throw new Error(`Could not read the key of ${accountId} from the Mirror Node`)
 }
 
 /**
- * Abre un pago x402 firmado: la transacción de Hedera que contiene, quién paga la
- * comisión (la cuenta del id de transacción), las transferencias que haría y qué
- * llaves públicas la han firmado hasta ahora.
+ * Las revisiones del facilitador (Lab 03) antes de aceptar pagar la comisión.
+ *
+ * @param {object} paymentPayload - La PAYMENT-SIGNATURE decodificada.
+ * @param {string} feePayerId - La cuenta del facilitador.
+ * @returns {Promise<{ isValid: boolean, invalidReason?: string, payer?: string, transaction?: Transaction }>}
  */
-export const describePayment = (paymentPayload) => {
-  const base64 = paymentPayload.payload.transaction
-  const inspected = inspectHederaTransaction(base64)
-  const tx = Transaction.fromBytes(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)))
-  const signers = new Set()
-  for (const [, byTx] of tx.getSignatures()) for (const [, byKey] of byTx) for (const [publicKey] of byKey) signers.add(publicKey.toString())
-  return {
-    type: tx instanceof TransferTransaction ? 'TransferTransaction' : inspected.transactionType,
-    transactionId: inspected.transactionId,
-    feePayer: inspected.transactionIdAccountId,
-    hbarTransfers: inspected.hbarTransfers,
-    tokenTransfers: Object.entries(inspected.tokenTransfers).flatMap(([tokenId, list]) => list.map((t) => ({ ...t, tokenId }))),
-    signers: [...signers],
-    validForSeconds: tx.transactionValidDuration,
-    maxFee: tx.maxTransactionFee?.toString()
+export const verifyExactPayment = async (paymentPayload, feePayerId) => {
+  const fail = (invalidReason) => ({ isValid: false, invalidReason })
+  const accepted = paymentPayload.accepted
+  const amount = BigInt(accepted.amount)
+  let tx
+  try {
+    tx = Transaction.fromBytes(Buffer.from(paymentPayload.payload.transaction, 'base64'))
+  } catch (_) {
+    return fail('transaction_could_not_be_decoded')
   }
+  // 1. Solo una transferencia simple, y quien paga la comisión es el de las condiciones.
+  if (!(tx instanceof TransferTransaction)) return fail('not_a_transfer')
+  if (accepted.extra?.feePayer !== feePayerId || tx.transactionId.accountId.toString() !== feePayerId) return fail('fee_payer_mismatch')
+
+  // 2. Sigue vigente: Hedera solo la acepta hasta el inicio de validez + la duración válida (120 s).
+  const expiresMs = tx.transactionId.validStart.toDate().getTime() + tx.transactionValidDuration * 1000
+  if (Date.now() > expiresMs) return fail('payment_expired')
+
+  // 3. Mueve exactamente el monto a payTo, y nada más.
+  let payer
+  if (accepted.asset === HBAR_ASSET) {
+    if (tx.tokenTransfers.size > 0) return fail('unexpected_token_transfer')
+    const moves = [...tx.hbarTransfers].map(([id, hbar]) => [id.toString(), BigInt(hbar.toTinybars().toString())])
+    if (moves.length !== 2) return fail('unexpected_transfers')
+    const credit = moves.find(([, v]) => v > 0n)
+    const debit = moves.find(([, v]) => v < 0n)
+    if (!credit || !debit || credit[0] !== accepted.payTo || credit[1] !== amount || debit[1] !== -amount) return fail('amount_or_payee_mismatch')
+    payer = debit[0]
+  } else {
+    if (tx.hbarTransfers.size > 0) return fail('unexpected_hbar_transfer')
+    const list = tx.tokenTransfers.get(TokenId.fromString(accepted.asset)) || tx.tokenTransfers.get(accepted.asset)
+    if (tx.tokenTransfers.size !== 1 || !list) return fail('wrong_asset')
+    const moves = [...list].map(([id, v]) => [id.toString(), BigInt(v.toString())])
+    const credit = moves.find(([, v]) => v > 0n)
+    const debit = moves.find(([, v]) => v < 0n)
+    if (moves.length !== 2 || !credit || !debit || credit[0] !== accepted.payTo || credit[1] !== amount || debit[1] !== -amount) return fail('amount_or_payee_mismatch')
+    payer = debit[0]
+  }
+  if (payer === feePayerId) return fail('fee_payer_cannot_pay')
+
+  // 4. El pagador de verdad la firmó (llave pública del Mirror Node).
+  let publicKey
+  try {
+    publicKey = await payerPublicKey(payer)
+  } catch (_) {
+    return fail('payer_key_unavailable')
+  }
+  if (!publicKey) return fail('unsupported_payer_key')
+  if (!publicKey.verifyTransaction(tx)) return fail('invalid_payer_signature')
+
+  return { isValid: true, payer, transaction: tx }
+}
+
+/**
+ * El facilitador liquida (Lab 03): verifica, agrega la firma de quien paga la
+ * comisión, envía y responde con la respuesta de liquidación de x402.
+ *
+ * @param {import('@hiero-ledger/sdk').Client} client - Su operador es quien paga la comisión.
+ * @param {object} paymentPayload - La PAYMENT-SIGNATURE decodificada.
+ * @param {string|PrivateKey} feePayerKey - La llave de quien paga la comisión (también firma).
+ * @returns {Promise<{ success: boolean, network: string, payer?: string, transaction: string, errorReason?: string }>}
+ *   Envíala en Base64 como PAYMENT-RESPONSE.
+ */
+export const settleExactPayment = async (client, paymentPayload, feePayerKey) => {
+  const feePayerId = client.operatorAccountId.toString()
+  const check = await verifyExactPayment(paymentPayload, feePayerId)
+  if (!check.isValid) return { success: false, network: X402_NETWORK, transaction: '', errorReason: check.invalidReason }
+  try {
+    await check.transaction.sign(toKey(feePayerKey)) // la firma de quien paga la comisión, junto a la del pagador
+    const response = await check.transaction.execute(client)
+    const receipt = await response.getReceipt(client)
+    return { success: true, network: X402_NETWORK, payer: check.payer, transaction: response.transactionId.toString(), status: receipt.status.toString() }
+  } catch (error) {
+    return { success: false, network: X402_NETWORK, payer: check.payer, transaction: '', errorReason: String(error.status || error.message) }
+  }
+}
+
+/** Registro en el Mirror Node de un pago liquidado (null si todavía no llega). */
+export const getTransactionRecord = async (transactionId) => {
+  const id = String(transactionId).replace('@', '-').replace(/\.(\d+)$/, '-$1')
+  const res = await fetch(`${mirrorNode()}/api/v1/transactions/${id}`)
+  return res.ok ? (await res.json()).transactions?.[0] || null : null
 }

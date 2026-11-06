@@ -1,199 +1,179 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 04: Pricing in Dollars with an HTS Stablecoin
- * [CONCEPT] Quote "$0.01" and settle it in a native HTS token
+ * Lab 04: HTS USDC Micropayments
+ * [CONCEPT] Sub-Cent Stablecoin Settlement for AI Inference
  * ============================================================================
  * [ KEY CONCEPT ]
- * APIs think in dollars, not in HBAR. An x402 route can be priced as money
- * ("$0.01"): the server scheme converts it into the smallest unit of a
- * stablecoin (USDC has 6 decimals, so $0.01 = 10000 units) and the buyer signs
- * an HTS token transfer instead of an HBAR transfer. Everything else is the
- * same as Lab 03: the facilitator verifies, pays the HBAR fee and submits.
- *
- * The official default on Hedera testnet is Circle's USDC (0.0.429274). Most
- * practice accounts hold none, so this lab uses the course's own 6-decimal test
- * dollar (tUSD) unless your agent already holds testnet USDC.
- *
- * From this lab on the agent uses wrapFetchWithPayment from @x402/fetch: one
- * fetch() that does Lab 03's two requests (402, sign, retry) for you.
- *
+ * The Credit Card Paradox: Charging $0.01 for an API request through Stripe or
+ * Visa costs $0.30 + 2.9% in fees, a 3,000% overhead that destroys
+ * machine-to-machine business models. On Hedera, an x402 payment can be quoted
+ * in dollars and settled in a stablecoin on the Hedera Token Service: the
+ * agent signs a token transfer instead of an HBAR transfer, and the
+ * facilitator pays the fixed ~$0.001 network fee in HBAR.
+ * *
  * [ LEARNABLE MOMENT ]
- * HTS rules still apply inside x402: the merchant must be associated with the
- * token or the transfer cannot land, and the facilitator's preflight rejects the
- * payment before it is submitted. The buyer's client also refuses tokens it was
- * not told about, so a server cannot make it pay in an unexpected asset.
+ * Token rules still apply inside x402: the merchant must be associated with the token or the transfer cannot land. The price is an integer in the token's smallest unit (USDC has 6 decimals, so $0.025 = 25,000 units).
  *
  * [ OFFICIAL REFERENCES ]
- * - https://docs.hedera.com/solutions/ai/x402/merchant-integration
+ * - https://docs.hedera.com/solutions/ai/x402
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/associate-tokens-to-an-account
  * - https://faucet.circle.com/
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 03: The Facilitator Settles on Hedera
- * - Next:     M10 Lab 05: Spending Guardrails for Agents
+ * - Previous: M10 Lab 03: Facilitator Settlement
+ * - Next:     M10 Lab 05: Financial Guardrails
  *
- * [ SEQUENCE ]
- * Agent -> Server: GET /api/translate
- * Server -> Agent: 402 (price "$0.01" = 10000 units of a 6-decimal token)
- * Note Agent: signs an HTS token transfer (no HBAR leaves the agent)
- * Agent -> Server: retry with PAYMENT-SIGNATURE
- * Server -> Facilitator: verify (merchant associated?) then settle
- * Facilitator -> Hedera: token transfer, fee paid in HBAR by the facilitator
- * Server -> Agent: 200 + PAYMENT-RESPONSE
+ * [SEQUENCE]
+ * Agent -> Server: GET /api/v1/llm/prompt
+ * Server -> Agent: 402 (25000 units of a 6-decimal stablecoin = $0.025)
+ * Note Agent: Signs an HTS token transfer (no HBAR leaves the agent)
+ * Agent -> Facilitator: PAYMENT-SIGNATURE
+ * Facilitator -> Hedera: Co-signs as fee payer and submits
+ * Server -> Agent: 200 OK + PAYMENT-RESPONSE
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account is the facilitator and the test dollar's treasury.
- * - Practice wallets: ACCOUNT_1 is the agent, ACCOUNT_2 the merchant.
- * - Cost: first run about 1.1 USD in ℏ (create tUSD, two associations); later runs about 0.001 USD.
+ * - Practice wallets: ACCOUNT_1 (agent) pays ACCOUNT_2 (merchant).
+ * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD, plus two associations); <0.1 ℏ when you run it again (it reuses the token).
  *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================
  */
 
-import http from 'node:http'
 import { TokenAssociateTransaction, TokenCreateTransaction, TransferTransaction } from '@hiero-ledger/sdk'
-import { x402ResourceServer } from '@x402/core/server'
-import { wrapFetchWithPayment } from '@x402/fetch'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HEDERA_TESTNET_USDC, HEDERA_USDC_DECIMALS } from '@x402/hedera'
 import {
   getClient,
+  updateState,
   getHashscanUrl,
   getMirrorNodeBaseUrl,
+  parsePrivateKey,
   reuseToken,
   waitForMirror,
-  updateState,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentRequired,
-  readPaymentResponse,
-  toPrivateKey
+  createPaymentRequired,
+  signExactPayment,
+  settleExactPayment
 } from '../M99_Utilities/index.js'
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const PORT = 4024
-const ROUTE = '/api/translate'
-const PRICE = '$0.01'
+const OFFICIAL_TESTNET_USDC = '0.0.429274' // Circle USDC on Hedera testnet (6 decimals)
 
-/** Balance of `tokenId` held by `accountId` (smallest units), or null when not associated. */
+// Token balance in smallest units, or null when the account is not associated.
 const tokenBalance = async (accountId, tokenId) => {
   const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}/tokens?token.id=${tokenId}`)
   const row = res.ok ? (await res.json()).tokens?.[0] : null
-  return row ? BigInt(row.balance) : null
+  return row ? Number(row.balance) : null
 }
 
-/** Associates `accountId` with `tokenId` unless it already is (the account signs, the operator pays). */
-const ensureAssociated = async (client, accountId, accountKey, tokenId) => {
-  if (await tokenBalance(accountId, tokenId) !== null) return
-  console.log(`[PROCESS] Associating ${accountId} with ${tokenId}...`)
-  const tx = await new TokenAssociateTransaction().setAccountId(accountId).setTokenIds([tokenId]).freezeWith(client).sign(toPrivateKey(accountKey))
-  await (await tx.execute(client)).getReceipt(client)
-}
-
-// ─── Main ──────────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- SESSION START: Pricing in Dollars with an HTS Stablecoin ---\n')
+  console.log('--- SESSION START: HTS Stablecoin (USDC) Micropayment Rail ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const agentId = process.env.ACCOUNT_1_ID
   const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
   const merchantId = process.env.ACCOUNT_2_ID
   const merchantKey = process.env.ACCOUNT_2_PRIVATE_KEY
-  if (!agentId || !agentKey || !merchantId || !merchantKey) throw new Error('Missing ACCOUNT_1 (agent) or ACCOUNT_2 (merchant). Create practice wallets or set them in .env.')
 
-  let server
+  if (!agentId || !agentKey || !merchantId || !merchantKey) {
+    console.error('[FAILED] Missing credentials in .env (ACCOUNT_1 agent, ACCOUNT_2 merchant).')
+    process.exitCode = 1
+    return
+  }
+
   try {
-    // 1. Pick the stablecoin: official testnet USDC if the agent holds some, else the course's tUSD.
-    const usdcBalance = await tokenBalance(agentId, HEDERA_TESTNET_USDC)
-    let tokenId
-    if (usdcBalance !== null && usdcBalance >= 10_000n) {
-      tokenId = HEDERA_TESTNET_USDC
-      console.log(`[INFO] Agent holds official testnet USDC (${HEDERA_TESTNET_USDC}): using it.`)
+    // 1. Pick the stablecoin: Circle's testnet USDC if the agent holds some, otherwise a course test dollar
+    let usdcId = OFFICIAL_TESTNET_USDC
+    if ((await tokenBalance(agentId, OFFICIAL_TESTNET_USDC)) >= 25_000) {
+      console.log(`[INFO] Agent holds official testnet USDC (${usdcId}): paying with it.`)
     } else {
-      console.log(`[INFO] Agent holds no testnet USDC (${HEDERA_TESTNET_USDC}); using the course test dollar instead.`)
-      tokenId = (await reuseToken('REUSE_M10_04_TUSD', async () => {
-        const tx = await new TokenCreateTransaction()
+      console.log('[PROCESS] Agent holds no testnet USDC. Provisioning the course test dollar (6 decimals, like USDC)...')
+      usdcId = (await reuseToken('REUSE_M10_04_TUSD', async () => {
+        const tokenCreateTx = await new TokenCreateTransaction()
           .setTokenName('Course Test Dollar')
           .setTokenSymbol('tUSD')
-          .setDecimals(HEDERA_USDC_DECIMALS) // 6, like USDC
-          .setInitialSupply(1_000_000 * 10 ** HEDERA_USDC_DECIMALS)
+          .setDecimals(6)
+          .setInitialSupply(1_000_000 * 1_000_000) // 1,000,000 tUSD
           .setTreasuryAccountId(operatorId)
-          .execute(client)
-        return (await tx.getReceipt(client)).tokenId
-      }, { minBalance: 10 ** HEDERA_USDC_DECIMALS })).toString()
-      console.log(`[INFO] Test dollar: ${tokenId}`)
+          .freezeWith(client)
+        return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
+      }, { minBalance: 1_000_000 })).toString()
+      console.log(`[SUCCESS] Test dollar ready: ${usdcId}`)
     }
 
-    // 2. HTS rules: both sides must be associated with the token, and the agent needs a balance.
-    await ensureAssociated(client, merchantId, merchantKey, tokenId)
-    if (tokenId !== HEDERA_TESTNET_USDC) {
-      await ensureAssociated(client, agentId, agentKey, tokenId)
-      if ((await tokenBalance(agentId, tokenId)) < 100_000n) {
-        console.log('[PROCESS] Sending the agent 1 tUSD to spend...')
-        const fund = await new TransferTransaction()
-          .addTokenTransfer(tokenId, operatorId, -1_000_000)
-          .addTokenTransfer(tokenId, agentId, 1_000_000)
-          .execute(client)
-        await fund.getReceipt(client)
-      }
+    // 2. HTS rules: the merchant (and the agent, for the test dollar) must be associated with the token
+    for (const [accountId, key] of [[merchantId, merchantKey], [agentId, agentKey]]) {
+      if ((await tokenBalance(accountId, usdcId)) !== null) continue
+      console.log(`[PROCESS] Associating ${accountId} with ${usdcId}...`)
+      const associateTx = await new TokenAssociateTransaction()
+        .setAccountId(accountId)
+        .setTokenIds([usdcId])
+        .freezeWith(client)
+        .sign(parsePrivateKey(key))
+      await (await associateTx.execute(client)).getReceipt(client)
     }
-    // The facilitator checks balances and associations on the Mirror Node, which lags consensus by a few seconds.
-    await waitForMirror(async () => (await tokenBalance(agentId, tokenId)) >= 10_000n && (await tokenBalance(merchantId, tokenId)) !== null)
-
-    // 3. Server: price the route in dollars. The scheme maps "$" to this token and its decimals.
-    const { client: facilitator } = createLocalFacilitator(operatorId, operatorKey)
-    const scheme = new ExactHederaScheme({ defaultAssets: { [X402_NETWORK]: { asset: tokenId, decimals: HEDERA_USDC_DECIMALS } } })
-    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, scheme)
-    const routes = {
-      [`GET ${ROUTE}`]: {
-        accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: PRICE }],
-        description: 'Translate one paragraph'
-      }
+    if (usdcId !== OFFICIAL_TESTNET_USDC && (await tokenBalance(agentId, usdcId)) < 100_000) {
+      console.log('[PROCESS] Sending the agent 1 tUSD to spend...')
+      const fundTx = await new TransferTransaction()
+        .addTokenTransfer(usdcId, operatorId, -1_000_000)
+        .addTokenTransfer(usdcId, agentId, 1_000_000)
+        .execute(client)
+      await fundTx.getReceipt(client)
     }
-    const handlers = { [`GET ${ROUTE}`]: (_req, url) => ({ text: url.searchParams.get('q'), es: 'Hola, mundo' }) }
-    server = http.createServer(paywall(resourceServer, routes, handlers))
-    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
-    const url = `http://127.0.0.1:${PORT}${ROUTE}?q=Hello%2C%20world`
+    // The facilitator checks balances on the Mirror Node, a few seconds behind consensus.
+    await waitForMirror(async () => (await tokenBalance(agentId, usdcId)) >= 25_000 && (await tokenBalance(merchantId, usdcId)) !== null)
 
-    const offer = readPaymentRequired(await fetch(url)).accepts[0]
-    console.log(`\n[LOG] 402 terms: ${PRICE} → amount ${offer.amount} of asset ${offer.asset}`)
-
-    // 4. Agent: allow this token (the official USDC is allowed by default, capped at $1), then fetch.
-    const agent = createBuyer(agentId, agentKey, { tokens: [{ asset: tokenId, maxAmountPerPayment: '50000' }] })
-    const fetchWithPayment = wrapFetchWithPayment(fetch, agent)
-    console.log(`[PROCESS] Agent: fetchWithPayment(${ROUTE})`)
-    const res = await fetchWithPayment(url)
-    const receipt = readPaymentResponse(res)
-    console.log(`[SUCCESS] HTTP ${res.status}, body: ${JSON.stringify(await res.json())}`)
-    if (res.status !== 200 || !receipt?.success) throw new Error(`Payment was not settled: ${receipt?.errorReason || res.status}`)
-    console.log(`[LOG] Settled: ${receipt.transaction}`)
-    console.log(`[LOG] View on HashScan: ${getHashscanUrl(receipt.transaction)}`)
-
-    // 5. What moved, according to the Mirror Node: token units between agent and merchant, HBAR only for the fee.
-    const mirrorId = receipt.transaction.replace('@', '-').replace(/\.(\d+)$/, '-$1')
-    const record = await waitForMirror(async () => {
-      const r = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/transactions/${mirrorId}`)
-      return r.ok ? (await r.json()).transactions?.[0] : null
+    // 3. The server quotes $0.025 for one LLM prompt, in the token's smallest units
+    const costUsd = 0.025
+    const microUnits = Math.round(costUsd * 1_000_000) // 25,000 base units
+    console.log(`\n[PROCESS] Server issuing HTTP 402 for $${costUsd} USD (${microUnits} base units of ${usdcId})...`)
+    const paymentRequired = createPaymentRequired({
+      resource: '/api/v1/llm/prompt',
+      description: 'One high-performance LLM prompt',
+      payTo: merchantId,
+      amount: microUnits,
+      asset: usdcId,
+      feePayer: operatorId.toString()
     })
-    if (record) {
-      const role = (id) => (id === agentId ? 'agent' : id === merchantId ? 'merchant' : 'other')
-      show.table(record.token_transfers.map((t) => ({ role: role(t.account), account: t.account, token: t.token_id, units: t.amount, dollars: (t.amount / 10 ** HEDERA_USDC_DECIMALS).toFixed(6) })))
-      console.log(`[LOG] Network fee ${(record.charged_tx_fee / 1e8).toFixed(8)} ℏ, paid by ${record.transaction_id.split('-')[0]} (the facilitator)`)
-    }
-    updateState('X402_STABLECOIN_ID', tokenId)
+
+    // 4. The agent signs a token transfer (Lab 02 step); the facilitator settles it (Lab 03 step)
+    console.log('[PROCESS] Agent signing the token transfer...')
+    const payment = await signExactPayment(client, paymentRequired, agentId, agentKey)
+    console.log('[PROCESS] Facilitator verifying, co-signing and submitting...')
+    const settlement = await settleExactPayment(client, payment, operatorKey)
+    if (!settlement.success) throw new Error(`Settlement rejected: ${settlement.errorReason}`)
+
+    console.log('\n[SUCCESS] HTS Stablecoin Micropayment Confirmed On-Chain:')
+    console.log(`[LOG] Status:         ${settlement.status}`)
+    console.log(`[LOG] Transaction ID: ${settlement.transaction}`)
+    console.log(`[EXPLORER] HashScan:  ${getHashscanUrl(settlement.transaction)}`)
+    console.log(`[LOG] Agent paid:     ${microUnits} units of ${usdcId}, and no HBAR at all`)
+
+    // 5. Mathematical fee comparison
+    console.log('\n===============================================================')
+    console.log(`ECONOMIC VIABILITY BENCHMARK: $${costUsd} API INFERENCE`)
+    console.log('===============================================================')
+    console.log('1. Traditional Rail (Visa/Stripe):')
+    console.log('- Fee: $0.30 fixed + 2.9% = $0.3007')
+    console.log('- Merchant Net Revenue: -$0.2757 (LOSING 1,100% PER CALL!)')
+    console.log('2. Ethereum L1 / Congested L2:')
+    console.log('- Gas Fee: $0.40 - $2.50')
+    console.log('- Economic Feasibility: IMPOSSIBLE')
+    console.log('3. Hedera Token Service + x402:')
+    console.log('- Network Fee: ~$0.001 USD fixed, paid by the facilitator')
+    console.log('- Merchant Net Revenue: +$0.025 USD (100% of the price)')
+    console.log('===============================================================')
+
+    updateState('X402_STABLECOIN_ID', usdcId)
 
     console.log('\n KEY CONCEPT:')
-    console.log('The API quoted a price in dollars and was paid in an HTS token. The agent')
-    console.log('needed no HBAR at all: the facilitator paid the network fee, and Hedera')
-    console.log('enforced the token rules (association, balance) before anything moved.')
-    console.log('\n--- SESSION COMPLETE ---')
-  } finally {
-    server?.close()
+    console.log('The API priced the call in dollars and was paid in an HTS stablecoin. The')
+    console.log('agent spent no HBAR, Hedera enforced the token rules, and the fixed fee makes')
+    console.log('per-prompt pricing profitable down to fractions of a cent.')
+
     client.close()
+    console.log('\n--- SESSION COMPLETE ---')
+  } catch (error) {
+    console.error('\n[FAILED] HTS stablecoin micropayment failed:', error.message)
+    process.exitCode = 1
   }
 }
 

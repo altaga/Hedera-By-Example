@@ -69,7 +69,7 @@
         "supported": "https://x402.org/facilitator/supported",
         "npm": "https://www.npmjs.com/package/@x402/hedera"
       },
-      "antiHallucinationNotes": "Use official @x402/* packages and a facilitator that advertises hedera:testnet (https://x402.org/facilitator). Wire format: PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE. Do not invent x402-* custom headers, memo nonces or a buyer-submitted transfer (the buyer never broadcasts in the exact scheme). payTo and the fee payer must both differ from the payer account. Buyers must allow non-default assets (HBAR is 0.0.0) in spendControls.allowedAssets. A facilitator can be self-hosted with x402Facilitator + the @x402/hedera facilitator scheme (course M10 Lab 08).",
+      "antiHallucinationNotes": "Use official @x402/* packages and a facilitator that advertises hedera:testnet (https://x402.org/facilitator). Wire format: PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE. Do not invent x402-* custom headers, memo nonces or a buyer-submitted transfer (the buyer never broadcasts in the exact scheme). payTo and the fee payer must both differ from the payer account. Buyers must allow non-default assets (HBAR is 0.0.0) in spendControls.allowedAssets. A merchant can be its own facilitator (fee payer = payTo), as in course M10 Lab 08.",
       "searchTriggers": [
         "x402",
         "http 402",

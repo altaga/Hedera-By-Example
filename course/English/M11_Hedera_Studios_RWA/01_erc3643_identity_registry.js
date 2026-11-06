@@ -31,7 +31,7 @@
  * - https://erc3643.org/
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 08: Run Your Own Facilitator
+ * - Previous: M10 Lab 08: Two-Party Settlement (Merchant as Facilitator)
  * - Next:     M11 Lab 02: Tranche Bonds on HTS (ERC-1400 Concepts)
  *
  * [SEQUENCE]

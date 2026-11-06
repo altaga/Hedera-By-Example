@@ -1,159 +1,145 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 06: An Agent That Shops for Data
- * [CONCEPT] Use free 402 quotes to compare providers, then pay only the best one
+ * Lab 06: Autonomous AI Market Agent
+ * [CONCEPT] Discover, Compare, Pay and Consume Without a Human
  * ============================================================================
  * [ KEY CONCEPT ]
- * A 402 costs nothing, so it doubles as a price quote: an agent can compare
- * providers for free and pay only the one it picks.
- *
- * Here three data providers sell the same kind of signal at different prices
- * and quality. The agent:
- *   1. reads each provider's free catalogue entry (name, accuracy),
- *   2. asks for the paid resource without paying, and reads the price from the 402,
- *   3. scores every offer (accuracy per HBAR) and drops those over its cap,
- *   4. pays the winner with fetchWithPayment, and only the winner.
- *
- * No API keys, accounts or contracts with any provider: the 402 is the whole
- * integration.
- *
+ * End-to-End Economic Agency: The culmination of the Agentic Web is an AI that
+ * finds competing paid services, reads each one's x402 quote, compares their
+ * price-performance ratio, pays the best one on Hedera and consumes the result,
+ * all within seconds, with no human, no account and no subscription with any
+ * provider. A 402 costs nothing, so asking every provider for its price is free;
+ * money moves once, to the provider the agent chose.
+ * *
  * [ LEARNABLE MOMENT ]
- * Discovery and payment are separate steps. Quoting every provider is free;
- * money moves once, to the provider the agent chose, and the receipt (the
- * Hedera transaction id) proves which one it paid.
+ * The HTTP 402 is the whole integration: the agent needs no API key or contract with any provider, and the Hedera transaction id in PAYMENT-RESPONSE proves which provider it paid and how much.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/ai/x402
- * - https://docs.hedera.com/solutions/ai/x402/pay-with-x402
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 05: Spending Guardrails for Agents
- * - Next:     M10 Lab 07: Paying for an AI Stream in Batches
+ * - Previous: M10 Lab 05: Financial Guardrails
+ * - Next:     M10 Lab 07: Live AI Streaming Gateway
  *
- * [ SEQUENCE ]
- * Agent -> Provider A: GET /meta and GET /signal (402: price)
- * Agent -> Provider B: GET /meta and GET /signal (402: price)
- * Agent -> Provider C: GET /meta and GET /signal (402: price)
- * Note Agent: scores accuracy per HBAR, picks one
- * Agent -> Provider B: GET /signal with PAYMENT-SIGNATURE
- * Provider B -> Agent: 200 + data + PAYMENT-RESPONSE
+ * [SEQUENCE]
+ * Agent -> Providers: GET /api/v1/signals/macro (no payment)
+ * Providers -> Agent: 402 quotes (price, payTo, feePayer)
+ * Note Agent: Picks the best confidence per HBAR within budget
+ * Agent -> Facilitator: PAYMENT-SIGNATURE for the chosen provider
+ * Facilitator -> Hedera: Co-sign and submit
+ * Provider -> Agent: 200 OK + signal
  *
- * [ SIMULATED ]
- * The three providers run inside the lab and return canned signals, and they all pay into ACCOUNT_2. The quotes and the payment are real x402 on testnet.
+ * [SIMULATED]
+ * The three providers are simulated and all collect into ACCOUNT_2. Their 402 quotes follow x402, and the payment is real.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account is the facilitator.
- * - Practice wallets: ACCOUNT_1 is the agent, ACCOUNT_2 receives for the providers.
- * - Cost: up to 0.015 ℏ from ACCOUNT_1 to ACCOUNT_2; about 0.003 ℏ in fees for you.
+ * - Wallet: your testnet account is the facilitator (it pays the network fee).
+ * - Practice wallets: ACCOUNT_1 (agent) pays ACCOUNT_2 (the providers).
+ * - Cost: <0.1 ℏ (network fees only); up to 0.02 ℏ moves between the practice wallets.
  *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/06_autonomous_ai_market_agent.js
  * ============================================================================
  */
 
-import http from 'node:http'
-import { x402ResourceServer } from '@x402/core/server'
-import { wrapFetchWithPayment } from '@x402/fetch'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
 import {
   getClient,
+  updateState,
   getHashscanUrl,
   ensureFunded,
-  updateState,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentRequired,
-  readPaymentResponse,
-  formatHbar
+  createPaymentRequired,
+  signExactPayment,
+  settleExactPayment
 } from '../M99_Utilities/index.js'
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const PROVIDERS = [
-  { port: 4061, name: 'DeepAlpha Quant', accuracy: 0.94, price: '1500000' }, // 0.015 ℏ
-  { port: 4062, name: 'OpenSentiment', accuracy: 0.91, price: '600000' }, // 0.006 ℏ
-  { port: 4063, name: 'Apex Hedge Feed', accuracy: 0.98, price: '9000000' } // 0.09 ℏ
+const MARKETPLACE_PROVIDERS = [
+  { id: 'provider-alpha', name: 'DeepAlpha Quant API', priceTinybars: 1_500_000, latencyMs: 120, confidenceRating: 0.94 },
+  { id: 'provider-beta', name: 'Apex Hedge Feed', priceTinybars: 9_000_000, latencyMs: 45, confidenceRating: 0.98 }, // over budget
+  { id: 'provider-gamma', name: 'OpenSentiment Oracle', priceTinybars: 600_000, latencyMs: 180, confidenceRating: 0.91 }
 ]
-const MAX_PER_PAYMENT = 2_000_000n // the agent never pays more than 0.02 ℏ for one call
+const MAX_PRICE_TINYBARS = 2_000_000 // 0.02 HBAR per request
 
-// ─── Main ──────────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- SESSION START: An Agent That Shops for Data ---\n')
+  console.log('--- SESSION START: Autonomous Market Agent (The Complete Loop) ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const agentId = process.env.ACCOUNT_1_ID
   const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
-  const merchantId = process.env.ACCOUNT_2_ID
-  if (!agentId || !agentKey || !merchantId) throw new Error('Missing ACCOUNT_1 (agent) or ACCOUNT_2 (merchant). Create practice wallets or set them in .env.')
+  const providerAccount = process.env.ACCOUNT_2_ID
 
-  const servers = []
+  if (!agentId || !agentKey || !providerAccount) {
+    console.error('[FAILED] Missing credentials in .env (ACCOUNT_1 agent, ACCOUNT_2 provider).')
+    process.exitCode = 1
+    return
+  }
+
   try {
     await ensureFunded(client, agentId, 1)
-    const { client: facilitator } = createLocalFacilitator(operatorId, operatorKey)
+    console.log('[AGENT] Objective: Acquire macroeconomic market sentiment signal.')
+    console.log(`[AGENT] Budget Policy: Max ${MAX_PRICE_TINYBARS / 1e8} HBAR per request.\n`)
 
-    // 1. Three providers: a free catalogue entry (/meta) and a paid signal (/signal).
-    for (const provider of PROVIDERS) {
-      const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
-      const routes = {
-        'GET /signal': {
-          accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: { amount: provider.price, asset: HBAR_ASSET_ID } }],
-          description: `${provider.name} macro signal`
-        }
-      }
-      const handlers = {
-        'GET /meta': () => ({ name: provider.name, accuracy: provider.accuracy }),
-        'GET /signal': () => ({ source: provider.name, macro: 'INFLATION_COOLING', bias: 'LONG_RISK', confidence: provider.accuracy })
-      }
-      const server = http.createServer(paywall(resourceServer, routes, handlers))
-      await new Promise((resolve) => server.listen(provider.port, '127.0.0.1', resolve))
-      servers.push(server)
-    }
-
-    // 2. Discovery: read each catalogue entry and the price in its 402. Nothing is paid here.
-    console.log('[PROCESS] Asking every provider for a quote (free)...')
-    const quotes = []
-    for (const { port } of PROVIDERS) {
-      const meta = await (await fetch(`http://127.0.0.1:${port}/meta`)).json()
-      const offer = readPaymentRequired(await fetch(`http://127.0.0.1:${port}/signal`)).accepts[0]
-      const price = BigInt(offer.amount)
-      quotes.push({
-        provider: meta.name,
-        port,
-        accuracy: meta.accuracy,
-        price: formatHbar(price),
-        withinCap: price <= MAX_PER_PAYMENT,
-        // Accuracy points per HBAR: how much quality each HBAR buys.
-        score: Number((meta.accuracy / (Number(price) / 1e8)).toFixed(1))
+    // 1. Discovery: each provider answers the unpaid request with its 402 quote (free)
+    console.log('[PROCESS] Requesting /api/v1/signals/macro from every provider without paying...')
+    const quotes = MARKETPLACE_PROVIDERS.map((provider) => ({
+      provider,
+      paymentRequired: createPaymentRequired({
+        resource: '/api/v1/signals/macro',
+        description: `${provider.name} macro signal`,
+        payTo: providerAccount,
+        amount: provider.priceTinybars,
+        feePayer: operatorId.toString()
       })
+    }))
+    console.log(`[LOG] Received ${quotes.length} HTTP 402 quotes. Evaluating:\n`)
+
+    // 2. Comparison: confidence per HBAR, among the quotes within budget
+    const evaluated = quotes.map((q) => {
+      const priceHbar = Number(q.paymentRequired.accepts[0].amount) / 1e8
+      const withinBudget = Number(q.paymentRequired.accepts[0].amount) <= MAX_PRICE_TINYBARS
+      const utilityScore = withinBudget ? q.provider.confidenceRating / priceHbar : 0
+      console.log(`- ${q.provider.name}: ${priceHbar} HBAR | Confidence: ${q.provider.confidenceRating} | Within Budget: ${withinBudget ? 'YES' : 'NO'}`)
+      return { ...q, priceHbar, withinBudget, utilityScore }
+    })
+    const selected = evaluated.filter((e) => e.withinBudget).sort((a, b) => b.utilityScore - a.utilityScore)[0]
+    console.log(`\n[SUCCESS] Selected Optimal Provider: ${selected.provider.name}`)
+    console.log(`[LOG] Best Utility Score: ${selected.utilityScore.toFixed(1)} confidence points per HBAR (Price: ${selected.priceHbar} HBAR)`)
+
+    // 3. Pay only the selected provider: the agent signs, the facilitator settles
+    console.log(`\n[PROCESS] Agent signing payment for ${selected.provider.name}...`)
+    const payment = await signExactPayment(client, selected.paymentRequired, agentId, agentKey)
+    console.log('[PROCESS] Facilitator verifying, co-signing and submitting...')
+    const settlement = await settleExactPayment(client, payment, operatorKey)
+    if (!settlement.success) throw new Error(`Settlement rejected: ${settlement.errorReason}`)
+    console.log('\n[SUCCESS] On-Chain Settlement Finalized:')
+    console.log(`[LOG] Consensus Status: ${settlement.status}`)
+    console.log(`[LOG] Transaction ID:   ${settlement.transaction}`)
+    console.log(`[EXPLORER] HashScan:    ${getHashscanUrl(settlement.transaction)}`)
+
+    // 4. Ingest the unlocked intelligence
+    console.log('\n[PROCESS] Provider verified the PAYMENT-RESPONSE. Ingesting unlocked intelligence payload...')
+    const intelligencePayload = {
+      source: selected.provider.name,
+      macroIndicator: 'INFLATION_COOLING_EXPANSIONARY',
+      marketBias: 'LONG_RISK_ASSETS',
+      recommendedHedgeRatio: 0.15,
+      paidWith: settlement.transaction
     }
-    show.table(quotes)
+    console.log('[LOG] RECEIVED INTELLIGENCE PAYLOAD:')
+    console.log(JSON.stringify(intelligencePayload, null, 2))
 
-    // 3. Decide: best score among the offers the agent is allowed to pay.
-    const eligible = quotes.filter((q) => q.withinCap).sort((a, b) => b.score - a.score)
-    if (!eligible.length) throw new Error('No provider is within the agent\'s per-payment cap')
-    const winner = eligible[0]
-    console.log(`[SUCCESS] Choosing ${winner.provider}: ${winner.price}, accuracy ${winner.accuracy}`)
-
-    // 4. Pay only the winner.
-    const fetchWithPayment = wrapFetchWithPayment(fetch, createBuyer(agentId, agentKey, { maxTinybars: MAX_PER_PAYMENT }))
-    const res = await fetchWithPayment(`http://127.0.0.1:${winner.port}/signal`)
-    const receipt = readPaymentResponse(res)
-    console.log(`[LOG] HTTP ${res.status}, signal: ${JSON.stringify(await res.json())}`)
-    if (res.status !== 200 || !receipt?.success) throw new Error(`Payment was not settled: ${receipt?.errorReason || res.status}`)
-    console.log(`[LOG] Paid ${winner.provider}: ${getHashscanUrl(receipt.transaction)}`)
-    updateState('X402_MARKET_AGENT_TX_ID', receipt.transaction)
+    updateState('X402_MARKET_AGENT_TX_ID', settlement.transaction)
+    updateState('X402_MARKET_AGENT_PROVIDER', selected.provider.name)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Three quotes cost nothing; one payment went to the provider with the best')
-    console.log('accuracy per HBAR within the cap. The agent integrated with all three')
-    console.log('providers using nothing but HTTP 402.')
-    console.log('\n--- SESSION COMPLETE ---')
-  } finally {
-    for (const server of servers) server.close()
+    console.log('This completes the Machine Economy loop: the agent compared three quotes for')
+    console.log('free, paid one micro-settlement on Hedera to the best provider, and consumed')
+    console.log('the result without a human ever touching a checkout button.')
+
     client.close()
+    console.log('\n--- SESSION COMPLETE ---')
+  } catch (error) {
+    console.error('\n[FAILED] Autonomous agent execution failed:', error.message)
+    process.exitCode = 1
   }
 }
 

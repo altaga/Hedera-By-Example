@@ -983,8 +983,8 @@ export async function executeInBrowser (
       helpers.AgentCommunicationHandler = vendor[`AgentCommunicationHandler${suffix}`]
       helpers.HybridEncryption = vendor[`HybridEncryption${suffix}`]
     }
-    // M10's x402 helpers (M99_Utilities/x402.js) are bundled with the official @x402 packages.
-    if (/from\s+'@x402\//.test(sourceCode)) {
+    // M10's x402 helpers (M99_Utilities/x402.js) are bundled from the course source.
+    if (/\b(encodeHeader|decodeHeader|signExactPayment|settleExactPayment|verifyExactPayment|createPaymentRequired|getTransactionRecord|X402_NETWORK)\b/.test(sourceCode)) {
       const vendor = await loadVendor(ctx)
       Object.assign(helpers, vendor[`X402Helpers${options.lang === 'es' ? 'Es' : 'En'}`])
     }

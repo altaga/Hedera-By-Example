@@ -1,53 +1,41 @@
-/* eslint-disable camelcase, no-unused-vars, new-cap */
+/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 08: Run Your Own Facilitator
- * [CONCEPT] The facilitator is an HTTP service; the merchant can host it and pay the fees
+ * Lab 08: Two-Party Settlement (Merchant as Facilitator)
+ * [CONCEPT] x402 Between a Buyer and a Seller, With No Third Party
  * ============================================================================
  * [ KEY CONCEPT ]
- * So far the facilitator lived inside the server process. In production it is
- * a separate HTTP service, and the merchant can host it itself.
- *
- * It has three endpoints, defined by the x402 spec:
- *   - GET  /supported  which schemes and networks it handles, and its feePayer
- *   - POST /verify     { paymentPayload, paymentRequirements } → isValid, payer
- *   - POST /settle     same body → success, transaction id
- *
- * A resource server talks to any facilitator through HTTPFacilitatorClient, so
- * switching between a public one (https://x402.org/facilitator) and your own is
- * a change of URL.
- *
- * Here the merchant runs its own facilitator with its own account as fee payer:
- * two parties (buyer and merchant), no third-party dependency. The merchant
- * receives the price and pays the network fee out of it.
- *
+ * Two Topologies, One Protocol: In Labs 01-07 three parties took part: the
+ * buyer, the seller and a facilitator that paid the network fee. The seller can
+ * also run the facilitator itself: it puts its own account in extra.feePayer,
+ * verifies the buyer's signed transfer, co-signs it and submits it. The buyer
+ * does exactly the same as before and still needs no HBAR for gas; the seller
+ * receives the price and pays the fee out of it, then audits the settlement on
+ * the Mirror Node.
+ * *
  * [ LEARNABLE MOMENT ]
- * Hosting the facilitator means holding a funded key that co-signs payments, so
- * it is a real service to secure and monitor. Its checks (fee payer, amounts,
- * payee, signature, balance) are what stop it from paying fees for invalid or
- * malicious transfers. Set X402_FACILITATOR_URL to use a hosted one instead.
+ * The wire format does not change between topologies: the buyer cannot tell, and does not need to know, who hosts the facilitator. Hosting it means holding a funded key that co-signs payments, so its checks (fee payer, amount, payee, signature, expiry) are what protect the seller.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/ai/x402/facilitators
  * - https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md
- * - https://www.npmjs.com/package/@x402/hedera
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 07: Paying for an AI Stream in Batches
+ * - Previous: M10 Lab 07: Live AI Streaming Gateway
  * - Next:     M11 Lab 01: Permissioned RWA Transfers (ERC-3643 Concepts)
  *
- * [ SEQUENCE ]
- * Server -> Facilitator: GET /supported (feePayer = the merchant)
- * Agent -> Server: GET /api/report
- * Server -> Agent: 402 (payTo and feePayer are both the merchant)
- * Agent -> Server: retry with PAYMENT-SIGNATURE
- * Server -> Facilitator: POST /verify, then POST /settle
- * Facilitator -> Hedera: submits, paying the fee from the merchant's account
- * Server -> Agent: 200 + PAYMENT-RESPONSE
+ * [SEQUENCE]
+ * Buyer -> Seller: GET /api/v1/quantum-pricing/derivatives-matrix
+ * Seller -> Buyer: 402 (payTo = feePayer = seller)
+ * Note Buyer: Signs the transfer, as in Lab 02
+ * Buyer -> Seller: Retry with PAYMENT-SIGNATURE
+ * Seller -> Hedera: Verifies, co-signs and submits with its own key
+ * Seller -> Hedera: Audits the settlement on the Mirror Node
+ * Seller -> Buyer: 200 OK + PAYMENT-RESPONSE
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account only tops up the practice wallets if they run low.
- * - Practice wallets: ACCOUNT_1 is the agent, ACCOUNT_2 the merchant and its facilitator.
+ * - Practice wallets: ACCOUNT_1 is the buyer, ACCOUNT_2 the seller (and its own facilitator).
  * - Cost: 0.01 ℏ from ACCOUNT_1 to ACCOUNT_2; ACCOUNT_2 pays about 0.003 ℏ in fees.
  *
  * [ HOW TO RUN ]
@@ -55,138 +43,114 @@
  * ============================================================================
  */
 
-import http from 'node:http'
-import { HTTPFacilitatorClient, x402ResourceServer } from '@x402/core/server'
-import { wrapFetchWithPayment } from '@x402/fetch'
-import { ExactHederaScheme } from '@x402/hedera/exact/server'
-import { HBAR_ASSET_ID } from '@x402/hedera'
 import {
   getClient,
+  createClient,
+  updateState,
   getHashscanUrl,
-  getMirrorNodeBaseUrl,
   ensureFunded,
   waitForMirror,
-  updateState,
-  show,
-  X402_NETWORK,
-  createBuyer,
-  createLocalFacilitator,
-  paywall,
-  readPaymentRequired,
-  readPaymentResponse,
-  formatHbar
+  encodeHeader,
+  decodeHeader,
+  createPaymentRequired,
+  signExactPayment,
+  verifyExactPayment,
+  settleExactPayment,
+  getTransactionRecord
 } from '../M99_Utilities/index.js'
 
-// ─── Config ───────────────────────────────────────────────────────────────────
-const API_PORT = 4028
-const FACILITATOR_PORT = 4029
-const PRICE_TINYBARS = '1000000' // 0.01 ℏ
-
-/** Reads a JSON request body from node:http. */
-const readJson = (req) => new Promise((resolve, reject) => {
-  let raw = ''
-  req.on('data', (chunk) => { raw += chunk })
-  req.on('end', () => { try { resolve(JSON.parse(raw || '{}')) } catch (error) { reject(error) } })
-})
-
-// ─── Main ──────────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- SESSION START: Run Your Own Facilitator ---\n')
+  console.log('====================================================================')
+  console.log('X402 LAB 08: TWO-PARTY SETTLEMENT (MERCHANT AS FACILITATOR)')
+  console.log('====================================================================\n')
   const { client } = getClient()
-  const agentId = process.env.ACCOUNT_1_ID
-  const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
-  const merchantId = process.env.ACCOUNT_2_ID
-  const merchantKey = process.env.ACCOUNT_2_PRIVATE_KEY
-  if (!agentId || !agentKey || !merchantId || !merchantKey) throw new Error('Missing ACCOUNT_1 (agent) or ACCOUNT_2 (merchant). Create practice wallets or set them in .env.')
+  const buyerId = process.env.ACCOUNT_1_ID
+  const buyerKey = process.env.ACCOUNT_1_PRIVATE_KEY
+  const sellerId = process.env.ACCOUNT_2_ID
+  const sellerKey = process.env.ACCOUNT_2_PRIVATE_KEY
 
-  const servers = []
+  if (!buyerId || !buyerKey || !sellerId || !sellerKey) {
+    console.error('[FAILED] Missing credentials in .env (ACCOUNT_1 buyer, ACCOUNT_2 seller).')
+    process.exitCode = 1
+    return
+  }
+
+  // The seller signs and pays with its own account.
+  const sellerClient = createClient(sellerId, sellerKey)
+
   try {
-    // The agent needs the price; the merchant needs HBAR for the fees it now pays.
-    await ensureFunded(client, agentId, 1)
-    await ensureFunded(client, merchantId, 1)
+    // The buyer needs the price; the seller needs HBAR for the fees it now pays.
+    await ensureFunded(client, buyerId, 1)
+    await ensureFunded(client, sellerId, 1)
 
-    // 1. The facilitator service, run by the merchant with its own account as fee payer.
-    let facilitatorUrl = process.env.X402_FACILITATOR_URL
-    if (!facilitatorUrl) {
-      const { facilitator } = createLocalFacilitator(merchantId, merchantKey)
-      const service = http.createServer(async (req, res) => {
-        const reply = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)) }
-        try {
-          if (req.method === 'GET' && req.url === '/supported') return reply(200, facilitator.getSupported())
-          if (req.method === 'POST' && (req.url === '/verify' || req.url === '/settle')) {
-            const { paymentPayload, paymentRequirements } = await readJson(req)
-            console.log(`  [FACILITATOR] POST ${req.url}`)
-            const result = req.url === '/verify'
-              ? await facilitator.verify(paymentPayload, paymentRequirements)
-              : await facilitator.settle(paymentPayload, paymentRequirements)
-            return reply(200, result)
-          }
-          reply(404, { error: 'not_found' })
-        } catch (error) {
-          reply(500, { error: error.message })
-        }
-      })
-      await new Promise((resolve) => service.listen(FACILITATOR_PORT, '127.0.0.1', resolve))
-      servers.push(service)
-      facilitatorUrl = `http://127.0.0.1:${FACILITATOR_PORT}`
-      console.log(`[INFO] Facilitator service on ${facilitatorUrl} (fee payer ${merchantId})`)
-    } else {
-      console.log(`[INFO] Using the hosted facilitator at ${facilitatorUrl}`)
-    }
+    // 1. Seller issues the 402: it is both payTo and feePayer
+    const priceTinybars = 1_000_000 // 0.01 HBAR
+    console.log('[PROCESS] Phase 1: Seller issuing HTTP 402 with itself as fee payer...')
+    const paymentRequiredHeader = encodeHeader(createPaymentRequired({
+      resource: '/api/v1/quantum-pricing/derivatives-matrix',
+      description: 'Derivatives volatility matrix',
+      payTo: sellerId,
+      amount: priceTinybars,
+      feePayer: sellerId
+    }))
+    console.log(`[LOG] PAYMENT-REQUIRED: ${priceTinybars / 1e8} HBAR to ${sellerId}, fee payer ${sellerId}`)
 
-    // 2. The facilitator's public description, exactly what a resource server reads.
-    const supported = await (await fetch(`${facilitatorUrl}/supported`)).json()
-    const kind = supported.kinds.find((k) => k.network === X402_NETWORK && k.scheme === 'exact')
-    if (!kind) throw new Error(`${facilitatorUrl} does not support exact payments on ${X402_NETWORK}`)
-    console.log(`[LOG] GET /supported → exact on ${kind.network}, feePayer ${kind.extra.feePayer}`)
+    // 2. Buyer signs, exactly as with a third-party facilitator
+    console.log('\n[PROCESS] Phase 2: Buyer signing the transfer (no HBAR needed for gas)...')
+    const payment = await signExactPayment(client, decodeHeader(paymentRequiredHeader), buyerId, buyerKey)
+    const paymentSignatureHeader = encodeHeader(payment)
+    console.log(`[LOG] PAYMENT-SIGNATURE: ${paymentSignatureHeader.substring(0, 48)}...`)
 
-    // 3. The resource server reaches the facilitator over HTTP, like any hosted facilitator.
-    const resourceServer = new x402ResourceServer(new HTTPFacilitatorClient({ url: facilitatorUrl })).register(X402_NETWORK, new ExactHederaScheme())
-    const routes = {
-      'GET /api/report': {
-        accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo: merchantId, price: { amount: PRICE_TINYBARS, asset: HBAR_ASSET_ID } }],
-        description: 'Derivatives risk report'
-      }
-    }
-    const api = http.createServer(paywall(resourceServer, routes, { 'GET /api/report': () => ({ symbol: 'HBAR-PERP', volatilityIndex: 42.8 }) }))
-    await new Promise((resolve) => api.listen(API_PORT, '127.0.0.1', resolve))
-    servers.push(api)
-    const url = `http://127.0.0.1:${API_PORT}/api/report`
+    // 3. Seller verifies the payment with its own facilitator checks
+    console.log('\n[PROCESS] Phase 3: Seller verifying the signed transfer...')
+    const check = await verifyExactPayment(decodeHeader(paymentSignatureHeader), sellerId)
+    if (!check.isValid) throw new Error(`Payment rejected: ${check.invalidReason}`)
+    console.log(`[SUCCESS] Valid: fee payer, amount, payee and the signature of ${check.payer} all check out.`)
 
-    const offer = readPaymentRequired(await fetch(url)).accepts[0]
-    console.log(`[LOG] 402 terms: ${formatHbar(offer.amount)} to ${offer.payTo}, fee payer ${offer.extra.feePayer}`)
+    // 4. Seller co-signs as fee payer and submits with its own client
+    console.log('\n[PROCESS] Phase 4: Seller co-signing and submitting to Hedera...')
+    const settlement = await settleExactPayment(sellerClient, decodeHeader(paymentSignatureHeader), sellerKey)
+    if (!settlement.success) throw new Error(`Settlement failed: ${settlement.errorReason}`)
+    console.log(`[SUCCESS] Settled! Status: ${settlement.status}`)
+    console.log(`[LOG] Transaction ID: ${settlement.transaction}`)
+    console.log(`[EXPLORER] HashScan: ${getHashscanUrl(settlement.transaction)}`)
 
-    // 4. The agent pays as usual: it does not care who hosts the facilitator.
-    const fetchWithPayment = wrapFetchWithPayment(fetch, createBuyer(agentId, agentKey, { maxTinybars: 2_000_000 }))
-    const res = await fetchWithPayment(url)
-    const receipt = readPaymentResponse(res)
-    console.log(`[SUCCESS] HTTP ${res.status}, body: ${JSON.stringify(await res.json())}`)
-    if (res.status !== 200 || !receipt?.success) throw new Error(`Payment was not settled: ${receipt?.errorReason || res.status}`)
-    console.log(`[LOG] View on HashScan: ${getHashscanUrl(receipt.transaction)}`)
+    // 5. Seller audits the settlement on the Mirror Node before releasing the data
+    console.log('\n[PROCESS] Phase 5: Seller auditing the transaction on the Mirror Node...')
+    const record = await waitForMirror(() => getTransactionRecord(settlement.transaction))
+    if (!record || record.result !== 'SUCCESS') throw new Error('The settlement is not visible on the Mirror Node yet.')
+    const net = (id) => record.transfers.filter((t) => t.account === id).reduce((sum, t) => sum + t.amount, 0) -
+      (record.staking_reward_transfers || []).filter((t) => t.account === id).reduce((sum, t) => sum + t.amount, 0)
+    console.log(`[LOG] Buyer ${buyerId}:  ${net(buyerId) / 1e8} HBAR`)
+    console.log(`[LOG] Seller ${sellerId}: +${net(sellerId) / 1e8} HBAR (price ${priceTinybars / 1e8} − fee ${record.charged_tx_fee / 1e8})`)
 
-    // 5. The merchant's books for this sale: price received minus the fee it paid as facilitator.
-    const mirrorId = receipt.transaction.replace('@', '-').replace(/\.(\d+)$/, '-$1')
-    const record = await waitForMirror(async () => {
-      const r = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/transactions/${mirrorId}`)
-      return r.ok ? (await r.json()).transactions?.[0] : null
-    })
-    if (record) {
-      const sum = (list, id) => (list || []).filter((t) => t.account === id).reduce((total, t) => total + t.amount, 0)
-      const net = (id) => sum(record.transfers, id) - sum(record.staking_reward_transfers, id)
-      show.table([
-        { party: 'agent', account: agentId, change: formatHbar(net(agentId)) },
-        { party: 'merchant + facilitator', account: merchantId, change: `${formatHbar(net(merchantId))} (price ${formatHbar(PRICE_TINYBARS)} − fee ${formatHbar(record.charged_tx_fee)})` }
-      ])
-    }
-    updateState('X402_SELF_HOSTED_TX_ID', receipt.transaction)
+    console.log('\n[SUCCESS] Seller Unlocks Resource: HTTP 200 OK')
+    console.log(`[LOG] PAYMENT-RESPONSE: ${JSON.stringify({ success: true, network: settlement.network, payer: settlement.payer, transaction: settlement.transaction })}`)
+    console.log('[LOG] Response Body: {"symbol": "HBAR/USD-PERP", "volatilityIndex": 42.8}')
+
+    // 6. Architectural comparison
+    console.log('\n===================================================================')
+    console.log('X402 TOPOLOGIES ON HEDERA')
+    console.log('===================================================================')
+    console.log('Three parties (Labs 01-07):  buyer signs, a facilitator pays the fee and submits')
+    console.log('Two parties (this lab):       buyer signs, the seller pays the fee and submits')
+    console.log('Same for both:                PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE,')
+    console.log('                              the buyer never needs HBAR for gas')
+    console.log('===================================================================')
+
+    updateState('X402_SELF_HOSTED_TX_ID', settlement.transaction)
 
     console.log('\n KEY CONCEPT:')
-    console.log('The facilitator is just an HTTP service with /supported, /verify and /settle.')
-    console.log('Hosting it yourself removes the third party: the merchant co-signs and pays')
-    console.log('the fee. Pointing the same code at a hosted facilitator is a URL change.')
+    console.log('No middleman took part: the seller verified, co-signed and submitted the')
+    console.log('payment itself, and audited it on the Mirror Node. The buyer did nothing')
+    console.log('different, because the x402 messages are the same in both topologies.')
+
     console.log('\n--- SESSION COMPLETE ---')
+  } catch (error) {
+    console.error('\n[FAILED] Two-party settlement failed:', error.message)
+    process.exitCode = 1
   } finally {
-    for (const server of servers) server.close()
+    sellerClient.close()
     client.close()
   }
 }

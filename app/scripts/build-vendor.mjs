@@ -3,8 +3,7 @@
  *   - @hashgraphonline/standards-sdk (HCS-7/10/11/12/14/15-18/20/21/26/27 labs)
  *   - @hiero-did-sdk/core (DID labs)
  *   - the course's AgentCommunicationHandler (M99_Utilities/lib.js, EN and ES)
- *   - the official x402 packages (@x402/core, @x402/hedera, @x402/fetch) and the
- *     course's x402 helpers (M99_Utilities/x402.js), for Module 10
+ *   - the course's x402 helpers (M99_Utilities/x402.js, EN and ES), for Module 10
  * Only the names the labs import are kept. Node built-ins and the Hedera SDK
  * are not bundled: they resolve at run time to the runner's own instances
  * (globalThis.__HBE_NODE), so transactions built by these libraries are the
@@ -22,11 +21,6 @@ const OUT = path.join(ROOT, 'public', 'vendor')
 
 const LIBS = ['@hashgraphonline/standards-sdk', '@hiero-did-sdk/core']
 
-// x402 entry points the M10 labs import. Each one is exported as its own
-// namespace (several define ExactHederaScheme), read back by labModules.ts.
-export const X402_MODULES = ['@x402/core/client', '@x402/core/server', '@x402/core/facilitator', '@x402/core/http',
-  '@x402/hedera', '@x402/hedera/exact/client', '@x402/hedera/exact/server', '@x402/hedera/exact/facilitator', '@x402/fetch']
-export const x402Namespace = (spec) => 'X402_' + spec.replace(/^@x402\//, '').replace(/[^a-z0-9]+/gi, '_')
 
 /** Names each library is imported with, across every lab in both languages. */
 function importedNames () {
@@ -74,12 +68,6 @@ const runtimePlugin = {
       if (RUNTIME[spec] || EMPTY.includes(spec)) return { path: spec, namespace: 'hbe-runtime' }
       return undefined
     })
-    // @x402/hedera only uses the protobuf Key type to read threshold-key accounts; the SDK has it.
-    b.onResolve({ filter: /^@hiero-ledger\/proto$/ }, () => ({ path: 'proto', namespace: 'hbe-proto' }))
-    b.onLoad({ filter: /.*/, namespace: 'hbe-proto' }, () => ({
-      contents: 'const h = globalThis.__HBE_NODE.hedera; module.exports = { proto: h.proto || { Key: { decode () { throw new Error("Threshold-key payers are not supported in the browser runner") } } } }',
-      loader: 'js'
-    }))
     b.onLoad({ filter: /.*/, namespace: 'hbe-runtime' }, (args) => {
       const key = RUNTIME[args.path]
       const contents = key
@@ -104,7 +92,6 @@ export async function buildVendor () {
     const suffix = lang === 'English' ? 'En' : 'Es'
     lines.push(`export { AgentCommunicationHandler as AgentCommunicationHandler${suffix}, HybridEncryption as HybridEncryption${suffix} } from '${lib}'`)
   }
-  for (const spec of X402_MODULES) lines.push(`export * as ${x402Namespace(spec)} from '${spec}'`)
   for (const lang of ['English', 'Spanish']) {
     const helpers = path.join(COURSE, lang, 'M99_Utilities', 'x402.js').replace(/\\/g, '/')
     lines.push(`export * as X402Helpers${lang === 'English' ? 'En' : 'Es'} from '${helpers}'`)
