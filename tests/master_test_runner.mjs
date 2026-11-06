@@ -14,6 +14,7 @@ import { runMcpServerTest } from './05_mcp_server.test.mjs'
 import { runQaFixesTest } from './06_qa_fixes.test.mjs'
 import { runRunOnceTest } from './07_run_once_browser.test.mjs'
 import { runWalkthroughCoverageTest } from './09_walkthrough_coverage.test.mjs'
+import { runHashNavigationTest } from './10_hash_navigation.test.mjs'
 
 const args = process.argv.slice(2)
 const skipE2E = args.includes('--skip-e2e') || process.env.CI === 'true'
@@ -73,6 +74,7 @@ async function main() {
   try {
     await runQaFixesTest()
     await runWalkthroughCoverageTest()
+    await runHashNavigationTest() // skips unless HBE_BASE_URL is set
     results.push({ name: 'Suite 06: QA fixes (title, Run anyway, curve card)', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 06: QA fixes (title, Run anyway, curve card)', status: 'FAIL', error: err.message })
