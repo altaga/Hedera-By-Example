@@ -40,7 +40,7 @@
  * ============================================================================
  */
 
-import { getClient, updateState, encodeHeader, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
+import { getClient, updateState, encodeHeader, decodeHeader, show, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
 
 const create402Challenge = (resourcePath, priceTinybars, payTo, feePayer) => {
   // "PaymentRequired" de x402 v2: el recurso y la lista de formas de pago que acepta el servidor.
@@ -103,6 +103,8 @@ const main = async () => {
     console.log(`[REGISTRO] Pagar a (comercio):   ${accept.payTo}`)
     console.log(`[REGISTRO] Paga la comisión:     ${accept.extra.feePayer} (el facilitador)`)
     console.log(`[REGISTRO] PAYMENT-REQUIRED:     ${challenge.headers['PAYMENT-REQUIRED'].substring(0, 48)}...`)
+    console.log('\n[REGISTRO] La misma cabecera, decodificada (esto es lo que lee el agente):')
+    show.json(decodeHeader(challenge.headers['PAYMENT-REQUIRED']))
 
     // 2. Guardar la cabecera para el Lab 02, tal como la recibiría un agente.
     updateState('X402_PAYMENT_REQUIRED', challenge.headers['PAYMENT-REQUIRED'])

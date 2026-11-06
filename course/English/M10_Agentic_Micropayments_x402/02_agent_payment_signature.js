@@ -40,7 +40,7 @@
  */
 
 import { Hbar, TransactionId, TransferTransaction } from '@hiero-ledger/sdk'
-import { getClient, getState, updateState, parsePrivateKey, decodeHeader, encodeHeader } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, parsePrivateKey, decodeHeader, encodeHeader, show } from '../M99_Utilities/index.js'
 
 const MAX_PRICE_PER_CALL_TINYBARS = 5_000_000 // the agent's own limit: 0.05 HBAR
 
@@ -110,6 +110,9 @@ const main = async () => {
     console.log(`[LOG] Valid for:          ${signedTx.transactionValidDuration} s after signing`)
     console.log(`[LOG] Header Size:        ${paymentSignatureHeader.length} bytes (base64)`)
     console.log(`[LOG] PAYMENT-SIGNATURE:  ${paymentSignatureHeader.substring(0, 48)}...`)
+    console.log('\n[LOG] PAYMENT-SIGNATURE, decoded (the signed transfer is shortened):')
+    const txBase64 = paymentPayload.payload.transaction
+    show.json({ ...paymentPayload, payload: { transaction: `${txBase64.substring(0, 32)}... (${Buffer.from(txBase64, 'base64').length} bytes, signed transfer)` } })
 
     // Persist for Lab 03 (Facilitator Settlement)
     updateState('X402_PAYMENT_SIGNATURE', paymentSignatureHeader)

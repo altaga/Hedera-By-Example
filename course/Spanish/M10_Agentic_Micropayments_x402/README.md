@@ -2,7 +2,74 @@
 ## Comercio Autónomo Máquina a Máquina en Hedera
 
 > [!IMPORTANT]
-> **OBJETIVO:** Convertir a los agentes autónomos de IA de simples herramientas de razonamiento en entidades económicamente soberanas, capaces de descubrir, cotizar y liquidar micropagos on-chain por petición mediante el estándar HTTP 402 en Hedera.
+> **OBJETIVO:** Que un agente de IA pueda pagar por una API en el mismo momento en que la usa, sin cuenta, sin API key y sin tarjeta, usando HTTP 402 y una transferencia en Hedera.
+
+---
+
+## x402 en un Minuto
+
+Piensa en una máquina expendedora:
+
+1. **Pides algo.** El agente llama a una API, por ejemplo `GET /api/v1/alpha-intelligence/market-depth`.
+2. **La máquina te dice el precio.** En vez de los datos, el servidor responde **HTTP 402 Payment Required** con una cabecera que dice cuánto cuesta, en qué moneda y a qué cuenta pagar.
+3. **Entregas un cheque firmado.** El agente arma una transferencia de Hedera por ese monto y **la firma, pero no la envía**. La manda en la cabecera `PAYMENT-SIGNATURE` al repetir la petición.
+4. **El cajero cobra el cheque.** Un tercero, el **facilitador**, revisa el cheque, le agrega su firma y lo envía a Hedera. Él paga la comisión de red, así que el agente no necesita HBAR para gas.
+5. **Recibes lo que pediste.** Cuando Hedera confirma (en segundos), el servidor devuelve **HTTP 200** con los datos y el recibo en la cabecera `PAYMENT-RESPONSE`.
+
+El truco de Hedera está en el paso 3: toda transacción lleva un **id de transacción**, y la cuenta de ese id es la que paga la comisión. El agente usa la cuenta del facilitador en el id, así que su firma solo autoriza mover el precio; la comisión la pone el facilitador.
+
+### Quién es Quién en estos Labs
+
+| Papel | Qué hace | Wallet que lo representa |
+| :--- | :--- | :--- |
+| **Agente** (comprador) | Pide el recurso, decide si el precio le conviene y firma el pago | `ACCOUNT_1` (wallet de práctica) |
+| **Comercio** (vendedor) | Pone el precio y recibe el dinero | `ACCOUNT_2` (wallet de práctica) |
+| **Facilitador** | Verifica el pago, lo firma como pagador de la comisión y lo envía | Tu cuenta de testnet (el operador) |
+| **Hedera** | Ordena, ejecuta y confirma la transferencia | Testnet |
+
+En el Lab 08 el comercio hace también de facilitador: solo hay dos papeles.
+
+### Así se ve la Cabecera `PAYMENT-REQUIRED` (decodificada)
+
+Las tres cabeceras son JSON codificado en Base64. Esto es, un poco recortado, lo que el servidor del Lab 01 le dice al agente:
+
+```json
+{
+  "x402Version": 2,
+  "resource": { "url": "/api/v1/alpha-intelligence/market-depth" },
+  "accepts": [{
+    "scheme": "exact",
+    "network": "hedera:testnet",
+    "amount": "1000000",
+    "asset": "0.0.0",
+    "payTo": "0.0.<ACCOUNT_2>",
+    "maxTimeoutSeconds": 120,
+    "extra": { "feePayer": "0.0.<tu cuenta>" }
+  }]
+}
+```
+
+- `amount` va en la unidad más pequeña del activo: 1,000,000 tinybars = 0.01 HBAR.
+- `asset: "0.0.0"` significa HBAR. Con un token HTS (Lab 04) aquí va el id del token.
+- `extra.feePayer` es la cuenta del facilitador: la que irá en el id de transacción y pagará la comisión.
+
+### Recorrido de los Labs 01–03
+
+| Lab | Papel que juegas | Qué ocurre | ¿Toca Hedera? |
+| :--- | :--- | :--- | :--- |
+| **01** | Servidor | Arma la respuesta 402 y la guarda en `state.json` | No, es gratis |
+| **02** | Agente | Lee el 402, revisa su presupuesto, arma la transferencia y la firma | No, solo firma |
+| **03** | Facilitador | Revisa el pago, lo firma, lo envía, lo confirma en el Mirror Node y comprueba que repetirlo falla | Sí, el pago es real |
+
+Los Labs 04–08 repiten ese mismo ciclo en escenarios más completos, usando las funciones de `M99_Utilities/x402.js` que hacen lo mismo que escribiste a mano en los Labs 01–03.
+
+### Glosario Rápido
+
+- **HTTP 402**: código de estado "Payment Required". Existía desde hace décadas sin un uso estándar; x402 se lo da.
+- **Facilitador**: el servicio que convierte la firma del agente en un pago real. Puede ser de un tercero o del propio comercio (Lab 08).
+- **feePayer**: la cuenta que paga la comisión de red. En Hedera es la cuenta del id de transacción.
+- **Esquema `exact`**: pagar exactamente el monto pedido, ni más ni menos.
+- **Tinybar**: la unidad mínima de HBAR (1 HBAR = 100,000,000 tinybars).
 
 ---
 

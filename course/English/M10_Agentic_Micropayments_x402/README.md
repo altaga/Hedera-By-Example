@@ -2,7 +2,74 @@
 ## Machine-to-Machine Autonomous Commerce on Hedera
 
 > [!IMPORTANT]
-> **OBJECTIVE:** Transform autonomous AI agents from mere analytical reasoning tools into economically sovereign entities capable of discovering, pricing, and settling on-chain micropayments per request via the HTTP 402 standard on Hedera.
+> **OBJECTIVE:** Let an AI agent pay for an API at the moment it uses it, with no account, no API key and no card, using HTTP 402 and a Hedera transfer.
+
+---
+
+## x402 in One Minute
+
+Think of a vending machine:
+
+1. **You ask for something.** The agent calls an API, for example `GET /api/v1/alpha-intelligence/market-depth`.
+2. **The machine shows the price.** Instead of the data, the server answers **HTTP 402 Payment Required** with a header that says how much it costs, in which currency, and which account to pay.
+3. **You hand over a signed cheque.** The agent builds a Hedera transfer for that amount and **signs it, but does not submit it**. It sends it in the `PAYMENT-SIGNATURE` header when it repeats the request.
+4. **The cashier cashes the cheque.** A third party, the **facilitator**, checks the cheque, adds its own signature and submits it to Hedera. It pays the network fee, so the agent needs no HBAR for gas.
+5. **You get what you asked for.** Once Hedera confirms (in seconds), the server returns **HTTP 200** with the data and the receipt in the `PAYMENT-RESPONSE` header.
+
+The Hedera trick is in step 3: every transaction carries a **transaction id**, and the account in that id pays the fee. The agent puts the facilitator's account in the id, so its signature only authorizes moving the price; the facilitator covers the fee.
+
+### Who Is Who in These Labs
+
+| Role | What it does | Wallet that plays it |
+| :--- | :--- | :--- |
+| **Agent** (buyer) | Requests the resource, decides whether the price is acceptable and signs the payment | `ACCOUNT_1` (practice wallet) |
+| **Merchant** (seller) | Sets the price and receives the money | `ACCOUNT_2` (practice wallet) |
+| **Facilitator** | Verifies the payment, signs it as fee payer and submits it | Your testnet account (the operator) |
+| **Hedera** | Orders, executes and confirms the transfer | Testnet |
+
+In Lab 08 the merchant is also the facilitator: there are only two roles.
+
+### What the `PAYMENT-REQUIRED` Header Looks Like (decoded)
+
+All three headers are Base64-encoded JSON. This is, slightly trimmed, what the Lab 01 server tells the agent:
+
+```json
+{
+  "x402Version": 2,
+  "resource": { "url": "/api/v1/alpha-intelligence/market-depth" },
+  "accepts": [{
+    "scheme": "exact",
+    "network": "hedera:testnet",
+    "amount": "1000000",
+    "asset": "0.0.0",
+    "payTo": "0.0.<ACCOUNT_2>",
+    "maxTimeoutSeconds": 120,
+    "extra": { "feePayer": "0.0.<your account>" }
+  }]
+}
+```
+
+- `amount` is in the asset's smallest unit: 1,000,000 tinybars = 0.01 HBAR.
+- `asset: "0.0.0"` means HBAR. With an HTS token (Lab 04) this holds the token id.
+- `extra.feePayer` is the facilitator's account: it goes in the transaction id and pays the fee.
+
+### Labs 01–03 Walkthrough
+
+| Lab | Role you play | What happens | Touches Hedera? |
+| :--- | :--- | :--- | :--- |
+| **01** | Server | Builds the 402 response and saves it in `state.json` | No, it is free |
+| **02** | Agent | Reads the 402, checks its budget, builds the transfer and signs it | No, it only signs |
+| **03** | Facilitator | Checks the payment, signs it, submits it, confirms it on the Mirror Node and shows that replaying it fails | Yes, the payment is real |
+
+Labs 04–08 repeat that same cycle in fuller scenarios, using the `M99_Utilities/x402.js` functions that do what you wrote by hand in Labs 01–03.
+
+### Quick Glossary
+
+- **HTTP 402**: the "Payment Required" status code. It existed for decades without a standard use; x402 gives it one.
+- **Facilitator**: the service that turns the agent's signature into a real payment. It can be a third party or the merchant itself (Lab 08).
+- **feePayer**: the account that pays the network fee. On Hedera it is the account in the transaction id.
+- **`exact` scheme**: pay exactly the requested amount, no more, no less.
+- **Tinybar**: the smallest unit of HBAR (1 HBAR = 100,000,000 tinybars).
 
 ---
 

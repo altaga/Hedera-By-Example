@@ -40,7 +40,7 @@
  */
 
 import { Hbar, TransactionId, TransferTransaction } from '@hiero-ledger/sdk'
-import { getClient, getState, updateState, parsePrivateKey, decodeHeader, encodeHeader } from '../M99_Utilities/index.js'
+import { getClient, getState, updateState, parsePrivateKey, decodeHeader, encodeHeader, show } from '../M99_Utilities/index.js'
 
 const MAX_PRICE_PER_CALL_TINYBARS = 5_000_000 // límite propio del agente: 0.05 HBAR
 
@@ -110,6 +110,9 @@ const main = async () => {
     console.log(`[REGISTRO] Válida por:         ${signedTx.transactionValidDuration} s después de firmarse`)
     console.log(`[REGISTRO] Tamaño cabecera:    ${paymentSignatureHeader.length} bytes (base64)`)
     console.log(`[REGISTRO] PAYMENT-SIGNATURE:  ${paymentSignatureHeader.substring(0, 48)}...`)
+    console.log('\n[REGISTRO] PAYMENT-SIGNATURE, decodificada (la transferencia firmada va recortada):')
+    const txBase64 = paymentPayload.payload.transaction
+    show.json({ ...paymentPayload, payload: { transaction: `${txBase64.substring(0, 32)}... (${Buffer.from(txBase64, 'base64').length} bytes, transferencia firmada)` } })
 
     // Guardar para el Lab 03 (Liquidación del Facilitador)
     updateState('X402_PAYMENT_SIGNATURE', paymentSignatureHeader)
