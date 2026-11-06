@@ -1,0 +1,2 @@
+# Keep LF line endings everywhere (labs, docs, generated content).
+* text=auto eol=lf
