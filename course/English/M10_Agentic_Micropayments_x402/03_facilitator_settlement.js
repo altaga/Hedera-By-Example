@@ -1,163 +1,117 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/* eslint-disable camelcase, no-unused-vars */
 /**
  * ============================================================================
  * Lab 03: Zero-Gas Facilitator Settlement
- * [CONCEPT] Sponsored On-Chain Execution & Settlement Proofs
+ * [CONCEPT] Explicit /verify + /settle + PAYMENT-RESPONSE
  * ============================================================================
  * [ KEY CONCEPT ]
- * Fee Decoupling: In traditional Web3, the caller must always hold native gas
- * tokens to execute any action. Hedera's x402 facilitator pattern decouples
- * the network fee from the payment asset: the Facilitator acts as the operator
- * submitting the transaction, paying the fractions of a cent in HBAR network fees,
- * while executing the authorized asset transfer from the agent to the merchant.
- * *
+ * The resource server does not broadcast the transfer. It asks the facilitator
+ * to POST /verify (read-only) and POST /settle (feePayer co-signs and submits).
+ * The client then sees PAYMENT-RESPONSE with the Hedera transaction id.
+ *
  * [ LEARNABLE MOMENT ]
- * A settlement facilitator sponsors network execution fees and aggregates micro-transactions, ensuring that end-user agents experience zero-gas micro-payments without managing complex transaction fee balances.
+ * "Facilitator" is not your operator key executing TransferTransaction locally.
+ * It is https://x402.org/facilitator (or another host that advertises hedera:testnet).
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://docs.hedera.com/solutions/ai/x402/facilitators
+ * - https://docs.hedera.com/solutions/ai/x402/how-it-works
  *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 02: Agent Payment Signature
  * - Next:     M10 Lab 04: HTS USDC Micropayments
  *
  * [SEQUENCE]
- * Agent -> Server: Request with PAYMENT-SIGNATURE
- * Server -> Facilitator: Verify signature and single-use nonce
- * Facilitator -> Hedera: TransferTransaction 0.5 ℏ
- * Hedera -> Facilitator: Receipt SUCCESS
- * Server -> Agent: 200 OK + PAYMENT-RESPONSE (txId) + data
+ * Agent -> Server: unpaid GET
+ * Server -> Agent: 402 PAYMENT-REQUIRED
+ * Agent -> Server: PAYMENT-SIGNATURE
+ * Server -> Facilitator: POST /verify then POST /settle
+ * Facilitator -> Hedera: submit TransferTransaction as feePayer
+ * Server -> Agent: 200 + PAYMENT-RESPONSE
  *
  * [SIMULATED]
- * Payer and payee are the same account, so the settlement is a real transfer to yourself.
+ * Local Express stands in for the merchant API; settlement is real on testnet.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Run first: M10 Lab 02 (this lab reads what it saved).
- * - Cost: <0.1 ℏ (network fees only).
+ * - OPERATOR_ID pays; MERCHANT_ID receives; facilitator sponsors gas.
+ * - Cost: ~0.001 HBAR to the merchant.
  *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/03_facilitator_settlement.js
  * ============================================================================
  */
 
+import { x402Client } from '@x402/core/client'
+import { ExactHederaScheme as ClientScheme } from '@x402/hedera/exact/client'
+import { createClientHederaSigner } from '@x402/hedera'
 import {
-  TransferTransaction,
-  Hbar,
-  PublicKey,
-  AccountId
-} from '@hiero-ledger/sdk'
-import { getClient, getState, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
-
-// In-memory nonce replay registry for the facilitator
-const processedNonces = new Set()
-
-const verifyAgentSignature = (signedProof) => {
-  const { payload, signature, publicKey } = signedProof
-  const serialized = JSON.stringify(payload)
-  const messageBytes = Buffer.from(serialized, 'utf8')
-  const signatureBytes = Buffer.from(signature, 'hex')
-
-  const pubKey = PublicKey.fromString(publicKey)
-  return pubKey.verify(messageBytes, signatureBytes)
-}
+  createPaidExpressApp,
+  listenLocal,
+  createFacilitatorClient,
+  decodePaymentRequiredHeader,
+  getOperatorContext,
+  LAB_PRICE_TINYBARS,
+  HBAR_ASSET_ID,
+  X402_FACILITATOR_URL,
+  fetchFacilitatorFeePayer
+} from '../M99_Utilities/index.js'
+import { updateState } from '../M99_Utilities/storage.js'
+import { parsePrivateKey } from '../M99_Utilities/config.js'
 
 const main = async () => {
-  console.log('--- SESSION START: Zero-Gas Facilitator Settlement ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- SESSION START: Official Facilitator /verify + /settle ---\n')
+  const { operatorId, operatorKey, merchantId } = getOperatorContext()
+  const { feePayer } = await fetchFacilitatorFeePayer()
+  console.log(`[INFO] Facilitator ${X402_FACILITATOR_URL} feePayer=${feePayer}`)
 
+  const pathName = '/api/v1/settlement-demo'
+  const { app, facilitatorClient } = createPaidExpressApp({
+    route: `GET ${pathName}`,
+    payTo: merchantId,
+    price: { amount: LAB_PRICE_TINYBARS.settle, asset: HBAR_ASSET_ID },
+    description: 'Visible facilitator settlement',
+    handler: (_req, res) => res.json({ settledResource: true, quote: 'FINALITY_OK' })
+  })
+  const { server, baseUrl } = await listenLocal(app)
   try {
-    // 1. Ingest base64 PAYMENT-SIGNATURE from Lab 02
-    const headerValue = getState('X402_PAYMENT_HEADER')
-    if (!headerValue) {
-      throw new Error('Missing X402_PAYMENT_HEADER in state.json. Run Lab 02 first.')
+    const unpaid = await fetch(`${baseUrl}${pathName}`)
+    const paymentRequired = decodePaymentRequiredHeader(unpaid)
+    const accept = paymentRequired.accepts[0]
+    console.log('[PROCESS] Building official payment payload via x402Client...')
+    const client = new x402Client()
+      .register('hedera:*', new ClientScheme(createClientHederaSigner(operatorId.toString(), parsePrivateKey(operatorKey), { network: 'hedera:testnet' })))
+      .setSpendControls(false)
+    const payload = await client.createPaymentPayload(paymentRequired)
+
+    console.log('[PROCESS] Facilitator POST /verify ...')
+    const verified = await facilitatorClient.verify(payload, accept)
+    console.log('[SUCCESS] verify:', JSON.stringify(verified))
+    if (!verified?.isValid) throw new Error(`verify failed: ${verified?.invalidReason || 'unknown'}`)
+
+    console.log('[PROCESS] Facilitator POST /settle ...')
+    const settled = await facilitatorClient.settle(payload, accept)
+    console.log('[SUCCESS] settle:', JSON.stringify(settled))
+    console.log('[INFO] @x402/express paymentMiddleware runs this same /verify + /settle pair internally,')
+    console.log('[INFO] then returns HTTP 200 with a Base64 PAYMENT-RESPONSE header to the client.')
+
+    // Show the wire shape the middleware would emit as PAYMENT-RESPONSE
+    const paymentResponse = {
+      success: !!settled?.success || settled?.success === undefined,
+      payer: settled.payer,
+      transaction: settled.transaction,
+      network: settled.network || 'hedera:testnet'
     }
+    console.log('[LOG] PAYMENT-RESPONSE shape:', JSON.stringify(paymentResponse))
+    if (!settled?.transaction) throw new Error('settle did not return a transaction id')
 
-    console.log('[PROCESS] Facilitator decoding PAYMENT-SIGNATURE header...')
-    const signedProof = JSON.parse(Buffer.from(headerValue, 'base64').toString('utf8'))
-    const { payload } = signedProof
-
-    console.log(`[LOG] Payer Account:    ${payload.payer}`)
-    console.log(`[LOG] Payee Account:    ${payload.payee}`)
-    console.log(`[LOG] Transfer Amount:  ${payload.amount} ${payload.asset}`)
-    console.log(`[LOG] Target Nonce:     ${payload.nonce}`)
-
-    // 2. Cryptographic and Replay Verification
-    console.log('\n[PROCESS] Verifying cryptographic signature and single-use nonce...')
-    const isValidSignature = verifyAgentSignature(signedProof)
-    if (!isValidSignature) {
-      throw new Error('CRYPTOGRAPHIC REJECTION: Payment signature does not match payer public key.')
-    }
-    console.log('[SUCCESS] Cryptographic signature valid.')
-
-    if (processedNonces.has(payload.nonce)) {
-      throw new Error(`REPLAY REJECTION: Nonce ${payload.nonce} has already been settled.`)
-    }
-    if (Date.now() > Number(payload.expiresAt)) {
-      throw new Error('TIMEOUT REJECTION: Challenge signature has expired.')
-    }
-    processedNonces.add(payload.nonce)
-    console.log('[SUCCESS] Anti-replay checks passed. Nonce registered as spent.')
-
-    // 3. Facilitator executes on-chain settlement on Hedera
-    console.log('\n[PROCESS] Facilitator broadcasting settlement transaction to Hedera...')
-    console.log('[INFO] Facilitator sponsors network gas; agent only provides authorized balance.')
-
-    const amountHbar = Number(payload.amount)
-    const payerId = AccountId.fromString(payload.payer)
-    const payeeId = AccountId.fromString(payload.payee)
-
-    // Execute transfer: payer -> payee
-    // (In local testnet simulation where operator is both, we execute an atomic transfer)
-    const transferTx = await new TransferTransaction()
-      .addHbarTransfer(payerId, new Hbar(-amountHbar))
-      .addHbarTransfer(payeeId, new Hbar(amountHbar))
-      .setTransactionMemo(`x402:exact:${payload.nonce.substring(0, 8)}`)
-      .freezeWith(client)
-
-    const txResponse = await transferTx.execute(client)
-    const receipt = await txResponse.getReceipt(client)
-    const hashscanUrl = getHashscanUrl(txResponse)
-
-    console.log('\n[SUCCESS] Transaction Settled On-Chain:')
-    console.log(`[LOG] Consensus Status: ${receipt.status.toString()}`)
-    console.log(`[LOG] Transaction ID:  ${txResponse.transactionId.toString()}`)
-    console.log(`[EXPLORER] HashScan:    ${hashscanUrl}`)
-
-    // 4. Server issues HTTP 200 OK with PAYMENT-RESPONSE header
-    const paymentResponseHeader = JSON.stringify({
-      settled: true,
-      protocol: 'x402',
-      txId: txResponse.transactionId.toString(),
-      hashscan: hashscanUrl,
-      timestamp: Date.now()
-    })
-
-    console.log('\n[SUCCESS] Server Unlocks Resource: HTTP 200 OK')
-    console.log(`[LOG] PAYMENT-RESPONSE: ${paymentResponseHeader}`)
-    console.log('[LOG] Response Body:   {"alpha_signal": "BULLISH_CONVERGENCE", "confidence": 0.942, "depth": 14000}')
-
-    // Persist for tracking
-    updateState('X402_SETTLED_TX_ID', txResponse.transactionId.toString())
-    updateState('X402_SETTLED_HASHSCAN', hashscanUrl)
-
-    console.log('\n KEY CONCEPT:')
-    console.log('The settlement proof is indisputable. The merchant serves the data because')
-    console.log('the transaction has already reached finality on Hedera (~2.5 seconds).')
-    console.log('No chargebacks, no credit card processing fees, no unpaid invoices.')
-
+    updateState('X402_SETTLED_TX_ID', settled.transaction || '')
+    updateState('X402_SETTLED_PAYER', settled.payer || '')
     console.log('\n--- SESSION COMPLETE ---')
-  } catch (error) {
-    console.error('\n[ERROR] Facilitator settlement failed:', error.message)
-    process.exit(1)
+  } finally {
+    server.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main()
-    .then(() => process.exit())
-    .catch((error) => {
-      console.error('[FAILED] Execution Error:', error.message)
-      process.exit(1)
-    })
+  main().then(() => process.exit(0)).catch((e) => { console.error('[FAILED]', e.message); process.exit(1) })
 }

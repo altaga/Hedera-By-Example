@@ -14,6 +14,7 @@ import {
 import { abortActiveRun, executeInBrowser, labUsesPracticeAccounts, type TerminalLogLine } from '../lib/hederaBrowser'
 import { runBlock } from '../lib/labPrep'
 import { canRunLab, documentTitle } from '../lib/uiState.mjs'
+import { recordPageView } from '../lib/pageAnalytics'
 import { loadDone, markDone } from '../lib/progress'
 import {
   EMPTY_STORE, activeBrowserWallet, fetchBalances, loadWallets, practiceFromStore, saveWallets, type WalletStore
@@ -59,6 +60,8 @@ export default function HederaByExample () {
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
   const [done, setDone] = useState<string[]>([])
   const [allowLowBalance, setAllowLowBalance] = useState(false)
+  // Wait until hash prefs hydrate before counting pageviews.
+  const [analyticsReady, setAnalyticsReady] = useState(false)
   // Files the learner chose to use instead of the course assets, per lab.
   const [fileOverrides, setFileOverrides] = useState<Record<string, Record<string, File>>>({})
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -85,6 +88,7 @@ export default function HederaByExample () {
     setTheme(prefs.theme || 'dark')
     setDone(loadDone())
     setRoute(routeFromHash())
+    setAnalyticsReady(true)
 
     const stored = loadWallets()
     setWalletStore(stored)
@@ -106,6 +110,15 @@ export default function HederaByExample () {
     document.documentElement.setAttribute('data-theme', theme)
     document.documentElement.setAttribute('lang', lang)
   }, [theme, lang])
+
+  // Anonymous pageviews (web only): single capture source for hash-route navigation.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !analyticsReady) return
+    const labSlug = route.view === 'lab' ? route.slug : null
+    const hash = window.location.hash || ''
+    const path = hash ? `/${hash}` : (window.location.pathname || '/')
+    recordPageView({ path, lang, labSlug, view: route.view })
+  }, [route, lang, analyticsReady])
 
   const savePrefs = (next: { lang?: Lang; theme?: Theme }) => {
     const merged = { lang, theme, ...next }
