@@ -17,7 +17,7 @@ In this module, we transition from single-ledger dApp engineering into cross-cha
 | **03** | **Block Streams & TSS** | Ingesting unified block streams ratified by Threshold Signature Schemes (HIP-1056). | Aggregating validator signatures shrinks proof verification from O(N) to O(1). |
 | **04** | **Block Node Lake** | Dynamic on-chain discovery (HIP-1137) and querying distributed block storage (HIP-1081). | Decoupling execution from long-term history prevents state bloat on consensus nodes. |
 | **05** | **Intent Settlement Engine** | Full autonomous cross-chain liquidity routing and gasless settlement simulation. | Chain abstraction is achieved when users state intents and solvers compete on Hedera. |
-| **06** | **Block Stream Protobuf Parser** | Binary Protobuf stream ingestion and fine-grained state change indexing from 2026 Block Nodes. | Eliminates smart contract re-execution; state mutations are emitted directly at memory speed. |
+| **06** | **Block Stream Protobuf Encoder/Parser** | Loads the official hiero-consensus-node block-stream protos and encodes/decodes BlockItems built from a real testnet transaction. | Always parse with the official schema for the network's HAPI version. |
 
 ---
 

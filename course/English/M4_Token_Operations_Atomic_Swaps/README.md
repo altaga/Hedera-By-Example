@@ -18,7 +18,7 @@
 | **06** | **Native Token Airdrops** | Frictionless token distribution with pending claim queues (HIP-904). |
 | **07** | **Airdrop Cancel & Token Reject** | Clawing back unclaimed pending airdrops and rejecting spam tokens fee-free (HIP-904). |
 | **08** | **Triangular L1 Clearing** | In-memory Coincidence of Wants (CoW) matching engine settling 3-way ring trades atomically. |
-| **09** | **Atomic Flash Settlement** | Zero-capital flash loans, spread arbitrage, and fee repayment bundled in a single L1 transaction. |
+| **09** | **Atomic Flash Settlement** | Four real testnet accounts settle borrow, buy, sell and repay (HBAR + an HTS token) in one multi-signed TransferTransaction; an unfunded attempt is rejected as a whole. |
 
 ---
 

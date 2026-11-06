@@ -18,7 +18,7 @@
 | **06** | **USDC Interaction (ERC-20)** | Using standard stablecoins within the EVM. |
 | **07** | **USDC Association** | Automating token association from within a contract. |
 | **08** | **Advanced HTS Precompiles** | Minting, burning, and transferring native HTS tokens inside Solidity (0x167). |
-| **09** | **Zero-Knowledge Privacy Pool** | Cryptographic commitment nullifiers and confidential EVM settlement at sub-cent gas. |
+| **09** | **Zero-Knowledge Privacy Pool** | Real Groth16 circuit (circom + snarkjs), on-chain Poseidon Merkle tree and verifier: deposit, private withdrawal, forged-proof and double-spend rejection. |
 | **10** | **System Contracts (0x168 & 0x16a)** | Native exchange rate oracle precompile (0x168) and Hedera Account Service signature authorization (0x16a). |
 | **11** | **Solidity Autonomous Cron (0x16b)** | Self-scheduling smart contracts calling the 0x16b HSS system precompile without off-chain keepers. |
 

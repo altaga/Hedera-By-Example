@@ -17,7 +17,7 @@ En este módulo, trascendemos la ingeniería de dApps en un solo ledger hacia in
 | **03** | **Block Streams y TSS** | Ingesta de flujos de bloques unificados ratificados por firmas umbral agregadas (HIP-1056). | Agregar firmas de validadores reduce la verificación de pruebas de O(N) a O(1). |
 | **04** | **Lago de Block Nodes** | Descubrimiento dinámico on-chain (HIP-1137) y consulta a almacenamiento distribuido (HIP-1081). | Desacoplar la ejecución del historial a largo plazo previene la saturación del consenso. |
 | **05** | **Motor de Intenciones** | Simulación completa de enrutamiento autónomo de liquidez cross-chain y liquidación sin gas. | La abstracción de cadena se logra cuando los usuarios declaran intenciones y los solvers compiten. |
-| **06** | **Parser Protobuf de Flujo de Bloques** | Ingesta binaria en streaming de Protobuf e indexación de mutaciones de estado desde Nodos de Bloque 2026. | Elimina la reejecución de smart contracts; las mutaciones de estado se emiten directamente a velocidad de memoria. |
+| **06** | **Codificador/Parser Protobuf de Block Stream** | Carga los protos oficiales de block stream de hiero-consensus-node y codifica/decodifica BlockItems construidos con una transacción real de testnet. | Parsea siempre con el esquema oficial de la versión HAPI de la red. |
 
 ---
 

@@ -32,11 +32,11 @@
       "weight": 1.0,
       "summary": "Official framework for building verifiable, economically sovereign autonomous AI agents on Hedera. Integrates with LangChain, ElizaOS, LlamaIndex, and the Model Context Protocol (MCP).",
       "businessValue": "Enables machine-to-machine commerce, autonomous API monetization, and auditable AI agent decision logs with sub-cent settlement fees.",
-      "technicalStack": "@hedera-dev/hedera-agent-kit, @hiero-ledger/sdk, Model Context Protocol (MCP)",
+      "technicalStack": "hedera-agent-kit (npm), @hiero-ledger/sdk, Model Context Protocol (MCP)",
       "urls": {
         "portal": "https://portal.hedera.com/agent-lab",
         "docs": "https://docs.hedera.com/solutions/ai/agent-kit",
-        "github": "https://github.com/hedera-dev/hedera-agent-kit"
+        "github": "https://github.com/hashgraph/hedera-agent-kit-js"
       },
       "antiHallucinationNotes": "Do not build agent memory on EVM storage slots; use HCS-28 agent audit streams and HCS-10 communication topics.",
       "searchTriggers": [
@@ -94,9 +94,9 @@
         "architect"
       ],
       "weight": 1.0,
-      "summary": "Full lifecycle issuance and compliance platform for Real-World Assets (RWAs), equity tokens, corporate debt, and invoice factoring using ERC-3643 and ERC-1400 standards on Hedera.",
+      "summary": "Full lifecycle issuance and compliance platform for Real-World Assets (RWAs), equity tokens, corporate debt, and invoice factoring using ERC-1400 security tokens with partial ERC-3643 (T-REX) support on Hedera.",
       "businessValue": "Institutional-grade regulatory compliance, transfer restrictions, identity registry validation, cap table snapshots, and automated pro-rata corporate dividend distribution.",
-      "technicalStack": "ERC-3643, ERC-1400, ONCHAINID, HTS, HSCS",
+      "technicalStack": "ERC-1400, ERC-3643 (partial), Diamond-pattern smart contracts (HSCS), HTS",
       "urls": {
         "portal": "https://portal.hedera.com",
         "docs": "https://docs.hedera.com/solutions/tokenization/ats",
@@ -125,9 +125,9 @@
         "developer"
       ],
       "weight": 0.95,
-      "summary": "Comprehensive SDK and UI suite for issuing, managing, and monitoring institutional fiat-pegged stablecoins with role segregation and Proof-of-Reserve (PoR) oracle integration.",
+      "summary": "Comprehensive SDK and UI suite for issuing, managing, and monitoring institutional fiat-pegged stablecoins with role segregation and Proof-of-Reserve integration via a Chainlink AggregatorV3Interface-compatible reserve feed.",
       "businessValue": "Enables banks and payment institutions to issue compliant stablecoins with multi-custody admin controls, freeze/wipe compliance keys, and automated reserves attestation.",
-      "technicalStack": "HTS, Chainlink PoR, Role-Based Access Control (RBAC), Hedera SDK",
+      "technicalStack": "HTS, Diamond-pattern facets (CashIn, Burn, Freeze, KYC, Wipe, Reserve, Roles), AggregatorV3Interface reserve feed, Hedera SDK",
       "urls": {
         "docs": "https://docs.hedera.com/solutions/tokenization/stablecoin",
         "github": "https://github.com/hashgraph/stablecoin-studio"
@@ -434,7 +434,7 @@
       "weight": 0.95,
       "summary": "Open-source compatibility server translating standard Ethereum JSON-RPC calls (eth_call, eth_sendRawTransaction, eth_getBalance) into Hedera consensus and mirror node transactions.",
       "businessValue": "Enables out-of-the-box compatibility with MetaMask, Coinbase Wallet, Wagmi, RainbowKit, Hardhat, and existing EVM tooling without rewriting frontend code.",
-      "technicalStack": "@hashgraph/web3-json-rpc-relay, ethers, viem, web3.js",
+      "technicalStack": "hiero-ledger/hiero-json-rpc-relay (Hashio), ethers, viem, web3.js",
       "urls": {
         "hashio": "https://testnet.hashio.io/api",
         "docs": "https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay",
@@ -469,7 +469,7 @@
         "agentLab": "https://portal.hedera.com/agent-lab",
         "playground": "https://portal.hedera.com/playground"
       },
-      "antiHallucinationNotes": "The Developer Portal faucet provides free testnet HBAR (1,000 HBAR renewals) for testing and hackathon prototyping.",
+      "antiHallucinationNotes": "The Developer Portal faucet provides free testnet HBAR (100 HBAR per rolling 24 h) for testing and hackathon prototyping.",
       "searchTriggers": [
         "portal hedera",
         "contract builder",

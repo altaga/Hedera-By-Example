@@ -20,8 +20,8 @@ In this module, we transition Hedera Consensus Service from a simple message que
 | **06** | **Encrypted Swarm Chat** | Confidential P2P OTC agent negotiations using ECDH and AES-256-GCM over HCS. | Consensus gives you fair ordering; client-side cryptography gives you military-grade confidentiality. |
 | **07** | **HCS-15..18 Botanical Swarm** | Petal sub-accounts (HCS-15), peer discovery (HCS-18), multi-sig Floras (HCS-16) & state hashes (HCS-17). | Separating communication, transaction scheduling, and state checkpoints lets swarms scale securely. |
 | **08** | **HCS-12 HashLinks & HCS-21** | Actionable on-chain UI micro-apps (HCS-12) backed by SHA-256 verified adapters (HCS-21). | Combining on-chain UI assemblies with package digests prevents both phishing and supply-chain attacks. |
-| **09** | **HIP-1334 Encrypted Mailbox** | Private asymmetric P2P encrypted messaging on HCS discovered via account memo. | Military-grade AES-256-GCM confidentiality over public aBFT consensus without centralized servers. |
-| **10** | **Hashnet MCP Server & HOL Guard** | Model Context Protocol JSON-RPC server with in-line operational firewall protecting AI agents. | Active deterministic firewall limits prevent prompt-injection attacks and rogue treasury drains. |
+| **09** | **HIP-1334 Private Message Box** | Spec-compliant setup (memos, signed HIP-1334_PUBLIC_KEY first message), proof verification and ECIES messages on HCS. | The signed first message stops front-running of the public key. |
+| **10** | **Hedera MCP Server with a Policy Guard** | Real stdio MCP server (@modelcontextprotocol/sdk) exposing Hedera tools behind a custom policy guard. | Keys and policy live in the server; the AI only sees tools. |
 
 ---
 

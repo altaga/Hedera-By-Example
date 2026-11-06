@@ -12,11 +12,11 @@ En este módulo dejamos atrás los coleccionables digitales básicos para entrar
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
-| **01** | **Registro de Identidad ERC-3643** | Implementación de reglas de transferencia permisionadas basadas en ONCHAINID y calificación de inversores. |
-| **02** | **Bonos de Deuda ERC-1400** | Emisión de deuda corporativa con particiones por tramos y distribución on-chain de cupones. |
-| **03** | **Roles en Stablecoin Studio** | Gobernanza de stablecoins institucionales con separación de roles (Cash-In, Burn, Wipe, Freeze, KYC). |
+| **01** | **Transferencias RWA Permisionadas (Conceptos ERC-3643)** | Registro de identidad más claves KYC de HTS: la propia red rechaza transferencias a inversores no aprobados. |
+| **02** | **Bonos por Tramos en HTS (Conceptos ERC-1400)** | Tokens de tramo senior y mezzanine, snapshot de tenedores en Mirror Node y un pago atómico de cupones en HBAR. |
+| **03** | **Roles de Stablecoin en HTS** | Claves separadas de Cash-In, Freeze, Wipe y KYC aplicadas por la red (conceptos de Stablecoin Studio, HTS nativo). |
 | **04** | **Oráculo Proof-of-Reserve** | Verificación de colateral fuera de cadena y activación de disyuntores de emisión automática. |
-| **05** | **Factoraje de Facturas RWA** | Tokenización de cuentas por cobrar para liquidez secundaria fraccionada y liquidación de pagos. |
+| **05** | **Factoraje de Facturas RWA** | Cuentas de PyME, inversor y deudor liquidan anticipo y vencimiento como entrega contra pago atómica. |
 | **06** | **Pool Tokens Multi-Activo** | Agrupación atómica de Fondos Monetarios, Bonos y REITs en una canasta institucional estilo Archax. |
 | **07** | **Puente de Integración ERP Institucional** | Parseo de facturas electrónicas XML, anclaje legal en HCS y emisión de deuda fraccionada en HTS. |
 | **08** | **ATS Acciones Corporativas y Pagos Masivos** | Snapshots de cap table en consenso, cálculos prorrateados de dividendos/cupones y liquidación atómica por lotes. |
@@ -47,7 +47,7 @@ En este módulo dejamos atrás los coleccionables digitales básicos para entrar
 flowchart TD
     subgraph ISSUER_GOVERNANCE [GOBERNANZA DEL EMISOR Y COMPLIANCE]
         ATS[<b>ASSET TOKENIZATION STUDIO</b><br/>Reglas de Emisión y Tramos]
-        IDR[<b>REGISTRO DE IDENTIDAD (ERC-3643)</b><br/>ONCHAINID y Lista Blanca de Países]
+        IDR[<b>REGISTRO DE IDENTIDAD (ERC-3643)</b><br/>Clave KYC de HTS y Lista Blanca de Países]
     end
 
     subgraph TRANSFER_VALIDATION [FILTRO DE RESTRICCIÓN DE TRANSFERENCIA]

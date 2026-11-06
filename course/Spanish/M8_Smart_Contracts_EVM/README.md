@@ -18,7 +18,7 @@
 | **06** | **Interacción USDC (ERC-20)**| Uso de stablecoins estándar dentro de la EVM. |
 | **07** | **Asociación USDC** | Automatización de la asociación de tokens desde el contrato. |
 | **08** | **Precompilados HTS Avanzados** | Emisión, quema y transferencia de tokens HTS desde Solidity (0x167). |
-| **09** | **Fondo de Privacidad Zero-Knowledge** | Nulificadores criptográficos de compromiso y liquidación confidencial EVM con gas sub-centavo. |
+| **09** | **Fondo de Privacidad Zero-Knowledge** | Circuito Groth16 real (circom + snarkjs), árbol Merkle Poseidon y verificador on-chain: depósito, retiro privado y rechazo de pruebas falsas y doble gasto. |
 | **10** | **Contratos del Sistema (0x168 y 0x16a)** | Precompilación nativa de oráculo de tasa de cambio (0x168) y autorización de firmas HAS (0x16a). |
 | **11** | **Cron Autónomo en Solidity (0x16b)** | Contratos inteligentes que se autoprograman llamando a la precompilación HSS 0x16b sin keepers externos. |
 

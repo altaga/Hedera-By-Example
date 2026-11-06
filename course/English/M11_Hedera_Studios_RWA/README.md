@@ -12,11 +12,11 @@ In this module, we transition from toy digital collectibles to institutional cap
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
-| **01** | **ERC-3643 Identity Registry** | Implementing permissioned transfer rules based on ONCHAINID and investor qualification. |
-| **02** | **ERC-1400 Security Bonds** | Issuing corporate debt with tranche partitions and automated on-chain coupon distributions. |
-| **03** | **Stablecoin Studio Roles** | Governing institutional stablecoins with segregated roles (Cash-In, Burn, Wipe, Freeze, KYC). |
+| **01** | **Permissioned RWA Transfers (ERC-3643 Concepts)** | Identity-registry checks plus HTS KYC keys: the network itself rejects transfers to non-approved investors. |
+| **02** | **Tranche Bonds on HTS (ERC-1400 Concepts)** | Senior and mezzanine tranche tokens, Mirror Node holder snapshot and one atomic HBAR coupon payout. |
+| **03** | **Stablecoin Roles on HTS** | Separate Cash-In, Freeze, Wipe and KYC keys enforced by the network (Stablecoin Studio concepts, native HTS). |
 | **04** | **Proof-of-Reserve Oracle** | Verifying off-chain collateral and activating automated minting circuit breakers. |
-| **05** | **RWA Invoice Factoring** | Tokenizing small-business receivables for fractional secondary liquidity and payout. |
+| **05** | **RWA Invoice Factoring** | SME, investor and debtor accounts settle advance and maturity as atomic delivery-versus-payment. |
 | **06** | **Multi-Asset Pool Tokens** | Bundling Treasury MMFs, Corporate Bonds, and REITs into an Archax-style atomic basket token. |
 | **07** | **Institutional ERP Integration Bridge** | Electronic invoice XML parsing, HCS legal timestamp anchoring, and compliant fractional HTS debt minting. |
 | **08** | **ATS Corporate Actions & Mass Payout** | Cap table consensus snapshotting, prorated dividend/coupon calculations, and atomic multi-party batch settlement. |
@@ -47,7 +47,7 @@ In this module, we transition from toy digital collectibles to institutional cap
 flowchart TD
     subgraph ISSUER_GOVERNANCE [ASSET ISSUER & COMPLIANCE]
         ATS[<b>ASSET TOKENIZATION STUDIO</b><br/>Asset Rules & Tranches]
-        IDR[<b>IDENTITY REGISTRY (ERC-3643)</b><br/>ONCHAINID & Country Allowlist]
+        IDR[<b>IDENTITY REGISTRY (ERC-3643)</b><br/>HTS KYC key & Country Allowlist]
     end
 
     subgraph TRANSFER_VALIDATION [TRANSFER RESTRICTION GATE]

@@ -18,7 +18,7 @@
 | **06** | **Airdrops Nativos (HIP-904)** | Distribución masiva de tokens con colas de reclamo pendientes. |
 | **07** | **Cancelación y Rechazo (HIP-904)** | Recuperación de airdrops no reclamados y rechazo de tokens spam sin comisiones. |
 | **08** | **Liquidación Triangular L1** | Motor CoW en memoria liquidando Ring Trades de 3 operadores de forma atómica en Capa 1. |
-| **09** | **Liquidación Atómica Flash** | Préstamos flash sin capital, arbitraje de diferenciales y reembolso de comisiones en una transacción L1. |
+| **09** | **Liquidación Atómica Flash** | Cuatro cuentas reales de testnet liquidan préstamo, compra, venta y reembolso (HBAR + token HTS) en una TransferTransaction multifirma; un intento sin fondos se rechaza completo. |
 
 ---
 

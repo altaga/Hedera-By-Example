@@ -20,8 +20,8 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 | **06** | **Chat Encriptado de Enjambre** | Negociación confidencial OTC entre agentes mediante ECDH y AES-256-GCM sobre HCS. | El consenso brinda ordenamiento justo; la criptografía en cliente brinda privacidad de grado militar. |
 | **07** | **Enjambre Botánico HCS-15..18** | Sub-cuentas Pétalo (HCS-15), descubrimiento (HCS-18), Floras multi-firma (HCS-16) y State Hash (HCS-17). | Separar charla, transacciones y estado en una Tríada HCS-16 permite escalar enjambres con custodia segura. |
 | **08** | **HashLinks HCS-12 y HCS-21** | Micro-apps interactivas on-chain (HCS-12) respaldadas por adaptadores con huella SHA-256 (HCS-21). | Unir ensamblajes UI on-chain con huellas SHA-256 elimina el phishing visual y el envenenamiento npm. |
-| **09** | **Buzón Cifrado HIP-1334** | Mensajería confidencial P2P asimétrica sobre HCS descubierta mediante el memo de cuenta. | Confidencialidad militar AES-256-GCM sobre consenso público aBFT sin servidores centralizados. |
-| **10** | **Servidor MCP y HOL Guard** | Servidor Model Context Protocol con cortafuegos operativo en línea que protege agentes de IA. | Límites deterministas activos impiden ataques de inyección de prompts y drenaje indebido de tesorería. |
+| **09** | **Buzón de Mensajes Privado HIP-1334** | Configuración según la spec (memos, primer mensaje HIP-1334_PUBLIC_KEY firmado), verificación de la prueba y mensajes ECIES en HCS. | El primer mensaje firmado evita el front-running de la clave pública. |
+| **10** | **Servidor MCP de Hedera con Guardián de Políticas** | Servidor MCP stdio real (@modelcontextprotocol/sdk) que expone herramientas de Hedera tras un guardián de políticas propio. | La clave y la política viven en el servidor; la IA solo ve herramientas. |
 
 ---
 
