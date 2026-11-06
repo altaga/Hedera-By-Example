@@ -111,10 +111,11 @@ const main = async () => {
 
     // 3. Mintear y asociar
     console.log('[PROCESO] Minteando Serial #1 y asociando al inversor...')
-    await (await new TokenMintTransaction()
+    const mintTx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([Buffer.from('Asset #1')])
-      .execute(client)).getReceipt(client)
+      .execute(client)
+    await mintTx.getReceipt(client)
 
     const associate2Tx = await new TokenAssociateTransaction()
       .setAccountId(account2Id)

@@ -31,7 +31,9 @@
  * ============================================================================
  */
 
-import { AccountId, MirrorNodeAccountBalanceQuery } from '@hiero-ledger/sdk'
+import {
+  MirrorNodeAccountBalanceQuery, AccountId
+} from '@hiero-ledger/sdk'
 import { getClient, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 const main = async () => {

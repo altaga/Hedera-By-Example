@@ -35,7 +35,7 @@ import {
   PrivateKey,
   FileCreateTransaction, FileAppendTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 

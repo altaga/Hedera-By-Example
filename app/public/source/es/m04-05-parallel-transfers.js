@@ -57,7 +57,8 @@ const runParallelBatch = async (client, operatorId, targetId, batchSize) => {
 
   // Esperar el consenso de todos los recibos en paralelo
   await Promise.all(tasks)
-  const duration = Date.now() - startTime
+  const endTime = Date.now()
+  const duration = endTime - startTime
 
   console.log(`[ÉXITO] Lote completado en ${duration}ms. Promedio: ${Math.round(duration / batchSize)}ms por TX.`)
   return {
@@ -100,7 +101,7 @@ const main = async () => {
 
     benchmarkResults.forEach(res => {
       const sizeStr = res.batchSize.toString().padEnd(11)
-      const totalStr = res.totalTime.toString().padEnd(17)
+      const totalStr = res.totalTime.toString().padEnd(16)
       const avgStr = res.avgTimePerTx.toString()
       console.log(`${sizeStr}| ${totalStr}| ${avgStr}`)
     })

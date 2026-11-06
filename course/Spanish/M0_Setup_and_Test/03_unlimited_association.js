@@ -31,6 +31,7 @@
  */
 
 import {
+  AccountId,
   AccountUpdateTransaction
 } from '@hiero-ledger/sdk'
 import { getClient } from '../M99_Utilities/index.js'
@@ -39,7 +40,8 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Configuración de Recepción Automática ---\n')
 
   // 1. Abrir un cliente pagado por la cuenta operadora
-  const { client, operatorId: opId } = getClient()
+  const { client, operatorId } = getClient()
+  const opId = AccountId.fromString(operatorId)
 
   try {
     // 2. La cuenta a la que aplica esta actualización

@@ -54,7 +54,7 @@ const main = async () => {
     const newPublicKey = newPrivateKey.publicKey
 
     // Crea una cuenta: su llave la controla; el saldo inicial lo pone quien paga.
-    const tx = await new AccountCreateTransaction()
+    const tx = new AccountCreateTransaction()
       .setKeyWithoutAlias(newPublicKey)
       .setInitialBalance(Hbar.from(1)) // Saldo inicial para operaciones de prueba
       .setMaxAutomaticTokenAssociations(-1)

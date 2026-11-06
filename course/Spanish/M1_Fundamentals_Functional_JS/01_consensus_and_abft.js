@@ -61,7 +61,7 @@ const createEvent = (creator, transaction, selfParent, otherParent) => {
 /**
  * Simula una sesión de Gossip multi-nodo.
  */
-const main = async () => {
+const gossipSimulation = async () => {
   console.log('--- INICIO DEL LABORATORIO: Simulación de Gossip about Gossip ---\n')
 
   console.log('[PROCESO] Inicializando Nodos A y B con eventos Genesis independientes...')
@@ -103,7 +103,7 @@ const main = async () => {
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main()
+  gossipSimulation()
     .then(() => process.exit())
     .catch((error) => {
       console.error('[FALLO] Error de ejecución:', error.message)
@@ -111,6 +111,4 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
     })
 }
 
-export {
-  createEvent, generateEventHash
-}
+export { createEvent, generateEventHash }

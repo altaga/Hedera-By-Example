@@ -31,7 +31,7 @@
  * ============================================================================
  */
 
-import { TopicId, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { TopicMessageSubmitTransaction, TopicId } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
 
 /**

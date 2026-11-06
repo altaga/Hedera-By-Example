@@ -96,6 +96,7 @@ const main = async () => {
       : '\n[INFO] Sincronizando OPERATOR_ID en el archivo .env...')
     updateEnv('OPERATOR_ID', inputId)
     console.log(inBrowser ? '[ÉXITO] OPERATOR_ID guardado para los labs siguientes.' : '[ÉXITO] OPERATOR_ID guardado en .env.')
+    console.log('Listo para el Lab 03.')
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('El objeto `Client` es tu portal al ledger. Al llamar a')

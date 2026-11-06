@@ -136,7 +136,6 @@ const main = async () => {
 
     // 6. Persistir resultado reconstruido como binario
     const resultBuffer = Buffer.from(fullBase64, 'base64')
-    const __dirname = path.dirname(import.meta.filename)
     const dateStr = new Date().toISOString().split('T')[0]
     const outputPath = path.resolve(__dirname, `./output/reconstructed_${dateStr}.png`)
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })

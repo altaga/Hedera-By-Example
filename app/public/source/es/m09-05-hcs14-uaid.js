@@ -62,7 +62,7 @@ const main = async () => {
         version: '1.0.0',
         protocol: 'hcs-10',
         nativeId: `hedera:testnet:${agentId}`, // Anclaje nativo a la red
-        skills: [1]
+        skills: [0]
       },
       { uid: 'auditor-sentinel-v1' }
     )

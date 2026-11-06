@@ -73,7 +73,6 @@ const main = async () => {
       console.error(`\n[FALLO] El proceso de asociación falló: ${error.message}`)
       process.exitCode = 1
     }
-    client.close()
   }
 }
 

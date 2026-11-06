@@ -45,7 +45,7 @@ const publishLargePayload = async (client, topicId, message) => {
   console.log(`[PROCESO] Fragmentando payload (${message.length} bytes)...`)
 
   // El SDK maneja la fragmentación (chunking) automáticamente
-  const transaction = await new TopicMessageSubmitTransaction()
+  const transaction = new TopicMessageSubmitTransaction()
     .setTopicId(topicId)
     .setMessage(message)
     .freezeWith(client)
@@ -118,7 +118,7 @@ const main = async () => {
     setTimeout(() => {
       console.log('\n--- SESIÓN COMPLETADA ---')
       process.exit()
-    }, 12000)
+    }, 10000)
   } catch (error) {
     console.error('\n[FALLO] El flujo de mensajería fragmentada falló:', error.message)
     process.exitCode = 1

@@ -100,7 +100,6 @@ const main = async () => {
   } catch (error) {
     console.error('\n[FALLO] El anclaje HCS-1 falló:', error.message)
     process.exitCode = 1
-    client.close()
   }
 }
 

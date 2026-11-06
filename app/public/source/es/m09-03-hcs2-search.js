@@ -94,7 +94,7 @@ const main = async () => {
     console.log('público y descubre los agentes activos automáticamente.')
     console.log('\n--- SESIÓN COMPLETADA ---')
     process.exit()
-  }, 5000)
+  }, 6000)
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {

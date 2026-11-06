@@ -32,7 +32,9 @@
  */
 
 import {
-  FileContentsQuery, NftId, TokenId, TokenNftInfoQuery
+  FileContentsQuery, NftId,
+  TokenId,
+  TokenNftInfoQuery
 } from '@hiero-ledger/sdk'
 import { getClient, getState } from '../M99_Utilities/index.js'
 

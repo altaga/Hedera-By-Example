@@ -32,7 +32,7 @@
  * ============================================================================
  */
 
-import { AccountId, AccountInfoQuery, AccountUpdateTransaction, PrivateKey } from '@hiero-ledger/sdk'
+import { AccountId, PrivateKey, AccountUpdateTransaction, AccountInfoQuery } from '@hiero-ledger/sdk'
 import { getClient } from '../M99_Utilities/index.js'
 
 const main = async () => {

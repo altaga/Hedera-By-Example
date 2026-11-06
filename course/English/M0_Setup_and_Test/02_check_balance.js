@@ -27,7 +27,6 @@
  */
 
 import {
-  AccountId, PrivateKey,
   MirrorNodeAccountBalanceQuery
 } from '@hiero-ledger/sdk'
 import { updateEnv, loadEnv, createClient, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
@@ -45,8 +44,7 @@ const main = async () => {
   const evmAddress = process.env.OPERATOR_EVM_ADDRESS
 
   if (!operatorKey) {
-    console.error('[FAILED] Missing OPERATOR_PRIVATE_KEY in .env.')
-    console.error('[INFO] Did you run 01_generate_wallet.js first?')
+    console.error('[FAILED] Missing OPERATOR_PRIVATE_KEY in .env. Run Lab 01 first.')
     process.exit(1)
   }
 
@@ -77,18 +75,14 @@ const main = async () => {
     const inputId = accountId
     console.log(`[PROCESS] Verifying Account ${inputId} on Hedera Testnet...`)
 
-    const operatorId = AccountId.fromString(inputId)
-    client.setOperator(operatorId, PrivateKey.fromString(operatorKey))
-
     // Verify balance via Mirror Node Query
-    console.log('[PROCESS] Executing Mirror Node Query for HBAR balance...')
     const query = new MirrorNodeAccountBalanceQuery()
-      .setAccountId(operatorId)
+      .setAccountId(inputId)
 
     const balance = await query.execute(client)
 
     console.log('\n[SUCCESS] Network connection confirmed.')
-    console.log(`[LOG] Account ID: ${operatorId.toString()}`)
+    console.log(`[LOG] Account ID: ${inputId}`)
     console.log(`[LOG] Balance:    ${balance.hbars.toString()}`)
 
     // Remember the verified ID for the labs that follow (.env in Node, browser state here).
@@ -96,7 +90,7 @@ const main = async () => {
     console.log(inBrowser
       ? '\n[INFO] Saving OPERATOR_ID for the labs that follow (this browser does not write a .env file)...'
       : '\n[INFO] Synchronizing .env file...')
-    updateEnv('OPERATOR_ID', operatorId.toString())
+    updateEnv('OPERATOR_ID', inputId)
 
     console.log(inBrowser ? '[SUCCESS] OPERATOR_ID saved for the next labs.' : '[SUCCESS] OPERATOR_ID successfully saved.')
     console.log('Ready for Lab 03.')

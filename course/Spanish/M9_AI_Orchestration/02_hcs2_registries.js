@@ -114,7 +114,6 @@ const main = async () => {
   } catch (error) {
     console.error('\n[FALLO] El registro HCS-2 falló:', error.message)
     process.exitCode = 1
-    client.close()
   }
 }
 
