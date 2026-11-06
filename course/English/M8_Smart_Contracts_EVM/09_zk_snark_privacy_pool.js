@@ -45,7 +45,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (deploys 3 contracts, creates 2 throwaway accounts).
- * - Cost: ~20-30 ℏ the first time (3 contract deployments + gas); ~3 ℏ when contracts are reused.
+ * - Cost: ~45-50 ℏ the first time (3 contract deployments at ~15 ℏ each on testnet + 2 ℏ to a depositor); ~3 ℏ when contracts are reused.
  * - Node only: proof generation uses snarkjs and the circuit files in zk/.
  *
  * [ HOW TO RUN ]

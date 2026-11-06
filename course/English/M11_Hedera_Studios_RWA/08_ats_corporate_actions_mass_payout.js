@@ -44,7 +44,7 @@
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Investors: 2 throwaway accounts (0.05 ℏ each) funded by the operator.
- * - Cost: ~0.12 ℏ + fees (token creation ~1 USD).
+ * - Cost: ~16 ℏ (token creation ~15 ℏ on testnet) + ~0.1 ℏ to holders + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/08_ats_corporate_actions_mass_payout.js

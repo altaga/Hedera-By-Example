@@ -30,7 +30,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates a token and 1 throwaway holder).
- * - Cost: ~15 ℏ (token creation, about 1 USD) + 0.05 ℏ for the holder + fees.
+ * - Cost: ~17 ℏ (token creation ~15 ℏ on testnet) + 0.05 ℏ for the holder + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/03_stablecoin_studio_role_management.js

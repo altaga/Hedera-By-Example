@@ -29,7 +29,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: ~60 ℏ the first time (it creates 4 tokens, about 4 USD); ~3 ℏ when you run it again (it reuses what it created).
+ * - Cost: ~60 ℏ the first time (4 tokens at ~15 ℏ each on testnet); ~3 ℏ when it reuses them.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/06_rwa_multi_asset_pool_tokens.js

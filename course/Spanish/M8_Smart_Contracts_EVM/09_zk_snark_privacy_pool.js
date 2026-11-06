@@ -45,7 +45,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (despliega 3 contratos y crea 2 cuentas desechables).
- * - Costo: ~20-30 ℏ la primera vez (3 despliegues + gas); ~3 ℏ si se reutilizan los contratos.
+ * - Costo: ~45-50 ℏ la primera vez (3 despliegues de contrato a ~15 ℏ cada uno en testnet + 2 ℏ a un depositante); ~3 ℏ cuando se reutilizan.
  * - Solo Node: la prueba usa snarkjs y los archivos del circuito en zk/.
  *
  * [ CÓMO EJECUTAR ]

@@ -42,7 +42,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates 3 throwaway accounts: SME, investor, debtor).
- * - Cost: ~0.7 ℏ funded to throwaway accounts + ~2 ℏ in fees.
+ * - Cost: ~18 ℏ (the operator pays the ~15 ℏ token creation) + ~0.7 ℏ to throwaway accounts + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
@@ -100,7 +100,7 @@ const main = async () => {
     await (await new TopicMessageSubmitTransaction().setTopicId(topicId)
       .setMessage(JSON.stringify({ type: 'invoice-anchor', invoiceId: INVOICE.invoiceId, sha256: invoiceHash }))
       .execute(smeClient)).getReceipt(smeClient)
-    const tokenId = (await (await new TokenCreateTransaction()
+    const tokenId = (await (await (await new TokenCreateTransaction()
       .setTokenName(`Invoice ${INVOICE.invoiceId}`)
       .setTokenSymbol('INV-8842')
       .setTokenType(TokenType.FungibleCommon)
@@ -111,7 +111,9 @@ const main = async () => {
       .setTreasuryAccountId(sme.accountId)
       .setAdminKey(sme.privateKey.publicKey)
       .setTokenMemo(`rwa:invoice:${INVOICE.invoiceId}:sha256:${invoiceHash.slice(0, 16)}`)
-      .execute(smeClient)).getReceipt(smeClient)).tokenId
+      // The operator pays the ~15 ℏ creation fee; the SME still signs as treasury and admin
+      .freezeWith(client)
+      .sign(sme.privateKey)).execute(client)).getReceipt(client)).tokenId
     console.log(`[SUCCESS] Invoice anchored on topic ${topicId}; token ${tokenId} (treasury: SME)`)
 
     // 4. Advance: atomic delivery-versus-payment

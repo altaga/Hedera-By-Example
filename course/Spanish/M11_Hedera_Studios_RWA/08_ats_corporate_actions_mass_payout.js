@@ -44,7 +44,7 @@
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Inversores: 2 cuentas desechables (0.05 ℏ cada una) financiadas por el operador.
- * - Costo: ~0.12 ℏ + comisiones (creación del token ~1 USD).
+ * - Costo: ~16 ℏ (crear el token ~15 ℏ en testnet) + ~0.1 ℏ para titulares + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/08_ats_corporate_actions_mass_payout.js

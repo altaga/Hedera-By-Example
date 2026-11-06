@@ -41,7 +41,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (crea 3 cuentas de inversor desechables y 2 tokens).
- * - Costo: ~0.3 ℏ para cuentas desechables + ~0.05 ℏ en cupones + ~3 ℏ en comisiones.
+ * - Costo: ~18 ℏ (crear el token ~15 ℏ en testnet) + ~0.3 ℏ para cuentas desechables + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/02_security_token_erc1400_bonds.js
