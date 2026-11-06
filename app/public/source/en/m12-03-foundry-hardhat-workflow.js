@@ -32,7 +32,7 @@
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (funds an ECDSA alias signer if the operator has none).
  * - Tools: Foundry (`curl -L https://foundry.paradigm.xyz | bash && foundryup`) — optional.
- * - Cost: ~1-3 ℏ (contract deployment gas through the relay).
+ * - Cost: ~5 ℏ (relay contract deployment gas; the signer is topped up to 5 ℏ).
  *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/03_foundry_hardhat_workflow.js

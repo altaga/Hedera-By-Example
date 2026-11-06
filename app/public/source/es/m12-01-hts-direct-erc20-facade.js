@@ -27,7 +27,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: ~30 ℏ la primera vez (crea un token y un contrato, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Costo: ~30 ℏ la primera vez (token + contrato a ~15 ℏ cada uno en testnet); <1 ℏ cuando los reutiliza.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/01_hts_direct_erc20_facade.js

@@ -45,7 +45,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (deploys 3 contracts, creates 2 throwaway accounts).
- * - Cost: ~45-50 ℏ the first time (3 contract deployments at ~15 ℏ each on testnet + 2 ℏ to a depositor); ~3 ℏ when contracts are reused.
+ * - Cost: ~50-60 ℏ the first time (3 contract deployments: ~15 ℏ create + ~6 ℏ per 4 KB bytecode append each, plus 2 ℏ to a depositor); ~3 ℏ when contracts are reused. A gas retry re-uploads the bytecode, so the hasher starts at 3M gas.
  * - Node only: proof generation uses snarkjs and the circuit files in zk/.
  *
  * [ HOW TO RUN ]
@@ -157,7 +157,7 @@ const main = async () => {
     const compiled = compileContracts()
     const poolIface = new ethers.Interface(compiled.ZkPrivacyPool.abi)
     const hasherCode = poseidonContract.createCode(2).replace(/^0x/, '')
-    const hasherId = await reuseContract('ZK_POSEIDON_HASHER_ID', hasherCode, () => deploy(client, hasherCode, null, 300_000))
+    const hasherId = await reuseContract('ZK_POSEIDON_HASHER_ID', hasherCode, () => deploy(client, hasherCode, null, 3_000_000))
     const verifierCode = compiled.Groth16Verifier.evm.bytecode.object
     const verifierId = await reuseContract('ZK_GROTH16_VERIFIER_ID', verifierCode, () => deploy(client, verifierCode, null, 1_500_000))
     const poolCode = compiled.ZkPrivacyPool.evm.bytecode.object

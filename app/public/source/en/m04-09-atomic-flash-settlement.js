@@ -38,7 +38,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates 4 throwaway accounts and a FLASH token).
- * - Cost: ~0.6 ℏ funded to throwaway accounts + fees.
+ * - Cost: ~17 ℏ (FLASH token creation ~15 ℏ on testnet) + ~0.6 ℏ to throwaway accounts + fees.
  *
  * [ HOW TO RUN ]
  * node English/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js

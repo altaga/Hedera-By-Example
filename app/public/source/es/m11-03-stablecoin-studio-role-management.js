@@ -30,7 +30,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (crea un token y 1 tenedor desechable).
- * - Costo: ~15 ℏ (creación del token, cerca de 1 USD) + 0.05 ℏ para el tenedor + comisiones.
+ * - Costo: ~17 ℏ (crear el token ~15 ℏ en testnet) + 0.05 ℏ para el titular + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/03_stablecoin_studio_role_management.js

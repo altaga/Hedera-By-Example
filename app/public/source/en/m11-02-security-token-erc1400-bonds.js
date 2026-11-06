@@ -42,7 +42,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates 3 throwaway investor accounts and 2 tokens).
- * - Cost: ~0.3 ℏ to throwaway accounts + ~0.05 ℏ coupons + ~3 ℏ fees.
+ * - Cost: ~18 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ to throwaway accounts + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/02_security_token_erc1400_bonds.js

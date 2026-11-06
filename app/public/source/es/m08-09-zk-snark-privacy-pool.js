@@ -45,7 +45,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (despliega 3 contratos y crea 2 cuentas desechables).
- * - Costo: ~20-30 ℏ la primera vez (3 despliegues + gas); ~3 ℏ si se reutilizan los contratos.
+ * - Costo: ~50-60 ℏ la primera vez (3 despliegues: ~15 ℏ de creación + ~6 ℏ por cada bloque de 4 KB de bytecode, más 2 ℏ a un depositante); ~3 ℏ cuando se reutilizan. Un reintento de gas vuelve a subir el bytecode, por eso el hasher empieza con 3M de gas.
  * - Solo Node: la prueba usa snarkjs y los archivos del circuito en zk/.
  *
  * [ CÓMO EJECUTAR ]
@@ -157,7 +157,7 @@ const main = async () => {
     const compiled = compileContracts()
     const poolIface = new ethers.Interface(compiled.ZkPrivacyPool.abi)
     const hasherCode = poseidonContract.createCode(2).replace(/^0x/, '')
-    const hasherId = await reuseContract('ZK_POSEIDON_HASHER_ID', hasherCode, () => deploy(client, hasherCode, null, 300_000))
+    const hasherId = await reuseContract('ZK_POSEIDON_HASHER_ID', hasherCode, () => deploy(client, hasherCode, null, 3_000_000))
     const verifierCode = compiled.Groth16Verifier.evm.bytecode.object
     const verifierId = await reuseContract('ZK_GROTH16_VERIFIER_ID', verifierCode, () => deploy(client, verifierCode, null, 1_500_000))
     const poolCode = compiled.ZkPrivacyPool.evm.bytecode.object

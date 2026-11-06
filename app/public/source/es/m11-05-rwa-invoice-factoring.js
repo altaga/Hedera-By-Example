@@ -42,7 +42,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (crea 3 cuentas desechables: PyME, inversor, deudor).
- * - Costo: ~0.7 ℏ para cuentas desechables + ~2 ℏ en comisiones.
+ * - Costo: ~18 ℏ (el operador paga la creación del token, ~15 ℏ) + ~0.7 ℏ para cuentas desechables + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
@@ -100,7 +100,7 @@ const main = async () => {
     await (await new TopicMessageSubmitTransaction().setTopicId(topicId)
       .setMessage(JSON.stringify({ type: 'invoice-anchor', invoiceId: INVOICE.invoiceId, sha256: invoiceHash }))
       .execute(smeClient)).getReceipt(smeClient)
-    const tokenId = (await (await new TokenCreateTransaction()
+    const tokenId = (await (await (await new TokenCreateTransaction()
       .setTokenName(`Invoice ${INVOICE.invoiceId}`)
       .setTokenSymbol('INV-8842')
       .setTokenType(TokenType.FungibleCommon)
@@ -111,7 +111,9 @@ const main = async () => {
       .setTreasuryAccountId(sme.accountId)
       .setAdminKey(sme.privateKey.publicKey)
       .setTokenMemo(`rwa:invoice:${INVOICE.invoiceId}:sha256:${invoiceHash.slice(0, 16)}`)
-      .execute(smeClient)).getReceipt(smeClient)).tokenId
+      // El operador paga la tarifa de creación (~15 ℏ); la PYME firma como tesorería y admin
+      .freezeWith(client)
+      .sign(sme.privateKey)).execute(client)).getReceipt(client)).tokenId
     console.log(`[ÉXITO] Factura anclada en el topic ${topicId}; token ${tokenId} (tesorería: PyME)`)
 
     // 4. Anticipo: entrega contra pago atómica

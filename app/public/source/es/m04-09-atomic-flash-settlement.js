@@ -39,7 +39,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (crea 4 cuentas desechables y un token FLASH).
- * - Costo: ~0.6 ℏ para cuentas desechables + comisiones.
+ * - Costo: ~17 ℏ (crear el token FLASH ~15 ℏ en testnet) + ~0.6 ℏ para cuentas desechables + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js

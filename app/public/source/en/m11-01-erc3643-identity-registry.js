@@ -47,7 +47,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates 3 throwaway investor accounts, a token and a topic).
- * - Cost: ~0.3 ℏ funded to throwaway accounts + ~2 ℏ in fees.
+ * - Cost: ~16 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ funded to throwaway accounts + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/01_erc3643_identity_registry.js
