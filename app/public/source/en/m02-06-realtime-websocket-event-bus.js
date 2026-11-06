@@ -25,7 +25,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 05: Circuit Breaker & Rate Limiter
- * - Next:     M2 Lab 07: GraphQL Subgraph Indexer
+ * - Next:     M2 Lab 07: Mirror Node Query Aggregator (GraphQL-Style Resolvers)
  *
  * [SIMULATED]
  * The subscriber client runs in the same process as the server. The ledger events it relays are real.

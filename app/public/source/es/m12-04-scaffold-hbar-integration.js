@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 04: Arquitectura Full-Stack con Scaffold-HBAR
+ * Lab 04: Arquitectura Full-Stack con Scaffold-HBAR (Introducción)
  * [CONCEPTO] Integración de Next.js, RainbowKit, Wagmi v2 y Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -21,6 +21,9 @@
  * - Anterior: M12 Lab 03: Flujos con Foundry y Hardhat
  * - Actual:   M12 Lab 04: Arquitectura Scaffold-HBAR
  * - Siguiente: M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra
+ *
+ * [SIMULADO]
+ * Es una introducción: muestra la configuración de red de Scaffold-HBAR y la comprueba contra Hashio (lecturas RPC reales). No genera ni ejecuta la plantilla; para eso usa `npx create-scaffold-hbar`.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

@@ -23,7 +23,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
- * - Siguiente: M14 Lab 02: Puntuación de Confianza de IA HCS-25
+ * - Siguiente: M14 Lab 02: Metodología de Puntuación de Confianza de IA HCS-25
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

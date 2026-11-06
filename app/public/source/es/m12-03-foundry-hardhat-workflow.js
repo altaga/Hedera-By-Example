@@ -2,37 +2,64 @@
 /**
  * ============================================================================
  * Lab 03: Flujos de Automatización con Foundry y Hardhat
- * [CONCEPTO] Plantillas de Configuración para Frameworks de Ethereum
+ * [CONCEPTO] Compilar con Foundry y Desplegar a Través del JSON-RPC Relay
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Flujos de Ethereum sin Fricción: No necesitas reescribir tus scripts de despliegue
- * ni tus suites de pruebas unitarias para construir en Hedera. Al configurar los
- * frameworks tradicionales de Ethereum (Foundry / Hardhat) con la URL del RPC y el
- * Chain ID de Hedera, los equipos pueden desplegar protocolos multi-contrato
- * con una sola instrucción de terminal (`forge create` o `hardhat run`).
- * *
+ * No necesitas reescribir tus herramientas de Ethereum para Hedera. Apunta Foundry o
+ * Hardhat al JSON-RPC relay (Hashio, chain ID 296 en testnet) y despliega como siempre.
+ * Este lab lo hace de verdad:
+ * 1. Escribe un proyecto mínimo de Foundry (foundry.toml + src/Counter.sol) en un directorio temporal.
+ * 2. Ejecuta `forge build` (usa solc-js si Foundry no está instalado, y lo indica).
+ * 3. Despliega el bytecode compilado a través de Hashio con ethers y un firmante ECDSA con alias.
+ * 4. Llama a `increment()` y lee `count()` a través del relay.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los frameworks estándar de Ethereum (Hardhat, Foundry) despliegan de forma transparente en Hedera Testnet y Mainnet simplemente configurando el endpoint del JSON-RPC Relay y el chain ID.
+ * El relay asocia firmantes EVM a cuentas de Hedera por dirección EVM, así que los
+ * despliegues necesitan una cuenta ECDSA con alias EVM; los operadores ED25519 reciben
+ * una cuenta alias auxiliar.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/tutorials/smart-contracts/deploy-a-smart-contract-using-hardhat
+ * - https://docs.hedera.com/hedera/tutorials/smart-contracts/foundry
+ * - https://github.com/hiero-ledger/hiero-json-rpc-relay
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M12 Lab 02: JSON-RPC Relay con Ethers.js
- * - Actual:   M12 Lab 03: Flujos con Foundry y Hardhat
- * - Siguiente: M12 Lab 04: Arquitectura Scaffold-HBAR
+ * - Siguiente: M12 Lab 04: Arquitectura Full-Stack con Scaffold-HBAR (Introducción)
+ *
+ * [SIMULADO]
+ * La configuración de Hardhat se muestra pero Hardhat no se ejecuta. Foundry compila (o solc-js si falta Foundry) y el despliegue y las llamadas son reales.
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Wallet: tu cuenta de testnet (financia un firmante ECDSA con alias si el operador no tiene uno).
+ * - Herramientas: Foundry (`curl -L https://foundry.paradigm.xyz | bash && foundryup`) — opcional.
+ * - Costo: ~1-3 ℏ (gas del despliegue del contrato vía relay).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/03_foundry_hardhat_workflow.js
  * ============================================================================
  */
 
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, getJsonRpcSigner, getJsonRpcUrl, updateState } from '../M99_Utilities/index.js'
+
+const COUNTER_SOL = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract Counter {
+    uint256 public count;
+    event Incremented(uint256 newCount);
+
+    function increment() external {
+        count += 1;
+        emit Incremented(count);
+    }
+}
+`
 
 const FOUNDRY_CONFIG_BLUEPRINT = `
 [profile.default]
@@ -44,8 +71,8 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-hedera_testnet = "https://testnet.hashio.io"
-hedera_mainnet = "https://mainnet.hashio.io"
+hedera_testnet = "https://testnet.hashio.io/api"
+hedera_mainnet = "https://mainnet.hashio.io/api"
 
 [etherscan]
 hedera_testnet = { key = "NO_KEY_NEEDED", url = "https://hashscan.io/testnet" }
@@ -64,12 +91,12 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hedera_testnet: {
-      url: "https://testnet.hashio.io",
+      url: "https://testnet.hashio.io/api",
       chainId: 296,
       accounts: process.env.OPERATOR_PRIVATE_KEY ? [process.env.OPERATOR_PRIVATE_KEY] : []
     },
     hedera_mainnet: {
-      url: "https://mainnet.hashio.io",
+      url: "https://mainnet.hashio.io/api",
       chainId: 295,
       accounts: process.env.OPERATOR_PRIVATE_KEY ? [process.env.OPERATOR_PRIVATE_KEY] : []
     }
@@ -78,59 +105,79 @@ const config: HardhatUserConfig = {
 export default config;
 `
 
+const compile = (dir) => {
+  try {
+    const version = execFileSync('forge', ['--version'], { encoding: 'utf8' }).split('\n')[0]
+    execFileSync('forge', ['build', '--root', dir], { stdio: 'pipe' })
+    const out = JSON.parse(fs.readFileSync(path.join(dir, 'out', 'Counter.sol', 'Counter.json'), 'utf8'))
+    return { tool: version, abi: out.abi, bytecode: out.bytecode.object }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error
+  }
+  // Foundry no está instalado: compila la misma fuente con solc-js
+  return import('solc').then(({ default: solc }) => {
+    const input = { language: 'Solidity', sources: { 'Counter.sol': { content: COUNTER_SOL } }, settings: { evmVersion: 'shanghai', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } } } }
+    const output = JSON.parse(solc.compile(JSON.stringify(input)))
+    const c = output.contracts['Counter.sol'].Counter
+    return { tool: `solc-js ${solc.version()} (Foundry no encontrado)`, abi: c.abi, bytecode: c.evm.bytecode.object }
+  })
+}
+
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Flujos de Automatización con Foundry y Hardhat ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  console.log('--- INICIO DE SESIÓN: Flujos de Automatización con Foundry y Hardhat ---\n')
+  const { client, operatorKey } = getClient()
 
   try {
-    console.log('[PROCESO] Validando compatibilidad del JSON-RPC Relay de Hedera con Foundry y Hardhat...')
-    const rpcUrl = 'https://testnet.hashio.io/api'
-    // Hashio es el relay JSON-RPC de Hedera: Foundry y Hardhat le hablan como a cualquier cadena EVM (chain ID 296 en testnet).
+    // 1. Proyecto mínimo de Foundry
+    console.log('[PROCESO] Paso 1: Escribiendo un proyecto de Foundry (foundry.toml + src/Counter.sol)...')
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hbe-foundry-'))
+    fs.mkdirSync(path.join(dir, 'src'))
+    fs.writeFileSync(path.join(dir, 'foundry.toml'), FOUNDRY_CONFIG_BLUEPRINT.trim() + '\n')
+    fs.writeFileSync(path.join(dir, 'src', 'Counter.sol'), COUNTER_SOL)
+    console.log(`[LOG] Proyecto: ${dir}`)
+
+    // 2. Compilar
+    console.log('\n[PROCESO] Paso 2: Compilando...')
+    const { tool, abi, bytecode } = await compile(dir)
+    console.log(`[ÉXITO] Compilado con ${tool} — ${bytecode.replace(/^0x/, '').length / 2} bytes de bytecode`)
+
+    // 3. Desplegar a través del relay
+    const rpcUrl = getJsonRpcUrl()
     const provider = new ethers.JsonRpcProvider(rpcUrl)
+    console.log(`\n[PROCESO] Paso 3: Desplegando a través de ${rpcUrl} (chain ID ${(await provider.getNetwork()).chainId})...`)
+    const signerInfo = await getJsonRpcSigner(client, operatorKey, { minHbar: 5 })
+    // NonceManager lleva los nonces localmente: la vista de nonces del relay puede ir atrasada tras un despliegue
+    const wallet = new ethers.NonceManager(new ethers.Wallet('0x' + signerInfo.privateKey.toStringRaw(), provider))
+    const factory = new ethers.ContractFactory(abi, bytecode, wallet)
+    const contract = await factory.deploy({ gasLimit: 400_000 })
+    const deployTx = contract.deploymentTransaction()
+    await contract.waitForDeployment()
+    const address = await contract.getAddress()
+    console.log(`[ÉXITO] Counter en ${address} — tx ${deployTx.hash}`)
+    console.log(`[EXPLORER] https://hashscan.io/testnet/contract/${address}`)
 
-    const startTime = Date.now()
-    // Una llamada barata para comprobar que el relay responde y medir su latencia.
-    const blockNumber = await provider.getBlockNumber()
-    const latencyMs = Date.now() - startTime
+    // 4. Escribir + leer
+    console.log('\n[PROCESO] Paso 4: increment() y luego count()...')
+    const tx = await contract.increment({ gasLimit: 100_000 })
+    await tx.wait()
+    console.log(`[ÉXITO] increment() — tx ${tx.hash} | count() = ${await contract.count()}`)
 
-    console.log('[ÉXITO] Endpoint RPC Responsivo:')
-    console.log(`[REGISTRO] RPC Objetivo:    ${rpcUrl}`)
-    console.log(`[REGISTRO] Latencia de Red: ${latencyMs} ms`)
-    console.log(`[REGISTRO] Bloque Actual:   #${blockNumber}`)
-
-    // 1. Mostrar Configuración de Producción para Foundry
-    console.log('\n===============================================================')
-    console.log('PLANTILLA: CONFIGURACIÓN DE FOUNDRY (foundry.toml)')
-    console.log('===============================================================')
-    console.log(FOUNDRY_CONFIG_BLUEPRINT.trim())
-    console.log('\nComando de Despliegue (Foundry Forge):')
-    console.log('forge create --rpc-url https://testnet.hashio.io \\')
-    console.log('--private-key $OPERATOR_PRIVATE_KEY \\')
-    console.log('src/HtsTokenVault.sol:HtsTokenVault \\')
-    console.log('--constructor-args 0x0000000000000000000000000000000000003039')
-    console.log('===============================================================')
-
-    // 2. Mostrar Configuración de Producción para Hardhat
-    console.log('\n===============================================================')
-    console.log('PLANTILLA: CONFIGURACIÓN DE HARDHAT (hardhat.config.ts)')
-    console.log('===============================================================')
+    console.log('\n[INFO] El mismo despliegue con la CLI de Foundry:')
+    console.log(`forge create --rpc-url ${rpcUrl} --private-key <clave ECDSA> --broadcast src/Counter.sol:Counter`)
+    console.log('\n[INFO] Configuración de Hardhat para la misma red (no se ejecuta aquí):')
     console.log(HARDHAT_CONFIG_BLUEPRINT.trim())
-    console.log('\nComando de Despliegue (Hardhat):')
-    console.log('npx hardhat run scripts/deploy.ts --network hedera_testnet')
-    console.log('===============================================================')
 
-    updateState('FOUNDRY_CONFIG_VERIFIED', true)
-    updateState('HARDHAT_CONFIG_VERIFIED', true)
+    updateState('FOUNDRY_COUNTER_ADDRESS', address)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Hedera es un ecosistema amigable para desarrolladores de Ethereum: conservas')
-    console.log('tus herramientas favoritas, linters de Solidity, tests unitarios y frameworks,')
-    console.log('mientras disfrutas de finalidad en segundos y tarifas fijas de centavos.')
+    console.log('Mismo Solidity, mismas herramientas: para Hedera solo cambian la URL RPC y el chain ID.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en la validación de plantillas de flujo:', error.message)
+    console.error('\n[ERROR] Falló el flujo de Foundry:', error.message)
     process.exit(1)
+  } finally {
+    client.close()
   }
 }
 
@@ -138,7 +185,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLIDO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -2,12 +2,12 @@
 /**
  * ============================================================================
  * Lab 01: Fachada Directa HTS como ERC-20 (Ejecución en Solidity)
- * [CONCEPTO] Compatibilidad Directa Solidity ERC-20 con HIP-719
+ * [CONCEPTO] Fachada ERC-20 HIP-218/HIP-376 para Tokens HTS (HIP-719 para associate)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Adiós al Precompilado 0x167: Históricamente, interactuar con un token HTS desde
  * Solidity requería invocar el contrato del sistema de Hedera en 0x167 con
- * codificación ABI especializada. Con HIP-719, todo token nativo de HTS expone una
+ * codificación ABI especializada. Con HIP-218 (y HIP-376 para approve/allowance), todo token nativo de HTS expone una
  * dirección EVM directa (derivada de su ID 0.0.X). Los contratos de Solidity pueden
  * tratar tokens nativos de Hedera como instancias estándar de IERC20 sin fricción.
  * *
@@ -16,6 +16,9 @@
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/evm/development/addresses
+ * - https://hips.hedera.com/hip/hip-218
+ * - https://hips.hedera.com/hip/hip-376
+ * - https://hips.hedera.com/hip/hip-719
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior: M11 Lab 07: Puente de Integración ERP Institucional
@@ -39,7 +42,11 @@ import {
   TokenCreateTransaction,
   TokenType,
   TokenSupplyType,
-  ContractFunctionParameters
+  ContractFunctionParameters,
+  ContractExecuteTransaction,
+  ContractCallQuery,
+  TransferTransaction,
+  AccountId
 } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
 
@@ -117,11 +124,12 @@ const main = async () => {
     console.log('\n[PROCESO] Desplegando contrato HtsTokenVault en el Smart Contract Service de Hedera...')
     const contractParams = new ContractFunctionParameters().addAddress(tokenEvmAddress)
 
-    const contractId = await reuseContract('REUSE_M12_01_CONTRACT', bytecode + tokenEvmAddress, async () => {
+    const contractId = await reuseContract('REUSE_M12_01_CONTRACT_V2', bytecode + tokenEvmAddress, async () => {
       // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
       const contractDeployTx = await executeWithGas((gas) => new ContractCreateFlow()
         .setBytecode(bytecode)
         .setGas(gas)
+        .setMaxAutomaticTokenAssociations(1)
         .setConstructorParameters(contractParams), client, { gas: 1500000 })
 
       const contractReceipt = await contractDeployTx.getReceipt(client)
@@ -133,12 +141,29 @@ const main = async () => {
     console.log(`[REGISTRO] Dirección EVM del Contrato: ${contractEvmAddress}`)
     console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/contract/${contractId}`}`)
 
+    // 4. Real ERC-20 facade calls (HIP-218): fund the vault, read balanceOf via the contract, pay out with transfer()
+    const readVault = async () => (await new ContractCallQuery().setContractId(contractId).setGas(100000)
+      .setFunction('getVaultBalance').execute(client)).getUint256(0).toString()
+    const fundTx = await (await new TransferTransaction()
+      .addTokenTransfer(htsTokenId, operatorId, -100)
+      .addTokenTransfer(htsTokenId, contractId.toString(), 100)
+      .execute(client)).getReceipt(client)
+    console.log(`[ÉXITO] balanceOf del vault tras depositar 100 unidades (getVaultBalance): ${await readVault()}`)
+    // Pay out to the operator's own EVM address (its alias if it has one, else the long-zero form)
+    const acct = await (await fetch(`https://${network === 'mainnet' ? 'mainnet' : 'testnet'}.mirrornode.hedera.com/api/v1/accounts/${operatorId}`)).json()
+    const operatorEvm = acct.evm_address || `0x${AccountId.fromString(operatorId.toString()).toEvmAddress()}`
+    const payout = await executeWithGas((gas) => new ContractExecuteTransaction()
+      .setContractId(contractId).setGas(gas)
+      .setFunction('payoutYield', new ContractFunctionParameters().addAddress(operatorEvm).addUint256(40)), client, { gas: 200000 })
+    await payout.getReceipt(client)
+    console.log(`[ÉXITO] payoutYield(operator, 40) tx ${payout.transactionId}`)
+    console.log(`[ÉXITO] balanceOf del vault tras el pago: ${await readVault()}`)
     updateState('FACADE_HTS_TOKEN_ID', htsTokenId.toString())
     updateState('FACADE_HTS_EVM_ADDRESS', tokenEvmAddress)
     updateState('FACADE_CONTRACT_ID', contractId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('HIP-719 elimina la fricción para desarrolladores de contratos inteligentes en Ethereum.')
+    console.log('HIP-218 elimina la fricción para desarrolladores de contratos inteligentes en Ethereum.')
     console.log('Tus contratos en Solidity pueden integrarse directamente con activos de Hedera')
     console.log('Token Service utilizando interfaces estándar IERC20 de OpenZeppelin.')
 

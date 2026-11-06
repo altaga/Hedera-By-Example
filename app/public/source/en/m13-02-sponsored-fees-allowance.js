@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 02: Native Fee Sponsorship & Delegated Allowances (HIP-1068)
+ * Lab 02: Native Fee Sponsorship & Delegated Allowances (HIP-336)
  * [CONCEPT] Gasless User & Agent Onboarding Without ERC-4337 Bundlers
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -23,7 +23,8 @@
  * spending, the authorized spender signs the `TransactionId`.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ LEARNING PATH ]
@@ -32,7 +33,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Spender: ACCOUNT_1 from .env if set, otherwise a throwaway account (0.5 ℏ) funded by the operator.
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
@@ -51,7 +52,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, sleep, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, updateState, sleep, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 /**
  * Queries account balance in tinybars and HBAR using the Hedera Mirror Node REST API.
@@ -72,13 +73,17 @@ const queryBalance = async (accountId, network = 'testnet') => {
 }
 
 const main = async () => {
-  console.log('--- SESSION START: Native Fee Sponsorship & Allowances (HIP-1068) ---\n')
+  console.log('--- SESSION START: Native Fee Sponsorship & Allowances (HIP-336) ---\n')
   const { client, operatorId, operatorKey, network } = getClient()
   const sponsorAccountId = AccountId.fromString(operatorId)
-  const sponsorKey = PrivateKey.fromStringDer(operatorKey)
+  const sponsorKey = parsePrivateKey(operatorKey)
 
-  const delegateSpenderId = AccountId.fromString(process.env.ACCOUNT_1_ID)
-  const delegateSpenderKey = PrivateKey.fromStringDer(process.env.ACCOUNT_1_PRIVATE_KEY)
+  // ACCOUNT_1 from .env if set; otherwise a throwaway account funded by the operator
+  const spender = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: AccountId.fromString(process.env.ACCOUNT_1_ID), privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const delegateSpenderId = spender.accountId
+  const delegateSpenderKey = spender.privateKey
 
   try {
     // 1. Create a literally ZERO-HBAR Agent account
@@ -105,7 +110,7 @@ const main = async () => {
 
     const gaslessUpdateTx = await new AccountUpdateTransaction()
       .setAccountId(zeroGasAgentId)
-      .setAccountMemo('HIP-1068:Gasless-Agent-Verified')
+      .setAccountMemo('HIP-336:Gasless-Agent-Verified')
       .setTransactionId(TransactionId.generate(sponsorAccountId))
       .freezeWith(client)
 
@@ -143,7 +148,7 @@ const main = async () => {
     const allowanceTransfer = await new TransferTransaction()
       .addApprovedHbarTransfer(sponsorAccountId, new Hbar(-0.25))
       .addHbarTransfer(zeroGasAgentId, new Hbar(0.25))
-      .setTransactionMemo('HIP-1068:DelegatedAllowanceSpend')
+      .setTransactionMemo('HIP-336:DelegatedAllowanceSpend')
       .execute(spenderClient)
     const transferReceipt = await allowanceTransfer.getReceipt(spenderClient)
     spenderClient.close()

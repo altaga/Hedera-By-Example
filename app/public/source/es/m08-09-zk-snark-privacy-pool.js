@@ -1,43 +1,52 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Laboratorio 09: Fondo de Privacidad Zero-Knowledge en Hedera EVM
- * [CONCEPTO] Compromisos Criptográficos y Liquidaciones Confidenciales en Capa 1
+ * Lab 09: Pool de Privacidad Zero-Knowledge en Hedera EVM (zk-SNARK Groth16)
+ * [CONCEPTO] Compromisos Merkle Poseidon, Nullifiers y Verificación de Pruebas On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Los registros públicos mantienen un grafo de transacciones abierto donde las
- * relaciones emisor-receptor son visibles para cualquiera. Los protocolos de
- * privacidad (como Tornado Cash o Semaphore) rompen esta heurística mediante
- * compromisos Zero-Knowledge y nulificadores criptográficos.
- *
- * En Ethereum, verificar compromisos y árboles de nulificadores cuesta entre
- * \$20 y \$80 en gas. En la EVM de Hedera:
- * 1. Las operaciones criptográficas (Keccak-256) y curvas se ejecutan con tarifas
- *    de gas predecibles y sub-centavo (\$0.001 - \$0.05).
- * 2. Las transacciones alcanzan finalidad irrevocable en 2-3 segundos.
- * 3. Los depósitos y retiros quedan matemáticamente desvinculados:
- *    - El depositante compromete: `C = Keccak256(nullifier || secret)`
- *    - El receptor redime con `(nullifier, secret)` hacia un destino stealth.
- *    - Ningún análisis de grafos o heurística puede enlazar al depositante con el receptor.
- * 4. El contrato gestiona un registro de nulificadores de un solo uso que previene doble gasto.
+ * Los ledgers públicos exponen quién pagó a quién. Un pool de privacidad zk-SNARK
+ * (el diseño de Tornado Cash / Semaphore) rompe ese vínculo con pruebas reales:
+ * 1. Depósito: el depositante envía un monto fijo con un compromiso
+ *    C = Poseidon(nullifier, secret). El contrato inserta C como hoja de un árbol
+ *    Merkle Poseidon on-chain (profundidad 8) y guarda la nueva raíz.
+ * 2. Retiro: el dueño genera una prueba Groth16 (circuito zk/privacy_pool.circom,
+ *    probado con snarkjs) que dice "conozco (nullifier, secret) de ALGUNA hoja bajo
+ *    esta raíz, y Poseidon(nullifier) = nullifierHash", ligada a un destinatario.
+ *    La hoja, el nullifier y el secreto NUNCA se revelan on-chain.
+ * 3. El contrato verifica la prueba on-chain (Groth16Verifier generado por snarkjs,
+ *    con los precompilados bn128 0x06/0x07/0x08 que Hedera soporta), marca el
+ *    nullifierHash como gastado y paga al destinatario.
+ * El retiro no se puede vincular a un depósito concreto dentro del conjunto de anonimato.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * La combinación de la lógica EVM de Solidity con los costos mínimos de Hedera
- * convierte a la red en la plataforma óptima para infraestructura de privacidad ZK.
- * La privacidad empresarial no requiere cadenas privadas o permisionadas: puede
- * desplegarse directamente sobre la capa de consenso pública de Hedera.
+ * La EVM de Hedera ejecuta verificadores zk-SNARK estándar sin cambios. Límites
+ * honestos de este lab: el trusted setup de Groth16 es una sola contribución local
+ * (válido para aprender, NO para producción: los pools reales usan una ceremonia
+ * multiparte), el conjunto de anonimato son solo los depósitos de este pool, y la
+ * denominación fija es HBAR de testnet mínimo.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/smart-contracts/create-a-smart-contract
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/understanding-hederas-evm-differences-and-compatibility
+ * - https://docs.circom.io/
+ * - https://github.com/iden3/snarkjs
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 08: Precompilados HTS Avanzados
  * - Siguiente: M8 Lab 10: Inmersión en Contratos del Sistema (0x168 y 0x16a)
  *
+ * [SECUENCIA]
+ * Depositante -> Pool: deposit(Poseidon(nullifier, secret)) + 0.01 ℏ
+ * Nota Pool: Inserta la hoja en el árbol Merkle Poseidon on-chain
+ * Dueño -> Dueño: Prueba Groth16 con snarkjs (off-chain, las entradas privadas no salen)
+ * Dueño -> Pool: withdraw(prueba, raíz, nullifierHash, destinatario)
+ * Pool -> Destinatario: Paga 0.01 ℏ si la prueba es válida y el nullifier no se usó
+ *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
- * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Wallet: tu cuenta de testnet (despliega 3 contratos y crea 2 cuentas desechables).
+ * - Costo: ~20-30 ℏ la primera vez (3 despliegues + gas); ~3 ℏ si se reutilizan los contratos.
+ * - Solo Node: la prueba usa snarkjs y los archivos del circuito en zk/.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/09_zk_snark_privacy_pool.js
@@ -45,205 +54,204 @@
  */
 
 import {
-  AccountId,
-  ContractId,
-  ContractCreateTransaction,
+  ContractCreateFlow,
   ContractExecuteTransaction,
   ContractFunctionParameters,
-  PrivateKey,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, executeWithGas, getAccountEvmAddress } from '../M99_Utilities/index.js'
+import { createClient, createLabAccount, executeWithGas, getClient, getHashscanUrl, getMirrorHbarTinybars, getMirrorNodeBaseUrl, reuseContract, sleep, updateState } from '../M99_Utilities/index.js'
 import solc from 'solc'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import { ethers } from 'ethers'
+import * as snarkjs from 'snarkjs'
+import { buildPoseidon, poseidonContract } from 'circomlibjs'
 
-/**
- * 1. Compilador de Solidity en vivo vía solc con Optimizador Habilitado
- */
-const compileZkContract = () => {
-  console.log('[PROCESO] Compilando ZkPrivacyPool.sol con solc 0.8.20 (Optimizador habilitado)...')
-  const contractPath = new URL('./09_zk_snark_privacy_pool.sol', import.meta.url)
-  const sourceCode = fs.readFileSync(contractPath, 'utf8')
+const LEVELS = 8
+const DENOMINATION_TINYBARS = 1_000_000 // 0.01 ℏ por nota
+const CIRCUIT_WASM = new URL('./zk/privacy_pool.wasm', import.meta.url)
+const CIRCUIT_ZKEY = new URL('./zk/privacy_pool.zkey', import.meta.url)
+const VERIFICATION_KEY = new URL('./zk/privacy_pool_vkey.json', import.meta.url)
 
-  const input = {
-    language: 'Solidity',
-    sources: {
-      'ZkPrivacyPool.sol': {
-        content: sourceCode
-      }
-    },
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      },
-      outputSelection: {
-        '*': {
-          '*': ['*']
-        }
-      }
-    }
-  }
-
-  const compiled = JSON.parse(solc.compile(JSON.stringify(input)))
-  if (compiled.errors) {
-    const fatal = compiled.errors.filter(e => e.severity === 'error')
-    if (fatal.length > 0) {
-      throw new Error(`Error de compilación en Solidity: ${fatal[0].formattedMessage}`)
-    }
-  }
-
-  const contract = compiled.contracts['ZkPrivacyPool.sol'].ZkPrivacyPool
-  return {
-    bytecode: contract.evm.bytecode.object,
-    abi: contract.abi
-  }
+let poseidonFn
+const poseidon = async (inputs) => {
+  poseidonFn ??= await buildPoseidon()
+  return poseidonFn.F.toObject(poseidonFn(inputs.map(BigInt)))
 }
 
-/**
- * Consulta Asíncrona de Balance en Mirror Node (compatible con CQRS)
- */
-const getAccountHbarBalance = async (accountId) => {
-  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
-  if (!res.ok) {
-    throw new Error(`La consulta a Mirror Node para el balance de ${accountId} falló`)
+/** Elemento de campo de 31 bytes aleatorios (siempre < el campo escalar BN254). */
+const randomField = () => BigInt('0x' + crypto.randomBytes(31).toString('hex'))
+
+/** Reconstruye off-chain el árbol Merkle Poseidon de profundidad 8 y devuelve el camino de una hoja. */
+const merklePath = async (leaves, index) => {
+  const zeros = [0n]
+  for (let i = 1; i <= LEVELS; i++) zeros.push(await poseidon([zeros[i - 1], zeros[i - 1]]))
+  let layer = leaves.map(BigInt)
+  let idx = index
+  const pathElements = []
+  const pathIndices = []
+  for (let level = 0; level < LEVELS; level++) {
+    const sibling = idx ^ 1
+    pathElements.push(sibling < layer.length ? layer[sibling] : zeros[level])
+    pathIndices.push(idx & 1)
+    const next = []
+    for (let i = 0; i < Math.max(1, Math.ceil(layer.length / 2)); i++) {
+      next.push(await poseidon([layer[2 * i] ?? zeros[level], layer[2 * i + 1] ?? zeros[level]]))
+    }
+    layer = next
+    idx >>= 1
   }
-  const data = await res.json()
-  return data.balance.balance / 1e8
+  return { root: layer[0], pathElements, pathIndices }
+}
+
+/** Compila Groth16Verifier + ZkPrivacyPool desde el .sol junto a este lab. */
+const compileContracts = () => {
+  const source = fs.readFileSync(new URL('./09_zk_snark_privacy_pool.sol', import.meta.url), 'utf8')
+  const out = JSON.parse(solc.compile(JSON.stringify({
+    language: 'Solidity',
+    sources: { 'ZkPrivacyPool.sol': { content: source } },
+    settings: { optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } } }
+  })))
+  const fatal = (out.errors || []).filter((e) => e.severity === 'error')
+  if (fatal.length) throw new Error(`Solidity compilation error: ${fatal[0].formattedMessage}`)
+  return out.contracts['ZkPrivacyPool.sol']
+}
+
+const deploy = async (client, bytecode, params, gas) => {
+  const flow = (g) => {
+    const f = new ContractCreateFlow().setBytecode(bytecode).setGas(g)
+    if (params) f.setConstructorParameters(params)
+    return f
+  }
+  const response = await executeWithGas(flow, client, { gas })
+  return (await response.getReceipt(client)).contractId
+}
+
+/** Llamada de solo lectura gratuita vía Mirror Node (eth_call). */
+const mirrorCall = async (contractId, iface, fn, args = []) => {
+  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/call`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ to: `0x${contractId.toEvmAddress()}`, data: iface.encodeFunctionData(fn, args), block: 'latest' })
+  })
+  if (!res.ok) throw new Error(`Mirror Node call ${fn} failed: ${res.status} ${await res.text()}`)
+  return iface.decodeFunctionResult(fn, (await res.json()).result)
+}
+
+const execute = async (client, contractId, iface, fn, args, { gas = 1_500_000, payable } = {}) => {
+  const data = Buffer.from(iface.encodeFunctionData(fn, args).slice(2), 'hex')
+  return executeWithGas((g) => {
+    const tx = new ContractExecuteTransaction().setContractId(contractId).setGas(g).setFunctionParameters(data)
+    if (payable) tx.setPayableAmount(Hbar.fromTinybars(payable))
+    return tx
+  }, client, { gas })
 }
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Fondo de Privacidad Zero-Knowledge en Hedera EVM ---\n')
-  const { client, operatorId, operatorKey } = getClient()
-  const adminKey = PrivateKey.fromStringDer(operatorKey)
+  console.log('--- INICIO DE SESIÓN: Pool de Privacidad Zero-Knowledge en Hedera EVM (Groth16) ---\n')
+  const { client, operatorId } = getClient()
 
   try {
-    // 1. Resolver o Desplegar el Contrato ZkPrivacyPool
-    let contractIdStr = getState('ZK_PRIVACY_POOL_ID')
-    let contractId
+    // 1. Desplegar (o reutilizar) el hasher Poseidon, el verificador Groth16 y el pool
+    console.log('[PROCESO] Paso 1: Desplegando hasher Poseidon, Groth16Verifier de snarkjs y ZkPrivacyPool...')
+    const compiled = compileContracts()
+    const poolIface = new ethers.Interface(compiled.ZkPrivacyPool.abi)
+    const hasherCode = poseidonContract.createCode(2).replace(/^0x/, '')
+    const hasherId = await reuseContract('ZK_POSEIDON_HASHER_ID', hasherCode, () => deploy(client, hasherCode, null, 300_000))
+    const verifierCode = compiled.Groth16Verifier.evm.bytecode.object
+    const verifierId = await reuseContract('ZK_GROTH16_VERIFIER_ID', verifierCode, () => deploy(client, verifierCode, null, 1_500_000))
+    const poolCode = compiled.ZkPrivacyPool.evm.bytecode.object
+    const poolId = await reuseContract('ZK_PRIVACY_POOL_V2_ID', `${poolCode}:${hasherId}:${verifierId}:${DENOMINATION_TINYBARS}`, () => deploy(client, poolCode,
+      new ContractFunctionParameters()
+        .addAddress(hasherId.toEvmAddress())
+        .addAddress(verifierId.toEvmAddress())
+        .addUint256(DENOMINATION_TINYBARS), 2_000_000))
+    console.log(`[SUCCESS] Hasher ${hasherId} | Verifier ${verifierId} | Pool ${poolId}`)
 
-    if (contractIdStr) {
-      contractId = ContractId.fromString(contractIdStr)
-      console.log(`[ÉXITO] Reutilizando ID de Contrato ZkPrivacyPool desplegado: ${contractIdStr}`)
-      console.log(`[REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
-    } else {
-      const { bytecode } = compileZkContract()
-      console.log(`[ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex (${bytecode.length / 2} bytes)`)
+    // 2. Dos depositantes distintos ponen notas en el pool (conjunto de anonimato >= 2)
+    console.log('\n[PROCESO] Paso 2: Dos depositantes independientes depositan 0.01 ℏ cada uno con notas secretas...')
+    const depositorB = await createLabAccount(client, { hbar: 2 })
+    const clientB = createClient(depositorB.accountId.toString(), depositorB.privateKey)
+    const myNote = { nullifier: randomField(), secret: randomField() }
+    const otherNote = { nullifier: randomField(), secret: randomField() }
+    const myCommitment = await poseidon([myNote.nullifier, myNote.secret])
+    const otherCommitment = await poseidon([otherNote.nullifier, otherNote.secret])
+    const depA = await execute(client, poolId, poolIface, 'deposit', [myCommitment], { payable: DENOMINATION_TINYBARS })
+    await depA.getReceipt(client)
+    const depB = await execute(clientB, poolId, poolIface, 'deposit', [otherCommitment], { payable: DENOMINATION_TINYBARS })
+    await depB.getReceipt(clientB)
+    clientB.close()
+    console.log(`[ÉXITO] Depósito (tú):          ${depA.transactionId}`)
+    console.log(`[ÉXITO] Depósito (otro usuario): ${depB.transactionId}`)
 
-      console.log('\n[PROCESO] Paso 1: Desplegando ZkPrivacyPool directamente en Hedera EVM (Bytecode Directo)...')
-      const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
-        .setBytecode(Buffer.from(bytecode, 'hex'))
-        .setGas(gas)
-        .setAdminKey(adminKey), client, { gas: 300000 })
+    // 3. Construir el camino Merkle con las hojas on-chain y generar una prueba Groth16 real
+    console.log('\n[PROCESO] Paso 3: Leyendo las hojas on-chain y generando una prueba Groth16 con snarkjs...')
+    await sleep(5000)
+    const [leavesRaw] = await mirrorCall(poolId, poolIface, 'getLeaves')
+    const leaves = leavesRaw.map(BigInt)
+    const myIndex = leaves.findIndex((l) => l === myCommitment)
+    if (myIndex < 0) throw new Error('Tu compromiso aún no está en el árbol on-chain')
+    const { root, pathElements, pathIndices } = await merklePath(leaves, myIndex)
+    const [known] = await mirrorCall(poolId, poolIface, 'isKnownRoot', [root])
+    console.log(`[LOG] Conjunto de anonimato: ${leaves.length} depósitos | Raíz conocida on-chain: ${known}`)
 
-      const deployReceipt = await deployTx.getReceipt(client)
-      contractId = deployReceipt.contractId
-      contractIdStr = contractId.toString()
-      updateState('ZK_PRIVACY_POOL_ID', contractIdStr)
-
-      console.log(`[ÉXITO] ZkPrivacyPool Desplegado en ID de Contrato: ${contractIdStr}`)
-      console.log(`[REGISTRO] Dirección EVM del Contrato: 0x${contractId.toEvmAddress()}`)
-      console.log(`[REGISTRO] URL en HashScan: ${getHashscanUrl(deployTx)}`)
+    const recipient = await createLabAccount(client, { hbar: 0, ecdsa: true })
+    const recipientAddress = `0x${recipient.privateKey.publicKey.toEvmAddress()}`
+    const nullifierHash = await poseidon([myNote.nullifier])
+    const input = {
+      root,
+      nullifierHash,
+      recipient: BigInt(recipientAddress),
+      nullifier: myNote.nullifier,
+      secret: myNote.secret,
+      pathElements,
+      pathIndices
     }
+    const started = Date.now()
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CIRCUIT_WASM.pathname, CIRCUIT_ZKEY.pathname)
+    const vkey = JSON.parse(fs.readFileSync(VERIFICATION_KEY, 'utf8'))
+    const offChainOk = await snarkjs.groth16.verify(vkey, publicSignals, proof)
+    console.log(`[ÉXITO] Prueba generada en ${Date.now() - started} ms | verificación off-chain: ${offChainOk}`)
+    const [a, b, c] = JSON.parse(`[${await snarkjs.groth16.exportSolidityCallData(proof, publicSignals)}]`)
 
-    // 2. Generar Secretos Criptográficos Fuera de Cadena
-    console.log('\n[PROCESO] Paso 2: Generando Secretos Criptográficos (Nulificador y Preimagen)...')
-    const nullifier = crypto.randomBytes(32)
-    const secret = crypto.randomBytes(32)
-
-    // Computar compromiso ZK: C = keccak256(nullifier || secret)
-    const combinedBytes = Buffer.concat([nullifier, secret])
-    const commitmentHashHex = ethers.keccak256(combinedBytes)
-    const commitmentBuffer = Buffer.from(commitmentHashHex.slice(2), 'hex')
-
-    console.log(`[REGISTRO] Nulificador Secreto: 0x${nullifier.toString('hex')}`)
-    console.log(`[REGISTRO] Preimagen Secreta:   0x${secret.toString('hex')}`)
-    console.log(`[REGISTRO] Compromiso Criptográfico: ${commitmentHashHex}`)
-
-    // 3. Depósito Anónimo en el Fondo de Privacidad (0.01 HBAR)
-    console.log('\n[PROCESO] Paso 3: Depositando 0.01 HBAR en el Fondo con el Compromiso Criptográfico...')
-    const depositTx = await executeWithGas((gas) => new ContractExecuteTransaction()
-      .setContractId(contractId)
-      .setGas(gas)
-      .setPayableAmount(new Hbar(0.01))
-      .setFunction('deposit', new ContractFunctionParameters().addBytes32(commitmentBuffer)), client, { gas: 250000 })
-
-    const depositReceipt = await depositTx.getReceipt(client)
-    console.log(`[ÉXITO] ¡Depósito Confirmado! Estado en Consenso: ${depositReceipt.status.toString()}`)
-    console.log(`[REGISTRO] HashScan del Depósito: ${getHashscanUrl(depositTx)}`)
-    console.log('[INFORMACIÓN] Los fondos están blindados en el fondo. La identidad del depositante está desacoplada.')
-
-    // 4. Retiro Confidencial hacia Receptor Stealth / No Vinculado
-    console.log('\n[PROCESO] Paso 4: Iniciando Redención Confidencial hacia Destinatario Stealth...')
-    const stealthRecipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
-    const stealthRecipientAddress = await getAccountEvmAddress(stealthRecipientId) // alias accounts are paid at their EVM alias
-
-    const initialStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[REGISTRO] Destino Stealth: ${stealthRecipientId} (${stealthRecipientAddress})`)
-    console.log(`[REGISTRO] Balance Pre-Retiro Stealth: ${initialStealthBalance} HBAR`)
-
-    // Revelar nulificador y secreto al contrato:
-    // El contrato calcula Keccak256(nullifier, secret) en la cadena, valida el compromiso,
-    // registra el nulificador como gastado y libera los 0.01 HBAR a la dirección stealth.
-    const withdrawTx = await executeWithGas((gas) => new ContractExecuteTransaction()
-      .setContractId(contractId)
-      .setGas(gas)
-      .setFunction('withdraw', new ContractFunctionParameters()
-        .addBytes32(nullifier)
-        .addBytes32(secret)
-        .addAddress(stealthRecipientAddress)
-      ), client, { gas: 300000 })
-
-    const withdrawReceipt = await withdrawTx.getReceipt(client)
-    console.log(`[ÉXITO] ¡Retiro Confidencial Liquidado! Estado: ${withdrawReceipt.status.toString()}`)
-    console.log(`[REGISTRO] HashScan del Retiro: ${getHashscanUrl(withdrawTx)}`)
-
-    // 5. Verificar Liquidación y Estado de Balances
-    console.log('\n[PROCESO] Paso 5: Verificando Liquidación de Balances y Ruptura de Trazabilidad...')
-    await sleep(3000)
-    const finalStealthBalance = await getAccountHbarBalance(stealthRecipientId)
-    console.log(`[REGISTRO] Balance Post-Retiro Stealth: ${finalStealthBalance} HBAR (+0.01 HBAR transferidos)`)
-
-    if (finalStealthBalance <= initialStealthBalance) {
-      throw new Error('Fallo en la verificación de liquidación: el balance stealth no incrementó')
-    }
-    console.log('[ÉXITO] ¡El receptor stealth recibió los fondos con CERO vínculos en cadena con el depositante!')
-
-    // 6. Probar Defensa Contra Doble Gasto (Simulación de Ataque)
-    console.log('\n[PROCESO] Paso 6: Probando Defensa Contra Replay y Doble Gasto (Simulación de Ataque)...')
+    // 4. Una prueba falsificada (otro nullifierHash) es rechazada por el verificador on-chain
+    console.log('\n[PROCESO] Paso 4: Probando la prueba con otro nullifierHash (falsificación)...')
+    let forged = 'UNEXPECTED_SUCCESS'
     try {
-      const replayTx = await executeWithGas((gas) => new ContractExecuteTransaction()
-        .setContractId(contractId)
-        .setGas(gas)
-        .setFunction('withdraw', new ContractFunctionParameters()
-          .addBytes32(nullifier)
-          .addBytes32(secret)
-          .addAddress(stealthRecipientAddress)
-        ), client, { gas: 300000 })
+      await (await execute(client, poolId, poolIface, 'withdraw', [a, b, c, root, nullifierHash + 1n, recipientAddress], { gas: 600_000 })).getReceipt(client)
+    } catch (err) { forged = err.status ? err.status.toString() : err.message }
+    console.log(`[FALLO ESPERADO] Retiro falsificado rechazado: ${forged}`)
+    if (forged === 'UNEXPECTED_SUCCESS') throw new Error('Se aceptó una prueba falsificada')
 
-      await replayTx.getReceipt(client)
-      console.error('[ERROR] Violación de seguridad: ¡El ataque de repetición tuvo éxito!')
-      process.exitCode = 1
-    } catch (replayError) {
-      console.log('[ÉXITO] ¡Ataque de doble gasto rechazado exitosamente por la verificación de nulificador en la EVM!')
-      console.log(`[REGISTRO] Motivo de Reversión Esperado: "${replayError.message}"`)
-    }
+    // 5. Retiro privado real
+    console.log('\n[PROCESO] Paso 5: Retirando con la prueba válida a un destinatario nuevo...')
+    const before = await getMirrorHbarTinybars(recipient.accountId.toString())
+    const withdrawTx = await execute(client, poolId, poolIface, 'withdraw', [a, b, c, root, nullifierHash, recipientAddress], { gas: 600_000 })
+    const receipt = await withdrawTx.getReceipt(client)
+    console.log(`[ÉXITO] Retiro ${receipt.status.toString()} — ${withdrawTx.transactionId}`)
+    console.log(`[EXPLORER] ${getHashscanUrl(withdrawTx)}`)
+    await sleep(6000)
+    const after = await getMirrorHbarTinybars(recipient.accountId.toString())
+    console.log(`[VERIFICACIÓN] El destinatario ${recipient.accountId} recibió ${after - before} tinybars; el calldata solo reveló raíz + nullifierHash, no la hoja.`)
+
+    // 6. El doble gasto se rechaza (nullifier ya usado)
+    console.log('\n[PROCESO] Paso 6: Repitiendo la misma prueba (doble gasto)...')
+    let replay = 'UNEXPECTED_SUCCESS'
+    try {
+      await (await execute(client, poolId, poolIface, 'withdraw', [a, b, c, root, nullifierHash, recipientAddress], { gas: 600_000 })).getReceipt(client)
+    } catch (err) { replay = err.status ? err.status.toString() : err.message }
+    console.log(`[FALLO ESPERADO] Doble gasto rechazado: ${replay}`)
+    if (replay === 'UNEXPECTED_SUCCESS') throw new Error('Se aceptó un doble gasto')
+
+    updateState('ZK_LAST_WITHDRAW_TX_ID', withdrawTx.transactionId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Los fondos de Privacidad Zero-Knowledge desacoplan los orígenes y destinos en la red.')
-    console.log('Al verificar preimágenes criptográficas en Solidity, Hedera EVM provee garantías')
-    console.log('matemáticas de privacidad a costos de gas sub-centavo sin requerir redes privadas.')
-
-    console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Los nulificadores son la base para evitar el doble gasto en ZK. El compromiso')
-    console.log('blinda el depósito, mientras que el nulificador unidireccional registra el retiro')
-    console.log('sin revelar a cuál depósito pertenecía originalmente.')
+    console.log('La prueba Groth16 convenció al contrato de que eres dueño de uno de los depósitos')
+    console.log('sin revelar cuál: el vínculo entre depositante y destinatario queda oculto.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en el Fondo de Privacidad ZK:', error.message)
+    console.error('\n[ERROR] Falló el pool de privacidad ZK:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -254,7 +262,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLIDO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

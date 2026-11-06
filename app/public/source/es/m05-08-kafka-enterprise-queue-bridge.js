@@ -35,6 +35,9 @@
  * - Anterior:  M5 Lab 07: Motor de Ingesta por Lotes Merkle
  * - Siguiente: M6 Lab 01: HFS Nativo
  *
+ * [SIMULADO]
+ * No se usa ningún broker Kafka ni Redpanda: los eventos de partición se generan en memoria. Los anclajes de marca de agua en HCS son reales.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).

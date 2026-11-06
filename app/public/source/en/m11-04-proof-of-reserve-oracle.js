@@ -18,8 +18,8 @@
  * - https://docs.hedera.com/solutions/tokenization/stablecoin
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 03: Stablecoin Studio Roles
- * - Next:     M11 Lab 05: RWA Invoice Factoring
+ * - Previous: M11 Lab 03: Stablecoin Roles on HTS (Stablecoin Studio Concepts)
+ * - Next:     M11 Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
  *
  * [SIMULATED]
  * The custodian reserve figures are simulated. The on-chain reactions to them are real.

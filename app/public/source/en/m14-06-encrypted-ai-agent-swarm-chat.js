@@ -26,7 +26,7 @@
  * - https://hol.org/docs/standards/hcs-15/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 05: HCS-28 Agent Audit Stream
+ * - Previous: M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
  * - Next:     M14 Lab 07: HCS-15..18 Botanical Agent Swarms
  *
  * [SEQUENCE]

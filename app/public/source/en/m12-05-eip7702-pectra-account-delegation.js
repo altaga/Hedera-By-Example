@@ -30,7 +30,7 @@
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
+ * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  * - Next:     M12 Lab 06: ERC-4337 Paymaster & Gasless UserOperations
  *
  * [SIMULATED]

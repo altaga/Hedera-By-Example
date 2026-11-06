@@ -1,36 +1,36 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 08: Native Gas Sponsorship & Allowance Grants (HIP-1068)
- * [CONCEPT] Gasless Web3 User Experience via Account Allowances
+ * Lab 08: HBAR Allowances & Sponsored Spending (HIP-336)
+ * [CONCEPT] Let a User Spend From a Sponsor's Treasury Without the Sponsor's Key
  * ============================================================================
  * [ KEY CONCEPT ]
- * In mainstream Web3 applications, forcing end-users to buy native crypto (HBAR)
- * before performing their first transaction creates massive onboarding friction.
+ * HIP-336 (Approval and Allowance API) lets an owner approve a spender for a
+ * maximum HBAR amount (`AccountAllowanceApproveTransaction`). The spender then
+ * builds a transfer with `addApprovedHbarTransfer(owner, -amount)` and signs it
+ * ALONE: the amount is debited from the owner's balance, not the spender's.
  *
- * Hedera solves this natively without complex smart contracts via the
- * Account Allowance framework (governed by HIP-1068 principles).
+ * Be precise about fees: the spender is the transaction payer here, so it still
+ * pays its own small network fee. For true fee sponsorship (the user holds 0 HBAR)
+ * the sponsor must be the TransactionId payer and co-sign — see M13 Lab 02.
  *
- * A sponsor account (Enterprise Treasury or dApp Paymaster) grants an HBAR
- * allowance to an end-user account (`AccountAllowanceApproveTransaction`).
- * The user can then dispatch an approved transfer (`addApprovedHbarTransfer`)
- * where funds are debited directly from the sponsor's balance, enabling
- * frictionless "Gasless" onboarding while preserving ledger security.
- * *
  * [ LEARNABLE MOMENT ]
- * Fee sponsorship under HIP-1068 allows enterprises to subsidize transaction costs for their users: dApp end-users can sign their own transactions while network execution fees are debited seamlessly from a corporate treasury allowance.
+ * Allowances move value without sharing keys; the payer in the TransactionId decides
+ * who pays the network fee. They are two different tools.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ LEARNING PATH ]
  * - Previous: M1 Lab 07: HIP-1261 Simple Fees Engine
  * - Next:     M2 Lab 01: Legacy Query Deprecation
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
- * - Cost: <0.1 ℏ (network fees only).
+ * - Wallet: your testnet account is the sponsor (owner of the allowance).
+ * - Spender: ACCOUNT_1 from .env if set, otherwise a throwaway account (0.5 ℏ) funded by the operator.
+ * - Cost: <1 ℏ.
  *
  * [ HOW TO RUN ]
  * node English/M1_Fundamentals_Functional_JS/08_hip1068_gasless_fee_allowance.js
@@ -38,25 +38,20 @@
  */
 
 import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar, PrivateKey, Client } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 const main = async () => {
-  console.log('--- SESSION START: Native Gas Sponsorship & Allowances (HIP-1068) ---\n')
+  console.log('--- SESSION START: HBAR Allowances & Sponsored Spending (HIP-336) ---\n')
 
   const { client, operatorId } = getClient()
-  const spenderId = process.env.ACCOUNT_1_ID
-  const spenderKeyStr = process.env.ACCOUNT_1_PRIVATE_KEY
-  const recipientId = process.env.ACCOUNT_2_ID || operatorId.toString()
   const mirrorBase = getMirrorNodeBaseUrl()
-
-  if (!spenderId || !spenderKeyStr) {
-    console.error('[FAILED] Missing ACCOUNT_1_ID or ACCOUNT_1_PRIVATE_KEY in .env configuration.')
-    process.exitCode = 1
-    console.log('[INFO] Run M0 Lab 04 to provision child accounts first.')
-    return
-  }
-
-  const spenderKey = PrivateKey.fromStringDer(spenderKeyStr)
+  // ACCOUNT_1 from .env if set; otherwise a throwaway account funded by the operator
+  const spender = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: process.env.ACCOUNT_1_ID, privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const spenderId = spender.accountId.toString()
+  const spenderKey = spender.privateKey
+  const recipientId = process.env.ACCOUNT_2_ID || operatorId.toString()
 
   try {
     const ALLOWANCE_AMOUNT_HBAR = 0.1
@@ -129,11 +124,10 @@ const main = async () => {
     updateState('HIP1068_LAST_TRANSFER_TX_ID', transferResponse.transactionId.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('Frictionless Gasless UX: The end-user signed ONLY as the spender.')
+    console.log('Allowance spending: the spender signed alone (and paid its own network fee).')
     console.log('The funds were debited directly from the sponsor without requiring co-signatures.')
-    console.log('This enables gaming, enterprise ticketing, and Web3 apps to subsidize')
-    console.log('user activity seamlessly with zero smart contract vulnerabilities.')
-
+    console.log('To also sponsor the fee, make the sponsor the TransactionId payer (M13 Lab 02).')
+    
     client.close()
     spenderClient.close()
     console.log('\n--- SESSION COMPLETE ---')

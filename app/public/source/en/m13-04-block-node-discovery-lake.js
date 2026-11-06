@@ -7,8 +7,8 @@
  * [ KEY CONCEPT ]
  * Decentralized Data Lake: In Hedera's modular architecture, consensus nodes
  * produce blocks while specialized Block Nodes (HIP-1081) store and serve them.
- * HIP-1137 provides dynamic on-chain discovery of these Block Nodes through
- * the consensus address book. This decouples transaction execution from massive
+ * HIP-1137 lets Block Nodes register on-chain; the Mirror Node serves that
+ * registry at /api/v1/network/registered-nodes. This decouples transaction execution from massive
  * historical storage, enabling infinite horizontal scaling.
  *
  * [ LEARNABLE MOMENT ]
@@ -19,13 +19,14 @@
  * [ OFFICIAL REFERENCES ]
  * - https://hips.hedera.com/hip/hip-1081
  * - https://hips.hedera.com/hip/hip-1137
+ * - https://testnet.mirrornode.hedera.com/api/v1/docs/#/network/getRegisteredNodes
  *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 03: Block Stream & TSS Verification (HIP-1056)
  * - Next:     M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  *
  * [SIMULATED]
- * Block Node discovery (HIP-1137) is simulated with a local registry.
+ * Nothing in discovery is simulated: the registry, endpoints and TCP latency are real. Block contents are read from the Mirror Node /blocks API, not streamed from the Block Node (its gRPC API is not called here).
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -54,30 +55,40 @@ const queryLiveNetworkNodes = async (network = 'testnet', limit = 3) => {
 }
 
 /**
- * [ARCHITECTURAL SIMULATION]
- * Simulates on-chain dynamic discovery of registered Block Nodes (HIP-1137)
- * paired with live consensus node IDs from the Hedera address book.
+ * HIP-1137: Block Nodes register on-chain (RegisteredNodeCreateTransaction) and the
+ * Mirror Node exposes the registry at /api/v1/network/registered-nodes.
+ * Each BLOCK_NODE endpoint is then probed with a real TCP connect to measure latency.
  *
  * @param {string} network - 'testnet' | 'mainnet'
- * @param {Array<object>} liveNodes - Live consensus nodes from Mirror Node
- * @returns {Array<object>} List of discovered Block Node descriptors
+ * @returns {Promise<Array<object>>} Registered Block Node endpoints with measured latency
  */
-const discoverBlockNodes = (network = 'testnet', liveNodes = []) => {
-  const regions = ['us-east-01', 'eu-central-01', 'ap-south-01']
-  const latencies = [14, 28, 36]
-  return regions.map((region, idx) => {
-    const liveNode = liveNodes[idx] || {}
-    return {
-      nodeId: `blocknode-${region}`,
-      consensusNodeAccountId: liveNode.node_account_id || `0.0.${3 + idx}`,
-      endpoint: `grpc://lake-${region.split('-')[1]}.${network}.hedera.network:50211`,
-      protocol: 'HIP-1081/gRPC-v1',
-      supportedRange: { startBlock: 1, endBlock: 'HEAD' },
-      status: 'HEALTHY',
-      latencyMs: latencies[idx],
-      reputationScore: Number((0.998 - idx * 0.003).toFixed(3))
-    }
+const discoverBlockNodes = async (network = 'testnet') => {
+  const res = await fetch(`https://${network}.mirrornode.hedera.com/api/v1/network/registered-nodes?type=BLOCK_NODE&limit=25`)
+  if (!res.ok) throw new Error(`HTTP ${res.status} querying /api/v1/network/registered-nodes`)
+  const { registered_nodes: nodes = [] } = await res.json()
+  const { connect } = await import('node:net')
+  const ping = (host, port) => new Promise((resolve) => {
+    const start = Date.now()
+    const socket = connect({ host, port, timeout: 3000 })
+    socket.once('connect', () => { socket.destroy(); resolve(Date.now() - start) })
+    socket.once('timeout', () => { socket.destroy(); resolve(null) })
+    socket.once('error', () => resolve(null))
   })
+  const out = []
+  for (const n of nodes) {
+    const ep = n.service_endpoints.find(e => e.type === 'BLOCK_NODE' && e.block_node?.endpoint_apis?.includes('SUBSCRIBE_STREAM')) ||
+      n.service_endpoints.find(e => e.type === 'BLOCK_NODE')
+    if (!ep) continue
+    const host = ep.domain_name || ep.ip_address
+    out.push({
+      nodeId: `registered-${n.registered_node_id}`,
+      description: n.description,
+      endpoint: `${host}:${ep.port}`,
+      apis: ep.block_node?.endpoint_apis || [],
+      latencyMs: await ping(host, ep.port)
+    })
+  }
+  return out
 }
 
 /**
@@ -105,16 +116,18 @@ const main = async () => {
     const liveNodes = await queryLiveNetworkNodes(network, 3)
     console.log(`[SUCCESS] Retrieved ${liveNodes.length} live consensus node descriptors from Mirror Node.`)
 
-    console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Mapping HIP-1137 Block Node gRPC descriptors...')
-    const discoveredNodes = discoverBlockNodes(network, liveNodes)
+    console.log('\n[PROCESS] Reading the on-chain HIP-1137 registry (/api/v1/network/registered-nodes?type=BLOCK_NODE)...')
+    const discoveredNodes = await discoverBlockNodes(network)
+    if (!discoveredNodes.length) throw new Error('No BLOCK_NODE entries in the HIP-1137 registry')
 
-    console.log(`[SUCCESS] Discovered ${discoveredNodes.length} active Block Lake Nodes:`)
+    console.log(`[SUCCESS] ${discoveredNodes.length} registered Block Nodes:`)
     for (const node of discoveredNodes) {
-      console.log(`[LOG] Node ID:  ${node.nodeId.padEnd(22)} | Validator: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
+      console.log(`[LOG] ${node.nodeId.padEnd(14)} | ${node.description} | ${node.endpoint} | APIs: ${node.apis.join(',')} | TCP: ${node.latencyMs === null ? 'unreachable' : node.latencyMs + 'ms'}`)
     }
 
     // Select the lowest-latency healthy node
-    const optimalNode = [...discoveredNodes].sort((a, b) => a.latencyMs - b.latencyMs)[0]
+    const reachable = discoveredNodes.filter(n => n.latencyMs !== null)
+    const optimalNode = [...(reachable.length ? reachable : discoveredNodes)].sort((a, b) => (a.latencyMs ?? 1e9) - (b.latencyMs ?? 1e9))[0]
     console.log(`\n[INFO] Selected optimal storage peer: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
 
     // 2. Ingest Live Block Stream Range

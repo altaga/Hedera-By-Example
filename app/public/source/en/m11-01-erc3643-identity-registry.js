@@ -1,30 +1,53 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 01: ERC-3643 Identity Registry & Transfer Rules
- * [CONCEPT] Permissioned RWA Transfer Restrictions
+ * Lab 01: Permissioned RWA Transfers — Identity Registry + HTS KYC (ERC-3643 Concepts)
+ * [CONCEPT] Ledger-Enforced Transfer Restrictions for Regulated Assets
  * ============================================================================
  * [ KEY CONCEPT ]
- * The Regulatory Gate: Institutional assets cannot move permissionlessly.
- * The ERC-3643 standard (enforced by Hedera's Asset Tokenization Studio)
- * couples every token transfer with an Identity Registry check. If the
- * recipient lacks verified KYC, belongs to a sanctioned jurisdiction, or
- * exceeds investor caps, the transfer is mathematically rejected at the
- * ledger boundary before consensus settlement.
- * *
+ * Regulated assets cannot move permissionlessly. ERC-3643 (T-REX) solves this on
+ * EVM chains by checking an on-chain Identity Registry inside every transfer.
+ * Hedera's native Token Service offers a ledger-level equivalent of the core rule:
+ * a token created with a KYC key can only move between accounts whose KYC flag the
+ * issuer granted. This lab:
+ * 1. Creates a real HTS security token with KYC, freeze and wipe keys.
+ * 2. Evaluates investor claims (KYC, jurisdiction, accreditation) in an issuer
+ *    compliance agent and grants on-chain KYC only to eligible accounts.
+ * 3. Sends real transfers: the eligible investor receives tokens; transfers to the
+ *    unverified and sanctioned investors are REJECTED BY THE NETWORK
+ *    (ACCOUNT_KYC_NOT_GRANTED_FOR_TOKEN), not by JavaScript.
+ * 4. Anchors every compliance decision to an HCS audit topic.
+ *
  * [ LEARNABLE MOMENT ]
- * Vanilla ERC-20 tokens fail regulatory compliance because anyone can transfer to anyone. ERC-3643 (T-REX) enforces that transfers occur exclusively between qualified, KYC-verified ONCHAINID investors.
+ * HTS KYC gives you consensus-enforced allow-listing without any contract. Full
+ * ERC-3643 (ONCHAINID claims, modular compliance, recovery, forced transfers) is
+ * what Hedera's Asset Tokenization Studio (ATS) implements with smart contracts —
+ * this lab does NOT deploy ERC-3643 or ATS; use ATS for production security tokens.
  *
  * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/enable-kyc-account-flag
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/define-a-token
+ * - https://github.com/hashgraph/asset-tokenization-studio
  * - https://erc3643.org/
  *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 07: Live AI Streaming Proxy Gateway
- * - Next:     M11 Lab 02: ERC-1400 Security Bonds
+ * - Next:     M11 Lab 02: Tranche Bonds on HTS (ERC-1400 Concepts)
+ *
+ * [SEQUENCE]
+ * Issuer -> Hedera: Create security token with KYC key
+ * Issuer -> Issuer: Compliance agent checks investor claims
+ * Issuer -> Hedera: Grant KYC only to eligible investors
+ * Issuer -> Hedera: Transfer to each investor
+ * Note Hedera: Transfers to accounts without KYC fail at consensus
+ * Issuer -> Hedera: Anchor decisions on HCS
+ *
+ * [SIMULATED]
+ * The investor claims (country, accreditation) are local sample data and no ERC-3643/ATS contracts are deployed. The token, the KYC grants, the accepted and rejected transfers and the HCS audit trail are real.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: <0.1 ℏ (network fees only).
+ * - Wallet: your testnet account (creates 3 throwaway investor accounts, a token and a topic).
+ * - Cost: ~0.3 ℏ funded to throwaway accounts + ~2 ℏ in fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/01_erc3643_identity_registry.js
@@ -32,10 +55,16 @@
  */
 
 import {
+  TokenAssociateTransaction,
+  TokenCreateTransaction,
+  TokenGrantKycTransaction,
+  TokenSupplyType,
+  TokenType,
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction
+  TopicMessageSubmitTransaction,
+  TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { createLabAccount, getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
 
 class Erc3643ComplianceEngine {
   constructor () {
@@ -46,7 +75,7 @@ class Erc3643ComplianceEngine {
 
   registerInvestor (investorId, claims) {
     this.identityRegistry.set(investorId, {
-      did: `did:hedera:testnet:${investorId};onchainid`,
+      did: `did:hedera:testnet:${investorId}`,
       isKycVerified: claims.isKycVerified || false,
       countryCode: claims.countryCode || 'UNKNOWN',
       isAccredited: claims.isAccredited || false,
@@ -87,83 +116,111 @@ class Erc3643ComplianceEngine {
 }
 
 const main = async () => {
-  console.log('--- SESSION START: ERC-3643 Identity Registry & Transfer Rules ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- SESSION START: Permissioned RWA Transfers (Identity Registry + HTS KYC) ---\n')
+  const { client, operatorId, operatorKey } = getClient()
 
   try {
     const compliance = new Erc3643ComplianceEngine()
+    const issuerKey = client.operatorPublicKey
 
-    // 1. Provision On-Chain Identity Records
-    console.log('[PROCESS] Registering Institutional & Retail Investors into Identity Registry...')
+    // 1. Real investor accounts
+    console.log('[PROCESS] Step 1: Creating 3 throwaway investor accounts...')
+    const investors = {
+      B: { ...(await createLabAccount(client, { hbar: 0.1, autoAssociations: 0 })), claims: { isKycVerified: true, countryCode: 'CHE', isAccredited: true } },
+      C: { ...(await createLabAccount(client, { hbar: 0.1, autoAssociations: 0 })), claims: { isKycVerified: false, countryCode: 'IND', isAccredited: false } },
+      D: { ...(await createLabAccount(client, { hbar: 0.1, autoAssociations: 0 })), claims: { isKycVerified: true, countryCode: 'PRK', isAccredited: false } }
+    }
+    compliance.registerInvestor(operatorId.toString(), { isKycVerified: true, countryCode: 'USA', isAccredited: true })
+    for (const [name, inv] of Object.entries(investors)) {
+      compliance.registerInvestor(inv.accountId.toString(), inv.claims)
+      console.log(`[LOG] Investor ${name} ${inv.accountId}: ${inv.claims.countryCode} | KYC claim: ${inv.claims.isKycVerified} | Accredited: ${inv.claims.isAccredited}`)
+    }
 
-    const investorA = operatorId.toString()
-    const investorB = '0.0.700101'
-    const investorC = '0.0.700102'
-    const investorD = '0.0.700103'
+    // 2. Real security token with a KYC key
+    console.log('\n[PROCESS] Step 2: Creating a permissioned HTS security token (KYC + freeze + wipe keys)...')
+    const tokenReceipt = await (await new TokenCreateTransaction()
+      .setTokenName('HBE Permissioned Equity')
+      .setTokenSymbol('HBEQ')
+      .setTokenType(TokenType.FungibleCommon)
+      .setDecimals(0)
+      .setInitialSupply(100000)
+      .setSupplyType(TokenSupplyType.Finite)
+      .setMaxSupply(100000)
+      .setTreasuryAccountId(operatorId)
+      .setAdminKey(issuerKey)
+      .setKycKey(issuerKey)
+      .setFreezeKey(issuerKey)
+      .setWipeKey(issuerKey)
+      .execute(client)).getReceipt(client)
+    const tokenId = tokenReceipt.tokenId
+    console.log(`[SUCCESS] Token ${tokenId} created (treasury KYC is implicit)`)
 
-    compliance.registerInvestor(investorA, { isKycVerified: true, countryCode: 'USA', isAccredited: true })
-    compliance.registerInvestor(investorB, { isKycVerified: true, countryCode: 'CHE', isAccredited: true })
-    compliance.registerInvestor(investorC, { isKycVerified: false, countryCode: 'IND', isAccredited: false }) // Missing KYC
-    compliance.registerInvestor(investorD, { isKycVerified: true, countryCode: 'PRK', isAccredited: false }) // Sanctioned
+    // Investors associate the token (each signs its own association)
+    for (const inv of Object.values(investors)) {
+      const tx = await new TokenAssociateTransaction().setAccountId(inv.accountId).setTokenIds([tokenId]).freezeWith(client).sign(inv.privateKey)
+      await (await tx.execute(client)).getReceipt(client)
+    }
 
-    console.log(`[LOG] Investor A (${investorA}): USA | KYC: OK | Accredited: YES`)
-    console.log(`[LOG] Investor B (${investorB}): CHE | KYC: OK | Accredited: YES`)
-    console.log(`[LOG] Investor C (${investorC}): IND | KYC: NO | Accredited: NO`)
-    console.log(`[LOG] Investor D (${investorD}): PRK | KYC: OK | Accredited: NO\n`)
+    // 3. Compliance agent decides; KYC is granted on-chain only to eligible investors
+    console.log('\n[PROCESS] Step 3: Compliance agent evaluates claims and grants on-chain KYC...')
+    const decisions = []
+    for (const [name, inv] of Object.entries(investors)) {
+      const check = compliance.canTransfer(operatorId.toString(), inv.accountId.toString(), 5000)
+      if (check.allowed) {
+        const grant = await new TokenGrantKycTransaction().setAccountId(inv.accountId).setTokenId(tokenId).execute(client)
+        await grant.getReceipt(client)
+        console.log(`[KYC GRANTED] Investor ${name} ${inv.accountId} — ${grant.transactionId}`)
+      } else {
+        console.log(`[KYC DENIED]  Investor ${name} ${inv.accountId} — ${check.error}`)
+      }
+      decisions.push({ investor: inv.accountId.toString(), kyc: check.allowed, reason: check.error })
+    }
 
-    // 2. Evaluate Transfer Scenarios
-    console.log('--- VALIDATING TRANSFER 1: Investor A -> Investor B ($50,000 Equity) ---')
-    const t1 = compliance.canTransfer(investorA, investorB, 50000)
-    console.log(`[RESULT] Transfer Allowed: ${t1.allowed} | Reason: Institutional Compliance Satisfied`)
+    // 4. Real transfers: the ledger enforces the KYC flag
+    console.log('\n[PROCESS] Step 4: Sending 5,000 units to each investor (the network enforces KYC)...')
+    const results = []
+    for (const [name, inv] of Object.entries(investors)) {
+      let status
+      try {
+        const res = await new TransferTransaction()
+          .addTokenTransfer(tokenId, operatorId, -5000)
+          .addTokenTransfer(tokenId, inv.accountId, 5000)
+          .execute(client)
+        status = (await res.getReceipt(client)).status.toString()
+        console.log(`[ACCEPTED] -> ${name} ${inv.accountId}: ${status} | ${getHashscanUrl(res)}`)
+      } catch (err) {
+        status = err.status ? err.status.toString() : err.message
+        console.log(`[REJECTED BY NETWORK] -> ${name} ${inv.accountId}: ${status}`)
+      }
+      results.push({ investor: inv.accountId.toString(), status })
+    }
+    if (!results.some((r) => r.status === 'SUCCESS') || !results.some((r) => r.status.includes('KYC_NOT_GRANTED'))) {
+      throw new Error('Expected one accepted transfer and KYC rejections from the network')
+    }
 
-    console.log('\n--- VALIDATING TRANSFER 2: Investor A -> Investor C (Unverified Retail) ---')
-    const t2 = compliance.canTransfer(investorA, investorC, 5000)
-    console.log(`[RESULT] Transfer Allowed: ${t2.allowed} | Rejection Code: ${t2.error}`)
-
-    console.log('\n--- VALIDATING TRANSFER 3: Investor A -> Investor D (Sanctioned Nation) ---')
-    const t3 = compliance.canTransfer(investorA, investorD, 1000)
-    console.log(`[RESULT] Transfer Allowed: ${t3.allowed} | Rejection Code: ${t3.error}`)
-
-    // 3. Anchor Identity Registry Events to HCS for Compliance Audit
-    console.log('\n[PROCESS] Anchoring ERC-3643 Compliance Verification Event to HCS...')
-    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('erc3643:compliance_registry_v1')
-      .freezeWith(client)
-    const topicResponse = await topicTx.execute(client)
-    // Wait for consensus: the receipt says whether the network accepted the transaction.
-    const topicReceipt = await topicResponse.getReceipt(client)
+    // 5. Anchor the compliance trail to HCS
+    console.log('\n[PROCESS] Step 5: Anchoring the compliance decisions to an HCS audit topic...')
+    const topicReceipt = await (await new TopicCreateTransaction().setTopicMemo('hbe:rwa-compliance-audit').execute(client)).getReceipt(client)
     const complianceTopicId = topicReceipt.topicId.toString()
-
-    const complianceAudit = JSON.stringify({
-      standard: 'ERC-3643',
-      action: 'TRANSFER_VALIDATION',
-      sender: investorA,
-      recipient: investorB,
-      amount: 50000,
-      status: 'APPROVED',
-      timestamp: Date.now()
-    })
-
-    // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
-    const msgTx = await new TopicMessageSubmitTransaction()
+    await (await new TopicMessageSubmitTransaction()
       .setTopicId(complianceTopicId)
-      .setMessage(complianceAudit)
-      .freezeWith(client)
-    await msgTx.execute(client)
+      .setMessage(JSON.stringify({ type: 'rwa-compliance-audit', token: tokenId.toString(), decisions, results, timestamp: new Date().toISOString() }))
+      .execute(client)).getReceipt(client)
+    console.log(`[SUCCESS] Audit trail on HCS topic ${complianceTopicId}`)
 
-    console.log(`[SUCCESS] Audit Event Recorded on HCS Topic: ${complianceTopicId}`)
     updateState('ATS_COMPLIANCE_TOPIC_ID', complianceTopicId)
+    updateState('RWA_PERMISSIONED_TOKEN_ID', tokenId.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('ERC-3643 turns compliance from an off-chain legal headache into an on-chain')
-    console.log('cryptographic guarantee. The token contract never completes an illegal transfer,')
-    console.log('protecting token issuers from regulatory enforcement penalties.')
+    console.log('The rejected transfers were refused by consensus because the recipients had no')
+    console.log('KYC grant for this token — compliance enforced by the ledger, not by app code.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] ERC-3643 validation failed:', error.message)
+    console.error('\n[ERROR] Permissioned transfer lab failed:', error.message)
     process.exit(1)
+  } finally {
+    client.close()
   }
 }
 

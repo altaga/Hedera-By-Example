@@ -38,6 +38,9 @@
  * Trustee 2 -> Hedera: ScheduleSign
  * Hedera -> Treasury: Threshold met: payout executes automatically
  *
+ * [SIMULATED]
+ * The Slack/Discord webhook is printed locally, not sent. The multisig treasury, the scheduled payout, the signatures and the Mirror Node polling are real.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).

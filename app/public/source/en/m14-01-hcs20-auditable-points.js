@@ -23,7 +23,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 05: Intent Settlement Engine
- * - Next:     M14 Lab 02: HCS-25 Portable AI Trust Score
+ * - Next:     M14 Lab 02: HCS-25 AI Trust Score Methodology
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

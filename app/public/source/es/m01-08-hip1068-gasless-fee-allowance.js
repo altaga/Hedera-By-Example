@@ -1,37 +1,37 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 08: Patrocinio de Gas y Concesión de Asignaciones Nativas (HIP-1068)
- * [CONCEPTO] Experiencia de Usuario Web3 Sin Gas mediante Asignaciones de Cuenta
+ * Lab 08: Asignaciones de HBAR y Gasto Patrocinado (HIP-336)
+ * [CONCEPTO] Que un Usuario Gaste de la Tesorería de un Patrocinador sin su Clave
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * En las aplicaciones Web3 masivas, obligar a los usuarios finales a comprar
- * cripto nativa (HBAR) antes de su primera transacción crea una fricción
- * de incorporación inmensa.
+ * HIP-336 (API de Aprobaciones y Asignaciones) permite que un dueño apruebe a un
+ * gastador hasta un monto máximo de HBAR (`AccountAllowanceApproveTransaction`). El
+ * gastador construye una transferencia con `addApprovedHbarTransfer(dueño, -monto)` y la
+ * firma SOLO: el monto se debita del saldo del dueño, no del gastador.
  *
- * Hedera resuelve esto de forma nativa sin contratos inteligentes complejos a
- * través del marco de Asignaciones de Cuenta (Account Allowances, bajo principios HIP-1068).
+ * Precisión sobre comisiones: aquí el gastador es quien paga la transacción, así que
+ * sigue pagando su pequeña comisión de red. Para un patrocinio real de comisiones (el
+ * usuario tiene 0 HBAR) el patrocinador debe ser el pagador del TransactionId y co-firmar
+ * — ver M13 Lab 02.
  *
- * Una cuenta patrocinadora (Tesorería Corporativa o Paymaster de dApp) otorga una
- * asignación de HBAR a la cuenta del usuario (`AccountAllowanceApproveTransaction`).
- * El usuario puede entonces despachar una transferencia aprobada (`addApprovedHbarTransfer`)
- * donde los fondos se debitan directamente del saldo del patrocinador, logrando
- * un onboarding sin fricción "Gasless" mientras se preserva la seguridad del ledger.
- * *
  * [ MOMENTO DE APRENDIZAJE ]
- * El patrocinio de comisiones bajo HIP-1068 permite a las empresas subsidiar los costos a sus usuarios: los clientes firman sus propias operaciones mientras las comisiones se debitan de la asignación de tesorería corporativa.
+ * Las asignaciones mueven valor sin compartir claves; el pagador del TransactionId decide
+ * quién paga la comisión de red. Son dos herramientas distintas.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M1 Lab 07: Motor de Tarifas Simples HIP-1261
  * - Siguiente: M2 Lab 01: Depreciación de Consultas Síncronas
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Wallet: tu cuenta de testnet es el patrocinador (dueño de la asignación).
+ * - Gastador: ACCOUNT_1 del .env si existe; si no, una cuenta desechable (0.5 ℏ) financiada por el operador.
+ * - Costo: <1 ℏ.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M1_Fundamentals_Functional_JS/08_hip1068_gasless_fee_allowance.js
@@ -39,25 +39,20 @@
  */
 
 import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar, PrivateKey, Client } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Patrocinio de Gas y Asignaciones (HIP-1068) ---\n')
+  console.log('--- INICIO DEL LABORATORIO: Asignaciones de HBAR y Gasto Patrocinado (HIP-336) ---\n')
 
   const { client, operatorId } = getClient()
-  const spenderId = process.env.ACCOUNT_1_ID
-  const spenderKeyStr = process.env.ACCOUNT_1_PRIVATE_KEY
-  const recipientId = process.env.ACCOUNT_2_ID || operatorId.toString()
   const mirrorBase = getMirrorNodeBaseUrl()
-
-  if (!spenderId || !spenderKeyStr) {
-    console.error('[FALLO] Faltan ACCOUNT_1_ID o ACCOUNT_1_PRIVATE_KEY en la configuración .env.')
-    process.exitCode = 1
-    console.log('[INFO] Ejecuta M0 Lab 04 para aprovisionar cuentas secundarias primero.')
-    return
-  }
-
-  const spenderKey = PrivateKey.fromStringDer(spenderKeyStr)
+  // ACCOUNT_1 del .env si existe; si no, una cuenta desechable financiada por el operador
+  const spender = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: process.env.ACCOUNT_1_ID, privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const spenderId = spender.accountId.toString()
+  const spenderKey = spender.privateKey
+  const recipientId = process.env.ACCOUNT_2_ID || operatorId.toString()
 
   try {
     const ALLOWANCE_AMOUNT_HBAR = 0.1
@@ -130,10 +125,9 @@ const main = async () => {
     updateState('HIP1068_LAST_TRANSFER_TX_ID', transferResponse.transactionId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('UX Sin Gas y Sin Fricción: El usuario final firmó ÚNICAMENTE como usuario gestor.')
+    console.log('Gasto por asignación: el gastador firmó solo (y pagó su propia comisión de red).')
     console.log('Los fondos se debitaron directamente del patrocinador sin requerir co-firmas.')
-    console.log('Esto permite que juegos, boletaje empresarial y dApps subsidien la actividad')
-    console.log('de sus usuarios sin introducir vulnerabilidades de smart contracts.')
+    console.log('Para patrocinar también la comisión, haz al patrocinador pagador del TransactionId (M13 Lab 02).')
 
     client.close()
     spenderClient.close()

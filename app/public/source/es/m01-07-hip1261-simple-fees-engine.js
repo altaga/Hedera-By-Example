@@ -26,7 +26,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M1 Lab 06: Staking Nativo
- * - Siguiente: M1 Lab 08: Asignación de Tarifas Sin Gas HIP-1068
+ * - Siguiente: M1 Lab 08: Asignaciones de HBAR y Gasto Patrocinado (HIP-336)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

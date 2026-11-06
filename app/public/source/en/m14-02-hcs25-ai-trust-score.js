@@ -1,33 +1,42 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 02: HCS-25 Portable AI Trust Score & Attestation Methodology
- * [CONCEPT] Decentralized Reputation & Trust Vector for Autonomous Agents
+ * Lab 02: HCS-25 AI Trust Score Methodology
+ * [CONCEPT] Deterministic, Explainable Trust Scores for AI Agents
  * ============================================================================
  * [ KEY CONCEPT ]
- * Portable AI Reputation: As autonomous agents manage capital, execute trades,
- * and interact with APIs, protocols need a tamper-proof mechanism to evaluate
- * agent reliability. HCS-25 defines a multi-dimensional trust score computed
- * from: (1) Liveness & uptime proofs, (2) Consensus execution accuracy, and
- * (3) Cryptographically signed human/stakeholder feedback.
- * The resulting score is attested on HCS and portable across any blockchain or AI swarm.
+ * HCS-25 (Hashgraph Online, Draft v1.0) defines HOW to compute an AI Trust Score,
+ * not where to store it:
+ * 1. Trust adapters turn signals into components in [0,100], each with a status
+ *    (ok | missing | timeout | error | stale). Missing/timeout/error -> 0; stale is
+ *    multiplied by m_stale.
+ * 2. Adapter total = mean of its components.
+ * 3. Contribution modes decide the denominator: `universal` and `scoped` always count
+ *    when applicable (missing output -> defaultComponentKey = 0); `conditional` counts
+ *    only when it produced components. Weight 0 = informational only.
+ * 4. trustScores.total = round2( Σ w·total / Σ w ), plus trustScoreUpdatedAt and
+ *    trustScoreConfigVersion.
+ * This lab implements that algorithm, checks it against the spec's two test vectors
+ * (57.5 and 63.33), scores an agent, and publishes the explainable result on HCS.
  *
  * [ LEARNABLE MOMENT ]
- * Web2 AI reputation is stored in opaque databases (like closed app store reviews).
- * If a rogue agent hallucinates or defaults on a settlement, its HCS-25 score drops
- * permanently on the public ledger, protecting the entire ecosystem.
+ * A score is only comparable with another score of the same trustScoreConfigVersion.
+ * Publishing the breakdown and config version makes it reproducible by anyone.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hol.org/docs/standards/
- * - https://hol.org/docs/standards/hcs-26/
+ * - https://hol.org/docs/standards/hcs-25
+ * - https://hol.org/docs/standards/hcs-14
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 01: HCS-20 Auditable Points
  * - Next:     M14 Lab 03: HCS-26 Agent Skills Registry
  *
+ * [SIMULATED]
+ * The agent's signal values are sample data. HCS-25 does not define a storage format, so the HCS record layout (and the evaluator signatures) are this lab's choice. The algorithm and the HCS publication are real.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: <1 ℏ (network fees only).
+ * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/02_hcs25_ai_trust_score.js
@@ -35,155 +44,101 @@
  */
 
 import { ethers } from 'ethers'
-import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
-} from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+
+const round2 = (x) => Math.round(x * 100) / 100
+const clamp = (x) => Math.min(100, Math.max(0, x))
 
 /**
- * Calculates deterministic HCS-25 composite trust score.
- *
- * @param {object} metrics - Vector components (0.00 to 1.00)
- * @returns {number} Score out of 100
+ * HCS-25 composite score. `adapters`: [{ adapterId, weight=1, contributionMode='conditional',
+ * applicable=true, defaultComponentKey, components: { key: { value, status } } }]
  */
-const calculateHCS25Score = ({ uptimeRatio, consensusAccuracy, humanFeedbackScore }) => {
-  // Weighted methodology: 35% Uptime, 45% Consensus Accuracy, 20% Feedback
-  const weighted = (uptimeRatio * 0.35) + (consensusAccuracy * 0.45) + (humanFeedbackScore * 0.20)
-  return Math.round(weighted * 100 * 100) / 100 // 2 decimal precision
-}
-
-/**
- * Assembles an HCS-25 attestation payload with multi-evaluator cryptographic signatures.
- *
- * @param {object} params - Agent identity, metrics, and evaluator keys
- * @returns {object} Attestation document
- */
-const createHCS25Attestation = ({ agentAccountId, epochNumber, metrics, evaluators }) => {
-  const score = calculateHCS25Score(metrics)
-  const timestamp = new Date().toISOString()
-
-  const attestationCore = {
-    standard: 'hcs-25',
-    version: '1.0.0',
-    agentId: agentAccountId,
-    epoch: epochNumber,
-    timestamp,
-    metrics: {
-      uptimeRatio: metrics.uptimeRatio,
-      consensusAccuracy: metrics.consensusAccuracy,
-      humanFeedbackScore: metrics.humanFeedbackScore
-    },
-    compositeScore: score,
-    trustTier: score >= 90 ? 'TIER_1_SOVEREIGN' : score >= 75 ? 'TIER_2_VERIFIED' : 'TIER_3_PROBATIONARY'
-  }
-
-  const documentHash = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(attestationCore)))
-
-  // Evaluators sign the score document
-  const endorsements = evaluators.map(ev => {
-    const wallet = new ethers.Wallet(ev.privateKey)
-    return {
-      evaluatorId: ev.evaluatorId,
-      publicKey: wallet.address,
-      signature: wallet.signingKey.sign(documentHash).serialized
+const computeTrustScore = (adapters, { mStale = 1, configVersion = 1 } = {}) => {
+  const breakdown = {}
+  let num = 0
+  let den = 0
+  for (const a of adapters) {
+    const weight = a.weight ?? 1
+    const mode = a.contributionMode ?? 'conditional'
+    if (a.applicable === false || weight === 0) continue
+    const comps = {}
+    for (const [key, c] of Object.entries(a.components || {})) {
+      if (['missing', 'timeout', 'error'].includes(c.status) && c.nonScorableWhenUnavailable) continue
+      comps[key] = c.status === 'ok' ? clamp(c.value) : c.status === 'stale' ? clamp(c.value * mStale) : 0
     }
-  })
-
+    let keys = Object.keys(comps)
+    if (!keys.length) {
+      if (mode === 'conditional') continue
+      comps[a.defaultComponentKey || `${a.adapterId}.score`] = 0
+      keys = Object.keys(comps)
+    }
+    const total = round2(keys.reduce((s, k) => s + comps[k], 0) / keys.length)
+    Object.assign(breakdown, comps)
+    breakdown[`${a.adapterId}.total`] = total
+    num += total * weight
+    den += weight
+  }
   return {
-    ...attestationCore,
-    documentHash,
-    endorsements
+    trustScores: { total: den ? round2(num / den) : 0, ...breakdown },
+    trustScoreUpdatedAt: new Date().toISOString(),
+    trustScoreConfigVersion: configVersion
   }
 }
+
+// Spec test vectors (HCS-25 "Test Vectors")
+const vectorAdapters = (reputationMode, reputationMissing) => [
+  { adapterId: 'availability', weight: 1, contributionMode: 'scoped', components: { 'availability.uptime': { value: 90, status: 'ok' } } },
+  { adapterId: 'simple_evals', weight: 2, contributionMode: 'scoped', components: { 'simple_evals.math': { value: 100, status: 'ok' }, 'simple_evals.science': { value: 0, status: 'missing' } } },
+  { adapterId: 'reputation', weight: 1, contributionMode: reputationMode, components: reputationMissing ? {} : { 'reputation.stars': { value: 40, status: 'ok' } } }
+]
 
 const main = async () => {
-  console.log('--- SESSION START: HCS-25 Portable AI Trust Score ---\n')
+  console.log('--- SESSION START: HCS-25 AI Trust Score Methodology ---\n')
   const { client, operatorId } = getClient()
 
   try {
-    // 1. Create HCS-25 Registry Topic
-    console.log('[PROCESS] Initializing on-chain HCS-25 Agent Reputation Topic...')
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-25:AI:TRUST:REGISTRY')
-      .execute(client)
+    // 1. Conformance against the spec test vectors
+    console.log('[PROCESS] Step 1: Checking the implementation against the HCS-25 test vectors...')
+    const tv1 = computeTrustScore(vectorAdapters('scoped', false)).trustScores.total
+    const tv2 = computeTrustScore(vectorAdapters('conditional', true)).trustScores.total
+    console.log(`[VERIFY] Test Vector 1 (scoped, missingness penalized): ${tv1} (expected 57.5) -> ${tv1 === 57.5 ? 'PASS' : 'FAIL'}`)
+    console.log(`[VERIFY] Test Vector 2 (conditional, sparse ignored):  ${tv2} (expected 63.33) -> ${tv2 === 63.33 ? 'PASS' : 'FAIL'}`)
+    if (tv1 !== 57.5 || tv2 !== 63.33) throw new Error('HCS-25 test vectors failed')
 
-    const topicReceipt = await topicTx.getReceipt(client)
-    const topicId = topicReceipt.topicId.toString()
-    console.log(`[SUCCESS] HCS-25 Trust Registry Topic Created: ${topicId}`)
+    // 2. Score an agent (sample signals)
+    console.log('\n[PROCESS] Step 2: Scoring an agent from a signal snapshot...')
+    const subject = { uaid: `hedera:testnet:${operatorId}`, registry: 'hashgraph-online', protocol: 'hcs-10' }
+    const result = computeTrustScore([
+      { adapterId: 'availability', weight: 1, contributionMode: 'universal', components: { 'availability.uptime': { value: 99.4, status: 'ok' }, 'availability.latency': { value: 87, status: 'stale' } } },
+      { adapterId: 'simple-math', weight: 0.5, contributionMode: 'scoped', components: { 'simple-math.score': { value: 96, status: 'ok' } } },
+      { adapterId: 'x402', weight: 1, contributionMode: 'scoped', components: { 'x402.volume': { value: 0, status: 'timeout' } } },
+      { adapterId: 'oss-popularity', weight: 0.7, contributionMode: 'conditional', components: {} },
+      { adapterId: 'erc8004-feedback', weight: 1, contributionMode: 'scoped', applicable: false }
+    ], { mStale: 0.8, configVersion: 3 })
+    for (const [k, v] of Object.entries(result.trustScores)) console.log(`[LOG] ${k.padEnd(24)} ${v}`)
 
-    // 2. Define Autonomous Agent & Performance Metrics
-    const targetAgentId = '0.0.8707881'
-    const agentMetrics = {
-      uptimeRatio: 0.994, // 99.4% uptime in observation window
-      consensusAccuracy: 0.982, // 98.2% deterministic consensus adherence
-      humanFeedbackScore: 0.940 // 94.0% positive customer satisfaction / review rating
-    }
+    // 3. Evaluators sign the record (lab choice; HCS-25 leaves transport/storage open)
+    const record = { p: 'hcs-25', subject, ...result }
+    const digest = ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(record)))
+    const evaluators = [ethers.Wallet.createRandom(), ethers.Wallet.createRandom()]
+    const endorsements = evaluators.map(w => ({ evaluator: w.address, signature: w.signingKey.sign(digest).serialized }))
+    const valid = endorsements.filter(e => ethers.recoverAddress(digest, e.signature) === e.evaluator).length
+    console.log(`\n[VERIFY] Evaluator signatures valid: ${valid}/${endorsements.length}`)
 
-    console.log(`\n[PROCESS] Evaluating metrics for Target Agent (${targetAgentId}):`)
-    console.log(`[LOG] Uptime Ratio:         ${(agentMetrics.uptimeRatio * 100).toFixed(2)}%`)
-    console.log(`[LOG] Consensus Accuracy:   ${(agentMetrics.consensusAccuracy * 100).toFixed(2)}%`)
-    console.log(`[LOG] Human Feedback Score: ${(agentMetrics.humanFeedbackScore * 100).toFixed(2)}%`)
+    // 4. Publish on HCS
+    console.log('\n[PROCESS] Step 4: Publishing the explainable score record on HCS...')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:hcs-25-trust-scores').execute(client)).getReceipt(client)).topicId
+    const res = await new TopicMessageSubmitTransaction().setTopicId(topicId)
+      .setMessage(JSON.stringify({ ...record, digest, endorsements })).execute(client)
+    const receipt = await res.getReceipt(client)
+    console.log(`[SUCCESS] Topic ${topicId} seq #${receipt.topicSequenceNumber} — ${getHashscanUrl(res)}`)
 
-    // 3. Evaluator Quorum Signs Attestation
-    const evaluators = [
-      { evaluatorId: 'auditor-alpha-sec', privateKey: '0x1111111111111111111111111111111111111111111111111111111111111111' },
-      { evaluatorId: 'auditor-hashgraph-dao', privateKey: '0x2222222222222222222222222222222222222222222222222222222222222222' }
-    ]
-
-    console.log('\n[PROCESS] Compiling multi-signature HCS-25 attestation document...')
-    const attestation = createHCS25Attestation({
-      agentAccountId: targetAgentId,
-      epochNumber: 42,
-      metrics: agentMetrics,
-      evaluators
-    })
-
-    console.log(`[SUCCESS] Composite Score Calculated: ${attestation.compositeScore} / 100`)
-    console.log(`[LOG] Assigned Trust Tier: ${attestation.trustTier}`)
-    console.log(`[LOG] Document Hash:       ${attestation.documentHash}`)
-    console.log(`[LOG] Endorsement Count:   ${attestation.endorsements.length} independent signatures`)
-
-    // 4. Anchor Attestation to Hedera Consensus Stream
-    console.log('\n[PROCESS] Committing HCS-25 Attestation to Hedera Consensus...')
-    const submitTx = await new TopicMessageSubmitTransaction()
-      .setTopicId(topicId)
-      .setMessage(JSON.stringify(attestation))
-      .execute(client)
-
-    const submitReceipt = await submitTx.getReceipt(client)
-    const seqNum = submitReceipt.topicSequenceNumber.toString()
-    console.log(`[SUCCESS] Attestation Anchored! Consensus Sequence #${seqNum}`)
-
-    // 5. Verification Check against Authorized Evaluator Roster
-    const authorizedRoster = new Set(
-      evaluators.map(ev => new ethers.Wallet(ev.privateKey).address.toLowerCase())
-    )
-    let validSigs = 0
-    for (const end of attestation.endorsements) {
-      const recovered = ethers.recoverAddress(attestation.documentHash, end.signature).toLowerCase()
-      if (authorizedRoster.has(recovered) && recovered === end.publicKey.toLowerCase()) {
-        validSigs++
-      }
-    }
-
-    console.log(`\n[AUDIT] Cryptographic Verification: ${validSigs}/${attestation.endorsements.length} Signatures VALID`)
-
-    // Persist state
-    updateState('HCS25_TOPIC_ID', topicId)
-    updateState('HCS25_AGENT_ID', targetAgentId)
-    updateState('HCS25_COMPOSITE_SCORE', attestation.compositeScore)
-    updateState('HCS25_TRUST_TIER', attestation.trustTier)
+    updateState('HCS25_TOPIC_ID', topicId.toString())
+    updateState('HCS25_COMPOSITE_SCORE', result.trustScores.total)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Under HCS-25, an agent\'s creditworthiness is a verifiable on-chain fact.')
-    console.log('Lending protocols, automated markets, and other agents can query Topic')
-    console.log(`${topicId} to set dynamic collateral ratios and rate limits automatically.`)
-
-    console.log('\n LEARNABLE MOMENT:')
-    console.log('Without a cryptographic reputation layer, the autonomous AI agent economy would')
-    console.log('collapse under Sybil attacks. HCS acts as the impartial credit bureau of Web3.')
+    console.log('Same snapshot + same config version = same score, with a full breakdown anyone can check.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

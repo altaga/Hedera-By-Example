@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 04: Scaffold-HBAR Full-Stack Architecture
+ * Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  * [CONCEPT] Next.js, RainbowKit, Wagmi v2, and Hedera Integration
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -20,6 +20,9 @@
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 03: Foundry & Hardhat Workflows
  * - Next:     M12 Lab 05: EIP-7702 Pectra Account Delegation
+ *
+ * [SIMULATED]
+ * This is an introduction: it shows the Scaffold-HBAR chain configuration and checks it against Hashio (real RPC reads). It does not scaffold or run the template; use `npx create-scaffold-hbar` for that.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

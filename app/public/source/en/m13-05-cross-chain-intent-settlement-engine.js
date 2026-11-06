@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 05: Autonomous Cross-Chain Intent Settlement Engine (CLPR + HIP-1068)
+ * Lab 05: Autonomous Cross-Chain Intent Settlement Engine (CLPR + HIP-336)
  * [CONCEPT] Bridgeless Intent-Based Cross-Ledger Liquidity Router
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -10,7 +10,7 @@
  * publishes an "intent" (e.g. "Swap 50 HBAR on Hedera for 100 USDC on Arbitrum").
  * A decentralized solver fills the order immediately using local liquidity,
  * while the Hedera settlement is proven cryptographically via CLPR (HIP-1535)
- * and executed gaslessly for the user via Sponsored Fees (HIP-1068).
+ * and executed gaslessly for the user via Sponsored Fees (HIP-336).
  *
  * [ LEARNABLE MOMENT ]
  * Users do not want to wait 20 minutes or buy gas on multiple networks just to
@@ -19,15 +19,15 @@
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hips.hedera.com/hip/hip-1535
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
  * - https://eips.ethereum.org/EIPS/eip-7683
  *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
- * - Next:     M13 Lab 06: Protobuf Block Stream Parser & State Change Indexer
+ * - Next:     M13 Lab 06: Block Stream Protobuf Encoder/Parser with the Official HAPI Schemas
  *
  * [SEQUENCE]
- * Trader -> Relayer: Grant an HBAR allowance (HIP-1068)
+ * Trader -> Relayer: Grant an HBAR allowance (HIP-336)
  * Trader -> Hedera: Signed intent on HCS (fees sponsored)
  * Relayer -> Other Chain: Fill the foreign leg
  * Note Relayer: State proof of the foreign fill (simulated CLPR)
@@ -38,7 +38,7 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
+ * - Spender: ACCOUNT_1 from .env if set, otherwise a throwaway account (0.5 ℏ) funded by the operator.
  * - Cost: ~1 ℏ (network fees and the accounts it creates).
  *
  * [ HOW TO RUN ]
@@ -60,7 +60,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 /**
  * Queries account balance in HBAR using Hedera Mirror Node REST API.
@@ -88,14 +88,18 @@ const hashIntent = (intent) => {
 
 const main = async () => {
   console.log('╔═══════════════════════════════════════════════════════════════════════╗')
-  console.log('║   AUTONOMOUS CROSS-CHAIN INTENT SETTLEMENT ENGINE (CLPR + HIP-1068)   ║')
+  console.log('║   AUTONOMOUS CROSS-CHAIN INTENT SETTLEMENT ENGINE (CLPR + HIP-336)   ║')
   console.log('╚═══════════════════════════════════════════════════════════════════════╝\n')
 
   const { client, operatorId, operatorKey, network } = getClient()
   const solverAccountId = AccountId.fromString(operatorId)
-  const solverKey = PrivateKey.fromStringDer(operatorKey)
-  const relayerAccountId = AccountId.fromString(process.env.ACCOUNT_1_ID)
-  const relayerKey = PrivateKey.fromStringDer(process.env.ACCOUNT_1_PRIVATE_KEY)
+  const solverKey = parsePrivateKey(operatorKey)
+  // ACCOUNT_1 from .env if set; otherwise a throwaway account funded by the operator
+  const relayer = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: AccountId.fromString(process.env.ACCOUNT_1_ID), privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const relayerAccountId = relayer.accountId
+  const relayerKey = relayer.privateKey
 
   try {
     // 1. Setup Intent Actor Accounts: Trader (0.0000 HBAR), Solver (Sponsor), and Relayer (Spender)
@@ -116,8 +120,8 @@ const main = async () => {
     console.log(`[ACTOR] Liquidity Solver: ${operatorId.toString()} (Sponsor & Liquidity Vault)`)
     console.log(`[ACTOR] Settlement Relay: ${relayerAccountId.toString()} (Approved Allowance Spender)`)
 
-    // 2. Sponsor Fee & Settlement Allowance Delegation (HIP-1068)
-    console.log('\n[PROCESS] Establishing HIP-1068 Delegated Settlement Allowance...')
+    // 2. Sponsor Fee & Settlement Allowance Delegation (HIP-336)
+    console.log('\n[PROCESS] Establishing HIP-336 Delegated Settlement Allowance...')
     const settlementAllowance = new Hbar(2)
     await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(solverAccountId, relayerAccountId, settlementAllowance)
@@ -224,7 +228,7 @@ const main = async () => {
     console.log('├────────────────────────────────────────────────────────────────────────┤')
     console.log('│ Intent Status:          RESOLVED & VERIFIED                            │')
     console.log('│ Settlement Mechanism:   CLPR Bridgeless State Proof (HIP-1535)         │')
-    console.log('│ Fee Mechanism:          Native Delegated Sponsorship (HIP-1068)        │')
+    console.log('│ Fee Mechanism:          Native Delegated Sponsorship (HIP-336)        │')
     console.log(`│ Destination Fill Tx:    ${solverFillTxHash.slice(0, 32)}...   │`)
     console.log(`│ Trader Spent Gas:       ${traderGasSpent.toFixed(8)} HBAR (100% Sponsored)               │`)
     console.log(`│ Trader Final Balance:   ${(finalTraderBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
@@ -237,7 +241,7 @@ const main = async () => {
     updateState('CLPR_ENGINE_SOLVER_TX', solverFillTxHash)
 
     console.log('\n KEY CONCEPT:')
-    console.log('By fusing CLPR (HIP-1535) state proofs with HIP-1068 native fee sponsorship,')
+    console.log('By fusing CLPR (HIP-1535) state proofs with HIP-336 allowances and payer-sponsored fees,')
     console.log('Hedera becomes the highest-throughput, lowest-friction settlement hub in Web3.')
     console.log('Zero bridge honeypots, zero gas barriers, sub-second finality.')
 

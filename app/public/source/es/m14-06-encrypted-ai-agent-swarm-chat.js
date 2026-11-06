@@ -26,7 +26,7 @@
  * - https://hol.org/docs/standards/hcs-15/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 05: Flujo de Auditoría Cognitiva de Agentes HCS-28
+ * - Anterior:  M14 Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
  * - Siguiente: M14 Lab 07: Enjambres Botánicos HCS-15..18
  *
  * [SECUENCIA]

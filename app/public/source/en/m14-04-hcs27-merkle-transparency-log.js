@@ -24,7 +24,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 03: HCS-26 Agent Skills Registry
- * - Next:     M14 Lab 05: HCS-28 Agent Audit Stream
+ * - Next:     M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
  *
  * [SIMULATED]
  * The 64 inference logs are synthetic. The Merkle tree, the proof and the HCS checkpoint are real.

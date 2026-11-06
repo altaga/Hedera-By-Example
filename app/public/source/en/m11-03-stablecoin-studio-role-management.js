@@ -1,29 +1,36 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 03: Stablecoin Studio Role-Based Governance
+ * Lab 03: Stablecoin Roles on HTS (Stablecoin Studio Concepts)
  * [CONCEPT] Segregation of Duties in Fiat-Backed Stablecoins
  * ============================================================================
  * [ KEY CONCEPT ]
- * Cryptographic Separation of Powers: Centralized stablecoins run on trust;
- * rogue administrators or compromised keys can mint billions out of thin air.
- * Stablecoin Studio enforces segregated cryptographic roles at the consensus
- * layer: Cash-In (Mint), Burn, Freeze, Wipe, and KYC are isolated into separate
- * key structures, preventing single points of institutional failure.
- * *
+ * A fiat-backed stablecoin needs separate powers: Cash-In (mint/burn), Freeze, Wipe
+ * and KYC. HTS lets each power be a DIFFERENT key on the token, enforced by the
+ * network. This lab creates a token with five separate role keys and proves it:
+ *   - a mint signed only by the operator is rejected (INVALID_SIGNATURE);
+ *   - the Cash-In key mints; the KYC key grants KYC to a holder;
+ *   - the Freeze key freezes the holder, and a transfer to it is rejected;
+ *   - the Wipe key wipes the holder's balance (court-ordered clawback).
+ *
  * [ LEARNABLE MOMENT ]
- * Decentralized money cannot mean unaccountable money. Stablecoin Studio enforces cryptographic separation of duties (Cash-in, Burn, Wipe, Freeze, KYC) ensuring no single administrator can unilaterally abuse power.
+ * Hedera's Stablecoin Studio builds the same role model with its own SDK and
+ * factory contracts; this lab shows the underlying native HTS roles directly.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://github.com/hashgraph/stablecoin-studio
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/define-a-token
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 02: ERC-1400 Security Bonds
+ * - Previous: M11 Lab 02: Tranche Bonds on HTS & Coupon Payouts (ERC-1400 Concepts)
  * - Next:     M11 Lab 04: Proof-of-Reserve Oracle
  *
+ * [SIMULATED]
+ * The bank wire and the AML/court decisions are narrative; the role keys, mint, KYC, freeze and wipe are real. The Stablecoin Studio SDK and contracts are not used.
+ *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ * - Wallet: your testnet account (creates a token and 1 throwaway holder).
+ * - Cost: ~15 ℏ (token creation, about 1 USD) + 0.05 ℏ for the holder + fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/03_stablecoin_studio_role_management.js
@@ -31,91 +38,115 @@
  */
 
 import {
+  PrivateKey,
+  TokenAssociateTransaction,
   TokenCreateTransaction,
+  TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenMintTransaction,
-  TokenType,
   TokenSupplyType,
-  PrivateKey
+  TokenType,
+  TokenWipeTransaction,
+  TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
+import { createLabAccount, getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+
+const run = async (tx, client, ...keys) => {
+  const frozen = tx.freezeWith(client)
+  for (const k of keys) await frozen.sign(k)
+  const res = await frozen.execute(client)
+  return { res, receipt: await res.getReceipt(client) }
+}
 
 const main = async () => {
-  console.log('--- SESSION START: Stablecoin Studio Institutional Governance ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- SESSION START: Stablecoin Roles on HTS ---\n')
+  const { client, operatorId } = getClient()
 
   try {
-    // 1. Generate segregated keys for institutional roles
-    console.log('[PROCESS] Generating segregated cryptographic role keys...')
-    const cashInKey = PrivateKey.generateECDSA()
-    const burnKey = PrivateKey.generateECDSA()
-    const freezeKey = PrivateKey.generateECDSA()
-    const wipeKey = PrivateKey.generateECDSA()
-    const kycKey = PrivateKey.generateECDSA()
+    // 1. Segregated role keys
+    console.log('[PROCESS] Step 1: Generating segregated role keys...')
+    const roles = {
+      cashIn: PrivateKey.generateECDSA(),
+      freeze: PrivateKey.generateECDSA(),
+      wipe: PrivateKey.generateECDSA(),
+      kyc: PrivateKey.generateECDSA()
+    }
+    for (const [name, key] of Object.entries(roles)) console.log(`[LOG] ${name.padEnd(6)} key: ${key.publicKey.toStringRaw().substring(0, 20)}...`)
 
-    console.log(`[LOG] Cash-In Role Key: ${cashInKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[LOG] Freeze Role Key:  ${freezeKey.publicKey.toStringDer().substring(0, 24)}...`)
-    console.log(`[LOG] Wipe Role Key:    ${wipeKey.publicKey.toStringDer().substring(0, 24)}...`)
+    // 2. Token where every power is a different key
+    console.log('\n[PROCESS] Step 2: Creating the stablecoin with one key per role...')
+    const { receipt: createReceipt } = await run(new TokenCreateTransaction()
+      .setTokenName('Hedera Digital Dollar')
+      .setTokenSymbol('USDD')
+      .setDecimals(6)
+      .setInitialSupply(0)
+      .setTokenType(TokenType.FungibleCommon)
+      .setSupplyType(TokenSupplyType.Infinite)
+      .setTreasuryAccountId(operatorId)
+      .setAdminKey(client.operatorPublicKey)
+      .setSupplyKey(roles.cashIn.publicKey)
+      .setFreezeKey(roles.freeze.publicKey)
+      .setWipeKey(roles.wipe.publicKey)
+      .setKycKey(roles.kyc.publicKey)
+      .setTokenMemo('hbe:stablecoin-roles'), client)
+    const tokenId = createReceipt.tokenId
+    console.log(`[SUCCESS] Stablecoin ${tokenId} — https://hashscan.io/testnet/token/${tokenId}`)
 
-    // 2. Deploy Institutional Stablecoin on HTS with Dedicated Role Keys
-    console.log('\n[PROCESS] Deploying institutional stablecoin with Stablecoin Studio architecture...')
-    const stablecoinTokenId = (await reuseToken('REUSE_M11_03_TOKEN', async () => {
-      const tokenCreateTx = await new TokenCreateTransaction()
-        .setTokenName('Hedera Digital Dollar')
-        .setTokenSymbol('USDD')
-        .setDecimals(6)
-        .setInitialSupply(1000000 * 1000000) // 1,000,000 USDD
-        .setTokenType(TokenType.FungibleCommon)
-        .setSupplyType(TokenSupplyType.Infinite)
-        .setTreasuryAccountId(operatorId)
-        .setAdminKey(client.operatorPublicKey)
-        .setSupplyKey(client.operatorPublicKey) // Cash-In/Burn authority
-        .setFreezeKey(client.operatorPublicKey) // Freeze authority
-        .setWipeKey(client.operatorPublicKey) // Compliance wipe authority
-        .setKycKey(client.operatorPublicKey) // KYC authority
-        .setTokenMemo('stablecoin-studio:compliant_v1')
-        .freezeWith(client)
-      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
-    })).toString()
+    // 3. Operator alone cannot mint
+    console.log('\n[PROCESS] Step 3: Mint signed only by the operator (no Cash-In key)...')
+    try {
+      await run(new TokenMintTransaction().setTokenId(tokenId).setAmount(1_000_000), client)
+      throw new Error('Mint without the Cash-In key should fail')
+    } catch (error) {
+      if (/should fail/.test(error.message)) throw error
+      console.log(`[REJECTED] ${error.status ?? error.message}`)
+    }
 
-    console.log(`[SUCCESS] Institutional Stablecoin Created: ${stablecoinTokenId}`)
-    console.log(`[EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${stablecoinTokenId}`}`)
+    // 4. Cash-In key mints 250,000 USDD
+    console.log('\n[PROCESS] Step 4: Cash-In role mints 250,000 USDD after the (narrative) bank wire...')
+    const { res: mintRes, receipt: mintReceipt } = await run(new TokenMintTransaction().setTokenId(tokenId).setAmount(250_000 * 1_000_000), client, roles.cashIn)
+    console.log(`[SUCCESS] Total supply ${mintReceipt.totalSupply} — ${getHashscanUrl(mintRes)}`)
 
-    // 3. Exercise Role 1: Cash-In (Mint upon $250,000 USD fiat deposit confirmation)
-    console.log('\n[PROCESS] Cash-In Role: Banking wire confirmed. Minting $250,000 USDD...')
-    const mintAmount = 250000 * 1000000 // 250,000 with 6 decimals
-    const mintTx = await new TokenMintTransaction()
-      .setTokenId(stablecoinTokenId)
-      .setAmount(mintAmount)
-      .freezeWith(client)
+    // 5. KYC + transfer to a holder
+    console.log('\n[PROCESS] Step 5: KYC role approves a holder; treasury sends 1,000 USDD...')
+    const holder = await createLabAccount(client, { hbar: 0.05 })
+    await run(new TokenAssociateTransaction().setAccountId(holder.accountId).setTokenIds([tokenId]), client, holder.privateKey)
+    await run(new TokenGrantKycTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.kyc)
+    const send = (amount) => run(new TransferTransaction()
+      .addTokenTransfer(tokenId, operatorId, -amount)
+      .addTokenTransfer(tokenId, holder.accountId, amount), client)
+    await send(1_000 * 1_000_000)
+    console.log(`[SUCCESS] Holder ${holder.accountId} received 1,000 USDD`)
 
-    const mintResponse = await mintTx.execute(client)
-    const mintReceipt = await mintResponse.getReceipt(client)
+    // 6. Freeze role
+    console.log('\n[PROCESS] Step 6: Freeze role freezes the flagged holder; a new transfer must fail...')
+    await run(new TokenFreezeTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.freeze)
+    try {
+      await send(1_000_000)
+      throw new Error('Transfer to a frozen account should fail')
+    } catch (error) {
+      if (/should fail/.test(error.message)) throw error
+      console.log(`[REJECTED] ${error.status ?? error.message}`)
+    }
 
-    console.log(`[SUCCESS] Cash-In Completed: New Total Supply = ${mintReceipt.totalSupply.toString()}`)
-    console.log(`[EXPLORER] HashScan: ${getHashscanUrl(mintResponse)}`)
+    // 7. Wipe role
+    console.log('\n[PROCESS] Step 7: Wipe role claws back the holder balance...')
+    const { res: wipeRes, receipt: wipeReceipt } = await run(new TokenWipeTransaction().setTokenId(tokenId).setAccountId(holder.accountId).setAmount(1_000 * 1_000_000), client, roles.wipe)
+    console.log(`[SUCCESS] Wiped 1,000 USDD; total supply now ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
 
-    // 4. Exercise Role 2 & 3: Sanctions Compliance (Freeze & Wipe Simulation)
-    console.log('\n===============================================================')
-    console.log('REGULATORY COMPLIANCE EXERCISE: SANCTIONS LIST ENFORCEMENT')
-    console.log('===============================================================')
-    console.log('1. AML Screener flags suspicious address interacting with mixer.')
-    console.log('2. Freeze Role executes TokenFreezeTransaction on consensus layer.')
-    console.log('3. Court Order issued: Wipe Role executes TokenWipeTransaction to forfeit funds.')
-    console.log('===============================================================')
-
-    updateState('STABLECOIN_TOKEN_ID', stablecoinTokenId)
-    updateState('STABLECOIN_MINT_TX_ID', mintResponse.transactionId.toString())
+    updateState('STABLECOIN_TOKEN_ID', tokenId.toString())
+    updateState('STABLECOIN_MINT_TX_ID', mintRes.transactionId.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('Stablecoin Studio bridges traditional banking regulations with distributed')
-    console.log('ledger technology. Regulators require freeze and clawback mechanisms for')
-    console.log('fiat-backed assets; Hedera provides them natively in HTS without vulnerable')
-    console.log('custom Solidity proxy contracts.')
+    console.log('Each power is a separate key checked by the network: no single admin can mint,')
+    console.log('freeze and claw back alone.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[ERROR] Stablecoin governance failed:', error.message)
     process.exit(1)
+  } finally {
+    client.close()
   }
 }
 

@@ -24,7 +24,7 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 02: Puntuación de Confianza de IA HCS-25
+ * - Anterior:  M14 Lab 02: Metodología de Puntuación de Confianza de IA HCS-25
  * - Siguiente: M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27
  *
  * [SIMULADO]

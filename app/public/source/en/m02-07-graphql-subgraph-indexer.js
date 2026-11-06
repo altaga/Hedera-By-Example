@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 07: Mirror Node GraphQL Subgraph Indexer
+ * Lab 07: Mirror Node Query Aggregator (GraphQL-Style Resolvers)
  * [CONCEPT] Single-Roundtrip Unified Graph Query Engine over Hedera State
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -26,6 +26,9 @@
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 06: Real-Time WebSocket Event Bus
  * - Next:     M3 Lab 01: Immutable Issuance
+ *
+ * [SIMULATED]
+ * There is no GraphQL server or subgraph: a local GraphQL-style resolver runs parallel Mirror Node REST calls and returns only the selected fields. The data is real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

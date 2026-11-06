@@ -24,7 +24,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 05: RWA Invoice Factoring
+ * - Previous: M11 Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
  * - Next:     M11 Lab 07: Institutional ERP Integration Bridge
  *
  * [ BEFORE YOU RUN ]

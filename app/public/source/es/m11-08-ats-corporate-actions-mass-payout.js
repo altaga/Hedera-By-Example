@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 08: Asset Tokenization Studio — Acciones Corporativas y Motor de Pagos Masivos
+ * Lab 08: Acciones Corporativas y Pagos Masivos (Conceptos de Asset Tokenization Studio)
  * [CONCEPTO] Snapshots de Cap Table en Consenso, Motor de Dividendos y Liquidación Atómica
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -32,16 +32,19 @@
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/solutions/tokenization/ats
+ * - https://github.com/hashgraph/asset-tokenization-studio
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 07: Puente de Facturación ERP Institucional
  * - Siguiente: M12 Lab 01: Herramientas EVM Modernas con Viem y Foundry
  *
+ * [SIMULADO]
+ * No se usan los contratos de ATS ni su paquete mass-payout: este lab reproduce el flujo de acciones corporativas con un token HTS nativo. Los nombres y jurisdicciones de los inversores son datos de ejemplo; el token, los tenedores, la instantánea del Mirror Node, el pago y el certificado en HCS son reales.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
- * - Ejecuta antes: Lab 01 de M11 (este lab lee lo que guardó).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Inversores: 2 cuentas desechables (0.05 ℏ cada una) financiadas por el operador.
+ * - Costo: ~0.12 ℏ + comisiones (creación del token ~1 USD).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/08_ats_corporate_actions_mass_payout.js
@@ -53,15 +56,20 @@ import {
   AccountId,
   Hbar,
   Timestamp,
+  TokenCreateTransaction,
+  TokenType,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
 import {
+  createLabAccount,
   getClient,
   getHashscanUrl,
+  getMirrorNodeBaseUrl,
   getState,
-  updateState
+  updateState,
+  waitForMirror
 } from '../M99_Utilities/index.js'
 
 /**
@@ -164,18 +172,35 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
 
   // 1. Configurar el activo de seguridad y el Cap Table de inversores
-  const securityTokenSymbol = 'ATS-TREX-BOND-2027'
+  const securityTokenSymbol = 'BOND27'
   const recordTimestamp = Timestamp.fromDate(new Date()).toString()
 
   console.log('[1/4]  Generando Instantánea de Cap Table en Consenso para Acción Corporativa...')
   const snapshotEngine = new AtsCapTableSnapshotEngine(securityTokenSymbol, recordTimestamp)
 
-  // Registrar cuentas de inversores institucionales
-  const investor1 = process.env.ACCOUNT_1_ID || '0.0.11226623'
-  const investor2 = process.env.ACCOUNT_2_ID || '0.0.8707881'
-
-  snapshotEngine.registerShareholder(investor1, 'Acme Institutional Fund LP', 'Tramo de Deuda Senior A', 600000, 'US')
-  snapshotEngine.registerShareholder(investor2, 'Zurich Global Wealth AG', 'Tramo de Deuda Senior A', 400000, 'CH')
+  // Token de seguridad real + dos inversores desechables; la cap table se lee del Mirror Node
+  const tokenId = (await (await new TokenCreateTransaction()
+    .setTokenName('ATS-style Bond 2027').setTokenSymbol('BOND27').setTokenType(TokenType.FungibleCommon)
+    .setDecimals(0).setInitialSupply(1_000_000).setTreasuryAccountId(operatorId)
+    .execute(client)).getReceipt(client)).tokenId
+  const holders = [
+    { ...(await createLabAccount(client, { hbar: 0.05 })), name: 'Acme Institutional Fund LP', shares: 600_000, jurisdiction: 'US' },
+    { ...(await createLabAccount(client, { hbar: 0.05 })), name: 'Zurich Global Wealth AG', shares: 400_000, jurisdiction: 'CH' }
+  ]
+  let allocation = new TransferTransaction().addTokenTransfer(tokenId, operatorId, -1_000_000)
+  for (const h of holders) allocation = allocation.addTokenTransfer(tokenId, h.accountId, h.shares)
+  await (await allocation.execute(client)).getReceipt(client)
+  console.log(`Token ${tokenId} asignado a ${holders.map(h => h.accountId).join(', ')}`)
+  const balances = await waitForMirror(async () => {
+    const r = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/tokens/${tokenId}/balances?account.balance=gt:0`)
+    const d = r.ok ? await r.json() : null
+    return d && d.balances.filter(b => b.account !== operatorId.toString()).length === holders.length ? d.balances : null
+  }, { timeoutMs: 60_000 })
+  if (!balances) throw new Error('La instantánea del Mirror Node no está lista')
+  for (const h of holders) {
+    const onChain = balances.find(b => b.account === h.accountId.toString())
+    snapshotEngine.registerShareholder(h.accountId, h.name, 'Tramo de Deuda Senior A', onChain.balance, h.jurisdiction)
+  }
 
   const snapshot = snapshotEngine.generateSnapshot()
   console.log(`Token de Seguridad:    ${snapshot.securityToken}`)
@@ -188,8 +213,8 @@ const main = async () => {
   console.log()
 
   // 2. Computar pagos prorrateados de dividendos / cupones
-  // Pool de dividendos: 2.0 HBAR total para dispersión masiva entre inversores de Testnet
-  const totalDividendPool = Hbar.from(2.0).toTinybars()
+  // Pool de dividendos: 0.02 HBAR total para dispersión masiva entre los inversores de Testnet
+  const totalDividendPool = Hbar.from(0.02).toTinybars()
   console.log('[2/4]  Ejecutando Motor de Cálculo de Dividendos Prorrateados de ATS...')
   const calcEngine = new AtsDividendCalculationEngine(totalDividendPool.toString(), 'HBAR')
   const distributionPlan = calcEngine.computePayouts(snapshot)

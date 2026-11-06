@@ -7,8 +7,8 @@
  * [ CONCEPTO CLAVE ]
  * Lago de Datos Descentralizado: En la arquitectura modular de Hedera, los nodos
  * de consenso producen bloques mientras los Block Nodes especializados (HIP-1081)
- * los almacenan y distribuyen. HIP-1137 proporciona descubrimiento dinámico on-chain
- * de estos nodos mediante la libreta de direcciones de consenso. Esto desacopla la
+ * los almacenan y distribuyen. HIP-1137 permite que los Block Nodes se registren on-chain;
+ * el Mirror Node sirve ese registro en /api/v1/network/registered-nodes. Esto desacopla la
  * ejecución de transacciones del almacenamiento histórico masivo, permitiendo
  * escalabilidad horizontal sin degradar el rendimiento.
  *
@@ -20,13 +20,14 @@
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1081
  * - https://hips.hedera.com/hip/hip-1137
+ * - https://testnet.mirrornode.hedera.com/api/v1/docs/#/network/getRegisteredNodes
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 03: Flujo de Bloques y Verificación TSS (HIP-1056)
  * - Siguiente: M13 Lab 05: Motor de Liquidación de Intenciones Cross-Chain
  *
  * [SIMULADO]
- * El descubrimiento de Block Nodes (HIP-1137) se simula con un registro local.
+ * Nada del descubrimiento es simulado: el registro, los endpoints y la latencia TCP son reales. El contenido de los bloques se lee de la API /blocks del Mirror Node, no se transmite desde el Block Node (aquí no se llama a su API gRPC).
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -55,30 +56,40 @@ const queryLiveNetworkNodes = async (network = 'testnet', limit = 3) => {
 }
 
 /**
- * [SIMULACIÓN ARQUITECTÓNICA]
- * Simula el descubrimiento dinámico on-chain de Block Nodes registrados (HIP-1137)
- * emparejado con los IDs reales de nodos de consenso de la red.
+ * HIP-1137: los Block Nodes se registran on-chain (RegisteredNodeCreateTransaction) y el
+ * Mirror Node expone el registro en /api/v1/network/registered-nodes.
+ * Cada endpoint BLOCK_NODE se prueba con una conexión TCP real para medir la latencia.
  *
  * @param {string} network - 'testnet' | 'mainnet'
- * @param {Array<object>} liveNodes - Nodos de consenso obtenidos del Mirror Node
- * @returns {Array<object>} Lista de descriptores de Block Nodes descubiertos
+ * @returns {Promise<Array<object>>} Endpoints de Block Nodes registrados con latencia medida
  */
-const discoverBlockNodes = (network = 'testnet', liveNodes = []) => {
-  const regions = ['us-east-01', 'eu-central-01', 'ap-south-01']
-  const latencies = [14, 28, 36]
-  return regions.map((region, idx) => {
-    const liveNode = liveNodes[idx] || {}
-    return {
-      nodeId: `blocknode-${region}`,
-      consensusNodeAccountId: liveNode.node_account_id || `0.0.${3 + idx}`,
-      endpoint: `grpc://lake-${region.split('-')[1]}.${network}.hedera.network:50211`,
-      protocol: 'HIP-1081/gRPC-v1',
-      supportedRange: { startBlock: 1, endBlock: 'HEAD' },
-      status: 'HEALTHY',
-      latencyMs: latencies[idx],
-      reputationScore: Number((0.998 - idx * 0.003).toFixed(3))
-    }
+const discoverBlockNodes = async (network = 'testnet') => {
+  const res = await fetch(`https://${network}.mirrornode.hedera.com/api/v1/network/registered-nodes?type=BLOCK_NODE&limit=25`)
+  if (!res.ok) throw new Error(`HTTP ${res.status} consultando /api/v1/network/registered-nodes`)
+  const { registered_nodes: nodes = [] } = await res.json()
+  const { connect } = await import('node:net')
+  const ping = (host, port) => new Promise((resolve) => {
+    const start = Date.now()
+    const socket = connect({ host, port, timeout: 3000 })
+    socket.once('connect', () => { socket.destroy(); resolve(Date.now() - start) })
+    socket.once('timeout', () => { socket.destroy(); resolve(null) })
+    socket.once('error', () => resolve(null))
   })
+  const out = []
+  for (const n of nodes) {
+    const ep = n.service_endpoints.find(e => e.type === 'BLOCK_NODE' && e.block_node?.endpoint_apis?.includes('SUBSCRIBE_STREAM')) ||
+      n.service_endpoints.find(e => e.type === 'BLOCK_NODE')
+    if (!ep) continue
+    const host = ep.domain_name || ep.ip_address
+    out.push({
+      nodeId: `registered-${n.registered_node_id}`,
+      description: n.description,
+      endpoint: `${host}:${ep.port}`,
+      apis: ep.block_node?.endpoint_apis || [],
+      latencyMs: await ping(host, ep.port)
+    })
+  }
+  return out
 }
 
 /**
@@ -106,16 +117,18 @@ const main = async () => {
     const liveNodes = await queryLiveNetworkNodes(network, 3)
     console.log(`[ÉXITO] Se obtuvieron ${liveNodes.length} descriptores reales de nodos de consenso.`)
 
-    console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Mapeando descriptores gRPC de Block Nodes (HIP-1137)...')
-    const discoveredNodes = discoverBlockNodes(network, liveNodes)
+    console.log('\n[PROCESO] Leyendo el registro on-chain HIP-1137 (/api/v1/network/registered-nodes?type=BLOCK_NODE)...')
+    const discoveredNodes = await discoverBlockNodes(network)
+    if (!discoveredNodes.length) throw new Error('No BLOCK_NODE entries in the HIP-1137 registry')
 
-    console.log(`[ÉXITO] Se descubrieron ${discoveredNodes.length} nodos activos del Block Lake:`)
+    console.log(`[ÉXITO] ${discoveredNodes.length} Block Nodes registrados:`)
     for (const node of discoveredNodes) {
-      console.log(`[REGISTRO] Nodo ID:  ${node.nodeId.padEnd(22)} | Validador: ${node.consensusNodeAccountId.padEnd(8)} | Endpoint: ${node.endpoint.padEnd(44)} | Ping: ${node.latencyMs}ms`)
+      console.log(`[REGISTRO] ${node.nodeId.padEnd(14)} | ${node.description} | ${node.endpoint} | APIs: ${node.apis.join(',')} | TCP: ${node.latencyMs === null ? 'inalcanzable' : node.latencyMs + 'ms'}`)
     }
 
     // Seleccionar el nodo saludable de menor latencia
-    const optimalNode = [...discoveredNodes].sort((a, b) => a.latencyMs - b.latencyMs)[0]
+    const reachable = discoveredNodes.filter(n => n.latencyMs !== null)
+    const optimalNode = [...(reachable.length ? reachable : discoveredNodes)].sort((a, b) => (a.latencyMs ?? 1e9) - (b.latencyMs ?? 1e9))[0]
     console.log(`\n[INFO] Nodo de almacenamiento óptimo seleccionado: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
 
     // 2. Ingerir Rango de Bloques en Vivo

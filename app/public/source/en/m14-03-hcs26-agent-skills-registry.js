@@ -22,7 +22,7 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 02: HCS-25 Portable AI Trust Score
+ * - Previous: M14 Lab 02: HCS-25 AI Trust Score Methodology
  * - Next:     M14 Lab 04: HCS-27 Merkle Transparency Log Checkpoints
  *
  * [SIMULATED]
