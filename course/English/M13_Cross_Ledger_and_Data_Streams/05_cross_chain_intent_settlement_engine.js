@@ -24,7 +24,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 04: Block Node Discovery & Lake Retrieval
- * - Next:     M13 Lab 06: Protobuf Block Stream Parser & State Change Indexer
+ * - Next:     M13 Lab 06: Block Stream Protobuf Encoder/Parser with the Official HAPI Schemas
  *
  * [SEQUENCE]
  * Trader -> Relayer: Grant an HBAR allowance (HIP-1068)

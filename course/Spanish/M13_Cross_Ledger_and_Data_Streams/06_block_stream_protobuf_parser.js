@@ -1,41 +1,43 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 06: Parser de Flujo de Bloques Protobuf e Indexador de Cambios de Estado
- * [CONCEPTO] Ingesta Binaria en Streaming de Protobuf desde Nodos de Bloque Hedera 2026
+ * Lab 06: Codificador/Parser Protobuf de Block Stream con los Esquemas HAPI Oficiales
+ * [CONCEPTO] BlockItems HIP-1056 Construidos a partir de una Transacción Real de Testnet
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Bajo HIP-1056, HIP-1081 y la arquitectura de Nodos de Bloque (Block Nodes) de Hedera
- * para 2026/2027, los archivos de registro planos históricos (.rcd.gz) son reemplazados
- * por flujos continuos en streaming de bloques binarios serializados en Protobuf.
+ * HIP-1056 reemplaza los archivos de registro (.rcd) con un único Block Stream firmado
+ * compuesto de `BlockItem`s (block_header, signed_transaction, transaction_result,
+ * state_changes, block_proof...). Los nodos de consenso lo envían a los Block Nodes
+ * (HIP-1081); HIP-1193 programa la transición desde el record stream.
  *
- * Los nodos de consenso publican elementos Protobuf serializados directamente a los Nodos de Bloque:
- * 1. BlockHeader: Altura del bloque, hash del bloque previo, rango de marcas de tiempo
- *    de consenso y pruebas de firma de umbral (TSS).
- * 2. BlockItems y StateChanges: Mutaciones de estado deterministas y de grano fino:
- *    - Mutaciones de balance de cuenta (débitos / créditos de HBAR)
- *    - Modificaciones de saldo y suministro de tokens
- *    - Sobrescrituras de ranuras de almacenamiento de smart contracts
- * 3. Indexación en Sub-Segundos: Indexadores descentralizados, data lakes analíticos
- *    (Snowflake, ClickHouse) y ERPs empresariales procesan el flujo binario directamente en
- *    memoria sin esperar descargas por lotes.
+ * Este lab usa los esquemas REALES: carga los archivos `.proto` oficiales de
+ * hiero-consensus-node (tag fijado) con protobufjs y luego:
+ * 1. Envía un mensaje HCS real en testnet y guarda los bytes de la transacción firmada.
+ * 2. Lee su resultado de consenso y su bloque desde el Mirror Node.
+ * 3. Codifica un `com.hedera.hapi.block.stream.Block` con items BlockHeader,
+ *    SignedTransaction y TransactionResult a partir de esos datos reales.
+ * 4. Decodifica los bytes y los indexa como lo haría un consumidor de block streams.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * El procesamiento binario con Protobuf reduce el ancho de banda de red en un 85% en
- * comparación con las APIs REST JSON y ofrece velocidades de deserialización en sub-milisegundos.
- * Dominar la ingesta de Protobuf es fundamental para motores de trading y oráculos de alta velocidad.
+ * El parseo Protobuf solo es tan bueno como el esquema: carga siempre los protos oficiales
+ * de la versión HAPI que reporta la red (`/api/v1/blocks` -> `hapi_version`).
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1056
  * - https://hips.hedera.com/hip/hip-1081
+ * - https://hips.hedera.com/hip/hip-1193
+ * - https://github.com/hiero-ledger/hiero-consensus-node/tree/main/hapi/hedera-protobuf-java-api/src/main/proto/block/stream
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain
  * - Siguiente: M14 Lab 01: Puntos Inscriptos y Auditables HCS-20
  *
+ * [SIMULADO]
+ * El Block se arma localmente con datos reales de testnet; no se descarga de un Block Node (los buckets de block stream de testnet son requester-pays y el acceso a Block Nodes está restringido). No incluye state_changes ni block_proof, así que no es un bloque verificable.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Costo: <0.1 ℏ (solo comisiones de red). Descarga ~160 archivos .proto desde GitHub.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M13_Cross_Ledger_and_Data_Streams/06_block_stream_protobuf_parser.js
@@ -44,169 +46,114 @@
 
 import crypto from 'crypto'
 import protobuf from 'protobufjs'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { getClient, getMirrorNodeBaseUrl, updateState, waitForMirror } from '../M99_Utilities/index.js'
 
-/**
- * Construye las Definiciones Canónicas de Protobuf para Flujos de Bloques en Hedera
- */
-const buildBlockStreamProtobufRoot = () => {
+const HAPI_TAG = 'v0.78.1'
+const PROTO_BASE = `https://raw.githubusercontent.com/hiero-ledger/hiero-consensus-node/${HAPI_TAG}/hapi/hedera-protobuf-java-api/src/main/proto/`
+
+/** Carga los protos oficiales de block stream y todos sus imports. */
+const loadOfficialProtos = async () => {
   const root = new protobuf.Root()
-
-  // 1. Definición de BlockHeader
-  const BlockHeader = new protobuf.Type('BlockHeader')
-    .add(new protobuf.Field('blockNumber', 1, 'uint32'))
-    .add(new protobuf.Field('previousBlockHash', 2, 'bytes'))
-    .add(new protobuf.Field('consensusStartTimestamp', 3, 'uint64'))
-    .add(new protobuf.Field('consensusEndTimestamp', 4, 'uint64'))
-    .add(new protobuf.Field('tssSignatureProof', 5, 'bytes'))
-
-  // 2. Definición de StateChange (Mutaciones de Estado del Libro Mayor)
-  const StateChange = new protobuf.Type('StateChange')
-    .add(new protobuf.Field('serviceId', 1, 'uint32'))
-    .add(new protobuf.Field('stateKey', 2, 'string'))
-    .add(new protobuf.Field('previousValue', 3, 'bytes'))
-    .add(new protobuf.Field('newValue', 4, 'bytes'))
-
-  // 3. Definición de TransactionRecordItem
-  const TransactionRecordItem = new protobuf.Type('TransactionRecordItem')
-    .add(new protobuf.Field('transactionId', 1, 'string'))
-    .add(new protobuf.Field('consensusTimestamp', 2, 'uint64'))
-    .add(new protobuf.Field('feeChargedTinybars', 3, 'uint64'))
-    .add(new protobuf.Field('status', 4, 'string'))
-    .add(new protobuf.Field('stateChanges', 5, 'StateChange', 'repeated'))
-
-  // 4. Definición de Block
-  const Block = new protobuf.Type('Block')
-    .add(new protobuf.Field('header', 1, 'BlockHeader'))
-    .add(new protobuf.Field('transactions', 2, 'TransactionRecordItem', 'repeated'))
-
-  root.define('hedera.block')
-    .add(BlockHeader)
-    .add(StateChange)
-    .add(TransactionRecordItem)
-    .add(Block)
-
-  return {
-    BlockHeader,
-    StateChange,
-    TransactionRecordItem,
-    Block
+  const seen = new Map()
+  const load = (file) => {
+    if (file.startsWith('google/protobuf/')) return Promise.resolve()
+    if (!seen.has(file)) {
+      seen.set(file, (async () => {
+        const res = await fetch(PROTO_BASE + file)
+        if (!res.ok) throw new Error(`No se pudo descargar ${file}: ${res.status}`)
+        const parsed = protobuf.parse(await res.text(), root, { keepCase: true })
+        await Promise.all([...(parsed.imports || []), ...(parsed.weakImports || [])].map(load))
+      })())
+    }
+    return seen.get(file)
   }
+  await load('block/stream/block.proto')
+  for (const f of ['wrappers', 'timestamp', 'empty']) {
+    const common = protobuf.common[`google/protobuf/${f}.proto`]
+    if (common) root.addJSON(common.nested)
+  }
+  root.resolveAll()
+  return { root, files: seen.size }
 }
 
+const mirror = async (path) => {
+  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1${path}`)
+  return res.ok ? res.json() : null
+}
+const ts = (s) => { const [seconds, nanos] = s.split('.'); return { seconds: Number(seconds), nanos: Number(nanos) } }
+const acct = (id) => { const [shardNum, realmNum, accountNum] = id.split('.').map(Number); return { shardNum, realmNum, accountNum } }
+
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Parser de Flujo de Bloques Protobuf de Hedera ---\n')
-  const { client, operatorId } = getClient()
+  console.log('--- INICIO DE SESIÓN: Codificador/Parser Protobuf de Block Stream (Esquemas HAPI Oficiales) ---\n')
+  const { client } = getClient()
 
   try {
-    console.log('[PROCESO] Paso 1: Compilando Esquema Canónico Protobuf de Flujo de Bloques...')
-    const { Block, BlockHeader, StateChange, TransactionRecordItem } = buildBlockStreamProtobufRoot()
-    console.log('[ÉXITO] Tipos Protobuf Inicializados: BlockHeader, StateChange, TransactionRecordItem, Block')
+    console.log(`[PROCESO] Paso 1: Cargando protos oficiales de block stream desde hiero-consensus-node ${HAPI_TAG}...`)
+    const { root, files } = await loadOfficialProtos()
+    const Block = root.lookupType('com.hedera.hapi.block.stream.Block')
+    const BlockItem = root.lookupType('com.hedera.hapi.block.stream.BlockItem')
+    console.log(`[ÉXITO] ${files} archivos .proto procesados. Tipos de BlockItem: ${Object.keys(BlockItem.fields).join(', ')}`)
 
-    // 2. Sintetizar Bloque de Consenso 2026 con Transiciones de Estado
-    console.log('\n[PROCESO] Paso 2: Ensamblando Bloque de Consenso Sintético con Mutaciones de Estado...')
-    const currentBlockHeight = 48192042
-    const prevHash = crypto.createHash('sha384').update('hedera-block-48192041').digest()
-    const tssSig = crypto.randomBytes(64) // Firma TSS de 64 bytes
+    console.log('\n[PROCESO] Paso 2: Enviando un mensaje HCS real y guardando sus bytes firmados...')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:block-stream-lab').execute(client)).getReceipt(client)).topicId
+    const tx = await new TopicMessageSubmitTransaction().setTopicId(topicId).setMessage('block-stream lab ping').freezeWith(client).signWithOperator(client)
+    const signedTxBytes = (await import('@hiero-ledger/proto')).proto.TransactionList.decode(tx.toBytes()).transactionList[0].signedTransactionBytes
+    const res = await tx.execute(client)
+    await res.getReceipt(client)
+    const txId = res.transactionId.toString()
+    console.log(`[ÉXITO] ${txId} (${signedTxBytes.length} bytes firmados)`)
 
-    const sampleBlockData = {
-      header: {
-        blockNumber: currentBlockHeight,
-        previousBlockHash: prevHash,
-        consensusStartTimestamp: 1793433600,
-        consensusEndTimestamp: 1793433602,
-        tssSignatureProof: tssSig
-      },
-      transactions: [
+    console.log('\n[PROCESO] Paso 3: Leyendo el resultado de consenso y su bloque desde el Mirror Node...')
+    const mirrorId = txId.replace('@', '-').replace(/\.(\d+)$/, '-$1')
+    const record = await waitForMirror(async () => (await mirror(`/transactions/${mirrorId}`))?.transactions?.[0], { timeoutMs: 60_000 })
+    if (!record) throw new Error('La transacción aún no está en el Mirror Node')
+    const block = (await mirror(`/blocks?timestamp=lte:${record.consensus_timestamp}&order=desc&limit=1`)).blocks[0]
+    console.log(`[LOG] Block #${block.number} | hapi ${block.hapi_version} | archivo origen ${block.name}`)
+    console.log(`[LOG] Resultado ${record.result} | comisión ${record.charged_tx_fee} tinybars | ${record.transfers.length} transferencias`)
+
+    console.log('\n[PROCESO] Paso 4: Codificando un com.hedera.hapi.block.stream.Block con esos datos...')
+    const [major, minor, patch] = block.hapi_version.split('.').map(Number)
+    const message = Block.fromObject({
+      items: [
+        { block_header: { hapi_proto_version: { major, minor, patch }, number: block.number, block_timestamp: ts(block.timestamp.from), hash_algorithm: 'SHA2_384' } },
+        { signed_transaction: signedTxBytes },
         {
-          transactionId: '0.0.12345@1793433600.120000000',
-          consensusTimestamp: 1793433600,
-          feeChargedTinybars: 139476,
-          status: 'SUCCESS',
-          stateChanges: [
-            {
-              serviceId: 2, // Crypto Service
-              stateKey: 'accounts/0.0.12345/balance',
-              previousValue: Buffer.from('50011794049'),
-              newValue: Buffer.from('50011654573')
-            },
-            {
-              serviceId: 2, // Crypto Service
-              stateKey: 'accounts/0.0.11226623/balance',
-              previousValue: Buffer.from('11770229'),
-              newValue: Buffer.from('11870229')
-            }
-          ]
-        },
-        {
-          transactionId: '0.0.11226623@1793433601.450000000',
-          consensusTimestamp: 1793433601,
-          feeChargedTinybars: 210000,
-          status: 'SUCCESS',
-          stateChanges: [
-            {
-              serviceId: 3, // Token Service (HTS)
-              stateKey: 'tokens/0.0.11236384/supply',
-              previousValue: Buffer.from('100000'),
-              newValue: Buffer.from('100500')
-            }
-          ]
+          transaction_result: {
+            status: record.result,
+            consensus_timestamp: ts(record.consensus_timestamp),
+            transaction_fee_charged: record.charged_tx_fee,
+            transfer_list: { accountAmounts: record.transfers.map(t => ({ accountID: acct(t.account), amount: t.amount })) }
+          }
         }
       ]
-    }
-
-    // 3. Serializar a Búfer Binario de Flujo Protobuf
-    console.log('[PROCESO] Paso 3: Serializando Bloque a Búfer Binario Protobuf...')
-    const verifiedMessage = Block.create(sampleBlockData)
-    const rawProtobufBytes = Block.encode(verifiedMessage).finish()
-
-    console.log('[ÉXITO] ¡Bloque Codificado!')
-    console.log(`[LOG] Tamaño del Payload Binario: ${rawProtobufBytes.length} bytes`)
-    console.log('[LOG] Tasa de Compresión:         ~82% menor que la representación JSON')
-    console.log(`[LOG] Vista Previa Hex Binaria:   ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
-
-    // 4. Ingesta y Deserialización en Pipeline de Alto Rendimiento
-    console.log('\n[PROCESO] Paso 4: Ingesta en Streaming con Deserialización Zero-Copy...')
-    const decodedBlock = Block.decode(rawProtobufBytes)
-
-    console.log('[ÉXITO] ¡Flujo de Bloque Binario Decodificado en < 1ms!')
-    console.log(`Altura del Bloque:       #${decodedBlock.header.blockNumber}`)
-    console.log(`Hash Previo:             ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
-    console.log(`Transacciones en Bloque: ${decodedBlock.transactions.length}`)
-    console.log(`Prueba de Firma TSS:     ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
-
-    // 5. Extraer e Indexar Mutaciones de Estado Granulares
-    console.log('\n[PROCESO] Paso 5: Aplicando Mutaciones de Estado en Tiempo Real...')
-    let totalStateMutations = 0
-
-    decodedBlock.transactions.forEach((tx, idx) => {
-      console.log(`Tx [${idx + 1}] ID: ${tx.transactionId} | Estado: ${tx.status} | Comisión: ${tx.feeChargedTinybars} tinybars`)
-      tx.stateChanges.forEach(sc => {
-        totalStateMutations++
-        const prev = sc.previousValue ? Buffer.from(sc.previousValue).toString('utf8') : '0'
-        const next = sc.newValue ? Buffer.from(sc.newValue).toString('utf8') : '0'
-        console.log(`➔ Mutación de Estado: [${sc.stateKey}] ${prev} ➔ ${next}`)
-      })
     })
+    const bytes = Block.encode(message).finish()
+    console.log(`[ÉXITO] ${bytes.length} bytes | SHA-384 ${crypto.createHash('sha384').update(bytes).digest('hex').slice(0, 32)}...`)
 
-    console.log(`\n[ÉXITO] ¡Ingeridas ${totalStateMutations} mutaciones de estado con precisión criptográfica total!`)
+    console.log('\n[PROCESO] Paso 5: Decodificando e indexando los BlockItems...')
+    const decoded = Block.toObject(Block.decode(bytes), { enums: String, longs: String, bytes: String })
+    for (const item of decoded.items) {
+      const kind = Object.keys(item)[0]
+      if (kind === 'block_header') console.log(`➔ block_header: #${item.block_header.number} hapi ${JSON.stringify(item.block_header.hapi_proto_version)}`)
+      if (kind === 'signed_transaction') console.log(`➔ signed_transaction: ${item.signed_transaction.length} caracteres base64`)
+      if (kind === 'transaction_result') {
+        const r = item.transaction_result
+        console.log(`➔ transaction_result: ${r.status} at ${r.consensus_timestamp.seconds}.${r.consensus_timestamp.nanos}, comisión ${r.transaction_fee_charged}`)
+        for (const aa of r.transfer_list.accountAmounts) console.log(`   ${aa.accountID.shardNum}.${aa.accountID.realmNum}.${aa.accountID.accountNum}: ${aa.amount}`)
+      }
+    }
+    if (decoded.items[2].transaction_result.status !== record.result) throw new Error('No coincide la ida y vuelta')
 
-    updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', decodedBlock.header.blockNumber.toString())
-    updateState('BLOCK_STREAM_STATE_CHANGES_COUNT', totalStateMutations)
+    updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', String(block.number))
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Flujos Continuos de Bloques Protobuf: En la arquitectura 2026/2027 de Hedera, los Block Nodes')
-    console.log('transmiten feeds binarios de mutaciones de estado en Protobuf. Los indexadores procesan')
-    console.log('cambios a velocidad de memoria sin estrangulamiento de consultas ni cuellos de botella de JSON.')
-
-    console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Cambios de Estado frente a Archivos de Registro: Al emitir mutaciones explícitas de clave-valor')
-    console.log('(StateChanges), los nodos eliminan la necesidad de re-ejecutar smart contracts o transacciones')
-    console.log('off-chain para conocer el nuevo saldo de una cuenta o el suministro de un token.')
+    console.log('Los block streams son BlockItems definidos por los protos HAPI oficiales. Carga el esquema de la')
+    console.log('hapi_version de la red y cada consumidor decodifica los mismos bytes de la misma forma.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ingesta del Flujo Protobuf:', error.message)
+    console.error('\n[ERROR] Falló el lab de block stream:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -217,7 +164,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLIDO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

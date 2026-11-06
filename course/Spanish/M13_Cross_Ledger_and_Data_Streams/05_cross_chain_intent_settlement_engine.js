@@ -24,7 +24,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos
- * - Siguiente: M13 Lab 06: Parser de Flujo de Bloques Protobuf e Indexador de Estado
+ * - Siguiente: M13 Lab 06: Codificador/Parser Protobuf de Block Stream con los Esquemas HAPI Oficiales
  *
  * [SECUENCIA]
  * Trader -> Relayer: Otorgar una asignación de HBAR (HIP-1068)

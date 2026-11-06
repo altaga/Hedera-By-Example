@@ -1,42 +1,43 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 06: Protobuf Block Stream Parser & Real-Time State Change Indexer
- * [CONCEPT] Streaming Binary Protobuf Ingestion from Hedera 2026 Block Nodes
+ * Lab 06: Block Stream Protobuf Encoder/Parser with the Official HAPI Schemas
+ * [CONCEPT] HIP-1056 BlockItems Built from a Real Testnet Transaction
  * ============================================================================
  * [ KEY CONCEPT ]
- * Under HIP-1056, HIP-1081, and the 2026/2027 Hedera Block Node architecture,
- * legacy flat record files (.rcd.gz) are superseded by real-time streaming Protobuf
- * Block Streams.
+ * HIP-1056 replaces record files (.rcd) with a single signed Block Stream made of
+ * `BlockItem`s (block_header, signed_transaction, transaction_result,
+ * state_changes, block_proof...). Consensus nodes push it to Block Nodes (HIP-1081);
+ * HIP-1193 schedules the record-stream cutover.
  *
- * Consensus nodes publish binary serialized Protobuf items directly to decentralized
- * Block Nodes:
- * 1. BlockHeader: Block height, previous block hash, consensus timestamp range,
- *    and Threshold Signature Scheme (TSS) committee proofs.
- * 2. BlockItems & StateChanges: Granular, deterministic state transitions:
- *    - Account Balance mutations (HBAR debits / credits)
- *    - Token balance and supply alterations
- *    - Smart contract storage slot overrides
- * 3. Sub-Second Indexing: Decentralized indexers, analytical data lakes (Snowflake,
- *    ClickHouse), and enterprise ERPs parse the raw binary Protobuf stream in memory
- *    without waiting for periodic batch file downloads.
+ * This lab uses the REAL schemas: it loads the official `.proto` files of
+ * hiero-consensus-node (pinned tag) with protobufjs, then:
+ * 1. Submits a real HCS message on testnet and keeps its signed transaction bytes.
+ * 2. Reads its consensus result and its block from the Mirror Node.
+ * 3. Encodes a `com.hedera.hapi.block.stream.Block` with BlockHeader,
+ *    SignedTransaction and TransactionResult items from that real data.
+ * 4. Decodes the bytes back and indexes them like a block-stream consumer would.
  *
  * [ LEARNABLE MOMENT ]
- * Binary Protobuf parsing reduces network bandwidth by 85% compared to REST JSON
- * APIs and delivers sub-millisecond serialization speeds. Mastering Protobuf stream
- * parsing is essential for building real-time trading engines and high-speed oracles.
+ * Protobuf parsing is only as good as the schema: always load the official protos
+ * for the HAPI version the network reports (`/api/v1/blocks` -> `hapi_version`).
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hips.hedera.com/hip/hip-1056
  * - https://hips.hedera.com/hip/hip-1081
+ * - https://hips.hedera.com/hip/hip-1193
+ * - https://github.com/hiero-ledger/hiero-consensus-node/tree/main/hapi/hedera-protobuf-java-api/src/main/proto/block/stream
  *
  * [ LEARNING PATH ]
  * - Previous: M13 Lab 05: Autonomous Cross-Chain Intent Settlement Engine
  * - Next:     M14 Lab 01: HCS-20 Auditable Points & Inscriptions
  *
+ * [SIMULATED]
+ * The Block is assembled locally from real testnet data; it is not downloaded from a Block Node (testnet block-stream buckets are requester-pays and Block Node access is gated). It has no state_changes or block_proof, so it is not a verifiable block.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: <0.1 ℏ (network fees only).
+ * - Cost: <0.1 ℏ (network fees only). Downloads ~160 .proto files from GitHub.
  *
  * [ HOW TO RUN ]
  * node English/M13_Cross_Ledger_and_Data_Streams/06_block_stream_protobuf_parser.js
@@ -45,169 +46,114 @@
 
 import crypto from 'crypto'
 import protobuf from 'protobufjs'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { getClient, getMirrorNodeBaseUrl, updateState, waitForMirror } from '../M99_Utilities/index.js'
 
-/**
- * Builds canonical Hedera Block Stream Protobuf Definitions
- */
-const buildBlockStreamProtobufRoot = () => {
+const HAPI_TAG = 'v0.78.1'
+const PROTO_BASE = `https://raw.githubusercontent.com/hiero-ledger/hiero-consensus-node/${HAPI_TAG}/hapi/hedera-protobuf-java-api/src/main/proto/`
+
+/** Loads the official block-stream protos and every import they need. */
+const loadOfficialProtos = async () => {
   const root = new protobuf.Root()
-
-  // 1. BlockHeader Definition
-  const BlockHeader = new protobuf.Type('BlockHeader')
-    .add(new protobuf.Field('blockNumber', 1, 'uint32'))
-    .add(new protobuf.Field('previousBlockHash', 2, 'bytes'))
-    .add(new protobuf.Field('consensusStartTimestamp', 3, 'uint64'))
-    .add(new protobuf.Field('consensusEndTimestamp', 4, 'uint64'))
-    .add(new protobuf.Field('tssSignatureProof', 5, 'bytes'))
-
-  // 2. StateChange Definition (Fine-Grained Ledger Mutations)
-  const StateChange = new protobuf.Type('StateChange')
-    .add(new protobuf.Field('serviceId', 1, 'uint32'))
-    .add(new protobuf.Field('stateKey', 2, 'string'))
-    .add(new protobuf.Field('previousValue', 3, 'bytes'))
-    .add(new protobuf.Field('newValue', 4, 'bytes'))
-
-  // 3. TransactionRecordItem Definition
-  const TransactionRecordItem = new protobuf.Type('TransactionRecordItem')
-    .add(new protobuf.Field('transactionId', 1, 'string'))
-    .add(new protobuf.Field('consensusTimestamp', 2, 'uint64'))
-    .add(new protobuf.Field('feeChargedTinybars', 3, 'uint64'))
-    .add(new protobuf.Field('status', 4, 'string'))
-    .add(new protobuf.Field('stateChanges', 5, 'StateChange', 'repeated'))
-
-  // 4. Block Definition
-  const Block = new protobuf.Type('Block')
-    .add(new protobuf.Field('header', 1, 'BlockHeader'))
-    .add(new protobuf.Field('transactions', 2, 'TransactionRecordItem', 'repeated'))
-
-  root.define('hedera.block')
-    .add(BlockHeader)
-    .add(StateChange)
-    .add(TransactionRecordItem)
-    .add(Block)
-
-  return {
-    BlockHeader,
-    StateChange,
-    TransactionRecordItem,
-    Block
+  const seen = new Map()
+  const load = (file) => {
+    if (file.startsWith('google/protobuf/')) return Promise.resolve()
+    if (!seen.has(file)) {
+      seen.set(file, (async () => {
+        const res = await fetch(PROTO_BASE + file)
+        if (!res.ok) throw new Error(`Cannot fetch ${file}: ${res.status}`)
+        const parsed = protobuf.parse(await res.text(), root, { keepCase: true })
+        await Promise.all([...(parsed.imports || []), ...(parsed.weakImports || [])].map(load))
+      })())
+    }
+    return seen.get(file)
   }
+  await load('block/stream/block.proto')
+  for (const f of ['wrappers', 'timestamp', 'empty']) {
+    const common = protobuf.common[`google/protobuf/${f}.proto`]
+    if (common) root.addJSON(common.nested)
+  }
+  root.resolveAll()
+  return { root, files: seen.size }
 }
 
+const mirror = async (path) => {
+  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1${path}`)
+  return res.ok ? res.json() : null
+}
+const ts = (s) => { const [seconds, nanos] = s.split('.'); return { seconds: Number(seconds), nanos: Number(nanos) } }
+const acct = (id) => { const [shardNum, realmNum, accountNum] = id.split('.').map(Number); return { shardNum, realmNum, accountNum } }
+
 const main = async () => {
-  console.log('--- SESSION START: Hedera Protobuf Block Stream Parser ---\n')
-  const { client, operatorId } = getClient()
+  console.log('--- SESSION START: Block Stream Protobuf Encoder/Parser (Official HAPI Schemas) ---\n')
+  const { client } = getClient()
 
   try {
-    console.log('[PROCESS] Step 1: Compiling Canonical Hedera Block Stream Protobuf Schema...')
-    const { Block, BlockHeader, StateChange, TransactionRecordItem } = buildBlockStreamProtobufRoot()
-    console.log('[SUCCESS] Protobuf Types Initialized: BlockHeader, StateChange, TransactionRecordItem, Block')
+    console.log(`[PROCESS] Step 1: Loading official block-stream protos from hiero-consensus-node ${HAPI_TAG}...`)
+    const { root, files } = await loadOfficialProtos()
+    const Block = root.lookupType('com.hedera.hapi.block.stream.Block')
+    const BlockItem = root.lookupType('com.hedera.hapi.block.stream.BlockItem')
+    console.log(`[SUCCESS] ${files} .proto files parsed. BlockItem kinds: ${Object.keys(BlockItem.fields).join(', ')}`)
 
-    // 2. Synthesize High-Speed Block Stream Item from Live State
-    console.log('\n[PROCESS] Step 2: Assembling Synthetic 2026 Consensus Block with State Transitions...')
-    const currentBlockHeight = 48192042
-    const prevHash = crypto.createHash('sha384').update('hedera-block-48192041').digest()
-    const tssSig = crypto.randomBytes(64) // 64-byte Threshold Signature
+    console.log('\n[PROCESS] Step 2: Submitting a real HCS message and keeping its signed bytes...')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:block-stream-lab').execute(client)).getReceipt(client)).topicId
+    const tx = await new TopicMessageSubmitTransaction().setTopicId(topicId).setMessage('block-stream lab ping').freezeWith(client).signWithOperator(client)
+    const signedTxBytes = (await import('@hiero-ledger/proto')).proto.TransactionList.decode(tx.toBytes()).transactionList[0].signedTransactionBytes
+    const res = await tx.execute(client)
+    await res.getReceipt(client)
+    const txId = res.transactionId.toString()
+    console.log(`[SUCCESS] ${txId} (${signedTxBytes.length} signed bytes)`)
 
-    const sampleBlockData = {
-      header: {
-        blockNumber: currentBlockHeight,
-        previousBlockHash: prevHash,
-        consensusStartTimestamp: 1793433600,
-        consensusEndTimestamp: 1793433602,
-        tssSignatureProof: tssSig
-      },
-      transactions: [
+    console.log('\n[PROCESS] Step 3: Reading the consensus result and its block from the Mirror Node...')
+    const mirrorId = txId.replace('@', '-').replace(/\.(\d+)$/, '-$1')
+    const record = await waitForMirror(async () => (await mirror(`/transactions/${mirrorId}`))?.transactions?.[0], { timeoutMs: 60_000 })
+    if (!record) throw new Error('Transaction not on the Mirror Node yet')
+    const block = (await mirror(`/blocks?timestamp=lte:${record.consensus_timestamp}&order=desc&limit=1`)).blocks[0]
+    console.log(`[LOG] Block #${block.number} | hapi ${block.hapi_version} | source file ${block.name}`)
+    console.log(`[LOG] Result ${record.result} | fee ${record.charged_tx_fee} tinybars | ${record.transfers.length} transfers`)
+
+    console.log('\n[PROCESS] Step 4: Encoding a com.hedera.hapi.block.stream.Block from that data...')
+    const [major, minor, patch] = block.hapi_version.split('.').map(Number)
+    const message = Block.fromObject({
+      items: [
+        { block_header: { hapi_proto_version: { major, minor, patch }, number: block.number, block_timestamp: ts(block.timestamp.from), hash_algorithm: 'SHA2_384' } },
+        { signed_transaction: signedTxBytes },
         {
-          transactionId: '0.0.12345@1793433600.120000000',
-          consensusTimestamp: 1793433600,
-          feeChargedTinybars: 139476,
-          status: 'SUCCESS',
-          stateChanges: [
-            {
-              serviceId: 2, // Crypto Service
-              stateKey: 'accounts/0.0.12345/balance',
-              previousValue: Buffer.from('50011794049'),
-              newValue: Buffer.from('50011654573')
-            },
-            {
-              serviceId: 2, // Crypto Service
-              stateKey: 'accounts/0.0.11226623/balance',
-              previousValue: Buffer.from('11770229'),
-              newValue: Buffer.from('11870229')
-            }
-          ]
-        },
-        {
-          transactionId: '0.0.11226623@1793433601.450000000',
-          consensusTimestamp: 1793433601,
-          feeChargedTinybars: 210000,
-          status: 'SUCCESS',
-          stateChanges: [
-            {
-              serviceId: 3, // Token Service (HTS)
-              stateKey: 'tokens/0.0.11236384/supply',
-              previousValue: Buffer.from('100000'),
-              newValue: Buffer.from('100500')
-            }
-          ]
+          transaction_result: {
+            status: record.result,
+            consensus_timestamp: ts(record.consensus_timestamp),
+            transaction_fee_charged: record.charged_tx_fee,
+            transfer_list: { accountAmounts: record.transfers.map(t => ({ accountID: acct(t.account), amount: t.amount })) }
+          }
         }
       ]
-    }
-
-    // 3. Serialize to Raw Binary Protobuf Stream Buffer
-    console.log('[PROCESS] Step 3: Serializing Block to Binary Protobuf Buffer...')
-    const verifiedMessage = Block.create(sampleBlockData)
-    const rawProtobufBytes = Block.encode(verifiedMessage).finish()
-
-    console.log('[SUCCESS] Block Encoded!')
-    console.log(`[LOG] Raw Binary Payload Size:  ${rawProtobufBytes.length} bytes`)
-    console.log('[LOG] Protobuf Compression Ratio: ~82% smaller than JSON representation')
-    console.log(`[LOG] Binary Hex Preview:       ${Buffer.from(rawProtobufBytes.subarray(0, 32)).toString('hex')}...`)
-
-    // 4. Ingest and Stream Parse in High-Performance Pipeline
-    console.log('\n[PROCESS] Step 4: Streaming Binary Parser Ingestion (Zero-Copy Deserialization)...')
-    const decodedBlock = Block.decode(rawProtobufBytes)
-
-    console.log('[SUCCESS] Binary Block Stream Decoded in < 1ms:')
-    console.log(`Block Height:           #${decodedBlock.header.blockNumber}`)
-    console.log(`Previous Hash:          ${Buffer.from(decodedBlock.header.previousBlockHash).toString('hex').substring(0, 24)}...`)
-    console.log(`Transactions In Block:  ${decodedBlock.transactions.length}`)
-    console.log(`TSS Signature Proof:    ${Buffer.from(decodedBlock.header.tssSignatureProof).toString('hex').substring(0, 24)}...`)
-
-    // 5. Extract and Index Granular State Mutations
-    console.log('\n[PROCESS] Step 5: Applying Real-Time State Mutations to In-Memory Ledger View...')
-    let totalStateMutations = 0
-
-    decodedBlock.transactions.forEach((tx, idx) => {
-      console.log(`Tx [${idx + 1}] ID: ${tx.transactionId} | Status: ${tx.status} | Fee: ${tx.feeChargedTinybars} tinybars`)
-      tx.stateChanges.forEach(sc => {
-        totalStateMutations++
-        const prev = sc.previousValue ? Buffer.from(sc.previousValue).toString('utf8') : '0'
-        const next = sc.newValue ? Buffer.from(sc.newValue).toString('utf8') : '0'
-        console.log(`➔ State Mutation: [${sc.stateKey}] ${prev} ➔ ${next}`)
-      })
     })
+    const bytes = Block.encode(message).finish()
+    console.log(`[SUCCESS] ${bytes.length} bytes | SHA-384 ${crypto.createHash('sha384').update(bytes).digest('hex').slice(0, 32)}...`)
 
-    console.log(`\n[SUCCESS] Ingested ${totalStateMutations} state mutations with 100% cryptographic precision!`)
+    console.log('\n[PROCESS] Step 5: Decoding and indexing the BlockItems...')
+    const decoded = Block.toObject(Block.decode(bytes), { enums: String, longs: String, bytes: String })
+    for (const item of decoded.items) {
+      const kind = Object.keys(item)[0]
+      if (kind === 'block_header') console.log(`➔ block_header: #${item.block_header.number} hapi ${JSON.stringify(item.block_header.hapi_proto_version)}`)
+      if (kind === 'signed_transaction') console.log(`➔ signed_transaction: ${item.signed_transaction.length} base64 chars`)
+      if (kind === 'transaction_result') {
+        const r = item.transaction_result
+        console.log(`➔ transaction_result: ${r.status} at ${r.consensus_timestamp.seconds}.${r.consensus_timestamp.nanos}, fee ${r.transaction_fee_charged}`)
+        for (const aa of r.transfer_list.accountAmounts) console.log(`   ${aa.accountID.shardNum}.${aa.accountID.realmNum}.${aa.accountID.accountNum}: ${aa.amount}`)
+      }
+    }
+    if (decoded.items[2].transaction_result.status !== record.result) throw new Error('Round-trip mismatch')
 
-    updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', decodedBlock.header.blockNumber.toString())
-    updateState('BLOCK_STREAM_STATE_CHANGES_COUNT', totalStateMutations)
+    updateState('BLOCK_STREAM_LAST_PARSED_BLOCK', String(block.number))
 
     console.log('\n KEY CONCEPT:')
-    console.log('Continuous Protobuf Block Streams: In the 2026/2027 Hedera architecture, Block Nodes')
-    console.log('stream binary Protobuf state change feeds. Downstream indexers process state mutations')
-    console.log('at memory speed without query throttling or JSON parsing bottlenecks.')
-
-    console.log('\n LEARNABLE MOMENT:')
-    console.log('State Changes vs Record Files: By emitting explicit key-value state mutations')
-    console.log('(StateChanges), nodes eliminate the need to re-execute smart contract bytecode or')
-    console.log('re-run transactions off-chain just to know the new account balance or token supply.')
+    console.log('Block streams are BlockItems defined by official HAPI protos. Load the schema for the')
+    console.log('network\'s hapi_version and every consumer decodes the same bytes the same way.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Protobuf Stream Ingestion Failure:', error.message)
+    console.error('\n[ERROR] Block stream lab failed:', error.message)
     process.exit(1)
   } finally {
     client.close()
