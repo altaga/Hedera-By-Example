@@ -1,6 +1,6 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import { createHash } from 'crypto'
-import { AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TopicId, TransferTransaction } from '@hiero-ledger/sdk'
+import { AccountCreateTransaction, AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TopicId, TransferTransaction } from '@hiero-ledger/sdk'
 import { getMirrorNodeBaseUrl } from './config.js'
 import { getState, updateState } from './storage.js'
 
@@ -344,4 +344,28 @@ export const reuseTopic = async (stateKey, create, { check = () => true } = {}) 
   const topicId = TopicId.fromString(String(await create()))
   updateState(stateKey, `${topicId}@${operator}`)
   return topicId
+}
+
+/**
+ * Creates a throwaway testnet account funded by the operator (tiny amounts), for
+ * labs that need distinct parties. ECDSA accounts get an EVM alias.
+ *
+ * @returns {Promise<{accountId: AccountId, privateKey: PrivateKey}>}
+ */
+export const createLabAccount = async (client, { hbar = 0.1, ecdsa = false, autoAssociations = -1 } = {}) => {
+  const privateKey = ecdsa ? PrivateKey.generateECDSA() : PrivateKey.generateED25519()
+  const tx = new AccountCreateTransaction()
+    .setInitialBalance(new Hbar(hbar))
+    .setMaxAutomaticTokenAssociations(autoAssociations)
+  if (ecdsa) tx.setECDSAKeyWithAlias(privateKey)
+  else tx.setKeyWithoutAlias(privateKey.publicKey)
+  const receipt = await (await tx.execute(client)).getReceipt(client)
+  return { accountId: receipt.accountId, privateKey }
+}
+
+/** Reads an account's HBAR balance (tinybars) from the Mirror Node. */
+export const getMirrorHbarTinybars = async (accountId) => {
+  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+  if (!res.ok) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
+  return Number((await res.json()).balance.balance)
 }

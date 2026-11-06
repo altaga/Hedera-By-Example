@@ -5,146 +5,146 @@
  * [CONCEPTO] Préstamo, Arbitraje y Reembolso Atómico en una Única Transacción
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * En las finanzas descentralizadas de Ethereum (Aave, Balancer, Uniswap), un
- * préstamo flash requiere desplegar contratos inteligentes complejos con hooks
- * de callback (`executeOperation`). Si el prestatario no devuelve el capital
- * prestado más la tarifa del flash en la misma invocación EVM, la pila completa
- * de ejecución se revierte, consumiendo decenas de dólares en gas desperdiciado.
- *
- * Hedera elimina la necesidad de pools de préstamos flash basados en smart contracts:
- * 1. Primitiva Nativa de Capa 1: Una única `TransferTransaction` de Hedera puede
- *    agrupar hasta 10 movimientos de HBAR y tokens fungibles entre diferentes cuentas.
- * 2. Atomicidad Absoluta por Consenso: Los nodos de consenso de Hedera aplican
- *    la conservación matemática de balances (la suma de débitos debe ser igual
- *    a la suma de créditos, ∑ Δ = 0). Si alguna cuenta carece de balance o
- *    falla un solo tramo, la transacción ENTERA se revierte atómicamente a nivel de red.
- * 3. Arbitraje con Cero Capital:
- *    - Tramo 1: La Bóveda Flash presta 100,000 tinybars al Arbitrajista.
- *    - Tramo 2: El Arbitrajista compra el activo con descuento en Market Maker Alfa.
- *    - Tramo 3: El Arbitrajista vende el activo con prima en Market Maker Beta.
- *    - Tramo 4: El Arbitrajista reembolsa 100,000 tinybars + 90 tinybars de comisión (0.09%) a la Bóveda.
- *    - Tramo 5: El Arbitrajista retiene el beneficio neto del diferencial.
+ * En Ethereum, un préstamo flash necesita un contrato de pool con callbacks; si el
+ * prestatario no devuelve el préstamo en la misma llamada, todo se revierte.
+ * En Hedera, UNA TransferTransaction puede mover HBAR y tokens entre varias cuentas,
+ * firmada por cada parte, y la red la aplica completa o no aplica nada.
+ * Este lab lo ejecuta con cuatro cuentas de testnet reales y distintas y un token HTS real:
+ *   - Tramo 1: El Vault presta el principal al Arbitrajista.
+ *   - Tramo 2: El Arbitrajista compra 100 FLASH al Mercado Alpha por el principal.
+ *   - Tramo 3: El Arbitrajista vende los 100 FLASH al Mercado Beta con +0.5%.
+ *   - Tramo 4: El Arbitrajista devuelve principal + comisión de 0.09% al Vault y se queda el spread.
+ * Después, un segundo intento con un principal que Beta no puede cubrir se rechaza completo.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * No necesitas locks contra reentrada ni contratos inteligentes de préstamos flash
- * en Hedera. Componiendo múltiples transferencias en una sola TransferTransaction,
- * consigues una liquidación instantánea, sin colateral y libre de riesgo por una
- * fracción de centavo.
+ * Hedera compensa todos los tramos por cuenta antes de verificar saldos: el préstamo y
+ * el reembolso del vault se reducen a "+comisión". La atomicidad viene de la transacción,
+ * no de un contrato.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens#atomic-crypto-and-token-transfers
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 08: Libro de Órdenes en Memoria y Liquidación L1 Triangular
  * - Siguiente: M5 Lab 01: Temas Inmutables
  *
  * [SECUENCIA]
- * Prestatario -> Hedera: Una transacción: pedir prestado + operar + pagar
- * Nota Hedera: Cada parte se valida contra los saldos al llegar a consenso
- * Hedera -> Prestatario: Solo se liquida si el préstamo se paga en la misma transacción
+ * Vault, Arbitrajista, Alpha, Beta -> Hedera: Una transacción: préstamo + compra + venta + reembolso
+ * Note Hedera: Todos los tramos se compensan por cuenta y se verifican en consenso
+ * Hedera -> Arbitrajista: Se liquida solo si cada parte puede pagar su monto neto
+ *
+ * [SIMULADO]
+ * Los dos "mercados" son cuentas desechables con precios fijos, no exchanges reales.
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Wallet: tu cuenta de testnet (crea 4 cuentas desechables y un token FLASH).
+ * - Costo: ~0.6 ℏ para cuentas desechables + comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M4_Token_Operations_Atomic_Swaps/09_atomic_flash_settlement.js
  * ============================================================================
  */
 
-import {
-  TransferTransaction,
-  Hbar
-} from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { Hbar, TokenCreateTransaction, TokenType, TransferTransaction } from '@hiero-ledger/sdk'
+import { createLabAccount, getClient, getHashscanUrl, getMirrorHbarTinybars, sleep, updateState } from '../M99_Utilities/index.js'
 
-/**
- * Motor del Protocolo de Préstamos Flash y Calculador de Márgenes
- */
-class FlashLoanEngine {
-  constructor (feeBps = 9) { // 9 bps = 0.09% comisión estándar de préstamo flash
-    this.feeBps = feeBps
-  }
+const FEE_BPS = 9 // comisión flash de 0.09%
+const SPREAD = 0.005 // Beta paga +0.5%
+const UNITS = 100
 
-  calculateFee (principalTinybars) {
-    return Math.ceil((principalTinybars * this.feeBps) / 10000)
-  }
+const buildFlashTx = (client, parties, tokenId, principal) => {
+  const { vault, arb, alpha, beta } = parties
+  const fee = Math.ceil((principal * FEE_BPS) / 10000)
+  const sale = Math.floor(principal * (1 + SPREAD))
+  const tx = new TransferTransaction()
+    // Tramo 1: préstamo
+    .addHbarTransfer(vault.accountId, Hbar.fromTinybars(-principal))
+    .addHbarTransfer(arb.accountId, Hbar.fromTinybars(principal))
+    // Tramo 2: compra a Alpha
+    .addHbarTransfer(arb.accountId, Hbar.fromTinybars(-principal))
+    .addHbarTransfer(alpha.accountId, Hbar.fromTinybars(principal))
+    .addTokenTransfer(tokenId, alpha.accountId, -UNITS)
+    .addTokenTransfer(tokenId, arb.accountId, UNITS)
+    // Tramo 3: venta a Beta
+    .addHbarTransfer(beta.accountId, Hbar.fromTinybars(-sale))
+    .addHbarTransfer(arb.accountId, Hbar.fromTinybars(sale))
+    .addTokenTransfer(tokenId, arb.accountId, -UNITS)
+    .addTokenTransfer(tokenId, beta.accountId, UNITS)
+    // Tramo 4: devolución de principal + comisión
+    .addHbarTransfer(arb.accountId, Hbar.fromTinybars(-(principal + fee)))
+    .addHbarTransfer(vault.accountId, Hbar.fromTinybars(principal + fee))
+    .setTransactionMemo('hbe:flash-loan-atomic-settlement')
+    .freezeWith(client)
+  return { tx, fee, profit: sale - principal - fee }
+}
 
-  calculateArbitrageSpread (principalTinybars, alphaSpreadRate, betaSpreadRate) {
-    // Simulación de beneficio por arbitraje: Comprar con descuento en Alfa, vender con prima en Beta
-    const grossReturn = Math.floor(principalTinybars * (1 + (betaSpreadRate - alphaSpreadRate)))
-    const flashFee = this.calculateFee(principalTinybars)
-    const netProfit = grossReturn - principalTinybars - flashFee
-    return { grossReturn, flashFee, netProfit }
-  }
+const signAll = async (tx, parties) => {
+  for (const p of Object.values(parties)) await tx.sign(p.privateKey)
+  return tx
 }
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Préstamos Flash Sin Capital y Liquidación Atómica L1 ---\n')
-  const { client, operatorId } = getClient()
+  console.log('--- INICIO DE SESIÓN: Préstamo Flash Sin Capital y Liquidación Atómica L1 ---\n')
+  const { client } = getClient()
 
   try {
-    const flashEngine = new FlashLoanEngine(9) // 0.09% comisión flash
-    const loanPrincipalTinybars = 100000 // 0.001 HBAR principal flash
-    const alphaSpread = 0.000 // Tasa base de entrada Alfa
-    const betaSpread = 0.005 // Diferencial con prima Beta (+0.5%)
+    console.log('[PROCESO] Paso 1: Creando cuentas de Vault, Arbitrajista, Mercado Alpha y Mercado Beta...')
+    const parties = {
+      vault: await createLabAccount(client, { hbar: 0.2 }),
+      arb: await createLabAccount(client, { hbar: 0.05 }),
+      alpha: await createLabAccount(client, { hbar: 0.05 }),
+      beta: await createLabAccount(client, { hbar: 0.3 })
+    }
+    for (const [name, p] of Object.entries(parties)) console.log(`[LOG] ${name.padEnd(6)} ${p.accountId}`)
 
-    const { grossReturn, flashFee, netProfit } = flashEngine.calculateArbitrageSpread(
-      loanPrincipalTinybars,
-      alphaSpread,
-      betaSpread
-    )
+    console.log('\n[PROCESO] Paso 2: Creando el token FLASH y entregando inventario a Alpha...')
+    const tokenId = (await (await new TokenCreateTransaction()
+      .setTokenName('Flash Demo Asset').setTokenSymbol('FLASH').setTokenType(TokenType.FungibleCommon)
+      .setDecimals(0).setInitialSupply(UNITS * 10).setTreasuryAccountId(client.operatorAccountId)
+      .execute(client)).getReceipt(client)).tokenId
+    await (await new TransferTransaction()
+      .addTokenTransfer(tokenId, client.operatorAccountId, -UNITS)
+      .addTokenTransfer(tokenId, parties.alpha.accountId, UNITS)
+      .execute(client)).getReceipt(client)
+    console.log(`[ÉXITO] Token ${tokenId}; Alpha tiene ${UNITS} FLASH`)
 
-    console.log('[PROCESO] Paso 1: Analizando Oportunidad de Arbitraje con Préstamo Flash...')
-    console.log(`[LOG] Principal Flash:          ${loanPrincipalTinybars} tinybars (${loanPrincipalTinybars / 1e8} ℏ)`)
-    console.log(`[LOG] Comisión Flash (0.09%):   ${flashFee} tinybars`)
-    console.log(`[LOG] Rendimiento Bruto:        ${grossReturn - loanPrincipalTinybars} tinybars`)
-    console.log(`[LOG] Beneficio Neto Proyectado: ${netProfit} tinybars`)
+    const principal = 10_000_000 // 0.1 HBAR
+    console.log(`\n[PROCESO] Paso 3: Una transacción de 4 tramos, principal ${principal} tinybars, firmada por las cuatro partes...`)
+    const arbBefore = await getMirrorHbarTinybars(parties.arb.accountId.toString())
+    const { tx, fee, profit } = buildFlashTx(client, parties, tokenId, principal)
+    const res = await (await signAll(tx, parties)).execute(client)
+    const receipt = await res.getReceipt(client)
+    console.log(`[ÉXITO] Estado ${receipt.status} — ${res.transactionId} | ${getHashscanUrl(res)}`)
+    console.log(`[LOG] Comisión al vault: ${fee} tinybars | Ganancia esperada del arbitrajista: ${profit} tinybars`)
 
-    console.log('\n[PROCESO] Paso 2: Compilando Transacción Atómica L1 de Liquidación Flash en 4 Tramos...')
-    console.log('Tramo 1: Bóveda Flash ➔ Despacha el préstamo de capital al Arbitrajista')
-    console.log('Tramo 2: Arbitrajista ➔ Ejecuta swap de liquidez sintética en Mercado Alfa')
-    console.log('Tramo 3: Arbitrajista ➔ Ejecuta liquidación en Mercado Beta')
-    console.log('Tramo 4: Arbitrajista ➔ Reembolsa capital + 90 tinybars de comisión a la Bóveda')
+    await sleep(6000)
+    const arbAfter = await getMirrorHbarTinybars(parties.arb.accountId.toString())
+    console.log(`[VERIFICACIÓN] Mirror Node: el saldo del arbitrajista cambió ${arbAfter - arbBefore} tinybars (no pagó comisiones; el operador pagó la comisión de la transacción)`)
 
-    // Construir la transacción atómica unificada en Capa 1 de Hedera
-    // La transacción compila todas las operaciones en un solo payload inmutable de consenso.
-    // Para ejecutar sin dependencias de faucets externos, el operador actúa como
-    // orquestador de liquidez y cámara de compensación principal.
-    const flashTx = await new TransferTransaction()
-      // Tramo de transferencia: Conservación matemática de balances garantizada en Capa 1
-      .addHbarTransfer(operatorId, new Hbar(0))
-      .setTransactionMemo('HEDERA:L1:FLASH_LOAN_ATOMIC_SETTLEMENT')
-      .freezeWith(client)
+    console.log('\n[PROCESO] Paso 4: Caso de fallo — principal de 1 ℏ, que Beta no puede pagar...')
+    const vaultBefore = await getMirrorHbarTinybars(parties.vault.accountId.toString())
+    try {
+      const bad = buildFlashTx(client, parties, tokenId, 100_000_000)
+      // Alpha ya no tiene FLASH y a Beta le falta HBAR: la red debe rechazarlo todo
+      await (await (await signAll(bad.tx, parties)).execute(client)).getReceipt(client)
+      throw new Error('Expected the network to reject the transaction')
+    } catch (error) {
+      if (/Expected the network/.test(error.message)) throw error
+      console.log(`[RECHAZADO] ${error.status ?? error.message}`)
+    }
+    await sleep(4000)
+    const vaultAfter = await getMirrorHbarTinybars(parties.vault.accountId.toString())
+    console.log(`[VERIFICACIÓN] Saldo del vault sin cambios: ${vaultBefore === vaultAfter} (${vaultAfter} tinybars)`)
 
-    console.log('\n[PROCESO] Paso 3: Transmitiendo Transacción Atómica Flash a Nodos de Consenso...')
-    const txResponse = await flashTx.execute(client)
-    const receipt = await txResponse.getReceipt(client)
-
-    console.log(`\n[ÉXITO] ¡Liquidación Atómica Flash Finalizada! Estado: ${receipt.status.toString()}`)
-    console.log(`[LOG] ID de Transacción de Consenso: ${txResponse.transactionId.toString()}`)
-    console.log(`[EXPLORADOR] Ver en HashScan:       ${getHashscanUrl(txResponse)}`)
-
-    updateState('FLASH_SETTLEMENT_TX_ID', txResponse.transactionId.toString())
-    updateState('FLASH_PRINCIPAL_TINYBARS', loanPrincipalTinybars)
-    updateState('FLASH_NET_PROFIT_TINYBARS', netProfit)
+    updateState('FLASH_SETTLEMENT_TX_ID', res.transactionId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Préstamos Flash sin Smart Contracts: A diferencia de los protocolos EVM que exigen')
-    console.log('costosos contratos de pools de préstamos y hooks de retorno consumidores de gas,')
-    console.log('Hedera admite liquidaciones atómicas multicuenta nativamente en Capa 1.')
-    console.log('Si un solo tramo falla o viola la conservación de saldos, los nodos de consenso')
-    console.log('rechazan la transacción completa en menos de 3 segundos.')
-
-    console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Dado que las tarifas de transacción en Hedera están fijadas en fracciones de centavo ($0.0001),')
-    console.log('los arbitrajistas flash de alta frecuencia pueden rentabilizar microdiferenciales')
-    console.log('que resultarían totalmente inviables en Ethereum o rollups L2 donde las alzas de gas')
-    console.log('devorarían todo el beneficio.')
+    console.log('Cuatro partes, una transacción: o se liquidan todos los tramos o ninguno.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en Liquidación de Préstamo Flash:', error.message)
+    console.error('\n[ERROR] Falló la liquidación del préstamo flash:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -155,7 +155,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLIDO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

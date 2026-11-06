@@ -1,343 +1,197 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 10: Servidor Model Context Protocol (MCP) y Firewall de Seguridad HOL Guard
- * [CONCEPTO] Ejecución Segura de Agentes LLM con Cortafuegos de Políticas Activo
+ * Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
+ * [CONCEPTO] Ejecución Segura de Agentes LLM Autónomos tras una Verificación de Políticas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * El Model Context Protocol (MCP) es el estándar universal abierto que permite
- * a modelos de lenguaje (Claude, ChatGPT, Antigravity, Cursor) descubrir e invocar
- * herramientas de software externas mediante JSON-RPC 2.0.
+ * El Model Context Protocol (MCP) es el estándar abierto que permite a clientes LLM
+ * (Claude, ChatGPT, Cursor...) descubrir e invocar herramientas externas sobre JSON-RPC 2.0.
+ * Este lab ejecuta un servidor MCP REAL construido con el SDK oficial
+ * `@modelcontextprotocol/sdk`: el script se lanza a sí mismo como servidor stdio y
+ * luego se conecta como cliente MCP, igual que lo haría un host de IA.
  *
- * No obstante, otorgar a un LLM acceso directo y no supervisado a claves privadas
- * de blockchain conlleva un riesgo catastrófico: ataques de inyección de prompts,
- * alucinaciones de razonamiento o llamadas maliciosas pueden drenar fondos al instante.
- *
- * HOL Guard (Hashgraph Online Guard) soluciona esto como un cortafuegos activo en línea:
- * 1. Manifiesto de Herramientas MCP: Expone herramientas estandarizadas de Hedera vía stdio/SSE:
- *    - `hedera_query_account_balance`
- *    - `hedera_submit_consensus_message`
- *    - `hedera_transfer_hbar`
- * 2. Políticas de Cortafuegos en Línea: Intercepta todas las llamadas `tools/call` ANTES
- *    de llegar a la red o firmar transacciones:
- *    - Límites de velocidad de gasto (Máximo 10 HBAR por transferencia)
- *    - Lista blanca de destinatarios autorizados (Solo contrapartes aprobadas)
- *    - Límite de gasto acumulativo diario
- *    - Sanitización de patrones maliciosos e inyección de prompts
- * 3. Prueba Criptográfica de Auditoría: Genera un recibo SHA-256 inmutable por cada
- *    acción aprobada o rechazada.
+ * El servidor expone tres herramientas de Hedera:
+ *   - `hedera_query_account_balance` (lectura en Mirror Node)
+ *   - `hedera_submit_consensus_message` (envío real a HCS)
+ *   - `hedera_transfer_hbar` (transferencia real de HBAR)
+ * Cada `tools/call` pasa primero por un guardián de políticas escrito en este lab
+ * (tope por transferencia, lista de destinos permitidos, límite de tamaño) y recibe un
+ * digest de auditoría SHA-256. Las llamadas bloqueadas nunca llegan a la red.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * Jamás entregues a un modelo de IA acceso irrestricto a una clave privada de blockchain.
- * Al interponer un servidor MCP detrás de un cortafuegos de políticas como HOL Guard,
- * los agentes autónomos operan productivamente dentro de límites matemáticos estrictos.
+ * Nunca des a un modelo de IA acceso directo e ilimitado a una clave privada. Pon la clave
+ * detrás de un servidor MCP cuya política sea código determinista, no un prompt.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://modelcontextprotocol.io/specification
- * - https://hol.org/docs/standards/
+ * - https://github.com/modelcontextprotocol/typescript-sdk
+ * - https://github.com/hashgraph/hedera-agent-kit-js
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
+ * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado HIP-1334
  * - Siguiente: Curso Completado (Maestría Alcanzada)
  *
+ * [SECUENCIA]
+ * Cliente -> Servidor: initialize + tools/list sobre stdio
+ * Cliente -> Servidor: tools/call saldo, mensaje HCS, transferencia pequeña (permitidas)
+ * Servidor -> Hedera: Lecturas y transacciones reales
+ * Cliente -> Servidor: tools/call 500 HBAR a cuenta desconocida (bloqueada por el guardián)
+ *
  * [SIMULADO]
- * El ataque de inyección de prompt se simula para mostrar cómo lo bloquea la protección.
+ * La llamada de "inyección de prompt" la genera el cliente para mostrar cómo el guardián la bloquea. El guardián de políticas es código propio de este lab, no un producto de terceros.
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: <1 ℏ (solo comisiones de red).
+ * - Wallet: tu cuenta de testnet (crea 1 cuenta receptora desechable).
+ * - Costo: ~0.1 ℏ + comisiones. Solo Node (lanza un proceso hijo).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
  * ============================================================================
  */
 
-import crypto from 'crypto'
-import {
-  TransferTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
-} from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState, updateState } from '../M99_Utilities/index.js'
+import crypto from 'node:crypto'
+import { Hbar, TopicCreateTransaction, TopicMessageSubmitTransaction, TransferTransaction } from '@hiero-ledger/sdk'
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js'
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { z } from 'zod'
+import { createLabAccount, getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
 
-/**
- * Firewall de Seguridad y Políticas Empresariales HOL Guard
- */
-class HolGuardSecurityFirewall {
-  constructor (config = {}) {
-    this.maxHbarPerTransaction = config.maxHbarPerTransaction || 10
-    this.allowedDestinations = new Set(config.allowedDestinations || [
-      '0.0.11226623',
-      '0.0.8707881',
-      '0.0.12345'
-    ])
-    this.dailySpentHbar = 0
-    this.auditLogs = []
+/** Guardián de políticas propio: reglas deterministas evaluadas antes de ejecutar cualquier herramienta. */
+class PolicyGuard {
+  constructor ({ maxHbarPerTransfer, allowedDestinations }) {
+    this.maxHbarPerTransfer = maxHbarPerTransfer
+    this.allowed = new Set(allowedDestinations)
   }
 
-  evaluateToolCall (toolName, params) {
-    const timestamp = Date.now()
-    const callDigest = crypto.createHash('sha256')
-      .update(`${toolName}:${JSON.stringify(params)}:${timestamp}`)
-      .digest('hex')
-
-    // Regla 1: Consultas de solo lectura siempre están permitidas
-    if (toolName === 'hedera_query_account_balance') {
-      const record = { toolName, allowed: true, reason: 'Consulta de estado de solo lectura', callDigest, timestamp }
-      this.auditLogs.push(record)
-      return { allowed: true, record }
+  evaluate (tool, params) {
+    const digest = crypto.createHash('sha256').update(`${tool}:${JSON.stringify(params)}:${Date.now()}`).digest('hex')
+    if (tool === 'hedera_submit_consensus_message' && params.message.length > 1024) return { allowed: false, reason: 'El contenido supera 1024 bytes', digest }
+    if (tool === 'hedera_transfer_hbar') {
+      if (params.amountHbar > this.maxHbarPerTransfer) return { allowed: false, reason: `El monto ${params.amountHbar} ℏ supera el tope de ${this.maxHbarPerTransfer} ℏ`, digest }
+      if (!this.allowed.has(params.recipientId)) return { allowed: false, reason: `El destino ${params.recipientId} no está en la lista permitida`, digest }
     }
-
-    // Regla 2: Envío de mensajes con control de tamaño
-    if (toolName === 'hedera_submit_consensus_message') {
-      if (!params.message || params.message.length > 1024) {
-        const record = { toolName, allowed: false, reason: 'La carga útil excede el límite de 1024 bytes', callDigest, timestamp }
-        this.auditLogs.push(record)
-        return { allowed: false, record }
-      }
-      const record = { toolName, allowed: true, reason: 'Mensaje de consenso conforme a políticas', callDigest, timestamp }
-      this.auditLogs.push(record)
-      return { allowed: true, record }
-    }
-
-    // Regla 3: Transferencias de valor estrictamente filtradas
-    if (toolName === 'hedera_transfer_hbar') {
-      const amount = Number(params.amountHbar)
-
-      // Verificar límite por transacción
-      if (amount > this.maxHbarPerTransaction) {
-        const record = {
-          toolName,
-          allowed: false,
-          reason: `INFRACCIÓN: El monto (${amount} ℏ) excede el tope por operación (${this.maxHbarPerTransaction} ℏ)`,
-          callDigest,
-          timestamp
-        }
-        this.auditLogs.push(record)
-        return { allowed: false, record }
-      }
-
-      // Verificar lista blanca de destinatarios
-      if (!this.allowedDestinations.has(params.recipientId)) {
-        const record = {
-          toolName,
-          allowed: false,
-          reason: `INFRACCIÓN: El destino ${params.recipientId} NO está en la lista blanca aprobada`,
-          callDigest,
-          timestamp
-        }
-        this.auditLogs.push(record)
-        return { allowed: false, record }
-      }
-
-      // Actualizar gasto acumulado
-      this.dailySpentHbar += amount
-      const record = { toolName, allowed: true, reason: 'Aprobado bajo la política de seguridad', callDigest, timestamp }
-      this.auditLogs.push(record)
-      return { allowed: true, record }
-    }
-
-    const record = { toolName, allowed: false, reason: 'Herramienta desconocida o no autorizada', callDigest, timestamp }
-    this.auditLogs.push(record)
-    return { allowed: false, record }
+    return { allowed: true, reason: 'Cumple la política', digest }
   }
 }
 
-/**
- * Servidor Model Context Protocol (MCP) Hashnet
- */
-class HashnetMcpServer {
-  constructor (firewall) {
-    this.firewall = firewall
-    this.tools = [
-      {
-        name: 'hedera_query_account_balance',
-        description: 'Consulta saldo en tiempo real de HBAR y tokens de cualquier cuenta de Hedera',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            accountId: { type: 'string', description: 'ID de cuenta destino 0.0.X' }
-          },
-          required: ['accountId']
-        }
-      },
-      {
-        name: 'hedera_submit_consensus_message',
-        description: 'Publica un mensaje inmutable y ordenado en un tópico HCS',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            topicId: { type: 'string', description: 'ID del tópico HCS destino' },
-            message: { type: 'string', description: 'Carga útil del mensaje (máx 1024 caracteres)' }
-          },
-          required: ['topicId', 'message']
-        }
-      },
-      {
-        name: 'hedera_transfer_hbar',
-        description: 'Transfiere HBAR nativo sujeto a las reglas de velocidad y listas blancas de HOL Guard',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            recipientId: { type: 'string', description: 'Cuenta 0.0.X destinataria' },
-            amountHbar: { type: 'number', description: 'Cantidad de HBAR a transferir' }
-          },
-          required: ['recipientId', 'amountHbar']
-        }
-      }
-    ]
-  }
+/** Modo servidor MCP: stdout pertenece al protocolo JSON-RPC, así que solo se escribe en stderr. */
+const runServer = async () => {
+  const { client } = getClient()
+  const guard = new PolicyGuard({ maxHbarPerTransfer: 1, allowedDestinations: (process.env.LAB_ALLOWLIST || '').split(',') })
+  const server = new McpServer({ name: 'hbe-hedera-mcp', version: '1.0.0' })
 
-  listTools () {
-    return { tools: this.tools }
-  }
-
-  async executeTool (toolName, params, client) {
-    // 1. Intercepción Activa de HOL Guard
-    const policy = this.firewall.evaluateToolCall(toolName, params)
+  const guarded = (tool, run) => async (params) => {
+    const policy = guard.evaluate(tool, params)
+    console.error(`[GUARD] ${tool} -> ${policy.allowed ? 'ALLOW' : 'BLOCK'} (${policy.reason})`)
     if (!policy.allowed) {
-      return {
-        isError: true,
-        error: {
-          code: -32001,
-          message: 'BLOQUEADO POR EL CORTAFUEGOS HOL GUARD',
-          details: policy.record.reason,
-          auditProof: policy.record.callDigest
-        }
-      }
+      return { isError: true, content: [{ type: 'text', text: `BLOQUEADO POR EL GUARDIÁN DE POLÍTICAS: ${policy.reason} | auditoría ${policy.digest}` }] }
     }
-
-    // 2. Despachar Ejecución de la Herramienta Aprobada
-    if (toolName === 'hedera_query_account_balance') {
-      const res = await fetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${params.accountId}`)
-      const data = await res.json()
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Cuenta: ${params.accountId} | Saldo: ${data.balance.balance / 1e8} ℏ`
-          }
-        ],
-        auditProof: policy.record.callDigest
-      }
-    }
-
-    if (toolName === 'hedera_submit_consensus_message') {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Mensaje de consenso encolado para el tópico ${params.topicId} (Auditoría: ${policy.record.callDigest.substring(0, 16)}...)`
-          }
-        ],
-        auditProof: policy.record.callDigest
-      }
-    }
-
-    if (toolName === 'hedera_transfer_hbar') {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Transferencia de ${params.amountHbar} ℏ a ${params.recipientId} autorizada por HOL Guard`
-          }
-        ],
-        auditProof: policy.record.callDigest
-      }
-    }
+    const text = await run(params)
+    return { content: [{ type: 'text', text: `${text} | auditoría ${policy.digest}` }] }
   }
+
+  server.registerTool('hedera_query_account_balance', {
+    description: 'Lee el saldo HBAR de una cuenta de Hedera desde el Mirror Node',
+    inputSchema: { accountId: z.string() }
+  }, guarded('hedera_query_account_balance', async ({ accountId }) => {
+    const data = await (await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)).json()
+    return `Saldo de la cuenta ${accountId}: ${data.balance.balance / 1e8} ℏ`
+  }))
+
+  server.registerTool('hedera_submit_consensus_message', {
+    description: 'Envía un mensaje a un topic HCS',
+    inputSchema: { topicId: z.string(), message: z.string() }
+  }, guarded('hedera_submit_consensus_message', async ({ topicId, message }) => {
+    const res = await new TopicMessageSubmitTransaction().setTopicId(topicId).setMessage(message).execute(client)
+    const receipt = await res.getReceipt(client)
+    return `Mensaje HCS #${receipt.topicSequenceNumber} en ${topicId} — tx ${res.transactionId}`
+  }))
+
+  server.registerTool('hedera_transfer_hbar', {
+    description: 'Transfiere HBAR desde el operador del servidor, sujeto al guardián de políticas',
+    inputSchema: { recipientId: z.string(), amountHbar: z.number() }
+  }, guarded('hedera_transfer_hbar', async ({ recipientId, amountHbar }) => {
+    const res = await new TransferTransaction()
+      .addHbarTransfer(client.operatorAccountId, new Hbar(-amountHbar))
+      .addHbarTransfer(recipientId, new Hbar(amountHbar))
+      .execute(client)
+    await res.getReceipt(client)
+    return `Transferidos ${amountHbar} ℏ a ${recipientId} — tx ${res.transactionId} | ${getHashscanUrl(res)}`
+  }))
+
+  await server.connect(new StdioServerTransport())
+  console.error('[SERVER] hbe-hedera-mcp escuchando en stdio')
 }
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Servidor MCP Hashnet y Firewall de Seguridad HOL Guard ---\n')
+  console.log('--- INICIO DE SESIÓN: Servidor MCP de Hedera con un Guardián de Políticas Propio ---\n')
   const { client, operatorId } = getClient()
-
+  let mcp
   try {
-    // 1. Inicializar Firewall HOL Guard y Servidor MCP
-    console.log('[PROCESO] Paso 1: Inicializando Instancia de Cortafuegos HOL Guard y Servidor MCP...')
-    const firewall = new HolGuardSecurityFirewall({
-      maxHbarPerTransaction: 10,
-      allowedDestinations: [operatorId.toString(), '0.0.11226623', '0.0.8707881']
-    })
-    const mcpServer = new HashnetMcpServer(firewall)
+    // 1. Recursos reales para las herramientas
+    console.log('[PROCESO] Paso 1: Creando un topic HCS y una cuenta receptora permitida...')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:mcp-agent-log').execute(client)).getReceipt(client)).topicId
+    const recipient = await createLabAccount(client, { hbar: 0.01 })
+    console.log(`[LOG] Topic ${topicId} | Receptor permitido ${recipient.accountId}`)
 
-    // 2. Descubrir Herramientas MCP Disponibles (Protocolo tools/list)
-    console.log('\n[PROCESO] Paso 2: Consultando Catálogo de Herramientas MCP (Protocolo: tools/list)...')
-    const toolManifest = mcpServer.listTools()
-    console.log(`[ÉXITO] Descubiertas ${toolManifest.tools.length} Herramientas MCP Gestionadas:`)
-    toolManifest.tools.forEach(t => console.log(`${t.name}: ${t.description}`))
+    // 2. Lanza este archivo como servidor MCP stdio y conéctate como cliente
+    console.log('\n[PROCESO] Paso 2: Lanzando el servidor MCP sobre stdio y conectando un cliente...')
+    mcp = new McpClient({ name: 'hbe-lab-client', version: '1.0.0' })
+    await mcp.connect(new StdioClientTransport({
+      command: process.execPath,
+      args: [import.meta.filename, '--server'],
+      env: { ...process.env, LAB_ALLOWLIST: recipient.accountId.toString() },
+      stderr: 'inherit'
+    }))
+    const { tools } = await mcp.listTools()
+    console.log(`[ÉXITO] tools/list devolvió ${tools.length} herramientas: ${tools.map(t => t.name).join(', ')}`)
 
-    // 3. Prueba 1: Consulta de Saldo de Solo Lectura (Permitida)
-    console.log('\n[PROCESO] Paso 3: Invocando Herramienta: hedera_query_account_balance (Lectura Segura)...')
-    const queryResult = await mcpServer.executeTool(
-      'hedera_query_account_balance',
-      { accountId: operatorId.toString() },
-      client
-    )
-    console.log('[ÉXITO] Invocación de Herramienta Permitida:')
-    console.log(`Resultado:            ${queryResult.content[0].text}`)
-    console.log(`Prueba de Auditoría:  ${queryResult.auditProof}`)
-
-    // 4. Prueba 2: Publicación de Consenso Autorizada (Permitida)
-    console.log('\n[PROCESO] Paso 4: Invocando Herramienta: hedera_submit_consensus_message (Escritura Conforme)...')
-    const msgResult = await mcpServer.executeTool(
-      'hedera_submit_consensus_message',
-      { topicId: '0.0.11250984', message: 'AGENT_HEARTBEAT_ACK: OK' },
-      client
-    )
-    console.log('[ÉXITO] Invocación de Herramienta Permitida:')
-    console.log(`Resultado:            ${msgResult.content[0].text}`)
-    console.log(`Prueba de Auditoría:  ${msgResult.auditProof}`)
-
-    // 5. Prueba 3: Intento Malicioso de Transferencia (Bloqueado por HOL Guard)
-    console.log('\n[PROCESO] Paso 5: Simulando Ataque de Inyección de Prompts (500 ℏ a Cuenta No Autorizada)...')
-    const attackCall = await mcpServer.executeTool(
-      'hedera_transfer_hbar',
-      { recipientId: '0.0.9999999', amountHbar: 500 },
-      client
-    )
-
-    if (attackCall.isError) {
-      console.log('[ DEFENSA HOL GUARD ACTIVADA] Llamada No Autorizada Interceptada y Bloqueada:')
-      console.log(`Código de Error:      ${attackCall.error.code}`)
-      console.log(`Estado:               ${attackCall.error.message}`)
-      console.log(`Motivo:               ${attackCall.error.details}`)
-      console.log(`Prueba de Auditoría:  ${attackCall.error.auditProof}`)
-    } else {
-      throw new Error('¡El cortafuegos falló al interceptar la transferencia no autorizada!')
+    const call = async (name, args) => {
+      const res = await mcp.callTool({ name, arguments: args })
+      console.log(`${res.isError ? '[BLOQUEADO]' : '[ÉXITO]'} ${name}: ${res.content[0].text}`)
+      return res
     }
 
-    console.log(`\n[ REGISTRO DE AUDITORÍA] Total de Eventos Interceptados en la Sesión: ${firewall.auditLogs.length}`)
-    firewall.auditLogs.forEach((log, idx) => {
-      console.log(`Evento #${idx + 1} | Herramienta: ${log.toolName} | Permitido: ${log.allowed} | Motivo: ${log.reason}`)
-    })
+    // 3. Llamadas permitidas — efectos reales en la red
+    console.log('\n[PROCESO] Paso 3: Llamadas permitidas...')
+    await call('hedera_query_account_balance', { accountId: operatorId.toString() })
+    await call('hedera_submit_consensus_message', { topicId: topicId.toString(), message: 'AGENT_HEARTBEAT_ACK: OK' })
+    const transfer = await call('hedera_transfer_hbar', { recipientId: recipient.accountId.toString(), amountHbar: 0.05 })
+    if (transfer.isError) throw new Error('La transferencia permitida fue bloqueada')
 
-    updateState('MCP_SERVER_INITIALIZED', true)
-    updateState('HOL_GUARD_LAST_AUDIT_PROOF', attackCall.error.auditProof)
+    // 4. Llamada maliciosa generada por el script
+    console.log('\n[PROCESO] Paso 4: Llamada tipo inyección de prompt (500 ℏ a una cuenta desconocida)...')
+    const attack = await call('hedera_transfer_hbar', { recipientId: '0.0.9999999', amountHbar: 500 })
+    if (!attack.isError) throw new Error('¡El guardián no bloqueó la transferencia!')
+    console.log('[VERIFICACIÓN] El guardián la bloqueó antes de firmar cualquier transacción.')
+
+    updateState('MCP_LAB_TOPIC_ID', topicId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Cortafuegos Activo en Línea: Los modelos LLM cometen errores y pueden ser víctimas')
-    console.log('de inyecciones de prompts. HOL Guard garantiza que incluso si un agente de IA genera')
-    console.log('una orden rogue, la transacción jamás llegará a la red sin superar filtros deterministas.')
-
-    console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Seguridad de Agentes Empresarial: Desplegar servidores Model Context Protocol (MCP)')
-    console.log('con cumplimiento HOL Guard satisface los requisitos fiduciarios, SOC-2 e ISO-27001 para IA autónoma.')
+    console.log('El host de IA solo ve herramientas MCP; la clave y la política viven en el proceso del servidor.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[ERROR] Fallo en la Ejecución del Servidor MCP:', error.message)
-    process.exit(1)
+    console.error('\n[ERROR] Falló el lab MCP:', error.message)
+    process.exitCode = 1
   } finally {
+    if (mcp) await mcp.close()
     client.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main()
-    .then(() => process.exit())
-    .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
-      process.exit(1)
-    })
+  if (process.argv.includes('--server')) {
+    runServer().catch((error) => { console.error('[SERVER ERROR]', error.message); process.exit(1) })
+  } else {
+    main()
+      .then(() => process.exit())
+      .catch((error) => {
+        console.error('[FALLIDO] Error de ejecución:', error.message)
+        process.exit(1)
+      })
+  }
 }
