@@ -67,7 +67,7 @@ const main = async () => {
   const providerAccount = process.env.ACCOUNT_2_ID
 
   if (!agentId || !agentKey || !providerAccount) {
-    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_1 agente, ACCOUNT_2 proveedor).')
+    console.error('[FALLO] Faltan credenciales en .env (ACCOUNT_1 agente, ACCOUNT_2 proveedor).')
     process.exitCode = 1
     return
   }
@@ -137,7 +137,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] Falló la ejecución del agente autónomo:', error.message)
+    console.error('\n[FALLO] Falló la ejecución del agente autónomo:', error.message)
     process.exitCode = 1
   }
 }
@@ -146,7 +146,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLÓ] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

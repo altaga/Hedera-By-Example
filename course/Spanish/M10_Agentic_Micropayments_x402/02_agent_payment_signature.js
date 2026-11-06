@@ -52,12 +52,12 @@ const main = async () => {
   const header = getState('X402_PAYMENT_REQUIRED')
 
   if (!agentId || !agentKey) {
-    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_1, el agente).')
+    console.error('[FALLO] Faltan credenciales en .env (ACCOUNT_1, el agente).')
     process.exitCode = 1
     return
   }
   if (!header) {
-    console.error('[FALLÓ] Falta X402_PAYMENT_REQUIRED en el estado. Ejecuta primero el Lab 01 de M10.')
+    console.error('[FALLO] Falta X402_PAYMENT_REQUIRED en el estado. Ejecuta primero el Lab 01 de M10.')
     process.exitCode = 1
     return
   }
@@ -122,7 +122,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] No se pudo firmar el pago:', error.message)
+    console.error('\n[FALLO] No se pudo firmar el pago:', error.message)
     process.exitCode = 1
   }
 }
@@ -131,7 +131,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLÓ] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

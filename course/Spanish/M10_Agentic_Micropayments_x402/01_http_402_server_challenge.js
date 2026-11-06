@@ -77,7 +77,7 @@ const main = async () => {
   const merchantId = process.env.ACCOUNT_2_ID
 
   if (!merchantId) {
-    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_2, el comercio).')
+    console.error('[FALLO] Faltan credenciales en .env (ACCOUNT_2, el comercio).')
     process.exitCode = 1
     return
   }
@@ -115,7 +115,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] No se pudo generar el desafío 402:', error.message)
+    console.error('\n[FALLO] No se pudo generar el desafío 402:', error.message)
     process.exitCode = 1
   }
 }
@@ -124,7 +124,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLÓ] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

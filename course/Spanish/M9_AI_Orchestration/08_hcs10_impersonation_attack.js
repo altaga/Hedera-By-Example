@@ -1,21 +1,18 @@
 /**
  * ============================================================================
  * Lab 08: Ataque de Suplantación HCS-10 (Hijacking)
- * [CONCEPTO] Vulnerabilidad por Falta de Verificación Criptográfica
+ * [CONCEPTO] Vulnerabilidad de los Flujos Públicos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Los Peligros del Silo: Este laboratorio demuestra los riesgos de ignorar
- * la arquitectura "Zero Trust" (Confianza Cero). En este escenario, el
- * Agente B ha sido configurado para ignorar la verificación de firmas y la
- * frescura de los mensajes. Esto permite que un adversario (Agente C) pueda
- * realizar ataques de "Falsificación" (enviando comandos en nombre de otro)
- * y ataques de "Replay" (reutilizando mensajes antiguos capturados del
- * registro público). Sin una validación criptográfica rigurosa, la
- * integridad del sistema de arbitraje se desmorona, permitiendo la
- * manipulación maliciosa de los resultados.
- * *
+ * La Brecha de Identidad: En los labs anteriores procesamos los mensajes solo
+ * por su contenido. Como los tópicos HCS son públicos, cualquiera que conozca
+ * el Topic ID puede publicar "spam" o "falsificaciones". Este lab presenta a
+ * un adversario (Agente C) que intenta secuestrar la conversación imitando el
+ * formato del protocolo. Verás que, sin validación criptográfica de la sesión,
+ * los agentes no tienen defensa contra quien conoce el formato de los mensajes.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los topics públicos de consenso permiten que cualquiera publique mensajes. Simular un ataque de suplantación demuestra por qué la comunicación no autenticada entre agentes es vulnerable a comandos no autorizados.
+ * Los tópicos de consenso públicos permiten que cualquiera publique mensajes. Simular un ataque de suplantación muestra por qué la comunicación entre agentes sin autenticar es vulnerable a la falsificación y a órdenes no autorizadas.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-10/
@@ -40,16 +37,20 @@
  * ============================================================================
  */
 
-import { PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, loadEnv } from '../M99_Utilities/index.js'
+
+loadEnv() // lee course/.env (y el .env de la raíz del repositorio)
 
 const main = async () => {
-  // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
-  exitIfStuck(180_000, 'mensajes de la suscripción')
-  console.log('--- INICIO DEL LABORATORIO: Simulación de Ataque de Suplantación (Vulnerabilidad HCS-10) ---\n')
+  // Nunca quedarse colgado: falla con un mensaje claro si la red no responde.
+  exitIfStuck(180_000, 'los mensajes de la suscripción')
+  const sessionStart = new Date(Date.now() - 10000) // solo mensajes de esta ejecución (10 s hacia atrás por la propagación del Mirror Node)
+  let sessionDone = false // se activa cuando el Agente A termina, para que el adversario también se detenga
+  console.log('--- INICIO DE SESIÓN: Auditoría de Vulnerabilidad de Flujos Públicos ---\n')
 
-  // --- CONFIGURACIÓN DE IDENTIDADES ---
+  // --- CONFIGURACIÓN ---
   const agentAId = getState('HCS11_AGENT_A_ID')
   const agentAKey = getState('HCS11_AGENT_A_KEY')
   const agentBId = getState('HCS11_AGENT_B_ID')
@@ -60,26 +61,23 @@ const main = async () => {
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  // Llave de sesión compartida por los agentes: se crea la primera vez y los Labs 08-10 la reutilizan.
-  let sessionPrivKeyDer = getState('HCS10_SESSION_PRIVATE_KEY')
-  if (!sessionPrivKeyDer) {
-    // Genera una llave localmente: la llave privada nunca sale de este proceso.
-    sessionPrivKeyDer = PrivateKey.generateECDSA().toStringRaw()
-    updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivKeyDer)
-    console.log('[INFO] Se generó una llave de sesión ECDSA nueva para Agente A  Agente B (guardada como HCS10_SESSION_PRIVATE_KEY).')
+  if (!agentAId || !agentBId || !agentCId) {
+    console.error('[FALLO] Faltan los IDs de los agentes en la configuración. Ejecuta antes el Lab 04 de M9.')
+    process.exitCode = 1
+    return
   }
-  const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivKeyDer)
 
-  // --- COMPONENTE: AGENTE B (Servicio Vulnerable - Modo Legado) ---
+  // --- AGENTE B: EL SERVICIO VULNERABLE ---
   const startAgentB = async () => {
     const client = createClient().setOperator(agentBId, agentBKey)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
-    console.log(`[INFO] Agente B: Operativo en Modo Vulnerable en Inbox [${inbox}]...`)
+    console.log(`[INFO] El Agente B escucha en ${inbox} (modo vulnerable)`)
 
-    // Suscríbete vía Mirror Node: los mensajes llegan en orden de consenso.
+    // Suscripción a través del Mirror Node: los mensajes llegan en orden de consenso.
     new TopicMessageQuery()
       .setTopicId(inbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
 
@@ -87,63 +85,58 @@ const main = async () => {
           const envelope = JSON.parse(content)
           const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
 
-          if (data?.verified_payload) {
-            const payload = JSON.parse(data.verified_payload)
+          if (data?.text?.includes('Hello')) {
+            console.log('\n---  [REGISTRO] AGENTE B: SOLICITUD RECIBIDA ---')
+            console.log(`[INFO] Contenido: "${data.text}"`)
 
-            console.log('\n  [ALERTA] ¡Agente B procesando mensaje SIN verificación de firma!')
-            console.log(`[REGISTRO] Comando capturado del registro público: ${inbox}`)
+            const roundMatch = data.text.match(/\d+/)
+            const round = roundMatch ? roundMatch[0] : '99'
 
-            // EJECUCIÓN (En modo vulnerable, el agente confía ciegamente en el emisor declarado)
-            console.log(`[INFO] Confiando ciegamente en "${payload.text}". Procesando lógica...`)
+            console.log(`[PROCESO] El Agente B procesa la ronda ${round}...`)
+            await sleep(4000)
 
-            await sleep(3000)
-            await hcs10.sendMessage(outbox, { text: `World ${payload.round} confirmado!`, target: agentAId })
+            await hcs10.sendMessage(outbox, { text: `World ${round}!`, target: agentAId })
+            console.log('[ÉXITO] Respuesta enviada.')
           }
         } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
       })
   }
 
-  // --- COMPONENTE: AGENTE A (Emisor Legítimo) ---
+  // --- AGENTE A: EL QUE INICIA (Y EL SUPLANTADO) ---
   const startAgentA = async () => {
     const client = createClient().setOperator(agentAId, agentAKey)
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
     let currentRound = 1
-    console.log(`[INFO] Agente A: Emisor Genuino en Outbox [${outbox}]...`)
+    console.log(`[INFO] El Agente A vigila el Outbox [${outbox}]`)
 
     const sendPing = async (round) => {
-      console.log('\n---  AGENTE A: PREPARANDO ENVÍO SEGURO ---')
-      const payloadObj = { text: `Hello ${round}`, round, ts: Date.now() }
-      const payloadString = JSON.stringify(payloadObj)
-
-      console.log(`[PROCESO] Generando firma de sesión para la Ronda ${round}...`)
-      const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
-
+      console.log(`\n---  [PROCESO] AGENTE A: ENVIANDO LA RONDA ${round} ---`)
       await hcs10.sendMessage(inbox, {
         operator_id: agentAId,
-        verified_payload: payloadString,
-        session_proof: Buffer.from(sig).toString('hex')
+        text: `Hello ${round}`
       })
-      console.log('[INFO] Mensaje publicado. El Agente B lo procesará sin validar la firma.')
     }
 
     new TopicMessageQuery()
       .setTopicId(outbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
-          console.log(`\n[ÉXITO] Agente A recibió respuesta legítima para Ronda ${currentRound}.`)
+          console.log(`\n[ÉXITO] AGENTE A: ronda ${currentRound} completada.`)
           if (currentRound < 3) {
             currentRound++
-            await sleep(4000)
+            await sleep(5000)
             await sendPing(currentRound)
           } else {
-            console.log('\n --- [ÉXITO] El Agente B vulnerado procesó toda la secuencia. ---')
+            console.log('\n [ÉXITO] Interacción completa.')
             console.log('\n CONCEPTO CLAVE:')
-            console.log('La Brecha de Identidad: En este laboratorio viste con qué facilidad el Agente C')
-            console.log('suplantó la conversación. Sin validación criptográfica de sesión, los agentes')
-            console.log('quedan indefensos ante actores maliciosos que conocen el formato del protocolo.')
+            console.log('La Brecha de Identidad: viste lo fácil que fue para el Agente C suplantar')
+            console.log('la conversación. Sin validación criptográfica de la sesión, los agentes')
+            console.log('no tienen defensa contra quien conoce el formato del protocolo.')
             console.log('\n--- SESIÓN COMPLETADA ---\n')
+            sessionDone = true
             process.exit()
           }
         }
@@ -152,43 +145,25 @@ const main = async () => {
     await sendPing(currentRound)
   }
 
-  // --- COMPONENTE: AGENTE C (El Adversario - Hijacker) ---
+  // --- AGENTE C: EL ADVERSARIO ---
   const startAgentC = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentCId, operatorPrivateKey: agentCKey })
 
-    console.log('[INFO] Agente C: Atacante Activo en suplantación de identidad...')
-
-    for (let i = 0; i < 4; i++) {
-      await sleep(Math.floor(Math.random() * 6000) + 5000)
-      const isForgery = Math.random() > 0.5
-
-      if (isForgery) {
-        console.log('\n---  MOVIMIENTO MALICIOSO: INTENTO DE FALSIFICACIÓN ---')
-        await hcs10.sendMessage(inbox, {
-          operator_id: agentAId, // Suplantando la identidad del Agente A
-          verified_payload: JSON.stringify({ text: 'COMANDO_DE_RESET_MALICIOSO', round: 99 }),
-          session_proof: '00'.repeat(32) // Firma inválida que el Agente B ignorará
-        })
-        console.log('[INFO] Ataque enviado: Falsificación de Identidad.')
-      } else {
-        console.log('\n---  MOVIMIENTO MALICIOSO: ATAQUE DE REPLAY (REPRODUCCIÓN) ---')
-        console.log('[PROCESO] Copiando un mensaje antiguo de la Ronda 1 del registro público...')
-        const replay = JSON.stringify({ text: 'Hello 1', round: 1, ts: 1713723000 })
-        const sig = sessionPriv.sign(Buffer.from(replay, 'utf8'))
-        await hcs10.sendMessage(inbox, {
-          operator_id: agentAId,
-          verified_payload: replay,
-          session_proof: Buffer.from(sig).toString('hex')
-        })
-        console.log('[INFO] Ataque enviado: Reinyección de Mensaje Histórico.')
-      }
+    for (let i = 0; i < 3; i++) {
+      await sleep(Math.floor(Math.random() * 8000) + 5000)
+      if (sessionDone) return
+      console.log('\n---  [PROCESO] ADVERSARIO: INYECTANDO UN PAQUETE FALSIFICADO ---')
+      await hcs10.sendMessage(inbox, {
+        operator_id: agentAId,
+        text: 'Hello 99 (MALICIOUS SPOOF)'
+      })
+      console.log('[INFO] Paquete falsificado publicado en el tópico de la víctima.')
     }
   }
 
-  // --- ARRANQUE DE LA SIMULACIÓN ---
   startAgentB()
-  setTimeout(startAgentA, 3000)
-  setTimeout(startAgentC, 7000)
+  setTimeout(startAgentA, 2000)
+  setTimeout(startAgentC, 6000) // El adversario se une más tarde
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {

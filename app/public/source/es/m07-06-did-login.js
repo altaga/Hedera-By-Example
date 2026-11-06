@@ -73,12 +73,12 @@ const main = async () => {
     console.log(`[REGISTRO] Biografía Declarada: ${didDocument.bio}`)
 
     // --- FASE 2: GENERACIÓN DEL DESAFÍO (EL "CHALLENGE") ---
-    const desafio = `CHALLENGE_HE_ES_${Math.random().toString(36).substring(7)}_${Date.now()}`
-    console.log(`\n[INFO] Desafío del Servidor generado: ${desafio}`)
+    const challenge = `CHALLENGE_HE_ES_${Math.random().toString(36).substring(7)}_${Date.now()}`
+    console.log(`\n[INFO] Desafío del Servidor generado: ${challenge}`)
 
     // --- FASE 3: AUDITORÍA DE FIRMAS ---
     console.log('\n---  [REGISTRO] Ejecutando Pruebas de Verificación ---')
-    const bytes = new TextEncoder().encode(desafio)
+    const bytes = new TextEncoder().encode(challenge)
 
     // Recuperamos la llave pública del DID Document para la verificación
     const pubKeyStr = didDocument.verificationMethod[0].publicKeyMultibase
@@ -89,9 +89,9 @@ const main = async () => {
     // A. PRUEBA DE FALLO: Firma con cuenta no autorizada
     console.log('[PROCESO] PRUEBA A: Intentando login con Cuenta No Autorizada...')
     const account1Key = PrivateKey.fromString(process.env.ACCOUNT_1_PRIVATE_KEY)
-    const firmaFallida = account1Key.sign(bytes)
+    const badSignature = account1Key.sign(bytes)
 
-    if (publicKey.verify(bytes, firmaFallida)) {
+    if (publicKey.verify(bytes, badSignature)) {
       console.log('└─ [ERROR] Fallo de Seguridad: Una firma no autorizada fue aceptada.')
     } else {
       console.log('└─ [ÉXITO] Acceso Denegado: La firma no coincide con el dueño del DID.')
@@ -100,9 +100,9 @@ const main = async () => {
     // B. PRUEBA DE ÉXITO: Firma con el titular del DID
     console.log('\n[PROCESO] PRUEBA B: Intentando login con el Dueño Autorizado (Operador)...')
     const operatorKeyObj = PrivateKey.fromString(operatorKey)
-    const firmaCorrecta = operatorKeyObj.sign(bytes)
+    const goodSignature = operatorKeyObj.sign(bytes)
 
-    if (publicKey.verify(bytes, firmaCorrecta)) {
+    if (publicKey.verify(bytes, goodSignature)) {
       console.log('\n --- [ÉXITO] ¡AUTENTICACIÓN EXITOSA! ---')
       console.log(`[INFO] Sesión iniciada como: ${didDocument.nickname}`)
       console.log(`[REGISTRO]  ${didDocument.id}`)

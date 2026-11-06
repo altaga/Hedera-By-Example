@@ -46,9 +46,11 @@ const AI_POLICY_PAYLOAD = JSON.stringify({
   type: 'ESPORTS_ANTI_CHEAT_POLICY',
   description: 'Parámetros Oficiales de Arbitraje - Gran Final $1M',
   rules: Array.from({ length: 60 }, (_, i) => ({
-    ruleId: `RULE_ID_${String(i + 1).padStart(3, '0')}`,
-    action: i % 5 === 0 ? 'INSTANT_PERMA_BAN' : 'FLAG_FOR_REVIEW',
-    confidenceThreshold: 0.99
+    ruleId: `CHEAT_DETECT_${String(i + 1).padStart(3, '0')}`,
+    action: i % 5 === 0 ? 'INSTANT_PERMA_BAN' : 'FLAG_FOR_MANUAL_REVIEW',
+    snapTargetMsThreshold: 10 + (i * 7) % 50,
+    wallTrackSecondsThreshold: ((i * 37) % 500 / 100).toFixed(2),
+    confidenceRequired: 0.99
   }))
 })
 

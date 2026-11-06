@@ -59,7 +59,7 @@ class RemoteHSMVault {
       setTimeout(() => {
         const signature = this._privateKey.sign(payloadBuffer)
         resolve(signature)
-      }, 200) // Simular latencia de red/seguridad
+      }, 500) // Simular latencia de red/seguridad
     })
   }
 }

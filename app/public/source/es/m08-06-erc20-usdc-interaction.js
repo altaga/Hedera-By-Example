@@ -37,7 +37,7 @@ import {
   ContractExecuteTransaction, ContractFunctionParameters,
   ContractCallQuery, ContractId, TokenAssociateTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getState, executeWithGas, withGasRetry, getAccountEvmAddress } from '../M99_Utilities/index.js'
+import { getClient, executeWithGas, withGasRetry, getAccountEvmAddress } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Ecosistema ERC-20 (USDC) ---\n')
@@ -47,7 +47,8 @@ const main = async () => {
   // La dirección que la red realmente usa para el operador (alias o long-zero).
   // Derivarla de la llave solo funciona para cuentas creadas desde una dirección EVM.
   const ownerEVM = await getAccountEvmAddress(operatorId)
-  const spenderIdStr = getState('ACCOUNT_1_ID')
+  const spenderIdStr = process.env.ACCOUNT_1_ID
+  const usdcSolidityAddress = '0x' + TokenId.fromString(USDC_TOKEN_ID).toEvmAddress()
 
   if (!ownerEVM || !spenderIdStr) {
     console.error('[FALLO] Faltan OPERATOR_EVM_ADDRESS o ACCOUNT_1_ID en la configuración.')
@@ -57,7 +58,6 @@ const main = async () => {
 
   try {
     const contractId = ContractId.fromString(USDC_TOKEN_ID)
-    const usdcSolidityAddress = '0x' + contractId.toEvmAddress()
 
     // --- ETAPA 1: INTROSPECCIÓN DEL ACTIVO (Metadatos) ---
     console.log('[PROCESO] Extrayendo metadatos dinámicos del token ERC-20...')

@@ -145,6 +145,7 @@ const main = async () => {
         if (benchmarkResults.length === TOTAL_CYCLES) {
           renderFinalReport(benchmarkResults)
           console.log('\n--- SESIÓN COMPLETADA ---')
+          client.close()
           process.exit()
         }
       }

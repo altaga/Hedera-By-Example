@@ -112,7 +112,8 @@ const main = async () => {
       .freezeWith(client)
 
     const kycResponse = await kycTx.execute(client)
-    await kycResponse.getReceipt(client)
+    const kycReceipt = await kycResponse.getReceipt(client)
+    console.log(`[REGISTRO] Estado del KYC: ${kycReceipt.status.toString()}`)
     console.log(`[ÉXITO] Flag KYC activo para la cuenta ${targetId}.`)
 
     // 5. Demostrar Control de Activos (Freeze)

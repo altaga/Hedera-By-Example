@@ -77,7 +77,7 @@ const main = async () => {
   const header = getState('X402_PAYMENT_SIGNATURE')
 
   if (!header) {
-    console.error('[FALLÓ] Falta X402_PAYMENT_SIGNATURE en el estado. Ejecuta primero el Lab 02 de M10.')
+    console.error('[FALLO] Falta X402_PAYMENT_SIGNATURE en el estado. Ejecuta primero el Lab 02 de M10.')
     process.exitCode = 1
     return
   }
@@ -174,7 +174,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] Falló la liquidación del facilitador:', error.message)
+    console.error('\n[FALLO] Falló la liquidación del facilitador:', error.message)
     process.exitCode = 1
   }
 }
@@ -183,7 +183,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLÓ] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

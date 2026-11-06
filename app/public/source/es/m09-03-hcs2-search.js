@@ -61,7 +61,10 @@ const main = async () => {
     .setStartTime(0)
     .subscribe(
       client,
-      (error) => { console.error(`[FALLO] Nodo Espejo: ${error.message}`); process.exit(1) },
+      (error) => {
+        console.error(`\n[FALLO] Falló la suscripción al Mirror Node: ${error.message}`)
+        process.exit(1)
+      },
       (message) => {
         try {
           // 1. Decodificación del mensaje HCS

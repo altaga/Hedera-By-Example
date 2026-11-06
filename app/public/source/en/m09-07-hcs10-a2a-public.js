@@ -5,7 +5,7 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * Cooperative Autonomy: This lab demonstrates fundamental orchestration where
- * two agents act as a "Swarm."Agent A initiates a work item, and Agent B
+ * two agents act as a "Swarm". Agent A initiates a work item, and Agent B
  * reacts, processes the data, and replies. This establishes a reactive loop
  * where agents monitor specific topics and respond based on internal state.
  * By decoupling the agents and using the ledger as a coordination layer,
@@ -155,7 +155,7 @@ const main = async () => {
               console.log('\n [SUCCESS] Communication sequence complete.')
               console.log('\n KEY CONCEPT:')
               console.log('Cooperative Autonomy: This lab demonstrates fundamental orchestration')
-              console.log('where two agents act as a "Swarm."By decoupling the agents and using')
+              console.log('where two agents act as a "Swarm". By decoupling the agents and using')
               console.log('the ledger as a coordination layer, you create a system that is')
               console.log('fault-tolerant and easily auditable.')
               console.log('\n--- SESSION COMPLETE ---\n')

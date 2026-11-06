@@ -49,6 +49,7 @@ loadEnv() // reads course/.env (and the repository root .env)
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
   exitIfStuck(180_000, 'subscription messages')
+  const sessionStart = new Date(Date.now() - 10000) // only messages from this run (10 s look-back for Mirror Node propagation)
   console.log('--- SESSION START: Secure Parallel Security Audit ---\n')
 
   // --- CONFIGURATION ---
@@ -65,7 +66,7 @@ const main = async () => {
   if (!sessionPrivStr) {
     sessionPrivStr = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivStr)
-    console.log('[INFO] Generated a new ECDSA session key for Agent A  Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
+    console.log('[INFO] Generated a new ECDSA session key for Agent A and Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
   const sessionPub = sessionPriv.publicKey
@@ -80,6 +81,7 @@ const main = async () => {
 
     new TopicMessageQuery()
       .setTopicId(inbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
 
@@ -100,19 +102,19 @@ const main = async () => {
             )
 
             if (!isAuthentic) {
-              console.log('[SUCCESS] ECDSA Signature:  INVALID')
+              console.log('[BLOCKED] ECDSA signature: INVALID')
               console.log('[INFO] FORGERY DETECTED. Dropping malicious packet.')
               return
             }
-            console.log('[SUCCESS] ECDSA Signature:  VERIFIED')
+            console.log('[SUCCESS] ECDSA signature: VERIFIED')
 
             // STAGE 2: SEQUENCE/NONCE FRESHNESS
             if (payload.round <= lastProcessedRound) {
-              console.log(`[SUCCESS] Sequence Nonce:  STALE (Expected > ${lastProcessedRound})`)
+              console.log(`[BLOCKED] Sequence nonce: STALE (expected > ${lastProcessedRound})`)
               console.log('[INFO] REPLAY ATTACK DETECTED. Dropping packet.')
               return
             }
-            console.log(`[SUCCESS] Sequence Nonce:  FRESH (Round ${payload.round})`)
+            console.log(`[SUCCESS] Sequence nonce: FRESH (round ${payload.round})`)
 
             // EXECUTION
             console.log(`[LOG] Result: Packet Trusted. Processing "${payload.text}"...`)
@@ -152,6 +154,7 @@ const main = async () => {
 
     new TopicMessageQuery()
       .setTopicId(outbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {

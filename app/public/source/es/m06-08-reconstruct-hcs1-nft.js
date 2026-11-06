@@ -40,7 +40,7 @@ const main = async () => {
   const mirrorNodeUrl = getMirrorNodeBaseUrl()
 
   if (!tokenId) {
-    console.error('[FALLÓ] Falta el ID del Token en el estado. Ejecuta el Lab 07 primero.')
+    console.error('[FALLO] Falta el ID del Token en el estado. Ejecuta el Lab 07 primero.')
     process.exitCode = 1
     return
   }
@@ -148,7 +148,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] Reconstrucción Fallida:', error.message)
+    console.error('\n[FALLO] Reconstrucción Fallida:', error.message)
     process.exitCode = 1
   }
 }

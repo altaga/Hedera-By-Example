@@ -3,6 +3,14 @@ import * as crypto from 'crypto'
 import { EventEmitter } from 'events'
 import * as fs from 'fs' // Requerido para funciones de utilidad en HybridEncryption
 
+// URL base del Mirror Node para la red configurada (local para que el bundle del navegador siga siendo pequeño).
+const mirrorNode = () => {
+  const network = (process.env.NETWORK || 'testnet').toLowerCase()
+  if (network === 'mainnet') return 'https://mainnet-public.mirrornode.hedera.com'
+  if (network === 'previewnet') return 'https://previewnet.mirrornode.hedera.com'
+  return 'https://testnet.mirrornode.hedera.com'
+}
+
 // ============================================
 //  Clase Utilitaria HybridEncryption
 // ============================================
@@ -228,37 +236,39 @@ export class AgentCommunicationHandler extends EventEmitter {
     this.myPrivateKeyPem = myPrivateKeyPem
     this.recipientPublicKeys = recipientPublicKeys
     this.authorizedClients = authorizedClients
+    this.stopped = false
+  }
+
+  // Termina el bucle de monitoreo después del sondeo en curso.
+  stop () {
+    this.stopped = true
   }
 
   // --- Bucle de Monitoreo ---
   async monitorConnectionMessages () {
-    let lastProcessedTimestamp = 0.0
-    const initial = await this.client.getMessages(this.connectionTopicId)
-    for (const msg of initial.messages) {
-      if (parseFloat(msg.consensus_timestamp) > lastProcessedTimestamp && msg.op === 'message') {
-        lastProcessedTimestamp = parseFloat(msg.consensus_timestamp)
-      }
-    }
+    // Empieza después del mensaje más reciente del tópico: solo cuentan los mensajes enviados desde ahora.
+    const res = await fetch(`${mirrorNode()}/api/v1/topics/${this.connectionTopicId}/messages?order=desc&limit=1`)
+    let lastSequence = res.ok ? ((await res.json()).messages?.[0]?.sequence_number ?? 0) : 0
     console.log(`[ESTADO] Monitoreando tópico ${this.connectionTopicId} para mensajes.`)
 
-    while (true) {
+    while (!this.stopped) {
       try {
-        const snapshot = await this.client.getMessages(this.connectionTopicId)
-        for (const msg of snapshot.messages) {
-          if (parseFloat(msg.consensus_timestamp) > lastProcessedTimestamp && msg.op === 'message') {
-            lastProcessedTimestamp = parseFloat(msg.consensus_timestamp)
-
-            const idSplit = msg.operator_id.includes('@') ? msg.operator_id.split('@') : []
-            if (msg.operator_id !== this.operatorId && (idSplit.length === 0 || this.authorizedClients.includes(idSplit[1]))) {
-              await this.processMessage(msg)
-            }
+        // Pide solo los mensajes posteriores al último número de secuencia visto, no todo el historial del tópico.
+        const { messages } = await this.client.getMessages(this.connectionTopicId, { sequenceNumber: `gt:${lastSequence}`, order: 'asc', limit: 25 })
+        for (const msg of messages) {
+          if (this.stopped) break
+          lastSequence = Math.max(lastSequence, msg.sequence_number)
+          if (msg.op !== 'message') continue
+          const idSplit = msg.operator_id.includes('@') ? msg.operator_id.split('@') : []
+          if (msg.operator_id !== this.operatorId && (idSplit.length === 0 || this.authorizedClients.includes(idSplit[1]))) {
+            await this.processMessage(msg)
           }
         }
       } catch (error) {
         console.error(`[ERROR] Monitoreo de conexión: ${error.message}`)
-        this.emit('error', error)
+        if (this.listenerCount('error')) this.emit('error', error)
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
     }
   }
 
@@ -269,13 +279,14 @@ export class AgentCommunicationHandler extends EventEmitter {
       if (payloadToDecrypt instanceof Uint8Array || Buffer.isBuffer(payloadToDecrypt)) {
         payloadToDecrypt = Buffer.from(payloadToDecrypt).toString('utf8')
       }
+      // Los payloads grandes llegan como referencia HCS-1 (hcs://1/<tópico>): primero se descarga el contenido.
+      if (typeof payloadToDecrypt === 'string' && payloadToDecrypt.startsWith('hcs://')) {
+        payloadToDecrypt = await this.client.getMessageContent(payloadToDecrypt)
+        if (typeof payloadToDecrypt !== 'string') payloadToDecrypt = Buffer.from(payloadToDecrypt).toString('utf8')
+      }
+      // El sobre cifrado viaja como texto JSON: se parsea para poder descifrarlo.
       if (typeof payloadToDecrypt === 'string') {
-        try {
-          // If it's valid JSON, this works. If it's a file reference, it throws and we fetch it.
-          JSON.parse(payloadToDecrypt)
-        } catch (e) {
-          payloadToDecrypt = await this.client.getMessageContent(payloadToDecrypt)
-        }
+        try { payloadToDecrypt = JSON.parse(payloadToDecrypt) } catch (_) {}
       }
       let decryptedMessage = payloadToDecrypt
 
@@ -292,7 +303,7 @@ export class AgentCommunicationHandler extends EventEmitter {
         timestamp: message.consensus_timestamp
       })
     } catch (error) {
-      this.emit('error', error)
+      if (this.listenerCount('error')) this.emit('error', error)
     }
   }
 

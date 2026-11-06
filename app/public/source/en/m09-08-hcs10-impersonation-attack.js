@@ -6,7 +6,7 @@
  * [ KEY CONCEPT ]
  * The Identity Gap: In previous labs, we processed messages based purely on
  * content. Because HCS topics are public, anyone with the Topic ID can
- * publish "Spam" or "Forgeries."This lab introduces an Adversary (Agent C)
+ * publish "Spam" or "Forgeries". This lab introduces an Adversary (Agent C)
  * who attempts to hijack the conversation by spoofing the logic. You will
  * see that without cryptographic session validation, our agents are
  * defenseless against malicious actors who know the protocol format.
@@ -47,6 +47,8 @@ loadEnv() // reads course/.env (and the repository root .env)
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
   exitIfStuck(180_000, 'subscription messages')
+  const sessionStart = new Date(Date.now() - 10000) // only messages from this run (10 s look-back for Mirror Node propagation)
+  let sessionDone = false // set when Agent A finishes, so the adversary stops too
   console.log('--- SESSION START: Public Stream Vulnerability Audit ---\n')
 
   // --- CONFIGURATION ---
@@ -76,6 +78,7 @@ const main = async () => {
     // Subscribe through the Mirror Node: messages arrive in consensus order.
     new TopicMessageQuery()
       .setTopicId(inbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
 
@@ -118,6 +121,7 @@ const main = async () => {
 
     new TopicMessageQuery()
       .setTopicId(outbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
@@ -134,6 +138,7 @@ const main = async () => {
             console.log('our agents are defenseless against malicious actors who know')
             console.log('the protocol format.')
             console.log('\n--- SESSION COMPLETE ---\n')
+            sessionDone = true
             process.exit()
           }
         }
@@ -148,6 +153,7 @@ const main = async () => {
 
     for (let i = 0; i < 3; i++) {
       await sleep(Math.floor(Math.random() * 8000) + 5000)
+      if (sessionDone) return
       console.log('\n---  [PROCESS] ADVERSARY: INJECTING SPOOFED PACKET ---')
       await hcs10.sendMessage(inbox, {
         operator_id: agentAId,

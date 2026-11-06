@@ -4,18 +4,19 @@
  * [CONCEPTO] Privacidad Basada en Cifrado de Grado Militar (RSA + AES)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Privacidad por Diseño: En una infraestructura de IA profesional, la
- * orquestación no solo debe ser pública y auditable, sino también privada
- * cuando se manejan datos sensibles. Este laboratorio implementa una
- * arquitectura "Full-Duplex" donde cada agente posee su propio canal (Inbox)
- * dedicado. Mediante el uso de la clase `HybridEncryption` (RSA-2048 para
- * intercambio de llaves y AES-256-GCM para datos), los agentes pueden
- * comunicarse sobre el registro público de Hedera con la certeza de que
- * solo el destinatario legítimo podrá descifrar y procesar la información.
- * Es el estándar de oro para la confidencialidad en redes descentralizadas.
- * *
+ * Privacidad por Diseño: Las conversaciones entre agentes en HCS son públicas y
+ * auditables, pero los datos sensibles deben ser privados. Aquí cada agente
+ * tiene su propio buzón y un par de llaves RSA-2048, y cada mensaje usa cifrado
+ * híbrido: una llave AES-256-GCM nueva cifra el contenido y la llave pública
+ * RSA del destinatario cifra esa llave AES. Cualquiera puede leer el tópico,
+ * pero solo el destinatario puede descifrar lo que se le envió.
+ *
+ * El cifrado da confidencialidad, no autenticidad: cualquiera que conozca una
+ * llave pública puede enviar un mensaje cifrado. Un agente en producción lo
+ * combina con las verificaciones de firma y secuencia de los Labs 09 y 10.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * El consenso ofrece ordenamiento justo, pero el cifrado híbrido en el cliente (ECDH + AES-256-GCM) garantiza confidencialidad militar: los terceros en el ledger público solo ven texto cifrado indescifrable.
+ * El consenso ordena los mensajes de forma justa, pero solo el cifrado híbrido en el cliente (RSA-2048 + AES-256-GCM) los mantiene confidenciales: el resto del ledger público solo ve texto cifrado.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-10/
@@ -44,7 +45,9 @@ import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as path from 'path'
-import { AgentCommunicationHandler, getState, sleep, exitIfStuck } from '../M99_Utilities/index.js'
+import { AgentCommunicationHandler, getState, sleep, exitIfStuck, loadEnv } from '../M99_Utilities/index.js'
+
+loadEnv() // lee course/.env (y el .env de la raíz del repositorio)
 
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
@@ -93,8 +96,13 @@ const main = async () => {
     return { privateKey, publicKey }
   }
 
-  const keysA = generateOrLoadKeys('Agente_A')
-  const keysB = generateOrLoadKeys('Agente_B')
+  const keysA = generateOrLoadKeys('agentA')
+  const keysB = generateOrLoadKeys('agentB')
+
+  // La conversación termina tras la ronda 3: se detienen ambos listeners y main() regresa.
+  const listeners = []
+  let finishSession
+  const finished = new Promise((resolve) => { finishSession = resolve })
 
   // --- COMPONENTE: AGENTE B (Escucha en B_INBOX, Responde en A_INBOX) ---
   const startAgentB = async () => {
@@ -114,13 +122,15 @@ const main = async () => {
 
         await sleep(3000)
 
-        const replyPayload = { text: `¡Confirmación Ronda ${message.round} Recibida!`, round: message.round }
+        const replyPayload = { text: `World ${message.round}!`, round: message.round }
         console.log('[PROCESO] Cifrando respuesta (AES-256) y enrutando al Inbox del Agente A...')
         await handlerBSpeak.sendMessage(replyPayload, agentAId)
       }
     })
 
     console.log(`[INFO] Bajo Cifrado: Escuchando carril privado [${agentBInbox}]`)
+    handlerBListen.on('error', (error) => console.error(`[FALLO] Agente B no pudo leer un mensaje: ${error.message}`))
+    listeners.push(handlerBListen)
     handlerBListen.monitorConnectionMessages()
   }
 
@@ -139,12 +149,12 @@ const main = async () => {
     const sendPing = async (round) => {
       console.log('\n---  AGENTE A: ENVIANDO MENSAJE PRIVADO ---')
       console.log(`[PROCESO] Aplicando cifrado híbrido para la Ronda ${round}...`)
-      await handlerASpeak.sendMessage({ text: `Secreto Agente A - Ronda ${round}`, round }, agentBId)
+      await handlerASpeak.sendMessage({ text: `Hello ${round}`, round }, agentBId)
       console.log('[INFO] Paquete cifrado inyectado en el Inbox de B.')
     }
 
     handlerAListen.on('messageReceived', async ({ senderId, message }) => {
-      if (message?.text?.includes(`Ronda ${currentRound}`)) {
+      if (message?.round === currentRound) {
         console.log('\n---  AGENTE A: RESPUESTA PRIVADA DESCIFRADA ---')
         console.log(`[REGISTRO] Recibido de B: "${message.text}"`)
 
@@ -155,16 +165,19 @@ const main = async () => {
         } else {
           console.log('\n --- [ÉXITO] Orquestación Cifrada Finalizada con Éxito. ---')
           console.log('\n CONCEPTO CLAVE:')
-          console.log('Defensa en Capas: El cifrado proporciona Confidencialidad, pero NO autenticidad')
-          console.log('por sí solo. En este laboratorio unimos cifrado híbrido sobre validación de sesión')
-          console.log('ECDSA para crear el estándar de oro en comunicación segura de agentes en Hedera.')
+          console.log('Privacidad por Diseño: cada mensaje cruzó un tópico público y aun así solo')
+          console.log('su destinatario pudo descifrarlo. El cifrado da confidencialidad, no')
+          console.log('autenticidad: combínalo con las verificaciones de firma de los Labs 09 y 10.')
           console.log('\n--- SESIÓN COMPLETADA ---\n')
-          setTimeout(() => process.exit(), 1000)
+          listeners.forEach((handler) => handler.stop())
+          finishSession()
         }
       }
     })
 
     console.log(`[AGENTE A] Bajo Cifrado: Escuchando carril privado [${agentAInbox}]`)
+    handlerAListen.on('error', (error) => console.error(`[FALLO] Agente A no pudo leer un mensaje: ${error.message}`))
+    listeners.push(handlerAListen)
     handlerAListen.monitorConnectionMessages()
 
     await sleep(2000)
@@ -173,12 +186,14 @@ const main = async () => {
 
   // --- ARRANQUE DE LA RED PRIVADA ---
   startAgentB()
-  setTimeout(startAgentA, 4000)
+  await sleep(3000)
+  await startAgentA()
+  await finished
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
-    .then(() => { if (process.exitCode) process.exit() })
+    .then(() => process.exit())
     .catch((error) => {
       console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)

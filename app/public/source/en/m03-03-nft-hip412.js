@@ -41,7 +41,7 @@ import {
 } from '@hiero-ledger/sdk'
 import fs from 'fs'
 import path from 'path'
-import { getClient, updateState, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * Generates HIP-412 V2 compliant metadata.
@@ -184,12 +184,7 @@ const main = async () => {
     const mintResponse = await mintTx.execute(client)
     const mintReceipt = await mintResponse.getReceipt(client)
 
-    // Format Transaction ID for HashScan
-    const rawTxId = mintResponse.transactionId.toString()
-    const [accountId, timestamp] = rawTxId.split('@')
-    const txId = `${accountId}-${timestamp.replace('.', '-')}`
-
-    console.log(`[LOG] View Mint Transaction: https://hashscan.io/testnet/transaction/${txId}`)
+    console.log(`[LOG] View Mint Transaction: ${getHashscanUrl(mintResponse)}`)
 
     console.log(`\n[SUCCESS] Success! Minted Serials: ${mintReceipt.serials.join(', ')}`)
     console.log(`[LOG] Metadata File: ${metadataFileId.toString()}`)

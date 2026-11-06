@@ -889,7 +889,7 @@ export async function executeInBrowser (
       try { return JSON.stringify(a, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)) } catch (_) { return String(a) }
     }
     const classify = (msg: string): TerminalLogLine['type'] =>
-      /SUCCESS|ÉXITO/.test(msg) ? 'success' : /WARN/.test(msg) ? 'warn' : /FAILED|FALLO/.test(msg) ? 'error' : 'info'
+      /SUCCESS|ÉXITO/.test(msg) ? 'success' : /WARN/.test(msg) ? 'warn' : /FAILED|FALL[OÓ]/.test(msg) ? 'error' : 'info'
     const asJson = (s: string) => {
       const t = s.trim()
       if (!/^[[{]/.test(t) || !t.includes('\n')) return undefined

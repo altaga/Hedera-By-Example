@@ -80,7 +80,7 @@ const main = async () => {
   let server
 
   if (!clientId || !clientKey || !gatewayOwner) {
-    console.error('[FALLÓ] Faltan credenciales en .env (ACCOUNT_1 cliente, ACCOUNT_2 dueño de la pasarela).')
+    console.error('[FALLO] Faltan credenciales en .env (ACCOUNT_1 cliente, ACCOUNT_2 dueño de la pasarela).')
     process.exitCode = 1
     return
   }
@@ -200,7 +200,7 @@ const main = async () => {
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] Falla de la pasarela de streaming de IA:', error.message)
+    console.error('\n[FALLO] Falla de la pasarela de streaming de IA:', error.message)
     process.exitCode = 1
   } finally {
     if (server) server.close()
@@ -212,7 +212,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLÓ] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

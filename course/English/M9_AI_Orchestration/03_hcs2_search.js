@@ -63,7 +63,7 @@ const main = async () => {
       client,
       (error) => {
         console.error(`\n[FAILED] Mirror Node Subscription Failed: ${error.message}`)
-        process.exitCode = 1
+        process.exit(1)
       },
       (message) => {
         try {

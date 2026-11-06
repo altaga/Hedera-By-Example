@@ -38,7 +38,7 @@ import {
   Hbar,
   ContractInfoQuery
 } from '@hiero-ledger/sdk'
-import { getClient, getState, executeWithGas, getJsonRpcSigner } from '../M99_Utilities/index.js'
+import { getClient, getJsonRpcUrl, getState, executeWithGas, getJsonRpcSigner } from '../M99_Utilities/index.js'
 import { ethers } from 'ethers'
 
 // SimpleStorage ABI (Required for Ethers interaction)
@@ -70,7 +70,7 @@ const executeContractWithEthers = async (evmAddress, privateKey, value) => {
   console.log(`[PROCESS] Path 2: Executing set(${value}) via Ethers.js (JSON-RPC)...`)
 
   // Connect to the Hashio JSON-RPC Relay
-  const provider = new ethers.JsonRpcProvider('https://testnet.hashio.io/api')
+  const provider = new ethers.JsonRpcProvider(getJsonRpcUrl())
   const wallet = new ethers.Wallet(privateKey, provider)
 
   // Instantiate contract object
@@ -120,8 +120,7 @@ const main = async () => {
 
     // FINAL VERIFICATION: Query the state
     console.log('\n[PROCESS] Performing Cross-Path State Audit...')
-    const provider = new ethers.JsonRpcProvider('https://testnet.hashio.io/api')
-    const contractInfo = new ethers.Contract(evmAddress, ABI, provider)
+    const contractInfo = new ethers.Contract(evmAddress, ABI, new ethers.JsonRpcProvider(getJsonRpcUrl()))
     const finalValue = await contractInfo.get()
 
     console.log(`\n [SUCCESS] Final Integrated State: ${finalValue}`)

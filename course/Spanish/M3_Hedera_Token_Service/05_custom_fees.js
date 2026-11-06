@@ -122,34 +122,35 @@ const main = async () => {
       console.log('└─ [ÉXITO] La red rechazó la transacción por fondos insuficientes para cubrir el fee.')
     }
 
-    const testCases = [
-      { name: 'Tarifa Mínima Alcanzada', amount: 400, expected: 20 },
-      { name: 'Tope Máximo Alcanzado', amount: 10000, expected: 100 }
+    const scenarios = [
+      { name: 'El mínimo (400 tokens -> comisión de 20)', amount: 400, expectFee: 20 },
+      { name: 'A mitad (1,000 tokens -> comisión de 50)', amount: 1000, expectFee: 50 },
+      { name: 'Tope máximo (10,000 tokens -> comisión limitada a 100)', amount: 10000, expectFee: 100 }
     ]
 
-    for (const test of testCases) {
-      console.log(`\n[PROCESO] Ejecutando: ${test.name} (${test.amount} tokens)`)
+    for (const scenario of scenarios) {
+      console.log(`\n--- Escenario: ${scenario.name} ---`)
       const transferTx = await new TransferTransaction()
-        .addTokenTransfer(tokenId, account1Id, -test.amount)
-        .addTokenTransfer(tokenId, account2Id, test.amount)
+        .addTokenTransfer(tokenId, account1Id, -scenario.amount)
+        .addTokenTransfer(tokenId, account2Id, scenario.amount)
         .freezeWith(client)
         .sign(account1PrivateKey)
 
       await (await transferTx.execute(client)).getReceipt(client)
       await sleep(3500)
 
-      const b1 = await new MirrorNodeTokenBalanceQuery().setAccountId(account1Id).setTokenId(tokenId).execute(client)
-      const b2 = await new MirrorNodeTokenBalanceQuery().setAccountId(account2Id).setTokenId(tokenId).execute(client)
+      const balance1 = await new MirrorNodeTokenBalanceQuery().setAccountId(account1Id).setTokenId(tokenId).execute(client)
+      const balance2 = await new MirrorNodeTokenBalanceQuery().setAccountId(account2Id).setTokenId(tokenId).execute(client)
 
-      console.log(`└─ [REGISTRO] Cuenta 1: ${b1.balance.toString()} FRT`)
-      console.log(`└─ [REGISTRO] Cuenta 2: ${b2.balance.toString()} FRT`)
-      console.log('└─ [ÉXITO] Fee cobrado correctamente fuera de Tesorería.')
+      console.log(`[ÉXITO] Se enviaron ${scenario.amount}. El protocolo cobró una comisión de ${scenario.expectFee}.`)
+      console.log(`[REGISTRO] Saldo del emisor:   ${balance1.balance.toString()} FRT`)
+      console.log(`[REGISTRO] Saldo del receptor: ${balance2.balance.toString()} FRT`)
     }
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Al usar cuentas que no son la Tesorería, activas el motor de')
-    console.log('facturación real de Hedera. Esto permite crear ecosistemas')
-    console.log('autofinanciados donde cada movimiento genera valor para el emisor.')
+    console.log('La transferencia de la Cuenta 1 a la Cuenta 2 activó todas las comisiones')
+    console.log('personalizadas porque ninguna de las dos es la Tesorería. Esto prueba que la')
+    console.log('lógica es global y automática.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

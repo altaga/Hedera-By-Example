@@ -41,7 +41,7 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Recolección de Firmas (Quórum) ---\n')
 
   const { client } = getClient()
-  const userKey = getState('ACCOUNT_1_PRIVATE_KEY')
+  const userKey = process.env.ACCOUNT_1_PRIVATE_KEY
   const scheduleId = getState('SCHEDULE_ID')
 
   if (!userKey || !scheduleId) {

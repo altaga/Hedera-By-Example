@@ -92,8 +92,7 @@ const main = async () => {
       description: 'Un artefacto digital con soberanía total respaldado por HFS.',
       image: `hedera://${hfsFileId}`,
       attributes: [
-        { trait_type: 'Storage', value: 'Native HFS' },
-        { trait_type: 'Protocol', value: 'HCS-1' }
+        { trait_type: 'Storage', value: 'Native HFS' }
       ],
       manifest_info: readmeContent.split('\n')[0],
       format: 'HIP412@2.0.0'

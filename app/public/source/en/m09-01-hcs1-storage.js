@@ -46,8 +46,8 @@ const AI_POLICY_PAYLOAD = JSON.stringify({
   rules: Array.from({ length: 60 }, (_, i) => ({
     ruleId: `CHEAT_DETECT_${String(i + 1).padStart(3, '0')}`,
     action: i % 5 === 0 ? 'INSTANT_PERMA_BAN' : 'FLAG_FOR_MANUAL_REVIEW',
-    snapTargetMsThreshold: Math.floor(Math.random() * 50) + 10,
-    wallTrackSecondsThreshold: (Math.random() * 5).toFixed(2),
+    snapTargetMsThreshold: 10 + (i * 7) % 50,
+    wallTrackSecondsThreshold: ((i * 37) % 500 / 100).toFixed(2),
     confidenceRequired: 0.99
   }))
 })

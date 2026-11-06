@@ -23,14 +23,15 @@
  * - Next:     M9 Lab 11: Encrypted A2A Communication (HCS-10)
  *
  * [ SEQUENCE ]
- * Agent A -> Agent B Inbox: Signed message
- * Attacker -> Agent B Inbox: Forged message (wrong key)
- * Note Agent B: Signature check rejects the forgery
- * Agent B -> Agent A Inbox: Replies only to the trusted message
+ * Agent A -> Agent B Inbox: Signed message (rounds 1 to 3)
+ * Attacker -> Agent B Inbox: Forged message (bad signature)
+ * Attacker -> Agent B Inbox: Copy of Agent A's round 1 message (replay)
+ * Note Agent B: The signature check drops the forgery, the round check drops the replay
+ * Agent B -> Agent A Inbox: Replies only to trusted, fresh messages
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Run first: M9 Lab 04, M9 Lab 09 (this lab reads what it saved).
+ * - Run first: M9 Lab 04 (this lab reads what it saved).
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
@@ -40,13 +41,15 @@
 
 import { PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, createClient, exitIfStuck, updateState, loadEnv } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, updateState, loadEnv, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 loadEnv() // reads course/.env (and the repository root .env)
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
   exitIfStuck(180_000, 'subscription messages')
+  const sessionStart = new Date(Date.now() - 10000) // only messages from this run (10 s look-back for Mirror Node propagation)
+  let sessionDone = false // set when Agent A finishes, so the adversary stops too
   console.log('--- SESSION START: Hardened Security Audit vs Adversary ---\n')
 
   // --- CONFIGURATION ---
@@ -65,7 +68,7 @@ const main = async () => {
   if (!sessionPrivStr) {
     sessionPrivStr = PrivateKey.generateECDSA().toStringRaw()
     updateState('HCS10_SESSION_PRIVATE_KEY', sessionPrivStr)
-    console.log('[INFO] Generated a new ECDSA session key for Agent A  Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
+    console.log('[INFO] Generated a new ECDSA session key for Agent A and Agent B (saved as HCS10_SESSION_PRIVATE_KEY).')
   }
   const sessionPriv = PrivateKey.fromStringECDSA(sessionPrivStr)
   const sessionPub = sessionPriv.publicKey
@@ -80,6 +83,7 @@ const main = async () => {
 
     new TopicMessageQuery()
       .setTopicId(inbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
 
@@ -98,19 +102,19 @@ const main = async () => {
             )
 
             if (!isAuthentic) {
-              console.log('[SUCCESS] Signature:  INVALID')
+              console.log('[BLOCKED] Signature: INVALID')
               console.log('[INFO] FORGERY DETECTED. Packet from adversarial actor dropped.')
               return
             }
-            console.log('[SUCCESS] Signature:  VERIFIED')
+            console.log('[SUCCESS] Signature: VERIFIED')
 
             // STAGE 2: SEQUENCE/NONCE FRESHNESS
             if (payload.round <= lastProcessedRound) {
-              console.log(`[SUCCESS] Sequence:  STALE (Round ${payload.round} <= ${lastProcessedRound})`)
+              console.log(`[BLOCKED] Sequence: STALE (round ${payload.round} <= ${lastProcessedRound})`)
               console.log('[INFO] REPLAY ATTACK REJECTED. Packet dropped.')
               return
             }
-            console.log(`[SUCCESS] Sequence:  FRESH (Round ${payload.round})`)
+            console.log(`[SUCCESS] Sequence: FRESH (round ${payload.round})`)
 
             // EXECUTION
             console.log(`[LOG] Result: Trusted Packet. Responding to "${payload.text}"...`)
@@ -147,6 +151,7 @@ const main = async () => {
 
     new TopicMessageQuery()
       .setTopicId(outbox)
+      .setStartTime(sessionStart)
       .subscribe(client, null, async (msg) => {
         const content = Buffer.from(msg.contents, 'utf8').toString()
         if (content.includes(`World ${currentRound}`)) {
@@ -162,6 +167,7 @@ const main = async () => {
             console.log('By layering cryptographic session validation, we protected the conversation')
             console.log('from malicious actors, even on a public, permissionless ledger topic.')
             console.log('\n--- SESSION COMPLETE ---\n')
+            sessionDone = true
             process.exit()
           }
         }
@@ -171,12 +177,29 @@ const main = async () => {
   }
 
   // --- AGENT C: THE ADVERSARY ---
+  // Reads the public inbox on the Mirror Node and returns Agent A's signed round 1 message.
+  const captureRound1 = async () => {
+    const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${inbox}/messages?order=desc&limit=50`)
+    const { messages = [] } = res.ok ? await res.json() : {}
+    for (const m of messages) {
+      try {
+        const envelope = JSON.parse(Buffer.from(m.message, 'base64').toString('utf8'))
+        const data = Array.isArray(envelope) ? envelope[0].data : envelope.data
+        if (data?.verified_payload && JSON.parse(data.verified_payload).round === 1) {
+          return { operator_id: data.operator_id, verified_payload: data.verified_payload, session_proof: data.session_proof }
+        }
+      } catch (_) {}
+    }
+    return null
+  }
+
   const startAgentC = async () => {
     const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentCId, operatorPrivateKey: agentCKey })
 
     for (let i = 0; i < 4; i++) {
       await sleep(Math.floor(Math.random() * 8000) + 7000)
-      const isForgery = Math.random() > 0.5
+      if (sessionDone) return
+      const isForgery = i % 2 === 0 // alternate: forgery, replay, forgery, replay
 
       if (isForgery) {
         console.log('\n---  [PROCESS] ADVERSARY: ATTEMPTING FORGERY ---')
@@ -186,10 +209,13 @@ const main = async () => {
           session_proof: 'c0de'.repeat(32)
         })
       } else {
+        // Replay: the adversary cannot sign, but the topic is public, so it copies
+        // Agent A's genuine round 1 message (payload and signature) and sends it again.
         console.log('\n---  [PROCESS] ADVERSARY: ATTEMPTING REPLAY ATTACK ---')
-        const replay = JSON.stringify({ text: 'Hello 1', round: 1, ts: 1713723000 })
-        const sig = sessionPriv.sign(Buffer.from(replay, 'utf8'))
-        await hcs10.sendMessage(inbox, { verified_payload: replay, session_proof: Buffer.from(sig).toString('hex') })
+        const captured = await captureRound1()
+        if (!captured) { console.log('[INFO] Adversary found no round 1 message to copy yet.'); continue }
+        await hcs10.sendMessage(inbox, captured)
+        console.log('[INFO] Adversary re-sent the captured round 1 message, signature included.')
       }
     }
   }

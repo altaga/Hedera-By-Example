@@ -117,6 +117,7 @@ const main = async () => {
     // Tiempo de espera para observar los mensajes en la consola antes de cerrar (demostración)
     setTimeout(() => {
       console.log('\n--- SESIÓN COMPLETADA ---')
+      client.close()
       process.exit()
     }, 10000)
   } catch (error) {

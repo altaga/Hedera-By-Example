@@ -1,53 +1,49 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
-import { TransferTransaction, Hbar, PrivateKey } from '@hiero-ledger/sdk'
-import { getClient } from './config.js'
+import { TransferTransaction, Hbar } from '@hiero-ledger/sdk'
+import { getClient, parsePrivateKey } from './config.js'
 
 /**
- * Dev Utility: Refuel Operator from Account 1
+ * Dev Utility: Refuel the Operator from Account 1
  *
- * This script sends a HARDCODED amount of HBAR from ACCOUNT_1 back to the OPERATOR.
- * It uses the credentials stored in your .env file.
+ * Sends HBAR from ACCOUNT_1 back to the OPERATOR, using the credentials in your
+ * .env file. The amount defaults to 10 HBAR and can be passed as an argument.
  *
  * USAGE:
- * node English/M99_Utilities/transfer.js
+ * node English/M99_Utilities/transfer.js [hbar]
  */
 const main = async () => {
-  const AMOUNT_HBAR = 100 // <--- HARDCODED AMOUNT
-
+  const amountHbar = Number(process.argv[2] || 10)
   const { client, operatorId } = getClient()
+  const senderId = process.env.ACCOUNT_1_ID
+  const senderKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
-  // Load Account 1 from ENV
-  const senderId = process.env.OPERATOR_ID
-  const senderKeyStr = process.env.OPERATOR_PRIVATE_KEY
-  const receiverId = process.env.ACCOUNT_1_ID
-
-  if (!senderId || !senderKeyStr || !receiverId) {
-    console.error('Missing senderID or senderKeyStr in .env')
+  if (!senderId || !senderKey) {
+    console.error('Missing ACCOUNT_1_ID or ACCOUNT_1_PRIVATE_KEY in .env')
+    process.exit(1)
+  }
+  if (!(amountHbar > 0)) {
+    console.error('The amount must be a positive number of HBAR.')
     process.exit(1)
   }
 
   try {
     console.log('\n=== Dev Utility: Refuel Operator ===')
     console.log(`Sender:   Account 1 (${senderId})`)
-    console.log(`Receiver: Operator (${operatorId} - Client)`)
-    console.log(`Amount:   ${AMOUNT_HBAR} HBAR\n`)
+    console.log(`Receiver: Operator (${operatorId})`)
+    console.log(`Amount:   ${amountHbar} HBAR\n`)
 
     const transaction = await new TransferTransaction()
-      .addHbarTransfer(senderId, new Hbar(-AMOUNT_HBAR))
-      .addHbarTransfer(receiverId, new Hbar(AMOUNT_HBAR))
+      .addHbarTransfer(senderId, new Hbar(-amountHbar))
+      .addHbarTransfer(operatorId, new Hbar(amountHbar))
       .freezeWith(client)
+      .sign(parsePrivateKey(senderKey))
 
-    const senderPrivKey = PrivateKey.fromString(senderKeyStr)
-    await transaction.sign(senderPrivKey)
-
-    const response = await transaction.execute(client)
-    const receipt = await response.getReceipt(client)
-
+    const receipt = await (await transaction.execute(client)).getReceipt(client)
     console.log(`Success! Transfer Status: ${receipt.status.toString()}`)
-    client.close()
   } catch (error) {
-    console.error('\n Transfer Failed:', error.message)
-    process.exit(1)
+    console.error('\nTransfer Failed:', error.message)
+    process.exitCode = 1
+  } finally {
+    client.close()
   }
 }
 

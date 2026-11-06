@@ -10,12 +10,15 @@
 
 | File | Purpose | Description |
 | :--- | :--- | :--- |
-| **lib.js** | **Core Library** | Shared functions for HCS communication, signatures, and key management. |
-| **config.js** | **Env Management**| Loads `.env`, validates credentials and builds clients (`getClient`, `createClient`) with a generous fee ceiling. |
-| **storage.js** | **Local Persistence**| `updateState`/`getState`: per-module `state.json` plus a course-wide `state.json`, written atomically. |
-| **resilience.js** | **Network Resilience**| `withGasRetry`/`executeWithGas`, `waitForMirror`, `getAccountEvmAddress`, `ensureFunded`, `getJsonRpcSigner`. |
-| **transfer.js** | **Sending Engines** | Simplification of complex HBAR and token transfers. |
-| **explorer.js** | **Audit Links**| Generation of direct links to HashScan for verification. |
+| **config.js** | **Env Management** | `loadEnv`, `getClient`, `createClient` (generous fee ceiling), `parsePrivateKey`, Mirror Node and JSON-RPC URLs. |
+| **storage.js** | **Lab State** | `updateState`/`getState` on the course-wide `state.json` (atomic writes, secrets masked in logs); `updateEnv` for `.env`. |
+| **resilience.js** | **Network Resilience** | Gas retries (`executeWithGas`), `waitForMirror`, `ensureFunded`, `exitIfStuck`, and `reuseToken`/`reuseTopic`/`reuseContract` so re-runs don't pay again. |
+| **explorer.js** | **Audit Links** | `getHashscanUrl` for any transaction id or response. |
+| **show.js** | **Visual Output** | `show.*` helpers that render tables, JSON and diagrams in the web runner (plain text in Node). |
+| **sleep.js** | **Timing** | `sleep(ms)`. |
+| **lib.js** | **HCS-10 Encryption** | `AgentCommunicationHandler` and `HybridEncryption` (RSA-2048 + AES-256-GCM) used by M9 Lab 11. |
+| **x402.js** | **x402 Payments** | `createPaymentRequired`, `signExactPayment`, `verifyExactPayment`, `settleExactPayment` and header encoding for M10. |
+| **transfer.js** | **Dev Utility** | Sends HBAR from `ACCOUNT_1` back to the operator: `node English/M99_Utilities/transfer.js [hbar]`. |
 
 ---
 

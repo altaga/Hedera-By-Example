@@ -40,7 +40,7 @@ import {
   PrivateKey, TokenId
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState, executeWithGas } from '../M99_Utilities/index.js'
+import { getClient, updateState, getState, executeWithGas } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE DEL ORÁCULO DE SISTEMA ---
 const SOURCE_CODE = `
@@ -87,13 +87,8 @@ const compile = (contractName, source) => {
     settings: { outputSelection: { '*': { '*': ['*'] } } }
   }
   const compiled = JSON.parse(solc.compile(JSON.stringify(input)))
-
-  if (compiled.errors) {
-    compiled.errors.forEach(err => {
-      if (err.severity === 'error') throw new Error(err.message)
-      console.warn(`[INFO] ${err.message}`)
-    })
-  }
+  const fatal = (compiled.errors || []).find((err) => err.severity === 'error')
+  if (fatal) throw new Error(fatal.formattedMessage || fatal.message)
 
   const contract = compiled.contracts[`${contractName}.sol`][contractName]
   return contract.evm.bytecode.object
@@ -130,7 +125,7 @@ const main = async () => {
       const contractTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
-        .setAdminKey(adminKey), client, { gas: 2000000 })
+        .setAdminKey(adminKey), client, { gas: 2500000 })
 
       // Espera el consenso: el recibo dice si la red aceptó la transacción.
       const receipt = await contractTx.getReceipt(client)
@@ -160,10 +155,11 @@ const main = async () => {
     // 4. Puente HTS vía Solidity (0x167)
     if (tokenIdStr) {
       console.log(`\n[PROCESO] Probando Puente HTS: Asociando token ${tokenIdStr}...`)
+      const htsId = ContractId.fromString(oracleId)
       const htsTx = await executeWithGas((gas) => new ContractExecuteTransaction()
         .setContractId(oracleId).setGas(gas)
         .setFunction('associateAsset', new ContractFunctionParameters()
-          .addAddress(ContractId.fromString(oracleId).toEvmAddress())
+          .addAddress(htsId.toEvmAddress())
           .addAddress(TokenId.fromString(tokenIdStr).toEvmAddress())
         ), client, { gas: 1000000 })
       await htsTx.getReceipt(client)

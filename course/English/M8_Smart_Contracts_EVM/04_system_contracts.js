@@ -85,6 +85,8 @@ const compile = (contractName, source) => {
     settings: { outputSelection: { '*': { '*': ['*'] } } }
   }
   const compiled = JSON.parse(solc.compile(JSON.stringify(input)))
+  const fatal = (compiled.errors || []).find((err) => err.severity === 'error')
+  if (fatal) throw new Error(fatal.formattedMessage || fatal.message)
   const contract = compiled.contracts[`${contractName}.sol`][contractName]
   return contract.evm.bytecode.object
 }

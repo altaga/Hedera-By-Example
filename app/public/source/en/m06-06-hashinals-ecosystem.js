@@ -113,10 +113,10 @@ const main = async () => {
       .freezeWith(client)
 
     const mintResponse = await mintTx.execute(client)
-    await mintResponse.getReceipt(client)
+    const mintReceipt = await mintResponse.getReceipt(client)
 
     console.log(`[LOG] View Mint Transaction: ${getHashscanUrl(mintResponse)}`)
-    console.log(`\n[SUCCESS] Success! NFT Serial #1 now points directly to HFS File ${hfsFileId}`)
+    console.log(`\n[SUCCESS] Success! NFT Serial #${mintReceipt.serials[0].toString()} now points directly to HFS File ${hfsFileId}`)
 
     console.log('\n KEY CONCEPT:')
     console.log('The hedera:// Protocol: This is a network-native way to reference')

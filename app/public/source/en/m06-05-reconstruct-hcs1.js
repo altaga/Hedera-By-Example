@@ -35,8 +35,6 @@ import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Util
 import fs from 'fs'
 import path from 'path'
 
-const __dirname = path.dirname(import.meta.filename)
-
 const main = async () => {
   console.log('--- SESSION START: HCS-1 Data Reconstruction ---\n')
 
@@ -142,7 +140,7 @@ const main = async () => {
     // 6. Convert back to binary and save as PNG
     const resultBuffer = Buffer.from(fullBase64, 'base64')
     const dateStr = new Date().toISOString().split('T')[0]
-    const outputPath = path.resolve(__dirname, `./output/reconstructed_${dateStr}.png`)
+    const outputPath = path.resolve(import.meta.dirname, `./output/reconstructed_${dateStr}.png`)
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
     fs.writeFileSync(outputPath, resultBuffer)
 

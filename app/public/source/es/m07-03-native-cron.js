@@ -38,16 +38,16 @@ import {
   Hbar,
   ScheduleCreateTransaction, TransferTransaction, Timestamp
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, getState } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Automatización Nativa (Cron) ---\n')
 
   const { client, operatorId } = getClient()
-  const targetId = getState('ACCOUNT_1_ID')
+  const targetId = process.env.ACCOUNT_1_ID
 
   if (!targetId) {
-    console.error('[FALLO] Falta ACCOUNT_1_ID en el estado local. Verifica la configuración inicial.')
+    console.error('[FALLO] Falta ACCOUNT_1_ID en la configuración.')
     process.exitCode = 1
     return
   }
@@ -62,15 +62,15 @@ const main = async () => {
 
     // 2. Programación (Schedule)
     // Definimos expiración en 5 minutos para esta demostración.
-    const expiracion = new Date()
-    expiracion.setMinutes(expiracion.getMinutes() + 5)
+    const expiration = new Date()
+    expiration.setMinutes(expiration.getMinutes() + 15)
 
     console.log('[PROCESO] Creando Schedule en el ledger con ventana de 5 minutos...')
     const scheduleTx = await new ScheduleCreateTransaction()
       .setScheduledTransaction(innerTx)
       .setPayerAccountId(AccountId.fromString(operatorId))
       .setScheduleMemo('Automatización de Nómina - M7.3 Spanish')
-      .setExpirationTime(Timestamp.fromDate(expiracion))
+      .setExpirationTime(Timestamp.fromDate(expiration))
       .setWaitForExpiry(false) // Ejecutar inmediatamente tras el quorum de firmas
       .freezeWith(client)
 

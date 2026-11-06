@@ -145,7 +145,7 @@ const main = async () => {
       'Certificado de Nivel Pro en Almacenamiento Nativo HFS',
       imageURI,
       'Hedera Developer',
-      { rarity: 'Legendary', content: 'Immutable' }
+      { rarity: 'Legendary', storage: 'On-Chain HFS' }
     )
 
     console.log('\n[REGISTRO] JSON de Metadatos (HIP-412 V2):')

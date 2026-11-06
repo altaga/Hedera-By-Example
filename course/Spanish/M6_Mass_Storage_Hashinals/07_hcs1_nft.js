@@ -202,7 +202,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLÓ] La operación falló:', error.message)
+    console.error('\n[FALLO] La operación falló:', error.message)
     process.exitCode = 1
     if (client) client.close()
   }

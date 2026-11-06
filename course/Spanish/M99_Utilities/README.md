@@ -10,12 +10,15 @@
 
 | Archivo | Propósito | Descripción |
 | :--- | :--- | :--- |
-| **lib.js** | **Librería Core** | Funciones compartidas para comunicación HCS, firmas y manejo de claves. |
-| **config.js** | **Gestión de Entorno**| Carga `.env`, valida credenciales y crea clientes (`getClient`, `createClient`) con un tope de comisión holgado. |
-| **storage.js** | **Persistencia Local**| `updateState`/`getState`: `state.json` por módulo más uno compartido por todo el curso, con escritura atómica. |
-| **resilience.js** | **Resiliencia de Red**| `withGasRetry`/`executeWithGas`, `waitForMirror`, `getAccountEvmAddress`, `ensureFunded`, `getJsonRpcSigner`. |
-| **transfer.js** | **Motores de Envío** | Simplificación de transferencias complejas de HBAR y tokens. |
-| **explorer.js** | **Links de Auditoría**| Generación de enlaces directos a HashScan para verificación. |
+| **config.js** | **Gestión de Entorno** | `loadEnv`, `getClient`, `createClient` (tope de comisión holgado), `parsePrivateKey`, URLs del Mirror Node y JSON-RPC. |
+| **storage.js** | **Estado de los Labs** | `updateState`/`getState` sobre el `state.json` del curso (escritura atómica, secretos ocultos en los logs); `updateEnv` para el `.env`. |
+| **resilience.js** | **Resiliencia de Red** | Reintentos de gas (`executeWithGas`), `waitForMirror`, `ensureFunded`, `exitIfStuck`, y `reuseToken`/`reuseTopic`/`reuseContract` para no pagar de nuevo al repetir un lab. |
+| **explorer.js** | **Links de Auditoría** | `getHashscanUrl` para cualquier id o respuesta de transacción. |
+| **show.js** | **Salida Visual** | Funciones `show.*` que muestran tablas, JSON y diagramas en el runner web (texto plano en Node). |
+| **sleep.js** | **Tiempos** | `sleep(ms)`. |
+| **lib.js** | **Cifrado HCS-10** | `AgentCommunicationHandler` y `HybridEncryption` (RSA-2048 + AES-256-GCM) que usa el Lab 11 de M9. |
+| **x402.js** | **Pagos x402** | `createPaymentRequired`, `signExactPayment`, `verifyExactPayment`, `settleExactPayment` y la codificación de cabeceras para M10. |
+| **transfer.js** | **Utilidad de Desarrollo** | Envía HBAR de `ACCOUNT_1` de vuelta al operador: `node Spanish/M99_Utilities/transfer.js [hbar]`. |
 
 ---
 

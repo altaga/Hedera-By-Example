@@ -64,26 +64,26 @@ const main = async () => {
 
       const response = await transaction.execute(client)
 
-      console.log(`[REGISTRO] Transacción enviada: ${response.transactionId.toString()}`)
       console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
       const receipt = await response.getReceipt(client)
       return receipt.tokenId
     })
 
-    console.log('\n[ÉXITO] Token Nativo emitido exitosamente.')
-    console.log(`[REGISTRO] Token ID: ${tokenId.toString()}`)
-    console.log(`[REGISTRO] Cuenta de Tesorería: ${operatorId}`)
+    console.log(`\n[ÉXITO] Token creado: ${tokenId.toString()}`)
 
-    // Persistir el Token ID para laboratorios posteriores
-    console.log('[INFO] Guardando Token ID en el estado local del módulo...')
+    // Se guarda para las transferencias de los módulos siguientes
+    console.log('[INFO] Guardando el Token ID en state.json...')
     updateState('FT_TOKEN_ID', tokenId.toString())
 
+    console.log(`[REGISTRO] Cuenta de tesorería: ${operatorId}`)
+    console.log('[INFO] El suministro inicial ya está en la tesorería.')
+
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Al ser un activo nativo, las transferencias de este token')
-    console.log('tienen la misma seguridad y finalidad que el HBAR base,')
-    console.log('sin los riesgos de seguridad asociados a los Smart Contracts')
-    console.log('de terceros.')
+    console.log('El poder de las llaves: con una `adminKey` conservas el poder de actualizar')
+    console.log('las propiedades del token. Con una `supplyKey` conservas el poder de emitir')
+    console.log('más. Si quitas esas llaves (las pones en `null`), el token se vuelve')
+    console.log('"Inmutable": está garantizado matemáticamente que nunca cambiará.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

@@ -3,6 +3,14 @@ import * as crypto from 'crypto'
 import { EventEmitter } from 'events'
 import * as fs from 'fs' // Required for utility functions in HybridEncryption
 
+// Mirror Node base URL for the configured network (kept local so the browser bundle stays small).
+const mirrorNode = () => {
+  const network = (process.env.NETWORK || 'testnet').toLowerCase()
+  if (network === 'mainnet') return 'https://mainnet-public.mirrornode.hedera.com'
+  if (network === 'previewnet') return 'https://previewnet.mirrornode.hedera.com'
+  return 'https://testnet.mirrornode.hedera.com'
+}
+
 // ============================================
 //  HybridEncryption Utility Class
 // ============================================
@@ -280,51 +288,39 @@ export class AgentCommunicationHandler extends EventEmitter {
     this.myPrivateKeyPem = myPrivateKeyPem
     this.recipientPublicKeys = recipientPublicKeys
     this.authorizedClients = authorizedClients
+    this.stopped = false
   }
 
-  // --- Monitoring Loop (Unchanged) ---
+  // Ends the monitoring loop after its current poll.
+  stop () {
+    this.stopped = true
+  }
+
+  // --- Monitoring Loop ---
   async monitorConnectionMessages () {
-    let lastProcessedTimestamp = 0.0
-    const initial = await this.client.getMessages(this.connectionTopicId)
-    for (const msg of initial.messages) {
-      if (
-        parseFloat(msg.consensus_timestamp) > lastProcessedTimestamp &&
-        msg.op === 'message'
-      ) {
-        lastProcessedTimestamp = parseFloat(msg.consensus_timestamp)
-      }
-    }
-    console.log(
-      `Monitoring connection topic ${this.connectionTopicId} for messages`
-    )
+    // Start after the newest message already on the topic: only messages sent from now on count.
+    const res = await fetch(`${mirrorNode()}/api/v1/topics/${this.connectionTopicId}/messages?order=desc&limit=1`)
+    let lastSequence = res.ok ? ((await res.json()).messages?.[0]?.sequence_number ?? 0) : 0
+    console.log(`Monitoring connection topic ${this.connectionTopicId} for messages`)
 
-    while (true) {
+    while (!this.stopped) {
       try {
-        const snapshot = await this.client.getMessages(this.connectionTopicId)
-        for (const msg of snapshot.messages) {
-          if (
-            parseFloat(msg.consensus_timestamp) > lastProcessedTimestamp &&
-            msg.op === 'message'
-          ) {
-            lastProcessedTimestamp = parseFloat(msg.consensus_timestamp)
-
-            const idSplit = msg.operator_id.includes('@')
-              ? msg.operator_id.split('@')
-              : []
-            if (
-              msg.operator_id !== this.operatorId &&
-              (idSplit.length === 0 ||
-                this.authorizedClients.includes(idSplit[1]))
-            ) {
-              await this.processMessage(msg)
-            }
+        // Ask only for messages after the last sequence number seen, not the whole topic history.
+        const { messages } = await this.client.getMessages(this.connectionTopicId, { sequenceNumber: `gt:${lastSequence}`, order: 'asc', limit: 25 })
+        for (const msg of messages) {
+          if (this.stopped) break
+          lastSequence = Math.max(lastSequence, msg.sequence_number)
+          if (msg.op !== 'message') continue
+          const idSplit = msg.operator_id.includes('@') ? msg.operator_id.split('@') : []
+          if (msg.operator_id !== this.operatorId && (idSplit.length === 0 || this.authorizedClients.includes(idSplit[1]))) {
+            await this.processMessage(msg)
           }
         }
       } catch (error) {
         console.error(`Error monitoring connection messages: ${error.message}`)
-        this.emit('error', error)
+        if (this.listenerCount('error')) this.emit('error', error)
       }
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
     }
   }
 
@@ -335,13 +331,14 @@ export class AgentCommunicationHandler extends EventEmitter {
       if (payloadToDecrypt instanceof Uint8Array || Buffer.isBuffer(payloadToDecrypt)) {
         payloadToDecrypt = Buffer.from(payloadToDecrypt).toString('utf8')
       }
+      // Large payloads arrive as an HCS-1 reference (hcs://1/<topic>): fetch the content first.
+      if (typeof payloadToDecrypt === 'string' && payloadToDecrypt.startsWith('hcs://')) {
+        payloadToDecrypt = await this.client.getMessageContent(payloadToDecrypt)
+        if (typeof payloadToDecrypt !== 'string') payloadToDecrypt = Buffer.from(payloadToDecrypt).toString('utf8')
+      }
+      // The encrypted envelope travels as a JSON string: parse it so it can be decrypted.
       if (typeof payloadToDecrypt === 'string') {
-        try {
-          // If it's valid JSON, this works. If it's a file reference, it throws and we fetch it.
-          JSON.parse(payloadToDecrypt)
-        } catch (e) {
-          payloadToDecrypt = await this.client.getMessageContent(payloadToDecrypt)
-        }
+        try { payloadToDecrypt = JSON.parse(payloadToDecrypt) } catch (_) {}
       }
       let decryptedMessage = payloadToDecrypt
 
@@ -358,7 +355,7 @@ export class AgentCommunicationHandler extends EventEmitter {
         timestamp: message.consensus_timestamp
       })
     } catch (error) {
-      this.emit('error', error)
+      if (this.listenerCount('error')) this.emit('error', error)
     }
   }
 

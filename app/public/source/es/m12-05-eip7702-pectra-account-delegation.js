@@ -150,8 +150,8 @@ const main = async () => {
     // 4. Simular Ejecución por Lotes Tipo 4 (0x04)
     console.log('\n[PROCESO] Paso 4: Simulando Ejecución Atómica Multi-Call Tipo 4 (EIP-7702)...')
     const multiCallBatch = [
-      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0' },
-      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0' }
+      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0', label: 'Aprobación de token HTS vía fachada (sin gas)' },
+      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0', label: 'Liquidación atómica de liquidez (sin gas)' }
     ]
 
     multiCallBatch.forEach((call, i) => console.log(`[Acción ${i + 1}] ${call.label} -> ${call.target}`))

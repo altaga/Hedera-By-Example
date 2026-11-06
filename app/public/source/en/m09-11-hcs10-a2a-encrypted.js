@@ -4,17 +4,19 @@
  * [CONCEPT] Hybrid Encryption & Privacy over Public Ledger
  * ============================================================================
  * [ KEY CONCEPT ]
- * Layered Defense: Encryption provides Confidentiality, but it does NOT
- * provide Authenticity on its own if public keys are known. In this lab,
- * we layer Hybrid Encryption (RSA + AES-256-GCM) on top of the "Zero Trust"
- * ECDSA session validation. Even if an adversary knows your public key
- * and sends an encrypted message, the IDS will decrypt it and immediately
- * reject it for failing the session signature or sequence nonce checks.
- * This is the gold standard for secure Agentic communication on Hedera.
+ * Privacy by Design: Agent conversations on HCS are public and auditable, but
+ * sensitive data must stay private. Here each agent has its own inbox and an
+ * RSA-2048 key pair, and every message uses hybrid encryption: a fresh
+ * AES-256-GCM key encrypts the content, and the recipient's RSA public key
+ * encrypts that AES key. Anyone can read the topic, but only the recipient
+ * can decrypt what was sent to it.
  *
+ * Encryption gives confidentiality, not authenticity: anyone who knows a
+ * public key can send an encrypted message. A production agent combines it
+ * with the signature and sequence checks of Labs 09 and 10.
  *
  * [ LEARNABLE MOMENT ]
- * Consensus provides fair ordering, but client-side hybrid encryption (ECDH + AES-256-GCM) ensures military-grade confidentiality: third parties on the public ledger see only undecipherable ciphertext.
+ * Consensus orders the messages fairly, but only client-side hybrid encryption (RSA-2048 + AES-256-GCM) keeps them confidential: everyone else on the public ledger sees ciphertext.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-10/
@@ -76,16 +78,30 @@ const main = async () => {
     const publicKeyPath = path.join(keysDir, `${agentAlias}_public.pem`)
 
     if (fs.existsSync(privateKeyPath)) {
-      return { privateKey: fs.readFileSync(privateKeyPath, 'utf8'), publicKey: fs.readFileSync(publicKeyPath, 'utf8') }
+      return {
+        privateKey: fs.readFileSync(privateKeyPath, 'utf8'),
+        publicKey: fs.readFileSync(publicKeyPath, 'utf8')
+      }
     }
     console.log(`[PROCESS] Generating RSA Keypair for ${agentAlias}...`)
-    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } })
-    fs.writeFileSync(privateKeyPath, privateKey); fs.writeFileSync(publicKeyPath, publicKey)
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      publicKeyEncoding: { type: 'spki', format: 'pem' },
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+    })
+
+    fs.writeFileSync(privateKeyPath, privateKey)
+    fs.writeFileSync(publicKeyPath, publicKey)
     return { privateKey, publicKey }
   }
 
   const keysA = generateOrLoadKeys('agentA')
   const keysB = generateOrLoadKeys('agentB')
+
+  // The conversation ends after round 3: stop both listeners and let main() return.
+  const listeners = []
+  let finishSession
+  const finished = new Promise((resolve) => { finishSession = resolve })
 
   // --- AGENT B: LISTENS [B_INBOX], SENDS [A_INBOX] ---
   const startAgentB = async () => {
@@ -104,13 +120,15 @@ const main = async () => {
 
         await sleep(3000)
 
-        const replyPayload = { text: `World ${message.round}!` }
+        const replyPayload = { text: `World ${message.round}!`, round: message.round }
         console.log('[PROCESS] Routing RSA-encrypted reply to Agent A\'s Inbox...')
         await handlerBSpeak.sendMessage(replyPayload, agentAId)
       }
     })
 
     console.log(`[INFO] Agent B Live: Monitoring lane ${agentBInbox}`)
+    handlerBListen.on('error', (error) => console.error(`[FAILED] Agent B could not read a message: ${error.message}`))
+    listeners.push(handlerBListen)
     handlerBListen.monitorConnectionMessages()
   }
 
@@ -132,7 +150,7 @@ const main = async () => {
     }
 
     handlerAListen.on('messageReceived', async ({ senderId, message }) => {
-      if (message?.text?.includes(`World ${currentRound}`)) {
+      if (message?.round === currentRound) {
         console.log('\n---  [LOG] AGENT A: DECRYPTED INBOUND ---')
         console.log(`[SUCCESS] Valid response received: "${message.text}"`)
 
@@ -143,17 +161,19 @@ const main = async () => {
         } else {
           console.log('\n [SUCCESS] Full-Duplex Encrypted Orchestration Complete.')
           console.log('\n KEY CONCEPT:')
-          console.log('Layered Defense: Encryption provides Confidentiality, but it does')
-          console.log('NOT provide Authenticity on its own. In this lab, we layered Hybrid')
-          console.log('Encryption on top of ECDSA session validation to create the gold')
-          console.log('standard for secure Agentic communication on Hedera.')
+          console.log('Privacy by Design: every message crossed a public topic, yet only its')
+          console.log('recipient could decrypt it. Encryption gives confidentiality, not')
+          console.log('authenticity: pair it with the signature checks of Labs 09 and 10.')
           console.log('\n--- SESSION COMPLETE ---\n')
-          process.exit()
+          listeners.forEach((handler) => handler.stop())
+          finishSession()
         }
       }
     })
 
     console.log(`[INFO] Agent A Live: Monitoring lane ${agentAInbox}`)
+    handlerAListen.on('error', (error) => console.error(`[FAILED] Agent A could not read a message: ${error.message}`))
+    listeners.push(handlerAListen)
     handlerAListen.monitorConnectionMessages()
 
     await sleep(2000)
@@ -161,12 +181,14 @@ const main = async () => {
   }
 
   startAgentB()
-  setTimeout(startAgentA, 3000)
+  await sleep(3000)
+  await startAgentA()
+  await finished
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
-    .then(() => { if (process.exitCode) process.exit() })
+    .then(() => process.exit())
     .catch((error) => {
       console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
