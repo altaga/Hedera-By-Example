@@ -1,0 +1,118 @@
+name: Labs on testnet (labs-real)
+
+# Runs every course lab changed on labs-real against Hedera TESTNET with the
+# dedicated labs operator, prints per-lab PASS/FAIL plus transaction ids, uploads
+# the logs, then (optionally) publishes a PREVIEW-only EAS Hosting deploy.
+# Never promotes to production: no `--prod` flag anywhere.
+on:
+  workflow_dispatch:
+  push:
+    branches: [labs-real]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labs-testnet-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  labs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NETWORK: testnet
+      OPERATOR_ID: ${{ secrets.LABS_OPERATOR_ID }}
+      OPERATOR_PRIVATE_KEY: ${{ secrets.LABS_OPERATOR_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mask secrets
+        run: |
+          [ -n "$OPERATOR_PRIVATE_KEY" ] && echo "::add-mask::$OPERATOR_PRIVATE_KEY"
+          [ -n "$OPERATOR_ID" ] || { echo "::error::LABS_OPERATOR_ID secret is not set"; exit 1; }
+          [ -n "$OPERATOR_PRIVATE_KEY" ] || { echo "::error::LABS_OPERATOR_KEY secret is not set"; exit 1; }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: course/package-lock.json
+
+      - name: Install Foundry (M12-03)
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Install course dependencies
+        working-directory: course
+        run: npm ci
+
+      - name: Run changed labs
+        working-directory: course
+        run: |
+          set +e
+          git fetch --no-tags origin master:refs/remotes/origin/master 2>/dev/null
+          mkdir -p ../lab-results
+          LABS=$(git -C .. diff --name-only origin/master...HEAD -- 'course/English/M*/*.js' 'course/Spanish/M*/*.js' \
+            | grep -v '/M99_Utilities/' | sed 's#^course/##' | sort -u)
+          [ -z "$LABS" ] && { echo "No changed labs."; exit 0; }
+          echo "| Lab | Result | Seconds | Transaction ids |" > ../lab-results/summary.md
+          echo "|---|---|---|---|" >> ../lab-results/summary.md
+          FAILS=0
+          for lab in $LABS; do
+            [ -f "$lab" ] || continue
+            log="../lab-results/$(echo "$lab" | tr '/' '_').log"
+            start=$(date +%s)
+            timeout 900 node "$lab" > "$log" 2>&1
+            code=$?
+            secs=$(( $(date +%s) - start ))
+            txs=$(grep -oE '0\.0\.[0-9]+@[0-9]+\.[0-9]+' "$log" | sort -u | head -20 | tr '\n' ' ')
+            if [ $code -eq 0 ]; then res=PASS; else res="FAIL($code)"; FAILS=$((FAILS+1)); fi
+            echo "::group::$res $lab (${secs}s)"; tail -40 "$log"; echo "::endgroup::"
+            echo "$res  $lab  tx: ${txs:-none}"
+            echo "| $lab | $res | $secs | ${txs:-} |" >> ../lab-results/summary.md
+          done
+          cat ../lab-results/summary.md >> "$GITHUB_STEP_SUMMARY"
+          echo "Failed labs: $FAILS"
+          [ $FAILS -eq 0 ]
+
+      - name: Upload lab results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: labs-testnet-results
+          path: lab-results/
+          retention-days: 14
+
+  preview-deploy:
+    needs: labs
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Skip when EXPO_TOKEN is missing
+        id: gate
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then echo "EXPO_TOKEN not set; skipping preview deploy."; echo "run=false" >> "$GITHUB_OUTPUT"; else echo "::add-mask::$EXPO_TOKEN"; echo "run=true" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+      - name: Build web export
+        if: steps.gate.outputs.run == 'true'
+        working-directory: app
+        run: |
+          npm ci
+          npm run compile:course
+          npx expo export --platform web
+      - name: EAS Hosting preview deploy (no --prod)
+        if: steps.gate.outputs.run == 'true'
+        working-directory: app
+        run: npx --yes eas-cli@latest deploy --environment production --non-interactive
