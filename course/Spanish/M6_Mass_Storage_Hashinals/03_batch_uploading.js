@@ -52,8 +52,8 @@ const main = async () => {
   try {
     const __dirname = path.dirname(import.meta.filename)
     const assetsDir = path.resolve(__dirname, './assets')
-    // Solo los documentos fuente: largeFile.png ya se subió en el Lab 02 y reconstructed_* son salidas de los Labs 05/08.
-    const files = fs.readdirSync(assetsDir).filter((f) => !f.startsWith('reconstructed_') && f !== 'largeFile.png')
+    // Solo los documentos fuente pequeños: largeFile.png ya se subió en el Lab 02 de los Labs 05/08.
+    const files = fs.readdirSync(assetsDir).filter((f) => f !== 'largeFile.png')
 
     console.log(`[INFO] Escaneando directorio: ${assetsDir}`)
     console.log(`[INFO] Se encontraron ${files.length} archivos para anclar en el bundle.`)

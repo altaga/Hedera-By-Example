@@ -2,6 +2,10 @@
 import fs from 'fs'
 import path from 'path'
 
+// Los valores cuyo nombre indica que son secretos no se imprimen completos (se guardan tal cual).
+const isSecretName = (key) => /PRIVATE|SECRET|MNEMONIC|PASSWORD|_KEY$/i.test(key)
+const shown = (key, value) => (isSecretName(key) ? `${String(value).slice(0, 6)}… (oculto)` : value)
+
 /**
  * Persiste un par clave-valor en el archivo .env.
  * @deprecated Use updateState para IDs específicos del laboratorio.
@@ -27,14 +31,15 @@ export const updateEnv = (key, value) => {
   }
 
   fs.writeFileSync(envPath, envContent, 'utf8')
-  console.log(`\n .env Sincronizado: ${key}=${value}`)
+  console.log(`\n .env Sincronizado: ${key}=${shown(key, value)}`)
 }
 
-// course/state.json lo comparten todos los módulos, así un lab puede leer lo que
-// creó un módulo anterior (p. ej. M4 usa el token de M3). Cada módulo conserva
-// también su propio state.json, que tiene prioridad si ambos tienen la clave.
-const SHARED_STATE_PATH = path.resolve(path.dirname(import.meta.filename), '../../state.json')
-const moduleStatePath = () => path.join(path.dirname(process.argv[1]), 'state.json')
+// Un solo archivo de estado para todo el curso (course/state.json), para que un lab
+// pueda leer lo que creó un lab anterior de cualquier módulo (p. ej. M4 usa el token
+// de M3), sin importar desde qué carpeta lo ejecutes. Las ejecuciones antiguas
+// guardaban un state.json dentro de cada módulo: getState todavía lo lee como respaldo.
+const STATE_PATH = path.resolve(path.dirname(import.meta.filename), '../../state.json')
+const legacyModuleStatePath = () => path.join(path.dirname(process.argv[1] || '.'), 'state.json')
 
 const readJson = (file) => {
   try {
@@ -52,30 +57,27 @@ const writeJsonAtomic = (file, data) => {
 }
 
 /**
- * Persiste un par clave-valor en el state.json del módulo y en el state.json
- * del curso, para que los labs de cualquier módulo puedan leerlo después.
+ * Guarda un par clave-valor en course/state.json, para que los labs siguientes de cualquier módulo lo lean.
  *
- * @param {string} key - La clave del estado.
- * @param {any} value - El valor a almacenar.
+ * @param {string} key - La clave de estado.
+ * @param {any} value - El valor a guardar.
  */
 export const updateState = (key, value) => {
-  for (const file of new Set([moduleStatePath(), SHARED_STATE_PATH])) {
-    const state = readJson(file)
-    state[key] = value
-    writeJsonAtomic(file, state)
-  }
-  console.log(`\n Estado Sincronizado: ${key}=${value}`)
+  const state = readJson(STATE_PATH)
+  state[key] = value
+  writeJsonAtomic(STATE_PATH, state)
+  console.log(`\n Estado Sincronizado: ${key}=${shown(key, value)}`)
 }
 
 /**
- * Obtiene un valor del state.json del módulo, luego del state.json del curso
- * y por último de process.env.
+ * Lee un valor de course/state.json, luego de un state.json antiguo del módulo
+ * y luego de process.env.
  *
- * @param {string} key - La clave del estado.
- * @returns {any} El valor almacenado.
+ * @param {string} key - La clave de estado.
+ * @returns {any} El valor guardado.
  */
 export const getState = (key) => {
-  for (const file of [moduleStatePath(), SHARED_STATE_PATH]) {
+  for (const file of [STATE_PATH, legacyModuleStatePath()]) {
     const value = readJson(file)[key]
     if (value !== undefined && value !== null && value !== '') return value
   }

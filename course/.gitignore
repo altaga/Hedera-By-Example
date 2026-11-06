@@ -140,3 +140,5 @@ reset-repo.bat
 *.pem
 
 test/
+# Files the labs write (e.g. the images rebuilt in M6 Labs 05 and 08)
+output/

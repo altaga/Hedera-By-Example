@@ -138,8 +138,8 @@ const main = async () => {
     const resultBuffer = Buffer.from(fullBase64, 'base64')
     const __dirname = path.dirname(import.meta.filename)
     const dateStr = new Date().toISOString().split('T')[0]
-    const outputPath = path.resolve(__dirname, `./assets/reconstructed_${dateStr}.png`)
-
+    const outputPath = path.resolve(__dirname, `./output/reconstructed_${dateStr}.png`)
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
     fs.writeFileSync(outputPath, resultBuffer)
 
     console.log('\n---  [ÉXITO] ACTIVO RECONSTRUIDO CON ÉXITO ---')

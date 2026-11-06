@@ -130,7 +130,7 @@ const main = async () => {
 
     // 5. Save to Disk
     const __dirname = path.dirname(import.meta.filename)
-    const outputPath = path.resolve(__dirname, './assets/reconstructed_nft.png')
+    const outputPath = path.resolve(__dirname, './output/reconstructed_nft.png')
 
     if (!fs.existsSync(path.dirname(outputPath))) {
       fs.mkdirSync(path.dirname(outputPath), { recursive: true })

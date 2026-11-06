@@ -26,9 +26,9 @@ function labFiles (moduleDirAbs, source) {
   const walk = (dir, rel) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const relPath = rel ? `${rel}/${entry.name}` : entry.name
-      if (entry.isDirectory()) { if (entry.name !== 'node_modules') walk(path.join(dir, entry.name), relPath); continue }
+      if (entry.isDirectory()) { if (entry.name !== 'node_modules' && entry.name !== 'output') walk(path.join(dir, entry.name), relPath); continue }
       if (/\.(js|md)$/.test(entry.name) && !/^hedera_meta\.md$/.test(entry.name)) continue
-      if (/^state\.json/.test(entry.name) || /^reconstructed_/.test(entry.name)) continue
+      if (/^state\.json/.test(entry.name)) continue
       // A lab that lists a directory (fs.readdirSync) uses every file in it.
       const listsDir = rel && source.includes('readdirSync') && source.includes(`./${rel}`)
       if (source.includes(entry.name) || listsDir) found.push(relPath)
