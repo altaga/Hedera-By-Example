@@ -2,144 +2,167 @@
 /**
  * ============================================================================
  * Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
- * [CONCEPTO] Deuda Comercial Fraccionada y Liquidez Secundaria
+ * [CONCEPTO] Cuentas por Cobrar Tokenizadas, Entrega contra Pago y Redención On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Desbloqueando Capital de Trabajo Ilíquido: Las pequeñas y medianas empresas (PyMEs)
- * suelen esperar de 60 a 90 días para que clientes corporativos paguen sus facturas,
- * sufriendo restricciones de liquidez severas. Al tokenizar cuentas por cobrar
- * verificadas en Hedera, las empresas pueden vender tokens fraccionados a fondos
- * globales en segundos, con liquidación automática del rendimiento al vencer la factura.
- * *
+ * Las PyMEs suelen esperar 60-90 días a que grandes compradores paguen sus facturas.
+ * Tokenizar la cuenta por cobrar permite que un inversor la compre hoy con descuento y
+ * cobre el valor nominal completo cuando pague el deudor. Este lab ejecuta el ciclo
+ * completo entre tres cuentas de testnet reales y distintas:
+ * 1. La PyME ancla el hash de la factura en HCS (evita la doble facturación) y emite
+ *    un token de factura con ELLA MISMA como tesorería.
+ * 2. Anticipo: UNA transacción atómica intercambia el HBAR con descuento del inversor por
+ *    todos los tokens de factura (entrega contra pago: ningún tramo ocurre por separado).
+ * 3. Vencimiento: UNA transacción atómica mueve el valor nominal del deudor al inversor y
+ *    devuelve los tokens de factura a la tesorería de la PyME (redención).
+ * 4. Los saldos del Mirror Node confirman quién ganó qué.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Tokenizar cuentas por cobrar brinda liquidez fraccionada en mercados secundarios a pymes, mientras que anclar el hash de la factura a HCS previene fraudes de doble facturación.
+ * Las TransferTransactions atómicas multiparte dan entrega contra pago sin contrato de
+ * escrow. Los montos están escalados a tinybars para testnet (1 unidad de factura =
+ * 100 tinybars).
  *
  * [ REFERENCIAS OFICIALES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  * - https://docs.hedera.com/solutions/tokenization/ats
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M11 Lab 04: Oráculo Proof-of-Reserve
- * - Actual:   M11 Lab 05: Factoraje de Facturas RWA
+ * - Anterior:  M11 Lab 04: Oráculo Proof-of-Reserve
  * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo RWA
  *
+ * [SECUENCIA]
+ * PyME -> Hedera: Ancla el hash de la factura en HCS y emite el token de factura
+ * Inversor -> PyME: HBAR con descuento por todos los tokens (entrega contra pago atómica)
+ * Deudor -> Inversor: Valor nominal completo al vencimiento
+ * Inversor -> PyME: Tokens de factura redimidos en la misma transacción
+ *
  * [SIMULADO]
- * Las suscripciones de inversionistas y el pago del deudor se modelan con transferencias simples. Los tokens son reales.
+ * Los datos de la factura son de ejemplo y el vencimiento ocurre de inmediato en lugar de a los 60 días; los montos están escalados a tinybars. Las tres partes son cuentas reales y cada pago es real.
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Wallet: tu cuenta de testnet (crea 3 cuentas desechables: PyME, inversor, deudor).
+ * - Costo: ~0.7 ℏ para cuentas desechables + ~2 ℏ en comisiones.
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
  * ============================================================================
  */
 
+import crypto from 'node:crypto'
 import {
+  Hbar,
   TokenCreateTransaction,
-  TokenType,
   TokenSupplyType,
-  TransferTransaction,
-  Hbar
+  TokenType,
+  TopicCreateTransaction,
+  TopicMessageSubmitTransaction,
+  TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
+import { createClient, createLabAccount, getClient, getHashscanUrl, getMirrorHbarTinybars, sleep, updateState } from '../M99_Utilities/index.js'
 
-const INVOICE_METADATA = {
+const INVOICE = {
   invoiceId: 'INV-2026-OCT-8842',
-  debtor: 'Global Logistics Corp (Calificación AA+)',
+  debtor: 'Global Logistics Corp (AA+ Rated)',
   supplierSme: 'Precision Semiconductor Components Ltd',
   faceValueUsd: 50000,
   termDays: 60,
-  annualDiscountRate: 0.08, // 8% tasa de descuento anualizada
-  units: 50000 // $1 USD de valor nominal por unidad
+  annualDiscountRate: 0.08,
+  units: 50000 // $1 de valor nominal por unidad
 }
+const TINYBARS_PER_UNIT = 100 // escala testnet
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Pipeline de Factoraje de Facturas RWA y Liquidación ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- INICIO DE SESIÓN: Pipeline de Factoraje y Liquidación de Facturas RWA ---\n')
+  const { client } = getClient()
 
   try {
-    // 1. Calcular la Economía del Factoraje
-    const discountAmountUsd = INVOICE_METADATA.faceValueUsd * (INVOICE_METADATA.annualDiscountRate * (INVOICE_METADATA.termDays / 365))
-    const upfrontPayoutToSmeUsd = INVOICE_METADATA.faceValueUsd - discountAmountUsd
-    const annualizedRoiPercent = INVOICE_METADATA.annualDiscountRate * 100
+    // 1. Economía
+    const faceTinybars = INVOICE.units * TINYBARS_PER_UNIT
+    const discountTinybars = Math.floor(faceTinybars * INVOICE.annualDiscountRate * (INVOICE.termDays / 365))
+    const advanceTinybars = faceTinybars - discountTinybars
+    console.log('[PROCESO] Paso 1: Economía de la factura')
+    console.log(`[LOG] ${INVOICE.invoiceId}  | Deudor: ${INVOICE.debtor} | PyME: ${INVOICE.supplierSme}`)
+    console.log(`[LOG] Nominal ${faceTinybars} tinybars | Anticipo ${advanceTinybars} | Descuento del inversor ${discountTinybars} (${INVOICE.annualDiscountRate * 100}% anual, ${INVOICE.termDays} días)`)
 
-    console.log('[PROCESO] Calculando la Economía de Tokenización de la Factura...')
-    console.log(`[REGISTRO] ID de Factura:         ${INVOICE_METADATA.invoiceId}`)
-    console.log(`[REGISTRO] Deudor Corporativo:    ${INVOICE_METADATA.debtor}`)
-    console.log(`[REGISTRO] Proveedor PyME:        ${INVOICE_METADATA.supplierSme}`)
-    console.log(`[REGISTRO] Valor Nominal:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (Plazo: 60 Días)`)
-    console.log(`[REGISTRO] Efectivo PyME Inmediato: $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Liquidez Inmediata)`)
-    console.log(`[REGISTRO] Rendimiento Inversor:  $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
+    // 2. Tres partes reales
+    console.log('\n[PROCESO] Paso 2: Creando las cuentas de PyME, inversor y deudor...')
+    const sme = await createLabAccount(client, { hbar: 0.3 })
+    const investor = await createLabAccount(client, { hbar: 0.2 })
+    const debtor = await createLabAccount(client, { hbar: 0.2 })
+    console.log(`[LOG] PyME ${sme.accountId} | Inversor ${investor.accountId} | Deudor ${debtor.accountId}`)
+    const smeClient = createClient(sme.accountId.toString(), sme.privateKey)
 
-    // 2. Tokenizar la Cuenta por Cobrar en HTS
-    console.log('\n[PROCESO] Acuñando 50,000 Tokens Fraccionados de Factura en Hedera Token Service...')
-    const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
-      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
-      const tokenCreateTx = await new TokenCreateTransaction()
-        .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
-        .setTokenSymbol('INV-8842')
-        .setDecimals(0)
-        .setInitialSupply(INVOICE_METADATA.units)
-        .setTokenType(TokenType.FungibleCommon)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(INVOICE_METADATA.units)
-        .setTreasuryAccountId(operatorId)
-        .setAdminKey(client.operatorPublicKey)
-        .setFreezeKey(client.operatorPublicKey)
-        .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
-        .freezeWith(client)
-      // Espera el consenso: el recibo dice si la red aceptó la transacción.
-      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
-    })).toString()
+    // 3. La PyME ancla la factura y emite el token de la cuenta por cobrar (la PyME es tesorería)
+    console.log('\n[PROCESO] Paso 3: La PyME ancla el hash de la factura en HCS y emite el token de factura...')
+    const invoiceHash = crypto.createHash('sha256').update(JSON.stringify(INVOICE)).digest('hex')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:invoice-registry').execute(smeClient)).getReceipt(smeClient)).topicId
+    await (await new TopicMessageSubmitTransaction().setTopicId(topicId)
+      .setMessage(JSON.stringify({ type: 'invoice-anchor', invoiceId: INVOICE.invoiceId, sha256: invoiceHash }))
+      .execute(smeClient)).getReceipt(smeClient)
+    const tokenId = (await (await new TokenCreateTransaction()
+      .setTokenName(`Invoice ${INVOICE.invoiceId}`)
+      .setTokenSymbol('INV-8842')
+      .setTokenType(TokenType.FungibleCommon)
+      .setDecimals(0)
+      .setInitialSupply(INVOICE.units)
+      .setSupplyType(TokenSupplyType.Finite)
+      .setMaxSupply(INVOICE.units)
+      .setTreasuryAccountId(sme.accountId)
+      .setAdminKey(sme.privateKey.publicKey)
+      .setTokenMemo(`rwa:invoice:${INVOICE.invoiceId}:sha256:${invoiceHash.slice(0, 16)}`)
+      .execute(smeClient)).getReceipt(smeClient)).tokenId
+    console.log(`[ÉXITO] Factura anclada en el topic ${topicId}; token ${tokenId} (tesorería: PyME)`)
 
-    console.log(`[ÉXITO] Token de Factura RWA Desplegado: ${invoiceTokenId}`)
-    console.log(`[EXPLORADOR] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
-
-    // 3. Simular la Suscripción del Fondo de Liquidez (Mercado Secundario)
-    console.log('\n[PROCESO] El Fondo de Liquidez adquiere los 50,000 tokens adelantando el capital...')
-    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
-    const subscriptionTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulación de transferencia de liquidez
-      .addHbarTransfer(operatorId, new Hbar(0.5))
-      .setTransactionMemo(`rwa:factoring_advance:${INVOICE_METADATA.invoiceId}`)
+    // 4. Anticipo: entrega contra pago atómica
+    console.log('\n[PROCESO] Paso 4: El inversor compra la cuenta por cobrar — HBAR y tokens se intercambian de forma atómica...')
+    const advanceTx = await new TransferTransaction()
+      .addHbarTransfer(investor.accountId, Hbar.fromTinybars(-advanceTinybars))
+      .addHbarTransfer(sme.accountId, Hbar.fromTinybars(advanceTinybars))
+      .addTokenTransfer(tokenId, sme.accountId, -INVOICE.units)
+      .addTokenTransfer(tokenId, investor.accountId, INVOICE.units)
+      .setTransactionMemo(`rwa:factoring_advance:${INVOICE.invoiceId}`)
       .freezeWith(client)
+    await advanceTx.sign(investor.privateKey)
+    await advanceTx.sign(sme.privateKey)
+    const advanceRes = await advanceTx.execute(client)
+    await advanceRes.getReceipt(client)
+    console.log(`[ÉXITO] Anticipo liquidado — ${advanceRes.transactionId} | ${getHashscanUrl(advanceRes)}`)
 
-    const subResponse = await subscriptionTx.execute(client)
-    await subResponse.getReceipt(client)
-    console.log('[ÉXITO] Capital Adelantado Transferido a la PyME.')
-
-    // 4. Día 60: Pago del Deudor y Rendimiento Automatizado para Inversores
-    console.log('\n===============================================================')
-    console.log('VENCIMIENTO: EL DEUDOR LIQUIDA EL VALOR TOTAL DE $50,000 USD')
-    console.log('===============================================================')
-
-    const payoutTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-1.0)) // Simulación de liquidación de capital + rendimiento
-      .addHbarTransfer(operatorId, new Hbar(1.0))
-      .setTransactionMemo(`rwa:maturity_payout:${INVOICE_METADATA.invoiceId}:full_settlement`)
+    // 5. Vencimiento: el deudor paga el nominal; los tokens se redimen a la tesorería de la PyME
+    console.log('\n[PROCESO] Paso 5: Vencimiento — el deudor paga al inversor; los tokens de factura se redimen...')
+    const invBefore = await getMirrorHbarTinybars(investor.accountId.toString())
+    const maturityTx = await new TransferTransaction()
+      .addHbarTransfer(debtor.accountId, Hbar.fromTinybars(-faceTinybars))
+      .addHbarTransfer(investor.accountId, Hbar.fromTinybars(faceTinybars))
+      .addTokenTransfer(tokenId, investor.accountId, -INVOICE.units)
+      .addTokenTransfer(tokenId, sme.accountId, INVOICE.units)
+      .setTransactionMemo(`rwa:maturity_payout:${INVOICE.invoiceId}`)
       .freezeWith(client)
+    await maturityTx.sign(debtor.privateKey)
+    await maturityTx.sign(investor.privateKey)
+    const maturityRes = await maturityTx.execute(client)
+    await maturityRes.getReceipt(client)
+    console.log(`[ÉXITO] Vencimiento liquidado — ${maturityRes.transactionId} | ${getHashscanUrl(maturityRes)}`)
 
-    const payoutResponse = await payoutTx.execute(client)
-    const payoutReceipt = await payoutResponse.getReceipt(client)
-    const payoutHashscanUrl = getHashscanUrl(payoutResponse)
+    await sleep(6000)
+    const invAfter = await getMirrorHbarTinybars(investor.accountId.toString())
+    console.log(`[VERIFICACIÓN] El inversor recibió ${invAfter - invBefore} tinybars al vencimiento (pagó ${advanceTinybars} por adelantado, ganancia ${faceTinybars - advanceTinybars})`)
+    smeClient.close()
 
-    console.log('[ÉXITO] Distribución de Rendimiento Final Liquidada On-Chain:')
-    console.log(`[REGISTRO] Estado:            ${payoutReceipt.status.toString()}`)
-    console.log(`[REGISTRO] ID de Transacción: ${payoutResponse.transactionId.toString()}`)
-    console.log(`[EXPLORADOR] HashScan:        ${payoutHashscanUrl}`)
-
-    updateState('INVOICE_TOKEN_ID', invoiceTokenId)
-    updateState('INVOICE_SETTLEMENT_TX_ID', payoutResponse.transactionId.toString())
+    updateState('RWA_INVOICE_TOKEN_ID', tokenId.toString())
+    updateState('RWA_INVOICE_TOPIC_ID', topicId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('La tokenización de RWAs conecta el comercio del mundo real con las DeFi.')
-    console.log('Hedera elimina la fricción de conciliación, permitiendo a las empresas acceder a')
-    console.log('liquidez global instantánea a una fracción de los costos del factoraje bancario clásico.')
+    console.log('Tres partes independientes liquidaron un ciclo de factoraje con dos transacciones atómicas:')
+    console.log('el dinero y la cuenta por cobrar siempre se movieron juntos, sin contrato de escrow.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en la simulación de factoraje de factura:', error.message)
+    console.error('\n[ERROR] Falló el factoraje de facturas:', error.message)
     process.exit(1)
+  } finally {
+    client.close()
   }
 }
 
@@ -147,7 +170,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLIDO] Error de ejecución:', error.message)
       process.exit(1)
     })
 }

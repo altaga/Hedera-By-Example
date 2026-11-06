@@ -2,143 +2,167 @@
 /**
  * ============================================================================
  * Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
- * [CONCEPT] Fractional Commercial Debt & Secondary Liquidity
+ * [CONCEPT] Tokenized Receivables, Delivery-versus-Payment & On-Chain Redemption
  * ============================================================================
  * [ KEY CONCEPT ]
- * Unlocking Illiquid Working Capital: Small and medium enterprises (SMEs) routinely
- * wait 60 to 90 days for Fortune 500 buyers to settle invoices, creating severe
- * liquidity constraints. By tokenizing verified accounts receivable on Hedera,
- * businesses can sell discounted fractional invoice tokens to global liquidity
- * pools in seconds, with automated on-chain yield redemption upon debtor payment.
- * *
+ * SMEs often wait 60-90 days for large buyers to pay invoices. Tokenizing the
+ * receivable lets an investor buy it at a discount today and collect the full face
+ * value when the debtor pays. This lab runs the whole cycle between three real,
+ * distinct testnet accounts:
+ * 1. The SME anchors the invoice hash on HCS (prevents double-invoicing) and mints
+ *    an invoice token with ITSELF as treasury.
+ * 2. Advance: ONE atomic transaction swaps the investor's discounted HBAR for all
+ *    invoice tokens (delivery-versus-payment: neither leg can happen alone).
+ * 3. Maturity: ONE atomic transaction moves the debtor's full face value to the
+ *    investor and returns the invoice tokens to the SME treasury (redemption).
+ * 4. Mirror Node balances confirm who earned what.
+ *
  * [ LEARNABLE MOMENT ]
- * Tokenizing trade receivables unlocks fractional secondary market liquidity for small businesses, while anchoring invoice hashes to HCS prevents double-invoicing fraud.
+ * Atomic multi-party TransferTransactions give you delivery-versus-payment without
+ * an escrow contract. Amounts are scaled to tinybars for testnet (1 invoice unit =
+ * 100 tinybars).
  *
  * [ OFFICIAL REFERENCES ]
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  * - https://docs.hedera.com/solutions/tokenization/ats
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 04: Proof-of-Reserve Oracle
  * - Next:     M11 Lab 06: RWA Multi-Asset Pool Tokens
  *
+ * [SEQUENCE]
+ * SME -> Hedera: Anchor invoice hash on HCS, mint invoice token
+ * Investor -> SME: Discounted HBAR for all invoice tokens (atomic DvP)
+ * Debtor -> Investor: Full face value at maturity
+ * Investor -> SME: Invoice tokens redeemed in the same transaction
+ *
  * [SIMULATED]
- * Investor subscriptions and the debtor repayment are modeled with simple transfers. The tokens are real.
+ * The invoice data is sample data and maturity happens immediately instead of after 60 days; amounts are scaled to tinybars. All three parties are real accounts and every payment is real.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ * - Wallet: your testnet account (creates 3 throwaway accounts: SME, investor, debtor).
+ * - Cost: ~0.7 ℏ funded to throwaway accounts + ~2 ℏ in fees.
  *
  * [ HOW TO RUN ]
  * node English/M11_Hedera_Studios_RWA/05_rwa_invoice_factoring.js
  * ============================================================================
  */
 
+import crypto from 'node:crypto'
 import {
+  Hbar,
   TokenCreateTransaction,
-  TokenType,
   TokenSupplyType,
-  TransferTransaction,
-  Hbar
+  TokenType,
+  TopicCreateTransaction,
+  TopicMessageSubmitTransaction,
+  TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, reuseToken } from '../M99_Utilities/index.js'
+import { createClient, createLabAccount, getClient, getHashscanUrl, getMirrorHbarTinybars, sleep, updateState } from '../M99_Utilities/index.js'
 
-const INVOICE_METADATA = {
+const INVOICE = {
   invoiceId: 'INV-2026-OCT-8842',
   debtor: 'Global Logistics Corp (AA+ Rated)',
   supplierSme: 'Precision Semiconductor Components Ltd',
   faceValueUsd: 50000,
   termDays: 60,
-  annualDiscountRate: 0.08, // 8% annualized discount
+  annualDiscountRate: 0.08,
   units: 50000 // $1 face value per unit
 }
+const TINYBARS_PER_UNIT = 100 // testnet scale
 
 const main = async () => {
   console.log('--- SESSION START: RWA Invoice Factoring & Settlement Pipeline ---\n')
-  const { client, operatorId, network } = getClient()
+  const { client } = getClient()
 
   try {
-    // 1. Calculate Factoring Economics
-    const discountAmountUsd = INVOICE_METADATA.faceValueUsd * (INVOICE_METADATA.annualDiscountRate * (INVOICE_METADATA.termDays / 365))
-    const upfrontPayoutToSmeUsd = INVOICE_METADATA.faceValueUsd - discountAmountUsd
-    const annualizedRoiPercent = INVOICE_METADATA.annualDiscountRate * 100
+    // 1. Economics
+    const faceTinybars = INVOICE.units * TINYBARS_PER_UNIT
+    const discountTinybars = Math.floor(faceTinybars * INVOICE.annualDiscountRate * (INVOICE.termDays / 365))
+    const advanceTinybars = faceTinybars - discountTinybars
+    console.log('[PROCESS] Step 1: Invoice economics')
+    console.log(`[LOG] ${INVOICE.invoiceId} | Debtor: ${INVOICE.debtor} | SME: ${INVOICE.supplierSme}`)
+    console.log(`[LOG] Face ${faceTinybars} tinybars | Advance ${advanceTinybars} | Investor discount ${discountTinybars} (${INVOICE.annualDiscountRate * 100}% APR, ${INVOICE.termDays} days)`)
 
-    console.log('[PROCESS] Calculating Invoice Tokenization Economics...')
-    console.log(`[LOG] Invoice ID:         ${INVOICE_METADATA.invoiceId}`)
-    console.log(`[LOG] Debtor (Payer):     ${INVOICE_METADATA.debtor}`)
-    console.log(`[LOG] SME Supplier:       ${INVOICE_METADATA.supplierSme}`)
-    console.log(`[LOG] Face Value:         $${INVOICE_METADATA.faceValueUsd.toLocaleString()} USD (60 Day Term)`)
-    console.log(`[LOG] Upfront SME Cash:   $${upfrontPayoutToSmeUsd.toFixed(2)} USD (Immediate Liquidity)`)
-    console.log(`[LOG] Investor Yield:     $${discountAmountUsd.toFixed(2)} USD (${annualizedRoiPercent}% APY)`)
+    // 2. Three real parties
+    console.log('\n[PROCESS] Step 2: Creating SME, investor and debtor accounts...')
+    const sme = await createLabAccount(client, { hbar: 0.3 })
+    const investor = await createLabAccount(client, { hbar: 0.2 })
+    const debtor = await createLabAccount(client, { hbar: 0.2 })
+    console.log(`[LOG] SME ${sme.accountId} | Investor ${investor.accountId} | Debtor ${debtor.accountId}`)
+    const smeClient = createClient(sme.accountId.toString(), sme.privateKey)
 
-    // 2. Tokenize the Receivable on HTS
-    console.log('\n[PROCESS] Minting 50,000 Fractional Invoice Tokens on Hedera Token Service...')
-    const invoiceTokenId = (await reuseToken('REUSE_M11_05_TOKEN', async () => {
-      // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
-      const tokenCreateTx = await new TokenCreateTransaction()
-        .setTokenName(`Invoice ${INVOICE_METADATA.invoiceId}`)
-        .setTokenSymbol('INV-8842')
-        .setDecimals(0)
-        .setInitialSupply(INVOICE_METADATA.units)
-        .setTokenType(TokenType.FungibleCommon)
-        .setSupplyType(TokenSupplyType.Finite)
-        .setMaxSupply(INVOICE_METADATA.units)
-        .setTreasuryAccountId(operatorId)
-        .setAdminKey(client.operatorPublicKey)
-        .setFreezeKey(client.operatorPublicKey)
-        .setTokenMemo(`rwa:invoice:${INVOICE_METADATA.invoiceId}:face_${INVOICE_METADATA.faceValueUsd}`)
-        .freezeWith(client)
-      // Wait for consensus: the receipt says whether the network accepted the transaction.
-      return (await (await tokenCreateTx.execute(client)).getReceipt(client)).tokenId
-    })).toString()
+    // 3. SME anchors the invoice and mints the receivable token (SME is treasury)
+    console.log('\n[PROCESS] Step 3: SME anchors the invoice hash on HCS and mints the invoice token...')
+    const invoiceHash = crypto.createHash('sha256').update(JSON.stringify(INVOICE)).digest('hex')
+    const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:invoice-registry').execute(smeClient)).getReceipt(smeClient)).topicId
+    await (await new TopicMessageSubmitTransaction().setTopicId(topicId)
+      .setMessage(JSON.stringify({ type: 'invoice-anchor', invoiceId: INVOICE.invoiceId, sha256: invoiceHash }))
+      .execute(smeClient)).getReceipt(smeClient)
+    const tokenId = (await (await new TokenCreateTransaction()
+      .setTokenName(`Invoice ${INVOICE.invoiceId}`)
+      .setTokenSymbol('INV-8842')
+      .setTokenType(TokenType.FungibleCommon)
+      .setDecimals(0)
+      .setInitialSupply(INVOICE.units)
+      .setSupplyType(TokenSupplyType.Finite)
+      .setMaxSupply(INVOICE.units)
+      .setTreasuryAccountId(sme.accountId)
+      .setAdminKey(sme.privateKey.publicKey)
+      .setTokenMemo(`rwa:invoice:${INVOICE.invoiceId}:sha256:${invoiceHash.slice(0, 16)}`)
+      .execute(smeClient)).getReceipt(smeClient)).tokenId
+    console.log(`[SUCCESS] Invoice anchored on topic ${topicId}; token ${tokenId} (treasury: SME)`)
 
-    console.log(`[SUCCESS] RWA Invoice Token Deployed: ${invoiceTokenId}`)
-    console.log(`[EXPLORER] HashScan: ${`https://hashscan.io/testnet/token/${invoiceTokenId}`}`)
-
-    // 3. Simulate Investor Pool Subscription (Secondary Liquidity)
-    console.log('\n[PROCESS] Liquidity Pool purchases 50,000 tokens for upfront working capital...')
-    // Build the transfer: debits (negative) and credits (positive) in one transaction must add up to zero.
-    const subscriptionTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-0.5)) // Simulation of liquidity transfer
-      .addHbarTransfer(operatorId, new Hbar(0.5))
-      .setTransactionMemo(`rwa:factoring_advance:${INVOICE_METADATA.invoiceId}`)
+    // 4. Advance: atomic delivery-versus-payment
+    console.log('\n[PROCESS] Step 4: Investor buys the receivable — HBAR and tokens swap atomically...')
+    const advanceTx = await new TransferTransaction()
+      .addHbarTransfer(investor.accountId, Hbar.fromTinybars(-advanceTinybars))
+      .addHbarTransfer(sme.accountId, Hbar.fromTinybars(advanceTinybars))
+      .addTokenTransfer(tokenId, sme.accountId, -INVOICE.units)
+      .addTokenTransfer(tokenId, investor.accountId, INVOICE.units)
+      .setTransactionMemo(`rwa:factoring_advance:${INVOICE.invoiceId}`)
       .freezeWith(client)
+    await advanceTx.sign(investor.privateKey)
+    await advanceTx.sign(sme.privateKey)
+    const advanceRes = await advanceTx.execute(client)
+    await advanceRes.getReceipt(client)
+    console.log(`[SUCCESS] Advance settled — ${advanceRes.transactionId} | ${getHashscanUrl(advanceRes)}`)
 
-    const subResponse = await subscriptionTx.execute(client)
-    await subResponse.getReceipt(client)
-    console.log('[SUCCESS] Upfront Capital Transferred to SME Supplier.')
-
-    // 4. Day 60: Debtor Repayment & Automated Investor Payout
-    console.log('\n===============================================================')
-    console.log('MATURITY SETTLEMENT: DEBTOR SETTLES $50,000 USD FULL VALUE')
-    console.log('===============================================================')
-
-    const payoutTx = await new TransferTransaction()
-      .addHbarTransfer(operatorId, new Hbar(-1.0)) // Simulated full repayment + yield
-      .addHbarTransfer(operatorId, new Hbar(1.0))
-      .setTransactionMemo(`rwa:maturity_payout:${INVOICE_METADATA.invoiceId}:full_settlement`)
+    // 5. Maturity: debtor pays face value; tokens are redeemed to the SME treasury
+    console.log('\n[PROCESS] Step 5: Maturity — debtor pays the investor; invoice tokens are redeemed...')
+    const invBefore = await getMirrorHbarTinybars(investor.accountId.toString())
+    const maturityTx = await new TransferTransaction()
+      .addHbarTransfer(debtor.accountId, Hbar.fromTinybars(-faceTinybars))
+      .addHbarTransfer(investor.accountId, Hbar.fromTinybars(faceTinybars))
+      .addTokenTransfer(tokenId, investor.accountId, -INVOICE.units)
+      .addTokenTransfer(tokenId, sme.accountId, INVOICE.units)
+      .setTransactionMemo(`rwa:maturity_payout:${INVOICE.invoiceId}`)
       .freezeWith(client)
+    await maturityTx.sign(debtor.privateKey)
+    await maturityTx.sign(investor.privateKey)
+    const maturityRes = await maturityTx.execute(client)
+    await maturityRes.getReceipt(client)
+    console.log(`[SUCCESS] Maturity settled — ${maturityRes.transactionId} | ${getHashscanUrl(maturityRes)}`)
 
-    const payoutResponse = await payoutTx.execute(client)
-    const payoutReceipt = await payoutResponse.getReceipt(client)
-    const payoutHashscanUrl = getHashscanUrl(payoutResponse)
+    await sleep(6000)
+    const invAfter = await getMirrorHbarTinybars(investor.accountId.toString())
+    console.log(`[VERIFY] Investor received ${invAfter - invBefore} tinybars at maturity (paid ${advanceTinybars} upfront, profit ${faceTinybars - advanceTinybars})`)
+    smeClient.close()
 
-    console.log('[SUCCESS] Final Yield Distribution Settled On-Chain:')
-    console.log(`[LOG] Status:         ${payoutReceipt.status.toString()}`)
-    console.log(`[LOG] Transaction ID: ${payoutResponse.transactionId.toString()}`)
-    console.log(`[EXPLORER] HashScan:  ${payoutHashscanUrl}`)
-
-    updateState('INVOICE_TOKEN_ID', invoiceTokenId)
-    updateState('INVOICE_SETTLEMENT_TX_ID', payoutResponse.transactionId.toString())
+    updateState('RWA_INVOICE_TOKEN_ID', tokenId.toString())
+    updateState('RWA_INVOICE_TOPIC_ID', topicId.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('RWA Tokenization connects real-world commerce with decentralized finance.')
-    console.log('Hedera eliminates reconciliation friction, allowing businesses to access')
-    console.log('instant global liquidity at a fraction of traditional factoring costs.')
+    console.log('Three independent parties settled a factoring cycle with two atomic transactions:')
+    console.log('cash and receivable always moved together, with no escrow contract.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[ERROR] Invoice factoring simulation failed:', error.message)
+    console.error('\n[ERROR] Invoice factoring failed:', error.message)
     process.exit(1)
+  } finally {
+    client.close()
   }
 }
 
