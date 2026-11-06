@@ -181,12 +181,8 @@ const main = async () => {
 
     // [ARCHITECTURAL SIMULATION] Synthesize validator roster for TSS verification
     console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Generating HIP-1535 TSS state proof...')
-    const councilPrivateKeys = [
-      '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-      '0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01',
-      '0x3456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012',
-      '0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123'
-    ]
+    // Throwaway validator council keys, new on every run (never hardcode keys).
+    const councilPrivateKeys = Array.from({ length: 4 }, () => ethers.Wallet.createRandom().privateKey)
     const authorizedCouncilRoster = councilPrivateKeys.map(k => new ethers.Wallet(k).address)
 
     const clprProof = buildCLPRProof({

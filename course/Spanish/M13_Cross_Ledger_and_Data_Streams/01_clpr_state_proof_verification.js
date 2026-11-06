@@ -182,12 +182,8 @@ const main = async () => {
 
     // [SIMULACIÓN ARQUITECTÓNICA] Red de validadores sintética para verificación TSS
     console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Generando prueba de estado TSS HIP-1535...')
-    const councilPrivateKeys = [
-      '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-      '0x23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01',
-      '0x3456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012',
-      '0x456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123'
-    ]
+    // Llaves desechables del consejo de validadores, nuevas en cada ejecución (nunca escribas llaves en el código).
+    const councilPrivateKeys = Array.from({ length: 4 }, () => ethers.Wallet.createRandom().privateKey)
     const authorizedCouncilRoster = councilPrivateKeys.map(k => new ethers.Wallet(k).address)
 
     const clprProof = buildCLPRProof({

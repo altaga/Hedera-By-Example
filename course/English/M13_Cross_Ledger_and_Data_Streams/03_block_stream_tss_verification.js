@@ -177,12 +177,8 @@ const main = async () => {
     // 3. [ARCHITECTURAL SIMULATION] Assemble and verify TSS consensus quorum
     console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Verifying HIP-1056 TSS Consensus Quorum...')
 
-    const councilPrivateKeys = [
-      '0x1111111111111111111111111111111111111111111111111111111111111111',
-      '0x2222222222222222222222222222222222222222222222222222222222222222',
-      '0x3333333333333333333333333333333333333333333333333333333333333333',
-      '0x4444444444444444444444444444444444444444444444444444444444444444'
-    ]
+    // Throwaway validator council keys, new on every run (never hardcode keys).
+    const councilPrivateKeys = Array.from({ length: 4 }, () => ethers.Wallet.createRandom().privateKey)
     const validatorWallets = councilPrivateKeys.map(k => new ethers.Wallet(k))
     const authorizedRoster = validatorWallets.map(w => w.address)
 

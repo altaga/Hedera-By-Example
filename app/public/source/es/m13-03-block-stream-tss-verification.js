@@ -177,12 +177,8 @@ const main = async () => {
     // 3. [SIMULACIÓN ARQUITECTÓNICA] Ensamblar y verificar consenso agregado TSS
     console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Verificando Quórum TSS HIP-1056...')
 
-    const councilPrivateKeys = [
-      '0x1111111111111111111111111111111111111111111111111111111111111111',
-      '0x2222222222222222222222222222222222222222222222222222222222222222',
-      '0x3333333333333333333333333333333333333333333333333333333333333333',
-      '0x4444444444444444444444444444444444444444444444444444444444444444'
-    ]
+    // Llaves desechables del consejo de validadores, nuevas en cada ejecución (nunca escribas llaves en el código).
+    const councilPrivateKeys = Array.from({ length: 4 }, () => ethers.Wallet.createRandom().privateKey)
     const validatorWallets = councilPrivateKeys.map(k => new ethers.Wallet(k))
     const authorizedRoster = validatorWallets.map(w => w.address)
 
