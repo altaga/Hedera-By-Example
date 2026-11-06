@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Advanced USDC Token Interactions (ERC-20)
@@ -11,7 +10,8 @@
  * metadata (Decimals, Symbol) and audit allowances for USDC (0.0.429274).
  * It proves that Hedera's EVM is identical to Ethereum's ERC-20 interface,
  * making it the foundation for professional DeFi.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Native HTS tokens (like Circle USDC on Hedera) are automatically accessible via standard ERC-20 contract interfaces at their derived EVM addresses, enabling seamless drop-in DeFi compatibility.
  *

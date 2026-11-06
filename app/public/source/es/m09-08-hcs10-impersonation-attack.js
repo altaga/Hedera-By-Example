@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Ataque de Suplantación HCS-10 (Hijacking)
@@ -42,9 +41,9 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
 
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
@@ -52,12 +51,12 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Simulación de Ataque de Suplantación (Vulnerabilidad HCS-10) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
-  const agentC_Id = getState('HCS11_AGENT_C_ID')
-  const agentC_Key = getState('HCS11_AGENT_C_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
+  const agentCId = getState('HCS11_AGENT_C_ID')
+  const agentCKey = getState('HCS11_AGENT_C_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
@@ -74,8 +73,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE B (Servicio Vulnerable - Modo Legado) ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
     console.log(`[INFO] Agente B: Operativo en Modo Vulnerable en Inbox [${inbox}]...`)
 
@@ -99,7 +98,7 @@ const main = async () => {
             console.log(`[INFO] Confiando ciegamente en "${payload.text}". Procesando lógica...`)
 
             await sleep(3000)
-            await hcs10.sendMessage(outbox, { text: `World ${payload.round} confirmado!`, target: agentA_Id })
+            await hcs10.sendMessage(outbox, { text: `World ${payload.round} confirmado!`, target: agentAId })
           }
         } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
       })
@@ -107,8 +106,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Emisor Legítimo) ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
     let currentRound = 1
     console.log(`[INFO] Agente A: Emisor Genuino en Outbox [${outbox}]...`)
@@ -122,7 +121,7 @@ const main = async () => {
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
 
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })
@@ -156,7 +155,7 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE C (El Adversario - Hijacker) ---
   const startAgentC = async () => {
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentC_Id, operatorPrivateKey: agentC_Key })
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentCId, operatorPrivateKey: agentCKey })
 
     console.log('[INFO] Agente C: Atacante Activo en suplantación de identidad...')
 
@@ -167,7 +166,7 @@ const main = async () => {
       if (isForgery) {
         console.log('\n---  MOVIMIENTO MALICIOSO: INTENTO DE FALSIFICACIÓN ---')
         await hcs10.sendMessage(inbox, {
-          operator_id: agentA_Id, // Suplantando la identidad del Agente A
+          operator_id: agentAId, // Suplantando la identidad del Agente A
           verified_payload: JSON.stringify({ text: 'COMANDO_DE_RESET_MALICIOSO', round: 99 }),
           session_proof: '00'.repeat(32) // Firma inválida que el Agente B ignorará
         })
@@ -178,7 +177,7 @@ const main = async () => {
         const replay = JSON.stringify({ text: 'Hello 1', round: 1, ts: 1713723000 })
         const sig = sessionPriv.sign(Buffer.from(replay, 'utf8'))
         await hcs10.sendMessage(inbox, {
-          operator_id: agentA_Id,
+          operator_id: agentAId,
           verified_payload: replay,
           session_proof: Buffer.from(sig).toString('hex')
         })

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Real-Time WebSocket Ledger Event Bus
@@ -119,7 +118,7 @@ const main = async () => {
   exitIfStuck(180_000, 'the demo server to finish')
   console.log('--- SESSION START: Real-Time WebSocket Ledger Event Bus ---\n')
 
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
   const mirrorBase = getMirrorNodeBaseUrl()
   const BUS_PORT = 8546
 
@@ -154,7 +153,7 @@ const main = async () => {
     consumerReq.end()
 
     // Wait 200ms for subscription handshake
-    await new Promise(r => setTimeout(r, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     console.log('\n[PROCESS] Step 3: Fetching live consensus events from Mirror Node to ingest into Event Bus...')
     // Read from the Mirror Node REST API: free, but a few seconds behind consensus.
@@ -166,18 +165,18 @@ const main = async () => {
 
     for (const tx of mirrorData.transactions) {
       const payer = tx.payer_account_id || tx.transaction_id.split('-')[0]
-      const envelope = eventBus.broadcast(`account:transfers:${payer}`, {
+      eventBus.broadcast(`account:transfers:${payer}`, {
         txId: tx.transaction_id,
         consensusTimestamp: tx.consensus_timestamp,
         result: tx.result,
         name: tx.name,
         chargedFee: (tx.charged_tx_fee / 1e8) + ' ℏ'
       })
-      await new Promise(r => setTimeout(r, 100))
+      await new Promise((resolve) => setTimeout(resolve, 100))
     }
 
     // Wait for client to process
-    await new Promise(r => setTimeout(r, 300))
+    await new Promise((resolve) => setTimeout(resolve, 300))
 
     console.log('\n---  REACTIVE STREAMING SUMMARY ---')
     console.log(`Total Events Broadcasted: ${eventBus.eventsDispatched}`)

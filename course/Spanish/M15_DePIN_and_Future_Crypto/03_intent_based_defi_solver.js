@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Laboratorio 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)

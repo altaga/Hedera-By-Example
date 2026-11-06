@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Native Hedera File Service (HFS) - Normal Files
@@ -10,7 +9,8 @@
  * decentralized storage like IPFS which requires a separate infrastructure,
  * HFS is part of the Hedera core. Small files (up to 6KB) can be created
  * in a single atomic transaction.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hedera File Service (HFS) stores data directly on consensus nodes with cryptographic immutability. For files under 1024 bytes, FileCreateTransaction provides instant on-chain document storage for legal contracts or public keys.
  *

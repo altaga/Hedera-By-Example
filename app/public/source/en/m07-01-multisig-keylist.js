@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Multi-signature Models and KeyLists
@@ -10,7 +9,8 @@
  * Because this is enforced by consensus nodes during signature verification,
  * there is zero smart contract risk and no extra gas cost. It is pure
  * cryptographic policy enforced at the ledger core.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Multi-signature KeyLists on Hedera operate natively at the consensus layer without smart contracts: configuring M-of-N signature thresholds prevents single-point-of-failure treasury compromise.
  *

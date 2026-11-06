@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Hedera Fundamentals - aBFT & Consensus Simulation
@@ -8,7 +7,8 @@
  * Virtual Voting: Because every node has the full history of everyone else's
  * gossip, they can calculate what everyone else is thinking without sending
  * extra votes over the network. This is why Hedera is "Fair" and "Fast".
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Unlike Proof-of-Work blockchains that suffer from probabilistic finality and block reorganizations, Hashgraph reaches true asynchronous Byzantine Fault Tolerance (aBFT) in 3-5 seconds with absolute mathematical certainty.
  *

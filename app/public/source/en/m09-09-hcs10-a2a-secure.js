@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 09: Secure A2A Communication (HCS-10)
@@ -13,7 +12,8 @@
  * 2. SEQUENCE VALIDATION: Proves the message is fresh and not a "Replay"
  * of historical data. By layering these checks, you transform a public
  * HCS topic into a secure, tamper-proof command channel.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * By signing every A2A message with the agent private key and embedding an ephemeral timestamp, autonomous agents verify the cryptographic signature of their peers and reject spoofed messages.
  *
@@ -40,12 +40,11 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import dotenv from 'dotenv'
-import { getState, sleep, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, updateState, loadEnv } from '../M99_Utilities/index.js'
 
-dotenv.config()
+loadEnv() // reads course/.env (and the repository root .env)
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
@@ -53,10 +52,10 @@ const main = async () => {
   console.log('--- SESSION START: Secure Parallel Security Audit ---\n')
 
   // --- CONFIGURATION ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
@@ -73,8 +72,8 @@ const main = async () => {
 
   // --- AGENT B: THE SECURE SERVICE ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
     let lastProcessedRound = 0
     console.log(`[INFO] Agent B Listening on ${inbox} (Secure Protocol)`)
@@ -120,7 +119,7 @@ const main = async () => {
             lastProcessedRound = payload.round
 
             await sleep(5000)
-            await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentA_Id })
+            await hcs10.sendMessage(outbox, { text: `World ${payload.round}!`, target: agentAId })
             console.log('[SUCCESS] Response dispatched.')
           }
         } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
@@ -129,8 +128,8 @@ const main = async () => {
 
   // --- AGENT A: THE SECURE INITIATOR ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
     let currentRound = 1
     console.log(`[INFO] Agent A Monitoring Outbox [${outbox}]`)
@@ -144,7 +143,7 @@ const main = async () => {
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
 
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })

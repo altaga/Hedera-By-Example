@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Comunicación Humano-a-Agente HCS-10 (Pública)
@@ -42,7 +41,7 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import { getClient, getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
@@ -58,7 +57,7 @@ const main = async () => {
   const agentInbox = getState('HCS11_AGENT_A_INBOUND')
   const agentOutbox = getState('HCS11_AGENT_A_OUTBOUND')
 
-  const { operatorId, operatorKey: operatorKeyRaw } = getClient()
+  const { operatorId } = getClient()
 
   if (!agentId || !operatorId) {
     console.error('[FALLO] Faltan identidades para la orquestación. Ejecuta Lab 04 primero.')

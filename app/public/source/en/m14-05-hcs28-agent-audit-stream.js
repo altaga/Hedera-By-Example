@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
@@ -43,8 +42,7 @@
 import { ethers } from 'ethers'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
@@ -95,7 +93,7 @@ const buildHCS28AuditRecord = ({ agentWallet, sessionId, cycleIndex, userPrompt,
 
 const main = async () => {
   console.log('--- SESSION START: HCS-28 Agent Transparency & Cognitive Audit Stream ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Create HCS-28 Audit Stream Topic

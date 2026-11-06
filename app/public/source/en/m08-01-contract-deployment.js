@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Smart Contract Deployment (Integrated Compiler)
@@ -10,7 +9,8 @@
  * This gives you absolute control over the deployment cost and configuration.
  * Hedera is 100% EVM-compatible, meaning you gain the performance and finality
  * of Hashgraph while using industry-standard Solidity code.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hedera EVM uses the exact same bytecode format as Ethereum, but smart contracts execute with deterministic gas fees converted to tinybars at the on-chain exchange rate, eliminating fee volatility.
  *

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: HTS Immutable Issuance
@@ -10,7 +9,8 @@
  * more. If you remove these keys (set them to `null`), the token becomes
  * "Immutable"—mathematically guaranteed to never change. This is the
  * foundation of native trust on Hedera.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Omission is true immutability: by deliberately setting adminKey = null when creating a token, you permanently surrender control. The token rules and supply become mathematically enforced by the consensus layer forever.
  *

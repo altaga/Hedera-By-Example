@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Account Key Rotation
@@ -9,7 +8,8 @@
  * handling high-value assets. This script shows how to handle the "Handover"
  * by signing the update with both the old and new keys to prove continuous
  * authority. On Hedera, your Account ID remains stable while your keys change.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * On Ethereum, if your private key is leaked, your account address is permanently lost. On Hedera, you can execute an AccountUpdateTransaction to rotate the private key while retaining the exact same Account ID and asset balances.
  *

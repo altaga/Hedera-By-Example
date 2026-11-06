@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Laboratorio 08: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 09: Pool de Privacidad Zero-Knowledge en Hedera EVM (zk-SNARK Groth16)
@@ -149,7 +148,7 @@ const execute = async (client, contractId, iface, fn, args, { gas = 1_500_000, p
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Pool de Privacidad Zero-Knowledge en Hedera EVM (Groth16) ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Desplegar (o reutilizar) el hasher Poseidon, el verificador Groth16 y el pool

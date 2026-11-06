@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 09: Comunicación A2A Paralela Segura
@@ -42,9 +41,9 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import { getState, sleep, getClient, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, updateState } from '../M99_Utilities/index.js'
 
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
@@ -52,10 +51,10 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Seguridad Zero-Trust (HCS-10) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
@@ -72,8 +71,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE B (Servicio con Seguridad Activa) ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
     let lastProcessedRound = 0
     console.log(`[INFO] Agente B: Operativo en Modo Seguro en Inbox [${inbox}]...`)
@@ -119,7 +118,7 @@ const main = async () => {
             lastProcessedRound = payload.round
 
             await sleep(3000)
-            await hcs10.sendMessage(outbox, { text: `¡Respuesta Segura para Ronda ${payload.round}!`, target: agentA_Id })
+            await hcs10.sendMessage(outbox, { text: `¡Respuesta Segura para Ronda ${payload.round}!`, target: agentAId })
           }
         } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
       })
@@ -127,8 +126,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Emisor Autorizado) ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
     let currentRound = 1
     console.log(`[INFO] Agente A: Emisor Genuino en Outbox [${outbox}]...`)
@@ -142,7 +141,7 @@ const main = async () => {
       const sig = sessionPriv.sign(Buffer.from(payloadString, 'utf8'))
 
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         verified_payload: payloadString,
         session_proof: Buffer.from(sig).toString('hex')
       })

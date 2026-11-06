@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: JSON-RPC Relay with Pure Ethers.js v6
@@ -38,7 +37,7 @@ const HEDERA_TESTNET_CHAIN_ID = 296
 
 const main = async () => {
   console.log('--- SESSION START: Pure Ethers.js v6 on Hedera JSON-RPC Relay ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  const { operatorKey } = getClient()
 
   try {
     // 1. Initialize Standard Ethers v6 JsonRpcProvider

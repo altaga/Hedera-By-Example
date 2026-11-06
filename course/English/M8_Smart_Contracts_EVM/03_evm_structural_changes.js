@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Structural Differences and Rent Mechanics
@@ -11,7 +10,8 @@
  * HBAR balance for periodic auto-renewal fees. This script shows how to
  * programmatically extend a contract's lifespan by setting its
  * `autoRenewPeriod`, ensuring it remains active on the ledger.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hedera EVM contracts are governed by storage rent and auto-renew mechanics. Maintaining a funded auto-renew account ensures persistent contract storage across network upgrade epochs.
  *

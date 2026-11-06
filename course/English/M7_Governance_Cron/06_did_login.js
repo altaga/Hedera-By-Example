@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Cryptographic Login with DID
@@ -36,11 +35,6 @@
 import { PrivateKey, PublicKey } from '@hiero-ledger/sdk'
 import { KeysUtility } from '@hiero-did-sdk/core'
 import { getClient, getState, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
-import dotenv from 'dotenv'
-import path from 'path'
-
-const __dirname = path.dirname(import.meta.filename)
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 const main = async () => {
   console.log('--- SESSION START: Cryptographic DID Login ---\n')

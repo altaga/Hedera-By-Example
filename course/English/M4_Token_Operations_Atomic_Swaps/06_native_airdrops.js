@@ -56,7 +56,7 @@ const main = async () => {
       .setInitialBalance(new Hbar(0))
       .execute(client)
 
-    let receipt = await tx.getReceipt(client)
+    const receipt = await tx.getReceipt(client)
     const receiverId = receipt.accountId
     console.log(`[SUCCESS] Receiver Account created: ${receiverId.toString()}`)
 
@@ -73,7 +73,6 @@ const main = async () => {
         .freezeWith(client)
       return (await (await (await createTx.sign(supplyKey)).execute(client)).getReceipt(client)).tokenId
     }, { minBalance: 500 })
-    let signTx, submitTx
     console.log(`[SUCCESS] Token created: ${tokenId.toString()}`)
 
     // 3. Perform the Airdrop (sending to an unassociated account!)
@@ -94,8 +93,8 @@ const main = async () => {
       .addPendingAirdropId(pendingAirdropId)
       .freezeWith(client)
 
-    signTx = await tx.sign(receiverKey)
-    submitTx = await signTx.execute(client)
+    const signTx = await tx.sign(receiverKey)
+    const submitTx = await signTx.execute(client)
     await submitTx.getReceipt(client)
 
     console.log('[SUCCESS] Airdrop claimed successfully!')

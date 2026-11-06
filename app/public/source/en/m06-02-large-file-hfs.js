@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Native Hedera File Service (HFS) - Large Files
@@ -10,7 +9,8 @@
  * Append" pattern. You initialize the file with a `FileCreateTransaction`
  * and then stream the remaining data segments using `FileAppendTransaction`.
  * This allows for uploading high-res images or datasets directly to the ledger.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Storing larger files on HFS requires sequential FileAppendTransaction calls. Always track remaining byte offsets and handle transaction fee limits when appending multi-megabyte smart contract bytecodes.
  *

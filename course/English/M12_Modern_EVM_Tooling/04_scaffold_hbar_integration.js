@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
@@ -34,7 +33,7 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { updateState } from '../M99_Utilities/index.js'
 
 // Standard Viem/Wagmi chain definition for Hedera Testnet
 const HEDERA_TESTNET_CHAIN_DEFINITION = {
@@ -65,7 +64,6 @@ const HEDERA_TESTNET_CHAIN_DEFINITION = {
 
 const main = async () => {
   console.log('--- SESSION START: Scaffold-HBAR Full-Stack Architecture ---\n')
-  const { client, operatorId, operatorKey } = getClient()
 
   try {
     console.log('[PROCESS] Initializing Scaffold-HBAR architectural verification...')

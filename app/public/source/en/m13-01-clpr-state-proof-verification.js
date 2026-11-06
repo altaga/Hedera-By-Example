@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Cross-Ledger Protocol (CLPR) & Cryptographic State Proofs (HIP-1535)
@@ -42,8 +41,7 @@ import crypto from 'crypto'
 import { ethers } from 'ethers'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 

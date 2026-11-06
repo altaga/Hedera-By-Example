@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 07: Orquestación Agente-a-Agente (A2A) HCS-10
@@ -42,7 +41,7 @@
  * ============================================================================
  */
 
-import { Client, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
 import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
 
@@ -53,15 +52,15 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Orquestación A2A Autónoma (HCS-10) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
+  if (!agentAId || !agentBId || !inbox || !outbox) {
     console.error('[FALLO] Faltan identidades de agentes o canales de comunicación.')
     process.exitCode = 1
     return
@@ -69,8 +68,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE B (Servicio Reactivo) ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
     const processedMessages = new Set()
 
     console.log(`[INFO] Agente B: Operativo en Inbox [${inbox}]...`)
@@ -108,7 +107,7 @@ const main = async () => {
               console.log('[ÉXITO] Enviando respuesta de conformidad al canal de salida.')
               await hcs10.sendMessage(outbox, {
                 text: `¡Mensaje Ronda ${round} Procesado!`,
-                target: agentA_Id
+                target: agentAId
               })
             }
           } catch (e) { console.error('[FALLO] El agente no pudo responder:', e.message) }
@@ -118,8 +117,8 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE A (Iniciador de Secuencia) ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
     const processedMessages = new Set()
 
     let currentRound = 1
@@ -132,7 +131,7 @@ const main = async () => {
       console.log(`[PROCESO] Iniciando Ronda ${round} de coordinación...`)
 
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         text: `Hola Agente B, sincronizando ronda ${round}`
       })
       console.log(`[INFO] Señal de Ronda ${round} publicada en el ledger.`)

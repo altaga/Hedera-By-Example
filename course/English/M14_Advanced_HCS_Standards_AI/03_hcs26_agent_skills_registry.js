@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: HCS-26 Decentralized Agent Skills & Tool Manifest Registry
@@ -39,8 +38,7 @@
 
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import { HCS26_PROTOCOL } from '@hashgraphonline/standards-sdk'
 import { getClient, updateState } from '../M99_Utilities/index.js'

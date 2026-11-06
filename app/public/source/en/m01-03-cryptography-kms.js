@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Cryptography and Signature Delegation (KMS / HSM)
@@ -9,7 +8,8 @@
  * generated, as long as it's cryptographically valid. This flexibility
  * allows for enterprise-level key management (AWS KMS, Azure Key Vault, etc.)
  * where developers never see the secrets they are using.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Choose signature algorithms intentionally: Ed25519 provides superior cryptographic throughput and smaller signatures, while ECDSA secp256k1 is required for native EVM and Ethereum tooling interoperability.
  *

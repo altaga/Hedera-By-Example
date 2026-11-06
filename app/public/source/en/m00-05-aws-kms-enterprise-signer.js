@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: AWS KMS Enterprise Signer
@@ -37,7 +36,6 @@
  * ============================================================================
  */
 
-import crypto from 'crypto'
 import { TransferTransaction, Hbar, PrivateKey } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl } from '../M99_Utilities/index.js'
 
@@ -131,8 +129,7 @@ class EnterpriseKmsAdapter {
 
     let derSig
     if (this._isolatedKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')) {
-      // ECDSA secp256k1: Hash message with SHA256 and produce ASN.1 DER signature
-      const hash = crypto.createHash('sha256').update(Message).digest()
+      // ECDSA secp256k1: the SDK hashes the message with Keccak-256 and returns a 64-byte r||s signature
       // Hedera SDK sign returns 64-byte raw; we encode to DER to replicate AWS KMS output
       const raw = this._isolatedKey.sign(Message)
       const r = raw.subarray(0, 32)

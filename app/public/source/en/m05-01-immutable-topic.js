@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Immutable HCS Primitives
@@ -9,7 +8,8 @@
  * that no one can ever delete or change the topic's settings. It becomes
  * a permanent piece of public infrastructure. HCS provides a "Global Kafka"
  * but with the added layer of trust provided by network consensus.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * HCS topics created without an adminKey or submitKey become completely immutable public data broadcast channels. Anyone can audit historical message sequence numbers with cryptographically proven consensus timestamps.
  *

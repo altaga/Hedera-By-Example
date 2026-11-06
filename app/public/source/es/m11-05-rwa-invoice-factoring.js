@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: HCS-1 NFT Reconstruction
@@ -104,7 +103,7 @@ const main = async () => {
       if (shards.length < totalExpected) throw new Error(`Incomplete data: ${shards.length}/${totalExpected} shards found.`)
 
       let fullBase64 = ''
-      shards.forEach(sh => fullBase64 += sh.d)
+      for (const shard of shards) fullBase64 += shard.d
       show.shards({ id: 'hcs1-stitch', title: 'Shards stitched back together', total: totalExpected, done: shards.length })
       return Buffer.from(fullBase64, 'base64')
     }
@@ -122,7 +121,7 @@ const main = async () => {
       throw new Error('Metadata image pointer is not HCS-1 compliant.')
     }
 
-    const [imageTopicPart, imageQueryPart] = imagePointer.replace('hcs://', '').split('?')
+    const [, imageQueryPart] = imagePointer.replace('hcs://', '').split('?')
     const imageQuery = new URLSearchParams(imageQueryPart || '')
     const imageFid = imageQuery.get('fid')
 

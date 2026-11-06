@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Activate Unlimited Auto-Associations
@@ -8,7 +7,8 @@
  * The value `-1` in `setMaxAutomaticTokenAssociations` is the magic number
  * for "Unlimited". This simplifies UX for your future dApp users by removing
  * the need for manual association transactions.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Setting max_automatic_token_associations to -1 on your developer wallet prevents transaction reverts during airdrops, DEX swaps, and multi-asset payouts by allowing the network to auto-associate incoming tokens on the fly.
  *

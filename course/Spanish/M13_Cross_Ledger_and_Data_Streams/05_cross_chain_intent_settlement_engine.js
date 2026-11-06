@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain (CLPR + HIP-336)
@@ -49,7 +48,6 @@
 import crypto from 'crypto'
 import { ethers } from 'ethers'
 import {
-  Client,
   AccountId,
   AccountAllowanceApproveTransaction,
   AccountCreateTransaction,

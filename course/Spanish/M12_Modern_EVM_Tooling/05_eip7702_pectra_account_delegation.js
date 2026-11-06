@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Delegación de Cuentas EIP-7702 Pectra en el Relay JSON-RPC de Hedera
@@ -46,7 +45,7 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, getState, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState } from '../M99_Utilities/index.js'
 
 /**
  * Motor de Construcción y Verificación Criptográfica de Autorizaciones EIP-7702
@@ -107,7 +106,7 @@ class Eip7702DelegationEngine {
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Delegación de Cuentas EIP-7702 Pectra (Relay Hedera) ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     const delegationEngine = new Eip7702DelegationEngine(296) // Hedera Testnet
@@ -155,8 +154,7 @@ const main = async () => {
       { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0' }
     ]
 
-    console.log('[Acción 1] Aprobación de Token HTS mediante Facade (Gasless)')
-    console.log('[Acción 2] Liquidación Atómica de Liquidez (Gasless)')
+    multiCallBatch.forEach((call, i) => console.log(`[Acción ${i + 1}] ${call.label} -> ${call.target}`))
     console.log('[ÉXITO] ¡Lote ejecutado atómicamente en el contexto de la EOA! Estado: SIMULATED_CONFIRMED')
 
     updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)

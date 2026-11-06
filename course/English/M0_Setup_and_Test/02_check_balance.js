@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Manual Account Verification
@@ -31,7 +30,7 @@ import {
   AccountId, PrivateKey,
   MirrorNodeAccountBalanceQuery
 } from '@hiero-ledger/sdk'
-import { getClient, updateEnv, loadEnv, createClient, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
+import { updateEnv, loadEnv, createClient, waitForMirror, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 // Paste the Account ID (0.0.X) you found on HashScan here.
 // If left as the placeholder, OPERATOR_ID from .env is used instead.

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Enterprise Resilience — Circuit Breaker & Rate Limiter
@@ -179,7 +178,7 @@ const main = async () => {
     }
 
     console.log('\n[PROCESS] Step 3: Waiting for circuit cooldown window (2,000ms)...')
-    await new Promise(r => setTimeout(r, 2200))
+    await new Promise((resolve) => setTimeout(resolve, 2200))
 
     console.log('[PROCESS] Step 4: Dispatching post-cooldown canary request to resume normal operation...')
     const recoveryRes = await breaker.execute(`account:${targetAccount}`, async () => {

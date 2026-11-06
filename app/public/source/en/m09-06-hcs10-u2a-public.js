@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: User to Agent Communication (Parallel Orchestration)
@@ -11,7 +10,8 @@
  * reacts to "Pongs" published by the agent, and the agent reacts to
  * "Pings" published by the user. This ensures that every interaction is
  * chronologically ordered and verifiable by the consensus nodes.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * User-to-Agent (U2A) consensus messaging creates an immutable audit trail of human prompts and instructions, ensuring legal accountability when autonomous agents execute financial actions.
  *
@@ -40,12 +40,11 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { PrivateKey, TopicMessageQuery, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import dotenv from 'dotenv'
-import { getClient, getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, loadEnv } from '../M99_Utilities/index.js'
 
-dotenv.config()
+loadEnv() // reads course/.env (and the repository root .env)
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.

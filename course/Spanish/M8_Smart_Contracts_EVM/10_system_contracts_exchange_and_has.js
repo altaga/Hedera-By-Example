@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 10: Inmersión en Contratos del Sistema: Tasa de Cambio 0x168 y Precompilación HAS 0x16a
@@ -45,11 +44,9 @@ import fs from 'node:fs'
 import {
   ContractId,
   ContractCreateTransaction,
-  ContractCallQuery,
   ContractExecuteTransaction,
   ContractFunctionParameters,
-  PrivateKey,
-  AccountId
+  PrivateKey
 } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, getState, updateState, executeWithGas } from '../M99_Utilities/index.js'
 import solc from 'solc'
@@ -96,7 +93,7 @@ const compileSystemContractsFacade = () => {
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Contratos del Sistema Hedera EVM (0x168 y 0x16a) ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorKey } = getClient()
   const adminKey = PrivateKey.fromStringDer(operatorKey)
 
   try {

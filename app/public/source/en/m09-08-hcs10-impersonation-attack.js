@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: The Impersonation Attack (Security Gap)
@@ -11,7 +10,8 @@
  * who attempts to hijack the conversation by spoofing the logic. You will
  * see that without cryptographic session validation, our agents are
  * defenseless against malicious actors who know the protocol format.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Public consensus topics allow anyone to broadcast messages. Simulating an impersonation attack demonstrates why unauthenticated agent communication is vulnerable to spoofing and unauthorized commands.
  *
@@ -38,12 +38,11 @@
  * ============================================================================
  */
 
-import { Client, PrivateKey, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import dotenv from 'dotenv'
-import { getState, sleep, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, loadEnv } from '../M99_Utilities/index.js'
 
-dotenv.config()
+loadEnv() // reads course/.env (and the repository root .env)
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
@@ -51,17 +50,17 @@ const main = async () => {
   console.log('--- SESSION START: Public Stream Vulnerability Audit ---\n')
 
   // --- CONFIGURATION ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
-  const agentC_Id = getState('HCS11_AGENT_C_ID')
-  const agentC_Key = getState('HCS11_AGENT_C_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
+  const agentCId = getState('HCS11_AGENT_C_ID')
+  const agentCKey = getState('HCS11_AGENT_C_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  if (!agentA_Id || !agentB_Id || !agentC_Id) {
+  if (!agentAId || !agentBId || !agentCId) {
     console.error('[FAILED] Missing Agent IDs in configuration.')
     process.exitCode = 1
     return
@@ -69,8 +68,8 @@ const main = async () => {
 
   // --- AGENT B: THE VULNERABLE SERVICE ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
     console.log(`[INFO] Agent B Listening on ${inbox} (Vulnerable Mode)`)
 
@@ -94,7 +93,7 @@ const main = async () => {
             console.log(`[PROCESS] Agent B processing logic for Round ${round}...`)
             await sleep(4000)
 
-            await hcs10.sendMessage(outbox, { text: `World ${round}!`, target: agentA_Id })
+            await hcs10.sendMessage(outbox, { text: `World ${round}!`, target: agentAId })
             console.log('[SUCCESS] Response dispatched.')
           }
         } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
@@ -103,8 +102,8 @@ const main = async () => {
 
   // --- AGENT A: THE TARGET INITIATOR ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
     let currentRound = 1
     console.log(`[INFO] Agent A Monitoring Outbox [${outbox}]`)
@@ -112,7 +111,7 @@ const main = async () => {
     const sendPing = async (round) => {
       console.log(`\n---  [PROCESS] AGENT A: SENDING ROUND ${round} ---`)
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         text: `Hello ${round}`
       })
     }
@@ -145,13 +144,13 @@ const main = async () => {
 
   // --- AGENT C: THE ADVERSARY ---
   const startAgentC = async () => {
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentC_Id, operatorPrivateKey: agentC_Key })
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentCId, operatorPrivateKey: agentCKey })
 
     for (let i = 0; i < 3; i++) {
       await sleep(Math.floor(Math.random() * 8000) + 5000)
       console.log('\n---  [PROCESS] ADVERSARY: INJECTING SPOOFED PACKET ---')
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         text: 'Hello 99 (MALICIOUS SPOOF)'
       })
       console.log('[INFO] Spoofed packet published to target topic.')

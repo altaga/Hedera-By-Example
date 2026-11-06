@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Permissioned RWA Transfers — Identity Registry + HTS KYC (ERC-3643 Concepts)
@@ -117,7 +116,7 @@ class Erc3643ComplianceEngine {
 
 const main = async () => {
   console.log('--- SESSION START: Permissioned RWA Transfers (Identity Registry + HTS KYC) ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorId } = getClient()
 
   try {
     const compliance = new Erc3643ComplianceEngine()

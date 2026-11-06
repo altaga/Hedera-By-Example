@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * LAB 02: Core Data Standards (HCS-2)
@@ -10,7 +9,8 @@
  * data stream without needing a private API key from you. It transforms
  * "Data Noise" into "Interoperable Infrastructure" using a standardized
  * JSON schema header.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Standardizing JSON payloads on HCS topics allows multi-party off-chain systems (ERP connectors, AI agents, supply chains) to interoperate seamlessly using deterministic message schemas.
  *

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Generate Local Wallet
@@ -8,7 +7,8 @@
  * Security starts offline. By generating your keys locally, you ensure the
  * network never sees your private key—only the public cryptographic proofs
  * you sign.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Never generate production keys in an online web tool or unencrypted environment. Generating your ECDSA key pair locally allows you to compute the deterministic EVM address (0x...) before ever funding the account or submitting an L1 transaction.
  *

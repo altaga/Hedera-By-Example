@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Fungible Token Transfers (HTS)
@@ -9,7 +8,8 @@
  * the same `TransferTransaction` object, but specify the `TokenId`. This
  * uniform architecture makes developing multi-asset applications significantly
  * simpler than systems that require multiple complex smart contract calls.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Native HTS fungible token transfers do not require infinite allowance approvals to external smart contracts, eliminating the primary attack vector responsible for billions in DeFi wallet drain exploits.
  *

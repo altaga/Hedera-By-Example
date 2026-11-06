@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Despliegue de Smart Contracts (HSCS)
@@ -39,7 +38,7 @@ import {
   ContractCallQuery, ContractFunctionParameters, Hbar
 } from '@hiero-ledger/sdk'
 import solc from 'solc'
-import { getClient, getState, updateState, executeWithGas, withGasRetry, reuseContract, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, executeWithGas, withGasRetry, reuseContract, getHashscanUrl } from '../M99_Utilities/index.js'
 
 // --- 1. CÓDIGO FUENTE SOLIDITY (SimpleStorage) ---
 const SOURCE_CODE = `

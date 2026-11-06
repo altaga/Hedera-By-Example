@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Reading HFS-Backed NFT Data On-Chain
@@ -9,7 +8,8 @@
  * deleted or altered, once metadata is on HFS and pointed to by an NFT, it is
  * permanently linked and verifiable by anyone in the world. To read an NFT,
  * you follow the cryptographic breadcrumbs from the Token to the File Service.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Querying NFT metadata via Mirror Nodes avoids paying query fees to consensus nodes. Mirror Nodes continuously decode and cache metadata bytes, providing instant REST endpoints for wallets and marketplaces.
  *

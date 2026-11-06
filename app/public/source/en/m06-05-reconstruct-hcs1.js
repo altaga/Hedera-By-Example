@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: HCS-1 Data Reconstruction (Image Example)
@@ -10,7 +9,8 @@
  * that the reconstructed image is the exact same one that was anchored in
  * the past. By querying the Mirror Node REST API and sorting fragments by
  * index, we can rebuild assets on-the-fly without a central database.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Reconstructing inscribed assets requires sorting HCS chunks by sequence number and verifying the cumulative SHA-256 integrity hash before assembling base64 image or document payloads.
  *
@@ -34,10 +34,8 @@
 import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
-import dotenv from 'dotenv'
 
 const __dirname = path.dirname(import.meta.filename)
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
 
 const main = async () => {
   console.log('--- SESSION START: HCS-1 Data Reconstruction ---\n')

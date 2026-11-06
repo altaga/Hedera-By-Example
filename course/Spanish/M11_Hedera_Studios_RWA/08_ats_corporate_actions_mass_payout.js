@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Acciones Corporativas y Pagos Masivos (Conceptos de Asset Tokenization Studio)
@@ -169,7 +168,7 @@ const main = async () => {
   console.log('ASSET TOKENIZATION STUDIO: ACCIONES CORPORATIVAS Y PAGOS MASIVOS')
   console.log('====================================================================\n')
 
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorId } = getClient()
 
   // 1. Configurar el activo de seguridad y el Cap Table de inversores
   const securityTokenSymbol = 'BOND27'

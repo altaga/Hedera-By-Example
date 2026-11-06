@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
@@ -82,7 +81,7 @@ class ProofOfReserveOracle {
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Oráculo de Atestación Proof-of-Reserve (PoR) ---\n')
-  const { client, operatorId, network } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Crear tópico dedicado de HCS para Atestaciones de Reservas

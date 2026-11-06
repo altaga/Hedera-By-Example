@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Digital Asset Evolution (Hashinals)
@@ -10,7 +9,8 @@
  * and globally resolvable by any Hedera-compatible application. Unlike
  * traditional NFTs that point to a web URL (which can disappear), a Hashinal
  * points directly to an immutable HFS File ID or HCS Topic.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hashinals bring Bitcoin-style Ordinal inscriptions to Hedera with sub-second finality and negligible carbon footprint, binding permanent media inscriptions directly to HTS token serials.
  *

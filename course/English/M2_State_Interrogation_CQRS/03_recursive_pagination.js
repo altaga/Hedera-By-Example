@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Data Transformation and Pagination
@@ -9,7 +8,8 @@
  * application memory-efficient and responsive, even when performing complex
  * analysis on thousands of historical transaction records. Fetching in small,
  * manageable chunks is the standard for production Mirror Node integration.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Never assume query results fit in a single response page. Production indexers and auditors must recursively follow the links.next cursor until null to guarantee that zero historical records or token holders are dropped.
  *

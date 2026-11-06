@@ -107,19 +107,18 @@ const main = async () => {
       const signed = await createTx.sign(supplyKey)
       return (await (await signed.execute(client)).getReceipt(client)).tokenId
     })
-    let tx, signTx, submitTx, receipt // reused by the steps below
     console.log(`[SUCCESS] Collection created: ${tokenId.toString()}`)
 
     // 3. Mint the NFT with the HIP-412 URI
     console.log('\n[PROCESS] Minting NFT with HIP-412 Metadata URI...')
-    tx = await new TokenMintTransaction()
+    const tx = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .setMetadata([metadataBuffer])
       .freezeWith(client)
 
-    signTx = await tx.sign(supplyKey)
-    submitTx = await signTx.execute(client)
-    receipt = await submitTx.getReceipt(client)
+    const signTx = await tx.sign(supplyKey)
+    const submitTx = await signTx.execute(client)
+    const receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
     console.log(`[SUCCESS] Minted Serial #${serialNum}`)
 

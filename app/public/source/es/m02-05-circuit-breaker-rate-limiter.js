@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Resiliencia Enterprise — Circuit Breaker y Limitador de Tasa
@@ -180,7 +179,7 @@ const main = async () => {
     }
 
     console.log('\n[PROCESO] Paso 3: Esperando ventana de enfriamiento del circuito (2,000ms)...')
-    await new Promise(r => setTimeout(r, 2200))
+    await new Promise((resolve) => setTimeout(resolve, 2200))
 
     console.log('[PROCESO] Paso 4: Despachando sonda canario para restablecer la operación normal...')
     const recoveryRes = await breaker.execute(`account:${targetAccount}`, async () => {

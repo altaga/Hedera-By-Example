@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Testing the Multisig Authority
@@ -10,7 +9,8 @@
  * even process the transaction if the cryptographic threshold isn't met.
  * The permission logic is part of the data itself. We will prove this by
  * attempting a transfer with 1 signature (Fail) and 2 signatures (Success).
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Executing a multi-sig transfer requires collecting required signatures before submission or leveraging Scheduled Transactions to allow signing parties to approve asynchronously from separate geographical locations.
  *

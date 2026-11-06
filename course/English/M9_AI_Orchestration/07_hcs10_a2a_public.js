@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 07: Autonomous Agent Orchestration
@@ -11,7 +10,8 @@
  * where agents monitor specific topics and respond based on internal state.
  * By decoupling the agents and using the ledger as a coordination layer,
  * you create a system that is fault-tolerant and easily auditable.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Agent-to-Agent (A2A) orchestration over open consensus topics enables decentralized machine collaboration, where autonomous models negotiate and divide tasks openly without centralized message queues.
  *
@@ -39,12 +39,11 @@
  * ============================================================================
  */
 
-import { Client, TopicMessageQuery } from '@hiero-ledger/sdk'
+import { TopicMessageQuery } from '@hiero-ledger/sdk'
 import { HCS10Client } from '@hashgraphonline/standards-sdk'
-import dotenv from 'dotenv'
-import { getState, sleep, getClient, createClient, exitIfStuck } from '../M99_Utilities/index.js'
+import { getState, sleep, createClient, exitIfStuck, loadEnv } from '../M99_Utilities/index.js'
 
-dotenv.config()
+loadEnv() // reads course/.env (and the repository root .env)
 
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
@@ -53,15 +52,15 @@ const main = async () => {
   console.log('--- SESSION START: Autonomous Orchestration Simulation ---\n')
 
   // --- CONFIGURATION ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
 
   const inbox = getState('HCS11_AGENT_B_INBOUND')
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
-  if (!agentA_Id || !agentB_Id || !inbox || !outbox) {
+  if (!agentAId || !agentBId || !inbox || !outbox) {
     console.error('[FAILED] Missing Agent IDs or Topic configurations in state.')
     process.exitCode = 1
     return
@@ -69,8 +68,8 @@ const main = async () => {
 
   // --- AGENT B: THE REACTIVE SERVICE ---
   const startAgentB = async () => {
-    const client = createClient().setOperator(agentB_Id, agentB_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const client = createClient().setOperator(agentBId, agentBKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
     const processedMessages = new Set()
 
     console.log(`[INFO] Agent B monitoring Inbox [${inbox}]...`)
@@ -104,7 +103,7 @@ const main = async () => {
             console.log('[SUCCESS] Sending response to Outbox...')
             await hcs10.sendMessage(outbox, {
               text: `World ${round}!`,
-              target: agentA_Id
+              target: agentAId
             })
           }
         } catch (e) { console.error('[FAILED] The agent could not reply:', e.message) }
@@ -113,8 +112,8 @@ const main = async () => {
 
   // --- AGENT A: THE SEQUENCE INITIATOR ---
   const startAgentA = async () => {
-    const client = createClient().setOperator(agentA_Id, agentA_Key)
-    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const client = createClient().setOperator(agentAId, agentAKey)
+    const hcs10 = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
     const processedMessages = new Set()
 
     let currentRound = 1
@@ -127,7 +126,7 @@ const main = async () => {
       console.log(`[PROCESS] Initiating Round ${round}...`)
 
       await hcs10.sendMessage(inbox, {
-        operator_id: agentA_Id,
+        operator_id: agentAId,
         text: `Hello ${round}`
       })
       console.log(`[SUCCESS] Published "Hello ${round}" to Inbox.`)

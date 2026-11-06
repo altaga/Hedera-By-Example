@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: HIP-412 NFT Metadata & On-Chain Storage (HFS)
@@ -9,7 +8,8 @@
  * NFTs automatically become compatible with all Hedera wallets and
  * marketplaces. Storing metadata on the Hedera File Service (HFS) ensures
  * the digital asset's "Identity" is just as decentralized as its "Ownership".
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Never store raw high-resolution image bytes directly on the ledger. Host the media on IPFS, Arweave, or HCS, and mint the NFT with its standardized HIP-412 JSON URI to optimize network performance and state rent.
  *

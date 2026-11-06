@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Authorization Protocols and Allowances
@@ -13,7 +12,8 @@
  * can be revoked independently and are visible in any explorer, providing a
  * "Permission Dashboard" for users to safely interact with complex DeFi
  * protocols.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Using CryptoApproveAllowance in conjunction with smart contracts allows precise, time-bounded spending caps, preventing malicious or buggy contracts from draining master account balances.
  *

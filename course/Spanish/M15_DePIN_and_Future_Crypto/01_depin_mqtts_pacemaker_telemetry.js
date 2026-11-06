@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Laboratorio 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)

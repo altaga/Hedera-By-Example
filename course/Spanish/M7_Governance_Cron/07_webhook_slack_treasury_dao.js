@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Laboratorio 07: DAO de Tesorería Autónoma con Webhooks (Gobernanza Reactiva)

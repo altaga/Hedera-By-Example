@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: OpenTelemetry Consensus Telemetry
@@ -174,7 +173,7 @@ const main = async () => {
             break
           }
         }
-        await new Promise(r => setTimeout(r, 600))
+        await new Promise((resolve) => setTimeout(resolve, 600))
       }
 
       return {

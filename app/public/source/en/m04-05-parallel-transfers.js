@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: High-Throughput Parallel Benchmarking
@@ -9,7 +8,8 @@
  * usually mean more congestion. On Hedera, the "Gossip about Gossip" protocol
  * allows nodes to process thousands of transactions in parallel without linear
  * slowdowns. Executing 20 transactions in parallel is NOT 20x slower than 1.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Submitting high-frequency parallel transactions from a single operator requires distinct validStart timestamps. Staggering nanoseconds prevents transaction duplicate detection from dropping rapid-fire payouts.
  *

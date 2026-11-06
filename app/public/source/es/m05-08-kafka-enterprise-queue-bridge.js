@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Puente de Transmisión de Eventos Empresarial (Kafka / Redpanda hacia HCS)
@@ -99,7 +98,7 @@ class InMemoryKafkaBroker {
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Puente de Cola Empresarial Kafka a Anclaje HCS ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Inicializar Clúster Kafka en Memoria con 2 Particiones

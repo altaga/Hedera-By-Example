@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad
@@ -47,7 +46,6 @@ import {
   AccountId,
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
-  ScheduleSignTransaction,
   TransferTransaction,
   PrivateKey,
   Timestamp,
@@ -74,7 +72,7 @@ class GovernanceRiskMonitor {
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Controlador de Gobernanza Timelock y Veto del Consejo de Seguridad ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorId } = getClient()
 
   try {
     // 1. Generar Clave Guardiana del Consejo de Seguridad y Clave de Fideicomisario

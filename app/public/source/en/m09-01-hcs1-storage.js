@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: HCS-1 Static File Storage (Heavy Payloads)
@@ -11,7 +10,8 @@
  * lock its exact rules on the ledger to prove undeniable fairness. In this lab,
  * we anchor a large AI Policy JSON to the ledger, proving that anyone can
  * verify the rules after the fact.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * AI agents require immutable memory. By inscribing large prompt templates and knowledge baselines onto HCS-1 topics, agents verify cognitive provenance and resist prompt tampering attacks.
  *

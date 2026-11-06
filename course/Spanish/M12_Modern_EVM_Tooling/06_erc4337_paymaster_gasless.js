@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
@@ -141,7 +140,7 @@ class Erc4337PaymasterEngine {
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Arquitectura Paymaster ERC-4337 Sin Gas ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     const ENTRY_POINT_ADDRESS = '0x0000000071727De22E5E9d8BAf0edAc6f37da032' // EntryPoint canónico v0.6

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Enterprise Timelock Governance Controller & Security Council Veto
@@ -47,7 +46,6 @@ import {
   AccountId,
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
-  ScheduleSignTransaction,
   TransferTransaction,
   PrivateKey,
   Timestamp,
@@ -74,7 +72,7 @@ class GovernanceRiskMonitor {
 
 const main = async () => {
   console.log('--- SESSION START: Timelock Governance Controller & Security Council Veto ---\n')
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorId } = getClient()
 
   try {
     // 1. Generate Security Council Guardian Key & Proposer Key

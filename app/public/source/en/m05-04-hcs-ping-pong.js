@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: HCS Precision Benchmarking (Latency Teardown)
@@ -10,7 +9,8 @@
  * is the time it takes for a message to become "Immutable" and globally
  * recognized across all nodes. This script isolates the Submission, Ordering,
  * and Propagation phases to prove Hedera's high-performance characteristics.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Benchmarking HCS consensus turnaround time provides empirical proof of sub-second finality. Measuring round-trip message timestamps confirms fair ordering across global consensus nodes.
  *

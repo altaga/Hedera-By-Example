@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
@@ -49,8 +48,7 @@
 import crypto from 'crypto'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 

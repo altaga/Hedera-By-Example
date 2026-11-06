@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Corporate Actions & Mass Payout (Asset Tokenization Studio Concepts)
@@ -169,7 +168,7 @@ const main = async () => {
   console.log('ASSET TOKENIZATION STUDIO: CORPORATE ACTIONS & MASS PAYOUT ENGINE')
   console.log('====================================================================\n')
 
-  const { client, operatorId, operatorKey } = getClient()
+  const { client, operatorId } = getClient()
 
   // 1. Configure the ATS Security Asset & Investor Cap Table
   const securityTokenSymbol = 'BOND27'

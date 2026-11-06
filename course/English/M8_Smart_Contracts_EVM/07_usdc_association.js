@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 07: USDC Association Bridge
@@ -11,7 +10,8 @@
  * feature that ensures your wallet is never cluttered with useless tokens
  * and that your account state is only used for assets you trust and authorize.
  * This lab explicitly associates the Operator with the official Circle USDC.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * When deploying smart contracts that hold or route USDC or other HTS tokens, the contract must associate the token class (either via precompile 0x167 or prior to deployment) to receive transfers without error.
  *

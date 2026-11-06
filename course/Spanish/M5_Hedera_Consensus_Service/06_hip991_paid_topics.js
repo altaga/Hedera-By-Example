@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Tópicos Monetizados Generadores de Ingresos en HBAR y HTS (HIP-991)
@@ -36,7 +35,6 @@
 
 import {
   AccountCreateTransaction,
-  Client,
   CustomFeeLimit,
   CustomFixedFee,
   Hbar,

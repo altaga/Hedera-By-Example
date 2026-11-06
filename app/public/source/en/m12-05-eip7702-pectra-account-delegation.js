@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: EIP-7702 Pectra Account Delegation on Hedera JSON-RPC Relay
@@ -46,7 +45,7 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, getState, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState } from '../M99_Utilities/index.js'
 
 /**
  * EIP-7702 Authorization Builder and Cryptographic Verifier
@@ -107,7 +106,7 @@ class Eip7702DelegationEngine {
 
 const main = async () => {
   console.log('--- SESSION START: EIP-7702 Pectra Account Delegation (Hedera Relay) ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     const delegationEngine = new Eip7702DelegationEngine(296) // Hedera Testnet
@@ -151,12 +150,11 @@ const main = async () => {
     // 4. Simulate Type 4 (0x04) Batch Execution
     console.log('\n[PROCESS] Step 4: Simulating EIP-7702 Type 4 Atomic Multi-Call Batch...')
     const multiCallBatch = [
-      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0' }, // Token approval
-      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0' } // Atomic swap
+      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0', label: 'HTS Token Approval via Facade (Gasless)' }, // Token approval
+      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0', label: 'Atomic Liquidity Settlement (Gasless)' } // Atomic swap
     ]
 
-    console.log('[Action 1] HTS Token Approval via Facade (Gasless)')
-    console.log('[Action 2] Atomic Liquidity Settlement (Gasless)')
+    multiCallBatch.forEach((call, i) => console.log(`[Action ${i + 1}] ${call.label} -> ${call.target}`))
     console.log('[SUCCESS] Batch executed atomically within EOA context! Status: SIMULATED_CONFIRMED')
 
     updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)

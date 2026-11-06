@@ -69,7 +69,7 @@ const main = async () => {
       const signed = await createTx.sign(supplyKey)
       return (await (await signed.execute(client)).getReceipt(client)).tokenId
     }, { check: (t) => !!t.metadata_key })
-    let tx, signTx, submitTx, receipt // los reutilizan los pasos siguientes
+    let tx, signTx, submitTx // los reutilizan los pasos siguientes
 
     console.log(`[ÉXITO] ¡Colección creada! ID del Token: ${tokenId.toString()}`)
 
@@ -84,7 +84,7 @@ const main = async () => {
 
     signTx = await tx.sign(supplyKey)
     submitTx = await signTx.execute(client)
-    receipt = await submitTx.getReceipt(client)
+    const receipt = await submitTx.getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
 
     console.log(`[ÉXITO] Minteado el Serie #${serialNum}`)

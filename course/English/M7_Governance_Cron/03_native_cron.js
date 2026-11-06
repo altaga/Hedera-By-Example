@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Native Cron Services (On-chain Scheduling)
@@ -11,7 +10,8 @@
  * on-chain "Waiting Room". Once the required signatures are collected,
  * the transaction executes automatically. No smart contract logic is needed
  * to managed the state of the vote.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hedera Schedule Service (HSS) acts as a native on-chain cron daemon: transactions can be scheduled to execute automatically at an exact future consensus timestamp without centralized server crons.
  *

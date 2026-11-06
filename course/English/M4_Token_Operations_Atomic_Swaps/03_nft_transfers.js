@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: NFT Transfers (Ownership Change)
@@ -9,7 +8,8 @@
  * record of ownership is updated in the network's consensus state. Unlike
  * a central database, no administrator can reverse this transfer. While
  * fungible tokens move by "Amount", NFTs move by "Serial Number".
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * NFT transfers track discrete serial numbers rather than balances. Always confirm that recipient wallets have sufficient auto-association slots or have pre-associated the target token class to prevent transfer failure.
  *

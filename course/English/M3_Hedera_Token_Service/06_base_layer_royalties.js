@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 06: Base Layer Royalties (Secondary Protection)
@@ -9,7 +8,8 @@
  * Honor Systems". Hedera's `CustomRoyaltyFee` is part of the token itself and
  * is enforced by the nodes at the ledger level. This ensures creators are
  * mathematically guaranteed their cut regardless of which marketplace is used.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * On other blockchains, secondary NFT marketplaces can bypass creator royalties. On Hedera, royalties are enforced at Layer 1: transactions that do not fulfill the required royalty percentage fail at the protocol level.
  *
@@ -39,7 +39,6 @@
 
 import {
   AccountId,
-  Client,
   CustomFixedFee,
   CustomRoyaltyFee,
   Hbar,

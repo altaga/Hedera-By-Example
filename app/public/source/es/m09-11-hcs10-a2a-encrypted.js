@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 11: Comunicación A2A Cifrada (Full-Duplex Hybrid)
@@ -54,15 +53,15 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Flujos Cifrados Híbridos (RSA + AES) ---\n')
 
   // --- CONFIGURACIÓN DE IDENTIDADES Y CANALES ---
-  const agentA_Id = getState('HCS11_AGENT_A_ID')
-  const agentA_Key = getState('HCS11_AGENT_A_KEY')
-  const agentA_Inbox = getState('HCS11_AGENT_A_INBOUND')
+  const agentAId = getState('HCS11_AGENT_A_ID')
+  const agentAKey = getState('HCS11_AGENT_A_KEY')
+  const agentAInbox = getState('HCS11_AGENT_A_INBOUND')
 
-  const agentB_Id = getState('HCS11_AGENT_B_ID')
-  const agentB_Key = getState('HCS11_AGENT_B_KEY')
-  const agentB_Inbox = getState('HCS11_AGENT_B_INBOUND')
+  const agentBId = getState('HCS11_AGENT_B_ID')
+  const agentBKey = getState('HCS11_AGENT_B_KEY')
+  const agentBInbox = getState('HCS11_AGENT_B_INBOUND')
 
-  if (!agentA_Id || !agentB_Id || !agentA_Inbox || !agentB_Inbox) {
+  if (!agentAId || !agentBId || !agentAInbox || !agentBInbox) {
     console.error('[FALLO] Faltan identidades o canales para la orquestación cifrada.')
     process.exitCode = 1
     return
@@ -100,16 +99,16 @@ const main = async () => {
 
   // --- COMPONENTE: AGENTE B (Escucha en B_INBOX, Responde en A_INBOX) ---
   const startAgentB = async () => {
-    const client_B_Listener = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
-    const client_B_Speaker = new HCS10Client({ network: 'testnet', operatorId: agentB_Id, operatorPrivateKey: agentB_Key })
+    const clientBListener = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
+    const clientBSpeaker = new HCS10Client({ network: 'testnet', operatorId: agentBId, operatorPrivateKey: agentBKey })
 
-    const pubKeys = { [agentA_Id]: keysA.publicKey }
+    const pubKeys = { [agentAId]: keysA.publicKey }
 
     // Handler B: Recibe mensajes cifrados y responde con cifrado híbrido
-    const handlerB_Listen = new AgentCommunicationHandler(client_B_Listener, agentB_Inbox, agentB_Id, keysB.privateKey, pubKeys, [agentA_Id])
-    const handlerB_Speak = new AgentCommunicationHandler(client_B_Speaker, agentA_Inbox, agentB_Id, keysB.privateKey, pubKeys, [])
+    const handlerBListen = new AgentCommunicationHandler(clientBListener, agentBInbox, agentBId, keysB.privateKey, pubKeys, [agentAId])
+    const handlerBSpeak = new AgentCommunicationHandler(clientBSpeaker, agentAInbox, agentBId, keysB.privateKey, pubKeys, [])
 
-    handlerB_Listen.on('messageReceived', async ({ senderId, message }) => {
+    handlerBListen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text) {
         console.log('\n---  AGENTE B: MENSAJE RECIBIDO Y DESCIFRADO ---')
         console.log(`[REGISTRO] Contenido Seguro: "${message.text}" (Ronda ${message.round})`)
@@ -118,34 +117,34 @@ const main = async () => {
 
         const replyPayload = { text: `¡Confirmación Ronda ${message.round} Recibida!`, round: message.round }
         console.log('[PROCESO] Cifrando respuesta (AES-256) y enrutando al Inbox del Agente A...')
-        await handlerB_Speak.sendMessage(replyPayload, agentA_Id)
+        await handlerBSpeak.sendMessage(replyPayload, agentAId)
       }
     })
 
-    console.log(`[INFO] Bajo Cifrado: Escuchando carril privado [${agentB_Inbox}]`)
-    handlerB_Listen.monitorConnectionMessages()
+    console.log(`[INFO] Bajo Cifrado: Escuchando carril privado [${agentBInbox}]`)
+    handlerBListen.monitorConnectionMessages()
   }
 
   // --- COMPONENTE: AGENTE A (Escucha en A_INBOX, Inicia en B_INBOX) ---
   const startAgentA = async () => {
-    const client_A_Listener = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
-    const client_A_Speaker = new HCS10Client({ network: 'testnet', operatorId: agentA_Id, operatorPrivateKey: agentA_Key })
+    const clientAListener = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
+    const clientASpeaker = new HCS10Client({ network: 'testnet', operatorId: agentAId, operatorPrivateKey: agentAKey })
 
-    const pubKeys = { [agentB_Id]: keysB.publicKey }
+    const pubKeys = { [agentBId]: keysB.publicKey }
     let currentRound = 1
 
     // Handler A: Recibe respuestas y despacha pings cifrados
-    const handlerA_Listen = new AgentCommunicationHandler(client_A_Listener, agentA_Inbox, agentA_Id, keysA.privateKey, pubKeys, [agentB_Id])
-    const handlerA_Speak = new AgentCommunicationHandler(client_A_Speaker, agentB_Inbox, agentA_Id, keysA.privateKey, pubKeys, [])
+    const handlerAListen = new AgentCommunicationHandler(clientAListener, agentAInbox, agentAId, keysA.privateKey, pubKeys, [agentBId])
+    const handlerASpeak = new AgentCommunicationHandler(clientASpeaker, agentBInbox, agentAId, keysA.privateKey, pubKeys, [])
 
     const sendPing = async (round) => {
       console.log('\n---  AGENTE A: ENVIANDO MENSAJE PRIVADO ---')
       console.log(`[PROCESO] Aplicando cifrado híbrido para la Ronda ${round}...`)
-      await handlerA_Speak.sendMessage({ text: `Secreto Agente A - Ronda ${round}`, round }, agentB_Id)
+      await handlerASpeak.sendMessage({ text: `Secreto Agente A - Ronda ${round}`, round }, agentBId)
       console.log('[INFO] Paquete cifrado inyectado en el Inbox de B.')
     }
 
-    handlerA_Listen.on('messageReceived', async ({ senderId, message }) => {
+    handlerAListen.on('messageReceived', async ({ senderId, message }) => {
       if (message?.text?.includes(`Ronda ${currentRound}`)) {
         console.log('\n---  AGENTE A: RESPUESTA PRIVADA DESCIFRADA ---')
         console.log(`[REGISTRO] Recibido de B: "${message.text}"`)
@@ -166,8 +165,8 @@ const main = async () => {
       }
     })
 
-    console.log(`[AGENTE A] Bajo Cifrado: Escuchando carril privado [${agentA_Inbox}]`)
-    handlerA_Listen.monitorConnectionMessages()
+    console.log(`[AGENTE A] Bajo Cifrado: Escuchando carril privado [${agentAInbox}]`)
+    handlerAListen.monitorConnectionMessages()
 
     await sleep(2000)
     await sendPing(currentRound)

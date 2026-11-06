@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: HCS-2 Registry Discovery
@@ -11,7 +10,8 @@
  * apps work: your game client doesn't need an API key to find Anti-Cheat
  * rules—it simply reads the public registry stream and discovers
  * active Agents automatically.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Autonomous agent discovery requires querying HCS-2 registries with semantic tags. Agents dynamically filter peer capabilities over consensus without exposing API keys or credentials.
  *

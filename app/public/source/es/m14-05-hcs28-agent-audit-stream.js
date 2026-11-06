@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
@@ -43,8 +42,7 @@
 import { ethers } from 'ethers'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
@@ -95,7 +93,7 @@ const buildHCS28AuditRecord = ({ agentWallet, sessionId, cycleIndex, userPrompt,
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Auditoría Cognitiva y Transparencia HCS-28 ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Crear Tópico de Auditoría HCS-28

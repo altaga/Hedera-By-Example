@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: HCS-2 Topic Registries
@@ -11,7 +10,8 @@
  * your Anti-Cheat rules are, you register your Agent Topic in this "Yellow
  * Pages" registry, making your services globally discoverable and verifiable
  * without central APIs.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * HCS-2 registries allow AI agents to publish and discover topic schemas on-chain, eliminating the need for centralized service registries or vulnerable third-party web directories.
  *

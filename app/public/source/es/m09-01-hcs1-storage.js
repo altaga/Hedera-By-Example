@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Almacenamiento Estático HCS-1
@@ -39,7 +38,7 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, getState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
 
 // --- CONFIGURACIÓN: Carga útil de IA (Criterios Anti-Cheat) ---
 const AI_POLICY_PAYLOAD = JSON.stringify({

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: HCS-11 AI Profiles (Spoofer Agent Provisioning)
@@ -12,7 +11,8 @@
  * and verifiable identities on the ledger is the first step toward building
  * a resilient AI infrastructure capable of defending against data
  * manipulation in highly competitive environments.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * HCS-11 establishes verifiable agent identity profiles. Without verifiable on-chain metadata, rogue actors can easily impersonate autonomous trading agents and deceive decentralized counterparties.
  *
@@ -129,7 +129,7 @@ const main = async () => {
       }
 
       // Network cooldown
-      await new Promise(r => setTimeout(r, 2000))
+      await new Promise((resolve) => setTimeout(resolve, 2000))
     }
 
     console.log('\n KEY CONCEPT:')

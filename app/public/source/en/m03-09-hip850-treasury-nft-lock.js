@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
@@ -42,7 +41,6 @@ import {
   Hbar,
   NftId,
   PrivateKey,
-  TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenMintTransaction,
   TokenNftInfoQuery,

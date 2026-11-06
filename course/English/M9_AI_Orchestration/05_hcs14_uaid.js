@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: HCS-14 Universal Agent ID (UAID)
@@ -11,7 +10,8 @@
  * HCS14Client. Because it uses the Deterministic AID method, the SDK
  * generates this globally unique identifier locally. Any system in the
  * world with the same canonical data will derive the exact same UAID.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * The Universal Agent ID (HCS-14) provides a cryptographically anchored URI for artificial intelligence entities, resolving an agent public key, consensus topic endpoints, and verified skills across swarms.
  *

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Orderbook en Memoria y Liquidación Triangular Atómica en L1 (Ring Trade)
@@ -48,16 +47,13 @@
  */
 
 import {
-  AccountId,
   PrivateKey,
   TokenCreateTransaction,
-  TokenType,
-  TokenSupplyType,
   TransferTransaction,
   AccountCreateTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, updateState, reuseToken } from '../M99_Utilities/index.js'
 
 /**
  * Motor de Emparejamiento de Órdenes en Anillo en Memoria

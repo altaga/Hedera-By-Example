@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: The Economic HCS-1 Standard (JSON Sharding)
@@ -11,7 +10,8 @@
  * you pay only for the "Fair Ordering" of your shards, allowing massive
  * datasets to be anchored to the ledger for a fraction of the cost of
  * traditional blockchain storage.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * The HCS-1 standard enables cost-effective on-chain inscriptions: by sharding large files across ordered consensus messages instead of expensive smart contract storage, developers achieve 99% cost reduction.
  *

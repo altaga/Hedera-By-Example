@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Native Account Creation
@@ -8,7 +7,8 @@
  * Treasury Independence: Using accounts other than the operator allows
  * you to see fees in action, as Hedera often exempts the treasury from
  * certain fee types.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * In enterprise deployments, never use your root treasury account to test risky smart contracts or daily operations. Programmatically spawning isolated child wallets protects master funds while enforcing dedicated association quotas.
  *

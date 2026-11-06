@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 01: Direct HTS Token ERC-20 Facade (Solidity Execution)
@@ -47,7 +46,7 @@ import {
   TransferTransaction,
   AccountId
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
+import { getClient, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[PROCESS] Compiling Solidity smart contract with solc 0.8.20...')
@@ -116,7 +115,7 @@ const main = async () => {
     // 2. Compile Solidity Contract
     const currentDir = path.dirname(import.meta.filename)
     const solPath = path.join(currentDir, '01_hts_direct_erc20_facade.sol')
-    const { bytecode, abi } = compileSolidityContract(solPath)
+    const { bytecode } = compileSolidityContract(solPath)
     console.log(`[SUCCESS] Contract Compiled. Bytecode Size: ${bytecode.length / 2} bytes`)
 
     // 3. Deploy Contract to Hedera via ContractCreateFlow
@@ -143,7 +142,7 @@ const main = async () => {
     // 4. Real ERC-20 facade calls (HIP-218): fund the vault, read balanceOf via the contract, pay out with transfer()
     const readVault = async () => (await new ContractCallQuery().setContractId(contractId).setGas(100000)
       .setFunction('getVaultBalance').execute(client)).getUint256(0).toString()
-    const fundTx = await (await new TransferTransaction()
+    await (await new TransferTransaction()
       .addTokenTransfer(htsTokenId, operatorId, -100)
       .addTokenTransfer(htsTokenId, contractId.toString(), 100)
       .execute(client)).getReceipt(client)

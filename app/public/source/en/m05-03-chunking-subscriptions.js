@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: Automatic Chunking and Subscriptions (gRPC)
@@ -11,7 +10,8 @@
  * Furthermore, Hedera supports "Chunking" (HIP-10), allowing you to push
  * large payloads (documents, images, large JSON) that the SDK and Mirror
  * Node reassemble automatically.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * When payloads exceed the single-message consensus limit (1024 bytes), the SDK automatically splits data into sequenced chunks. Subscribing clients reconstruct the full message using the transaction validStart timestamp.
  *

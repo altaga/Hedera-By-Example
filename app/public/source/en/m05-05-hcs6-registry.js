@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 05: HCS-6 Decentralized Registry
@@ -31,7 +30,6 @@
  */
 
 import {
-  Client,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
   TopicMessageQuery

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Arquitectura Full-Stack con Scaffold-HBAR (Introducción)
@@ -35,7 +34,7 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { updateState } from '../M99_Utilities/index.js'
 
 // Definición estándar de red para Viem / Wagmi en Hedera Testnet
 const HEDERA_TESTNET_CHAIN_DEFINITION = {
@@ -66,7 +65,6 @@ const HEDERA_TESTNET_CHAIN_DEFINITION = {
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Arquitectura Full-Stack con Scaffold-HBAR ---\n')
-  const { client, operatorId, operatorKey } = getClient()
 
   try {
     console.log('[PROCESO] Inicializando verificación arquitectónica de Scaffold-HBAR...')

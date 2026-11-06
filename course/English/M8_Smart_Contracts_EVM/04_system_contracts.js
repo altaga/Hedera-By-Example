@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: The Hedera System Oracle
@@ -12,7 +11,8 @@
  * high-performance HTS layer. By using a system contract instead of a
  * third-party oracle, you save on gas and gain the security of the
  * network's own consensus mechanism.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Hedera System Contracts expose native ledger primitives (HTS token minting, transfers, and KYC) to Solidity smart contracts via precompiled contract addresses (0x167), bridging EVM logic with native performance.
  *

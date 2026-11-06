@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: The Hybrid Execution Environment (Standard SDK + Ethers.js)
@@ -11,7 +10,8 @@
  * tools like Ethers.js via the Hashio JSON-RPC Relay. This script proves
  * that both paths share the exact same on-chain state, allowing you to use
  * Ethers.js for frontend integration while maintaining Native backends.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Developers can interact with Hedera contracts either via the native Hiero SDK (high-performance gRPC) or standard Web3 tools like Ethers.js/Viem through the Hedera JSON-RPC Relay.
  *
@@ -33,9 +33,10 @@
  */
 
 import {
-  PrivateKey,
-  ContractExecuteTransaction, ContractFunctionParameters,
-  Hbar, ContractInfoQuery
+  ContractExecuteTransaction,
+  ContractFunctionParameters,
+  Hbar,
+  ContractInfoQuery
 } from '@hiero-ledger/sdk'
 import { getClient, getState, executeWithGas, getJsonRpcSigner } from '../M99_Utilities/index.js'
 import { ethers } from 'ethers'

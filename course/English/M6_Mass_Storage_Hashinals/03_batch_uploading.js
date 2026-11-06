@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 03: HFS Batch Operations (Multi-Asset Append)
@@ -10,7 +9,8 @@
  * manually managing the byte boundaries. This is highly efficient, reduces
  * "On-Chain Noise", and allows you to package entire decentralized
  * applications (UI, logic, and assets) inside a single, immutable ledger record.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Batching file appends with deterministic chunk sizes avoids transaction size rejection while maximizing network throughput during bulk asset uploads.
  *

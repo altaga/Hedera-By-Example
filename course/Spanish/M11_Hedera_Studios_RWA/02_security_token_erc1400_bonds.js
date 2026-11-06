@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Bonos por Tramos en HTS y Pago de Cupones (Conceptos ERC-1400)

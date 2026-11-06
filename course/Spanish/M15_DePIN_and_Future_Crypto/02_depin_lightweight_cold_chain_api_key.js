@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Laboratorio 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)

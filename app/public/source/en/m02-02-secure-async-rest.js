@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Secure Asynchronous REST Queries
@@ -9,7 +8,8 @@
  * balance or a transaction history, your first thought should be Mirror
  * Nodes, not the Consensus network. Mirror Nodes allow for high-throughput
  * reads without transaction fees or cryptographic signatures.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Always implement defensive HTTP error handling with exponential backoff when querying public Mirror Nodes. Handling rate limits (HTTP 429) gracefully ensures high availability for mission-critical client dashboards.
  *

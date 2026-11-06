@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-336)
@@ -43,7 +42,6 @@
  */
 
 import {
-  Client,
   AccountId,
   AccountAllowanceApproveTransaction,
   AccountCreateTransaction,

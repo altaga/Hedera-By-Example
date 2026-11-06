@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Atomic Swaps (Multi-Asset Exchange)
@@ -9,7 +8,8 @@
  * must cryptographically sign the transaction. The Hedera network ensures
  * that *either both movements happen* or *neither happens*. This solves
  * the "Who goes first?" problem without requiring a middleman or complex escrow contract.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * By packing multi-token and HBAR legs into a single TransferTransaction, Hedera executes multi-party atomic swaps natively without escrow smart contracts, intermediary custodial risks, or counterparty settlement delays.
  *

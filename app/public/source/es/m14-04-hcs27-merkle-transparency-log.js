@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Puntos de Control de Transparencia Merkle HCS-27 y Pruebas Criptográficas
@@ -42,8 +41,7 @@ import crypto from 'crypto'
 import { ethers } from 'ethers'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import {
   buildHCS27TopicMemo,
@@ -192,7 +190,6 @@ const main = async () => {
 
     // 5. Generar y Verificar Prueba de Inclusión para Inferencia #42
     const targetIndex = 42
-    const targetPayload = rawInferences[targetIndex]
     const targetLeafHash = merkleTree.leaves[targetIndex]
 
     console.log(`\n[PROCESO] Generando prueba de inclusión Merkle para la Inferencia #${targetIndex}...`)

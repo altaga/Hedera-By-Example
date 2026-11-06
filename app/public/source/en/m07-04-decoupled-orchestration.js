@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: Decoupled Orchestration and Quorum
@@ -11,7 +10,8 @@
  * `ScheduleSignTransaction` to provide the missing signature fragment.
  * The millisecond the network receives enough signatures, the inner
  * transaction is executed automatically by the Hedera protocol.
- * *
+ *
+ *
  * [ LEARNABLE MOMENT ]
  * Decoupled scheduling allows one entity to create and pay for a transaction, while authorizing signers submit their signatures independently over time until the execution quorum is reached.
  *

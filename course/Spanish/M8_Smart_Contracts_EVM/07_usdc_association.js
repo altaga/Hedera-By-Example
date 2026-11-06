@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 07: Asociación de Tokens (USDC Bridge)
@@ -37,7 +36,7 @@ import {
   AccountId,
   TokenAssociateTransaction, TokenId
 } from '@hiero-ledger/sdk'
-import { getClient, getState } from '../M99_Utilities/index.js'
+import { getClient } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Asociación de Activos Institucionales (Opt-In) ---\n')

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: HBAR Allowances & Sponsored Spending (HIP-336)
@@ -37,7 +36,7 @@
  * ============================================================================
  */
 
-import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar, PrivateKey, Client } from '@hiero-ledger/sdk'
+import { AccountAllowanceApproveTransaction, TransferTransaction, Hbar } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 const main = async () => {
@@ -127,7 +126,7 @@ const main = async () => {
     console.log('Allowance spending: the spender signed alone (and paid its own network fee).')
     console.log('The funds were debited directly from the sponsor without requiring co-signatures.')
     console.log('To also sponsor the fee, make the sponsor the TransactionId payer (M13 Lab 02).')
-    
+
     client.close()
     spenderClient.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 08: Enterprise Event Streaming Bridge (Kafka / Redpanda to HCS Anchor)
@@ -99,7 +98,7 @@ class InMemoryKafkaBroker {
 
 const main = async () => {
   console.log('--- SESSION START: Kafka Enterprise Queue to HCS Anchor Bridge ---\n')
-  const { client, operatorId } = getClient()
+  const { client } = getClient()
 
   try {
     // 1. Initialize In-Memory Kafka Cluster with 2 Partitions

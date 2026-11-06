@@ -1,4 +1,3 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
  * Lab 04: HCS-27 Transparency Log Checkpoints & Cryptographic Merkle Proofs
@@ -42,8 +41,7 @@ import crypto from 'crypto'
 import { ethers } from 'ethers'
 import {
   TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  Hbar
+  TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import {
   buildHCS27TopicMemo,
@@ -192,7 +190,6 @@ const main = async () => {
 
     // 5. Generate and Verify Inclusion Proof for a Target Item (e.g., Inference #42)
     const targetIndex = 42
-    const targetPayload = rawInferences[targetIndex]
     const targetLeafHash = merkleTree.leaves[targetIndex]
 
     console.log(`\n[PROCESS] Generating cryptographic Merkle inclusion proof for Inference #${targetIndex}...`)
