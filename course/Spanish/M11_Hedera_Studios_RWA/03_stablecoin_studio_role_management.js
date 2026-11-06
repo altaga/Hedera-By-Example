@@ -42,6 +42,7 @@ import {
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenFreezeTransaction,
+  TokenUnfreezeTransaction,
   TokenGrantKycTransaction,
   TokenMintTransaction,
   TokenSupplyType,
@@ -131,6 +132,8 @@ const main = async () => {
 
     // 7. Rol Wipe
     console.log('\n[PROCESO] Paso 7: El rol Wipe recupera el saldo del tenedor...')
+    // Wipe exige la relación descongelada: primero unfreeze, luego la recuperación
+    await run(new TokenUnfreezeTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.freeze)
     const { res: wipeRes, receipt: wipeReceipt } = await run(new TokenWipeTransaction().setTokenId(tokenId).setAccountId(holder.accountId).setAmount(1_000 * 1_000_000), client, roles.wipe)
     console.log(`[ÉXITO] Se borraron 1,000 USDD; suministro total ahora ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
 

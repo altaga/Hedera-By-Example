@@ -148,8 +148,10 @@ const main = async () => {
     const signerInfo = await getJsonRpcSigner(client, operatorKey, { minHbar: 5 })
     // NonceManager lleva los nonces localmente: la vista de nonces del relay puede ir atrasada tras un despliegue
     const wallet = new ethers.NonceManager(new ethers.Wallet('0x' + signerInfo.privateKey.toStringRaw(), provider))
+    // gasPrice legacy del relay: la estimación EIP-1559 de ethers puede quedar bajo el mínimo de Hedera
+    const gasPrice = BigInt(await provider.send('eth_gasPrice', []))
     const factory = new ethers.ContractFactory(abi, bytecode, wallet)
-    const contract = await factory.deploy({ gasLimit: 400_000 })
+    const contract = await factory.deploy({ gasLimit: 400_000, gasPrice })
     const deployTx = contract.deploymentTransaction()
     await contract.waitForDeployment()
     const address = await contract.getAddress()
@@ -158,7 +160,7 @@ const main = async () => {
 
     // 4. Escribir + leer
     console.log('\n[PROCESO] Paso 4: increment() y luego count()...')
-    const tx = await contract.increment({ gasLimit: 100_000 })
+    const tx = await contract.increment({ gasLimit: 100_000, gasPrice })
     await tx.wait()
     console.log(`[ÉXITO] increment() — tx ${tx.hash} | count() = ${await contract.count()}`)
 
