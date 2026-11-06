@@ -25,7 +25,7 @@
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 04: Arquitectura Scaffold-HBAR
  * - Actual:    M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
- * - Siguiente: M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
+ * - Siguiente: M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-336)
  *
  * [SIMULADO]
  * Las firmas del consejo TSS y la prueba de estado HIP-1535 son simuladas (el protocolo aún no está activo). El anclaje en HCS es real.

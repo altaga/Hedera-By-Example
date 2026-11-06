@@ -22,7 +22,7 @@
  * - https://hips.hedera.com/hip/hip-1081
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
+ * - Anterior:  M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-336)
  * - Actual:    M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
  * - Siguiente: M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  *

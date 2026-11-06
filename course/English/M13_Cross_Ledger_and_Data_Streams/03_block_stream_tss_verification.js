@@ -22,7 +22,7 @@
  * - https://hips.hedera.com/hip/hip-1081
  *
  * [ LEARNING PATH ]
- * - Previous: M13 Lab 02: Native Delegated Fee Sponsorship (HIP-1068)
+ * - Previous: M13 Lab 02: Native Delegated Fee Sponsorship (HIP-336)
  * - Next:     M13 Lab 04: Block Node Discovery & Data Lake (HIP-1081 / HIP-1137)
  *
  * [SIMULATED]

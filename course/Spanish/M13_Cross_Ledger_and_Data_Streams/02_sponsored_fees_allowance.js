@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-1068)
+ * Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-336)
  * [CONCEPTO] Incorporación Gasless de Usuarios y Agentes Sin Bundlers ERC-4337
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -23,17 +23,18 @@
  * tesorería, el spender autorizado firma el `TransactionId`.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/transactions/transaction-id
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M13 Lab 01: Verificación de Pruebas de Estado CLPR (HIP-1535)
- * - Actual:    M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-1068)
+ * - Actual:    M13 Lab 02: Patrocinio Nativo de Tarifas (HIP-336)
  * - Siguiente: M13 Lab 03: Flujo de Bloques y Firmas TSS (HIP-1056)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Gastador: ACCOUNT_1 del .env si existe; si no, una cuenta desechable (0.5 ℏ) financiada por el operador.
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
@@ -52,7 +53,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, sleep, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, updateState, sleep, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 /**
  * Consulta el balance de una cuenta en tinybars y HBAR mediante el REST API del Mirror Node.
@@ -73,13 +74,17 @@ const queryBalance = async (accountId, network = 'testnet') => {
 }
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Patrocinio Nativo de Tarifas y Asignaciones (HIP-1068) ---\n')
+  console.log('--- INICIO DE SESIÓN: Patrocinio Nativo de Tarifas y Asignaciones (HIP-336) ---\n')
   const { client, operatorId, operatorKey, network } = getClient()
   const sponsorAccountId = AccountId.fromString(operatorId)
-  const sponsorKey = PrivateKey.fromStringDer(operatorKey)
+  const sponsorKey = parsePrivateKey(operatorKey)
 
-  const delegateSpenderId = AccountId.fromString(process.env.ACCOUNT_1_ID)
-  const delegateSpenderKey = PrivateKey.fromStringDer(process.env.ACCOUNT_1_PRIVATE_KEY)
+  // ACCOUNT_1 del .env si existe; si no, una cuenta desechable financiada por el operador
+  const spender = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: AccountId.fromString(process.env.ACCOUNT_1_ID), privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const delegateSpenderId = spender.accountId
+  const delegateSpenderKey = spender.privateKey
 
   try {
     // 1. Crear una cuenta de Agente con literalmente 0.0000 HBAR
@@ -106,7 +111,7 @@ const main = async () => {
 
     const gaslessUpdateTx = await new AccountUpdateTransaction()
       .setAccountId(zeroGasAgentId)
-      .setAccountMemo('HIP-1068:Gasless-Agent-Verified')
+      .setAccountMemo('HIP-336:Gasless-Agent-Verified')
       .setTransactionId(TransactionId.generate(sponsorAccountId))
       .freezeWith(client)
 
@@ -144,7 +149,7 @@ const main = async () => {
     const allowanceTransfer = await new TransferTransaction()
       .addApprovedHbarTransfer(sponsorAccountId, new Hbar(-0.25))
       .addHbarTransfer(zeroGasAgentId, new Hbar(0.25))
-      .setTransactionMemo('HIP-1068:DelegatedAllowanceSpend')
+      .setTransactionMemo('HIP-336:DelegatedAllowanceSpend')
       .execute(spenderClient)
     const transferReceipt = await allowanceTransfer.getReceipt(spenderClient)
     spenderClient.close()

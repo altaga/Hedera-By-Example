@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain (CLPR + HIP-1068)
+ * Lab 05: Motor Autónomo de Liquidación de Intenciones Cross-Chain (CLPR + HIP-336)
  * [CONCEPTO] Router de Liquidez Cross-Ledger Sin Puentes Basado en Intenciones
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -10,7 +10,7 @@
  * un usuario o agente simplemente publica una "intención" (ej. "Intercambiar 50 HBAR en Hedera
  * por 100 USDC en Arbitrum"). Un solver descentralizado ejecuta la orden de inmediato usando
  * liquidez local, mientras que la liquidación en Hedera se valida criptográficamente mediante
- * CLPR (HIP-1535) y se ejecuta sin gas para el usuario mediante Tarifas Patrocinadas (HIP-1068).
+ * CLPR (HIP-1535) y se ejecuta sin gas para el usuario mediante Tarifas Patrocinadas (HIP-336).
  *
  * [ MOMENTO DE APRENDIZAJE ]
  * Los usuarios no quieren esperar 20 minutos ni pagar gas en múltiples redes para mover liquidez.
@@ -19,7 +19,7 @@
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1535
- * - https://hips.hedera.com/hip/hip-1068
+ * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-336.md
  * - https://eips.ethereum.org/EIPS/eip-7683
  *
  * [ RUTA DE APRENDIZAJE ]
@@ -27,7 +27,7 @@
  * - Siguiente: M13 Lab 06: Codificador/Parser Protobuf de Block Stream con los Esquemas HAPI Oficiales
  *
  * [SECUENCIA]
- * Trader -> Relayer: Otorgar una asignación de HBAR (HIP-1068)
+ * Trader -> Relayer: Otorgar una asignación de HBAR (HIP-336)
  * Trader -> Hedera: Intención firmada en HCS (comisiones patrocinadas)
  * Relayer -> Otra cadena: Completar la parte externa
  * Nota Relayer: Prueba de estado de la parte externa (CLPR simulado)
@@ -38,7 +38,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Gastador: ACCOUNT_1 del .env si existe; si no, una cuenta desechable (0.5 ℏ) financiada por el operador.
  * - Costo: ~1 ℏ (comisiones de red y las cuentas que crea).
  *
  * [ CÓMO EJECUTAR ]
@@ -60,7 +60,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, createClient, ensureFunded } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
 
 /**
  * Consulta el balance numérico de una cuenta en HBAR mediante el Mirror Node.
@@ -88,14 +88,18 @@ const hashIntent = (intent) => {
 
 const main = async () => {
   console.log('╔═══════════════════════════════════════════════════════════════════════╗')
-  console.log('║   MOTOR AUTÓNOMO DE INTENCIONES CROSS-CHAIN (CLPR + HIP-1068)        ║')
+  console.log('║   MOTOR AUTÓNOMO DE INTENCIONES CROSS-CHAIN (CLPR + HIP-336)        ║')
   console.log('╚═══════════════════════════════════════════════════════════════════════╝\n')
 
   const { client, operatorId, operatorKey, network } = getClient()
   const solverAccountId = AccountId.fromString(operatorId)
-  const solverKey = PrivateKey.fromStringDer(operatorKey)
-  const relayerAccountId = AccountId.fromString(process.env.ACCOUNT_1_ID)
-  const relayerKey = PrivateKey.fromStringDer(process.env.ACCOUNT_1_PRIVATE_KEY)
+  const solverKey = parsePrivateKey(operatorKey)
+  // ACCOUNT_1 del .env si existe; si no, una cuenta desechable financiada por el operador
+  const relayer = process.env.ACCOUNT_1_ID && process.env.ACCOUNT_1_PRIVATE_KEY
+    ? { accountId: AccountId.fromString(process.env.ACCOUNT_1_ID), privateKey: parsePrivateKey(process.env.ACCOUNT_1_PRIVATE_KEY) }
+    : await createLabAccount(client, { hbar: 0.5 })
+  const relayerAccountId = relayer.accountId
+  const relayerKey = relayer.privateKey
 
   try {
     // 1. Configurar Actores del Mercado: Trader (0.0000 HBAR), Solver (Patrocinador) y Relayer
@@ -116,8 +120,8 @@ const main = async () => {
     console.log(`[ACTOR] Solver de Liquidez:  ${operatorId.toString()} (Patrocinador y Bóveda)`)
     console.log(`[ACTOR] Relayer Liquidación: ${relayerAccountId.toString()} (Ejecutor de Asignación)`)
 
-    // 2. Delegación de Asignación de Liquidación del Patrocinador (HIP-1068)
-    console.log('\n[PROCESO] Estableciendo Asignación Delegada de Liquidación HIP-1068...')
+    // 2. Delegación de Asignación de Liquidación del Patrocinador (HIP-336)
+    console.log('\n[PROCESO] Estableciendo Asignación Delegada de Liquidación HIP-336...')
     const settlementAllowance = new Hbar(2)
     await new AccountAllowanceApproveTransaction()
       .approveHbarAllowance(solverAccountId, relayerAccountId, settlementAllowance)
@@ -224,7 +228,7 @@ const main = async () => {
     console.log('├────────────────────────────────────────────────────────────────────────┤')
     console.log('│ Estado de la Intención: RESUELTA Y VERIFICADA                          │')
     console.log('│ Mecanismo Liquidación:  Prueba de Estado Sin Puentes CLPR (HIP-1535)   │')
-    console.log('│ Mecanismo de Tarifas:   Patrocinio Nativo Delegado (HIP-1068)          │')
+    console.log('│ Mecanismo de Tarifas:   Patrocinio Nativo Delegado (HIP-336)          │')
     console.log(`│ Hash de Destino:        ${solverFillTxHash.slice(0, 32)}...   │`)
     console.log(`│ Gas Gastado por Trader: ${traderGasSpent.toFixed(8)} HBAR (100% Patrocinado)             │`)
     console.log(`│ Balance Final Trader:   ${(finalTraderBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
@@ -237,7 +241,7 @@ const main = async () => {
     updateState('CLPR_ENGINE_SOLVER_TX', solverFillTxHash)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Al combinar pruebas de estado CLPR (HIP-1535) con el patrocinio nativo de tarifas (HIP-1068),')
+    console.log('Al combinar pruebas de estado CLPR (HIP-1535) con el asignaciones HIP-336 y tarifas patrocinadas por el pagador,')
     console.log('Hedera se posiciona como el centro de liquidación de mayor rendimiento y menor fricción en Web3.')
     console.log('Cero puentes vulnerables, cero barreras de gas y finalidad en menos de un segundo.')
 

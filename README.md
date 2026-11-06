@@ -173,7 +173,7 @@ Navigate to `http://localhost:8081` in your browser.
 | Module | Title | Focus Area |
 | :---: | :--- | :--- |
 | **M00** | Cryptographic Identity & Wallet Derivation | Local key generation (ECDSA/Ed25519), EVM alias calculation, KMS signers |
-| **M01** | Crypto Transfers, Rent & Fee Engines | HBAR transfers, auto-renewal rent, HIP-1068 sponsored fees, aBFT consensus |
+| **M01** | Crypto Transfers, Rent & Fee Engines | HBAR transfers, auto-renewal rent, HIP-336 allowances & payer-sponsored fees, aBFT consensus |
 | **M02** | Account Queries, Records & CQRS | Mirror Node REST, recursive pagination, gRPC streaming, query cost estimation |
 | **M03** | Hedera Token Service (HTS) Fungible & NFTs | Token creation, minting, KYC, freeze, wipe, custom fee schedules |
 | **M04** | HTS Advanced NFT Standards | HIP-412 JSON schemas, serial batch minting, burn, token pause |

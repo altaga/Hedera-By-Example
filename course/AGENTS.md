@@ -143,7 +143,7 @@ When designing or debugging modules, always recognize the dual operational patte
 | Module | Core Duality / Pattern | Reference Implementation |
 | :--- | :--- | :--- |
 | **M01: Cryptography** | Explicit Account (`AccountCreateTransaction`) vs Lazy / Hollow Account (`HIP-583`) | `M1 Lab 05` |
-| **M01 / M13: Fees** | Sponsored Fee Co-signing vs `HIP-336` Crypto Allowance vs `HIP-1068` Ledger Delegation | `M1 Lab 08`, `M13 Lab 02` |
+| **M01 / M13: Fees** | Sponsored Fee Co-signing (TransactionId payer) vs `HIP-336` Crypto Allowance | `M1 Lab 08`, `M13 Lab 02` |
 | **M02: CQRS State** | Async REST Polling (`Mirrornode /api/v1`) vs Real-Time gRPC Consensus Streaming | `M2 Lab 02` vs `M2 Lab 04` |
 | **M03 / M04: Tokens** | Classical Push (Pre-associated) vs `HIP-904` Native Airdrops with Claim/Reject | `M4 Lab 06`, `M4 Lab 07` |
 | **M04 / M07: Swaps** | Synchronous Multi-Leg Atomic Swap vs Asynchronous Decoupled `ScheduleService` | `M4 Lab 04` vs `M7 Labs 03-04` |

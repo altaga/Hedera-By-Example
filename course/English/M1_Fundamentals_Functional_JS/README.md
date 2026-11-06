@@ -18,7 +18,7 @@ This module covers the pillars of the Hedera network: from the Hashgraph algorit
 | **05** | **Lazy Account Creation** | Auto-creating Hedera accounts by transferring HBAR to an EVM alias (HIP-583). |
 | **06** | **Native Staking** | Delegating HBAR stake to consensus nodes for network security and rewards (HIP-406). |
 | **07** | **Simple Fees Engine** | Deterministic fee modeling (Node, Network, Service) and exchange rate conversion (HIP-1261). |
-| **08** | **Gasless Fee Allowance** | Native crypto transfer fee sponsorship without co-signatures (HIP-1068). |
+| **08** | **HBAR Allowances (HIP-336)** | HBAR allowances (HIP-336): the spender moves the sponsor's HBAR without the sponsor's key. |
 
 ---
 

@@ -25,7 +25,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M1 Lab 06: Native Staking
- * - Next:     M1 Lab 08: HIP-1068 Gasless Fee Allowance
+ * - Next:     M1 Lab 08: HBAR Allowances & Sponsored Spending (HIP-336)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

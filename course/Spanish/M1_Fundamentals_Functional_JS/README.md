@@ -18,7 +18,7 @@ Este módulo cubre los pilares de la red Hedera: desde el algoritmo Hashgraph ha
 | **05** | **Creación Perezosa (Lazy)** | Auto-creación de cuentas enviando HBAR a un alias EVM (HIP-583). |
 | **06** | **Staking Nativo** | Delegación de HBAR a nodos de consenso para seguridad y recompensas (HIP-406). |
 | **07** | **Motor de Comisiones Simples** | Modelado determinista de comisiones (nodo, red, servicio) y conversión por tipo de cambio (HIP-1261). |
-| **08** | **Allowance de Comisiones sin Gas** | Patrocinio nativo de comisiones de transferencia sin co-firmas (HIP-1068). |
+| **08** | **Asignaciones de HBAR (HIP-336)** | Asignaciones de HBAR (HIP-336): el gastador mueve HBAR del patrocinador sin su clave. |
 
 ---
 
