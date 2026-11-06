@@ -38,10 +38,12 @@
     "@x402/express": "^2.30.0",
     "@x402/fetch": "^2.30.0",
     "@x402/hedera": "^2.30.0",
+    "circomlibjs": "^0.1.7",
     "dotenv": "17.4.2",
     "ethers": "6.16.0",
     "express": "^4.22.3",
     "protobufjs": "^8.8.1",
+    "snarkjs": "^0.7.6",
     "solc": "0.8.34"
   },
   "overrides": {
