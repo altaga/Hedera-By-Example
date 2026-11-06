@@ -19,7 +19,7 @@ In this module, we transition from toy digital collectibles to institutional cap
 | **05** | **RWA Invoice Factoring** | SME, investor and debtor accounts settle advance and maturity as atomic delivery-versus-payment. |
 | **06** | **Multi-Asset Pool Tokens** | Bundling Treasury MMFs, Corporate Bonds, and REITs into an Archax-style atomic basket token. |
 | **07** | **Institutional ERP Integration Bridge** | Electronic invoice XML parsing, HCS legal timestamp anchoring, and compliant fractional HTS debt minting. |
-| **08** | **ATS Corporate Actions & Mass Payout** | Cap table consensus snapshotting, prorated dividend/coupon calculations, and atomic multi-party batch settlement. |
+| **08** | **Corporate Actions & Mass Payout (ATS Concepts)** | Real HTS share token, Mirror Node cap-table snapshot, pro-rata dividend with withholding in one atomic transfer, HCS audit certificate. |
 
 ---
 

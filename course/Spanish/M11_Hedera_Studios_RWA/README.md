@@ -19,7 +19,7 @@ En este módulo dejamos atrás los coleccionables digitales básicos para entrar
 | **05** | **Factoraje de Facturas RWA** | Cuentas de PyME, inversor y deudor liquidan anticipo y vencimiento como entrega contra pago atómica. |
 | **06** | **Pool Tokens Multi-Activo** | Agrupación atómica de Fondos Monetarios, Bonos y REITs en una canasta institucional estilo Archax. |
 | **07** | **Puente de Integración ERP Institucional** | Parseo de facturas electrónicas XML, anclaje legal en HCS y emisión de deuda fraccionada en HTS. |
-| **08** | **ATS Acciones Corporativas y Pagos Masivos** | Snapshots de cap table en consenso, cálculos prorrateados de dividendos/cupones y liquidación atómica por lotes. |
+| **08** | **Acciones Corporativas y Pagos Masivos (Conceptos ATS)** | Token HTS real, instantánea de cap table en Mirror Node, dividendo prorrateado con retención en una transferencia atómica y certificado de auditoría en HCS. |
 
 ---
 
