@@ -238,6 +238,8 @@ export interface ModuleContext {
   path: any
   EventEmitter: any
   dotenv: any
+  /** fetch() for this run: 127.0.0.1 reaches the lab's in-page servers (virtual http). */
+  fetch?: typeof fetch
   /** Prints a line in the lab output (used by browser patches in the vendor bundle). */
   log?: (type: 'info' | 'error', text: string) => void
   lang?: 'en' | 'es'
@@ -303,6 +305,7 @@ export async function loadVendor (ctx: ModuleContext): Promise<any> {
       util,
       url,
       zlib,
+      fetch: (input: any, init?: RequestInit) => (vendorCtx?.fetch || window.fetch)(input, init),
       log: (type: 'info' | 'error', text: string) => vendorCtx?.log?.(type, text),
       get lang () { return vendorCtx?.lang },
       empty: () => ({}),
@@ -439,6 +442,20 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case '@hiero-did-sdk/core': {
       const v = await loadVendor(ctx)
       return { ...v, default: v }
+    }
+    case '@x402/core/client':
+    case '@x402/core/server':
+    case '@x402/core/facilitator':
+    case '@x402/core/http':
+    case '@x402/hedera':
+    case '@x402/hedera/exact/client':
+    case '@x402/hedera/exact/server':
+    case '@x402/hedera/exact/facilitator':
+    case '@x402/fetch': {
+      // Same namespace names as scripts/build-vendor.mjs (x402Namespace).
+      const v = await loadVendor(ctx)
+      const ns = v['X402_' + spec.replace(/^@x402\//, '').replace(/[^a-z0-9]+/gi, '_')]
+      return { ...ns, default: ns }
     }
     case 'solc': {
       const solc = await loadSolc()
@@ -579,12 +596,19 @@ export function createVirtualHttp (EventEmitter: any, realFetch: typeof fetch) {
   const virtualFetch = async (input: any, init: any = {}): Promise<Response> => {
     const url = new URL(typeof input === 'string' || input instanceof URL ? String(input) : input.url, 'http://127.0.0.1')
     if (!servers.has(targetPort(url))) return realFetch(input, init)
-    const body = init.body ? Buffer.from(typeof init.body === 'string' ? init.body : new Uint8Array(init.body)) : null
-    const headers = Object.fromEntries(Object.entries(new Headers(init.headers || {}) as any).map(([k, v]: any) => [k.toLowerCase(), String(v)]))
+    // fetch(new Request(...)) carries method, headers and body on the Request (x402's fetch wrapper does this).
+    const req = typeof Request !== 'undefined' && input instanceof Request ? input : null
+    const method = String(init.method || req?.method || 'GET').toUpperCase()
+    const rawBody = init.body ?? (req && !['GET', 'HEAD'].includes(method) ? new Uint8Array(await req.arrayBuffer()) : null)
+    const body = rawBody ? Buffer.from(typeof rawBody === 'string' ? rawBody : new Uint8Array(rawBody)) : null
+    const headers: Record<string, string> = {}
+    for (const source of [req?.headers, init.headers]) {
+      if (source) new Headers(source).forEach((v, k) => { headers[k.toLowerCase()] = v })
+    }
     return new Promise((resolve) => {
       let controller!: ReadableStreamDefaultController<Uint8Array>
       const stream = new ReadableStream<Uint8Array>({ start: (c) => { controller = c }, cancel: () => handle.abort() })
-      const handle = dispatch(url, (init.method || 'GET').toUpperCase(), headers, body,
+      const handle = dispatch(url, method, headers, body,
         (status, h) => resolve(new Response(stream, { status, headers: h })),
         (c) => controller.enqueue(c),
         () => controller.close())

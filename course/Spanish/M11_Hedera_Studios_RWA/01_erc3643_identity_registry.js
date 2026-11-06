@@ -31,7 +31,7 @@
  * - https://erc3643.org/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 07: Pasarela Proxy de Streaming de IA
+ * - Anterior:  M10 Lab 08: Tu Propio Facilitador
  * - Siguiente: M11 Lab 02: Bonos por Tramos en HTS (Conceptos ERC-1400)
  *
  * [SECUENCIA]

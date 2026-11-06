@@ -182,7 +182,7 @@ Navigate to `http://localhost:8081` in your browser.
 | **M07** | Decentralized Identity (DID) & Threshold DAOs | W3C DIDs, verifiable credentials, cryptographic DID login, DAO treasuries |
 | **M08** | Multi-Sig, Threshold Keys & Smart Contracts | M-of-N signatures, Solidity contract deployment, HTS system precompiles |
 | **M09** | Scheduled Transactions & HCS-10 AI Swarms | Time-delayed execution, autonomous multi-party agents, encrypted agent comms |
-| **M10** | System Operations & HTTP 402 Micropayments | Exchange rates, x402 payment headers, direct P2P streaming micropayments |
+| **M10** | Agentic Micropayments (x402) | Official x402 `exact` scheme on Hedera: 402 challenges, agent-signed transfers, facilitator settlement, stablecoin pricing, spending guardrails, self-hosted facilitator |
 | **M11** | Mirror Node Deep-Queries & Institutional ERP | ERP state reconciliation, ATS mass dividend distributions, corporate actions |
 | **M12** | Advanced EVM Interop & Account Abstraction | JSON-RPC Relay, Foundry/Hardhat workflows, EIP-7702, ERC-4337 paymasters |
 | **M13** | Block Streams & State Proofs | Cryptographic state proofs (CLPR), TSS threshold signatures, protobuf parsers |

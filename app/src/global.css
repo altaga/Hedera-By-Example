@@ -1094,7 +1094,9 @@ h1, h2, h3 { color: var(--text); letter-spacing: -0.015em; }
   .brand-byline-link { display: none; }
   .brand-title-l1, .brand-title-l2 { font-size: 11px; }
   .brand-logo-img { height: 32px; }
-  .account-btn { padding: 0 10px; margin-right: 2px; }
+  .account-btn { padding: 0 10px; margin-right: 2px; min-width: 0; flex-shrink: 1; }
+  /* Let the actions shrink (the wallet label truncates) instead of pushing the page sideways. */
+  .topbar-actions { min-width: 0; flex-shrink: 1; }
   .account-btn-balance { display: none; }
   .topbar-github { display: none; }
   .code-panel { margin: 0 -16px; border-radius: 0; border-left: 0; border-right: 0; }

@@ -975,13 +975,18 @@ export async function executeInBrowser (
       return isMirrorUrl(url) ? mirrorFetch(url, { ttlMs: 0, init }) : window.fetch(input, init)
     }
     const virtual = createVirtualHttp(EventEmitterShim, labFetch as typeof window.fetch)
-    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http, log: (type: 'info' | 'error', text: string) => pushLog(type, text), lang: options.lang }
+    const ctx = { hedera, helpers, fs, crypto: cryptoShim, path: pathShim, EventEmitter: EventEmitterShim, dotenv, http: virtual.http, fetch: virtual.fetch, log: (type: 'info' | 'error', text: string) => pushLog(type, text), lang: options.lang }
     // M99's AgentCommunicationHandler is a Node module; the browser gets the bundled build.
     if (/AgentCommunicationHandler|HybridEncryption/.test(sourceCode)) {
       const vendor = await loadVendor(ctx)
       const suffix = options.lang === 'es' ? 'Es' : 'En'
       helpers.AgentCommunicationHandler = vendor[`AgentCommunicationHandler${suffix}`]
       helpers.HybridEncryption = vendor[`HybridEncryption${suffix}`]
+    }
+    // M10's x402 helpers (M99_Utilities/x402.js) are bundled with the official @x402 packages.
+    if (/from\s+'@x402\//.test(sourceCode)) {
+      const vendor = await loadVendor(ctx)
+      Object.assign(helpers, vendor[`X402Helpers${options.lang === 'es' ? 'Es' : 'En'}`])
     }
     const { imports, body } = extractImports(sourceCode)
     const bound: Record<string, unknown> = {}

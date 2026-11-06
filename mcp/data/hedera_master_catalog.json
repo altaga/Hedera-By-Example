@@ -59,9 +59,9 @@
         "business"
       ],
       "weight": 0.95,
-      "summary": "HTTP 402 Payment Required standard (x402 v2). On Hedera, the official exact scheme uses a facilitator feePayer that /verify and /settle a partially signed TransferTransaction for HBAR (0.0.0) or HTS fungible tokens. Homemade Direct P2P / PAYMENT-TXID flows are not the official scheme.",
+      "summary": "HTTP 402 Payment Required standard (x402 v2). On Hedera, the official exact scheme uses a facilitator feePayer that /verify and /settle a partially signed TransferTransaction for HBAR (0.0.0) or HTS fungible tokens. The buyer signs the transfer (transaction id = feePayer) but does not submit it; the facilitator co-signs, pays the network fee and submits. Replay protection comes from Hedera transaction ids, which execute once and expire after about 120 s.",
       "businessValue": "Monetizes APIs per-call or per-inference without credit cards, subscriptions, or KYC friction.",
-      "technicalStack": "@x402/core, @x402/express, @x402/fetch, @x402/hedera, @hiero-ledger/sdk",
+      "technicalStack": "@x402/core, @x402/hedera, @x402/fetch (buyer), @x402/express or another framework adapter (server), @hiero-ledger/sdk",
       "urls": {
         "docs": "https://docs.hedera.com/solutions/ai/x402",
         "spec": "https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md",
@@ -69,7 +69,7 @@
         "supported": "https://x402.org/facilitator/supported",
         "npm": "https://www.npmjs.com/package/@x402/hedera"
       },
-      "antiHallucinationNotes": "Use official @x402/* packages and a facilitator that advertises hedera:testnet (https://x402.org/facilitator). Wire format: PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE. Do not invent x402-* custom headers or call Direct P2P memo/txid flows \"official Hedera x402\". payTo must differ from the payer account.",
+      "antiHallucinationNotes": "Use official @x402/* packages and a facilitator that advertises hedera:testnet (https://x402.org/facilitator). Wire format: PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE. Do not invent x402-* custom headers, memo nonces or a buyer-submitted transfer (the buyer never broadcasts in the exact scheme). payTo and the fee payer must both differ from the payer account. Buyers must allow non-default assets (HBAR is 0.0.0) in spendControls.allowedAssets. A facilitator can be self-hosted with x402Facilitator + the @x402/hedera facilitator scheme (course M10 Lab 08).",
       "searchTriggers": [
         "x402",
         "http 402",

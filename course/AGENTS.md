@@ -40,10 +40,10 @@ ACCOUNT_1_ID="0.0.xxxxxxx"ACCOUNT_1_PRIVATE_KEY="3030020100300706052b8104000a042
 Any lab can be executed directly from the project root using Node:
 ```bash
 # Execute English Lab
-node English/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
+node English/M10_Agentic_Micropayments_x402/08_self_hosted_facilitator.js
 
 # Execute Spanish Mirror Lab
-node Spanish/M10_Agentic_Micropayments_x402/08_x402_direct_p2p_settlement.js
+node Spanish/M10_Agentic_Micropayments_x402/08_self_hosted_facilitator.js
 ```
 
 ### Running the Enterprise CI/CD Gatekeeper
@@ -149,7 +149,7 @@ When designing or debugging modules, always recognize the dual operational patte
 | **M04 / M07: Swaps** | Synchronous Multi-Leg Atomic Swap vs Asynchronous Decoupled `ScheduleService` | `M4 Lab 04` vs `M7 Labs 03-04` |
 | **M07: Timelocks** | Instant Quorum Trigger (`waitForExpiry: false`) vs Timelock Queue (`waitForExpiry: true`) | `M7 Lab 03` vs `M7 Lab 08` |
 | **M08 / M12: EVM-HTS** | System Contract Precompile `0x167` vs Direct ERC-20 Facade on HTS Address | `M8 Lab 04` vs `M12 Lab 01` |
-| **M10: x402 Micropayments** | Direct P2P (Buyer + Seller, 2 Actors) vs Sponsored Facilitator (3 Actors) | `M10 Lab 08` vs `M10 Labs 01-03` |
+| **M10: x402 Micropayments** | Third-party facilitator pays the fee (Buyer + Merchant + Facilitator) vs merchant-hosted facilitator (2 parties) | `M10 Labs 01-07` vs `M10 Lab 08` |
 | **M11: Asset Studios** | Regulated Security Tokens (`ERC-3643`/`ERC-1400`) + ATS Mass Dividend Payout | `M11 Labs 01, 02, 08` |
 | **M14: AI Consensus** | HCS-20 to HCS-28 (Inscriptions, Trust Scores, Skills) + Model Context Protocol (MCP) | `M14 Labs 01-10` |
 | **M15: DePIN & Frontier** | High-Speed MQTTS (Ed25519 + Merkle) vs Low-Power REST (HMAC-SHA256 + SLA Slash) | `M15 Labs 01-05` |
@@ -160,7 +160,7 @@ When designing or debugging modules, always recognize the dual operational patte
 
 1. **NEVER use `.plus()` or `.negated()` on Hbar objects:** Hedera SDK `Hbar` objects are immutable value representations without BigNumber arithmetic methods. To compute dynamic balances, use native `BigInt` tinybars: `BigInt(hbar.toTinybars())`.
 2. **NEVER exceed 100 bytes in NFT metadata on HTS:** `TokenMintTransaction` limits metadata bytes to 100 bytes per serial. Store standard IPFS URIs (`ipfs://.../<id>.json`), not raw stringified JSON payloads.
-3. **NEVER omit single-use challenge nonces in payment receipts:** In x402 or IoT telemetry, always verify that the challenge nonce is explicitly bound in the transaction `memo` (`x402:direct:<nonce>`) or signature payload to prevent replay attacks.
+3. **NEVER invent your own x402 wire format:** Use the official `@x402/*` packages. On Hedera the buyer signs a `TransferTransaction` whose transaction id belongs to the facilitator's fee payer and never submits it; replay protection comes from Hedera transaction ids (one execution, ~120 s validity), not from memo nonces. For IoT telemetry, bind a single-use nonce into the signed payload.
 4. **NEVER implement infinite polling loops:** When waiting for consensus receipts or mirror node updates, always use bounded retries with exponential backoff or native gRPC streaming.
 
 ---

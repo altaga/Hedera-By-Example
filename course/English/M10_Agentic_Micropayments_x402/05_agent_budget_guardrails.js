@@ -1,124 +1,172 @@
-/* eslint-disable camelcase, no-unused-vars */
-
+/* eslint-disable camelcase, no-unused-vars, new-cap */
 /**
  * ============================================================================
- * Lab 05: Autonomous Agent Financial Guardrails
- * [CONCEPT] Policy engine over official PaymentRequirements
+ * Lab 05: Spending Guardrails for Agents
+ * [CONCEPT] An autonomous payer needs limits it enforces before it signs
  * ============================================================================
  * [ KEY CONCEPT ]
- * Guardrails must evaluate the decoded official PaymentRequired.accepts[]
- * fields (network, asset, amount, payTo, feePayer) — not homemade headers.
+ * An agent that pays any 402 it receives can be drained by one bad endpoint,
+ * so it needs limits it enforces before it signs.
+ *
+ * The x402 client has three places to say no, all checked before anything is
+ * signed, so a refused payment never leaves the agent:
+ *   - spend controls: the assets it may pay with and a cap per payment;
+ *   - policies: functions that filter the offers in a 402 (here, a list of
+ *     merchants the agent trusts);
+ *   - hooks: onBeforePaymentCreation can abort, here when a session budget
+ *     would be exceeded.
+ *
+ * Every decision is written to an HCS topic, an audit trail anyone can read.
  *
  * [ LEARNABLE MOMENT ]
- * Spending ceilings, merchant allowlists, and circuit breakers sit in front of
- * @x402/fetch so a runaway agent never creates a PAYMENT-SIGNATURE.
+ * Guardrails belong on the buyer's side. The server writes the terms, so a
+ * check that trusts the server's price or payee protects nothing. And because
+ * the agent only signs, never submits, refusing costs nothing.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/ai/x402/pay-with-x402
+ * - https://www.npmjs.com/package/@x402/core
+ * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 04: HTS USDC Micropayments
- * - Next:     M10 Lab 06: Autonomous Market Agent
+ * - Previous: M10 Lab 04: Pricing in Dollars with an HTS Stablecoin
+ * - Next:     M10 Lab 06: An Agent That Shops for Data
  *
- * [SEQUENCE]
- * Server -> Agent: 402 PAYMENT-REQUIRED
- * Note Agent: policy.evaluate(accept)
- * Note Agent: reject over-budget / unknown payTo
- * Agent -> Server: only approved accepts get PAYMENT-SIGNATURE
+ * [ SEQUENCE ]
+ * Agent -> Server: GET /api/rogue
+ * Server -> Agent: 402 (payTo is not a trusted merchant)
+ * Note Agent: policy removes the offer, nothing signed
+ * Agent -> Server: GET /api/premium
+ * Server -> Agent: 402 (0.5 ℏ)
+ * Note Agent: spend control cap is 0.02 ℏ, nothing signed
+ * Agent -> Server: GET /api/quote (three times)
+ * Note Agent: pays twice, the budget hook stops the third
+ * Agent -> Hedera: audit log to an HCS topic
  *
  * [ BEFORE YOU RUN ]
- * - OPERATOR_ID + MERCHANT_ID; one real micropayment if policy approves.
+ * - Wallet: your testnet account is the facilitator and pays the audit message.
+ * - Practice wallets: ACCOUNT_1 is the agent, ACCOUNT_2 the trusted merchant.
+ * - Cost: 0.02 ℏ from ACCOUNT_1 to ACCOUNT_2; about 0.003 ℏ in fees (plus 0.01 USD for the audit topic on the first run).
  *
  * [ HOW TO RUN ]
  * node English/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================
  */
 
-import '@x402/fetch' // Node-only: official x402 client stack
-
+import http from 'node:http'
+import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { x402ResourceServer } from '@x402/core/server'
+import { wrapFetchWithPayment } from '@x402/fetch'
+import { ExactHederaScheme } from '@x402/hedera/exact/server'
+import { HBAR_ASSET_ID } from '@x402/hedera'
 import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction
-} from '@hiero-ledger/sdk'
-import {
-  createPaidExpressApp,
-  listenLocal,
-  createPayingFetch,
-  decodePaymentRequiredHeader,
-  decodePaymentResponse,
-  getOperatorContext,
-  LAB_PRICE_TINYBARS,
-  HBAR_ASSET_ID,
-  X402_NETWORK
+  getClient,
+  getHashscanUrl,
+  ensureFunded,
+  reuseTopic,
+  show,
+  X402_NETWORK,
+  createBuyer,
+  createLocalFacilitator,
+  paywall,
+  readPaymentResponse,
+  formatHbar
 } from '../M99_Utilities/index.js'
-import { updateState } from '../M99_Utilities/storage.js'
 
-class AgentPolicyEngine {
-  constructor (config) {
-    this.maxTinybars = BigInt(config.maxTinybars)
-    this.allowedPayees = new Set(config.allowedPayees)
-    this.allowedNetworks = new Set(config.allowedNetworks)
-    this.circuitBreakerTripped = false
-  }
+// ─── Config ───────────────────────────────────────────────────────────────────
+const PORT = 4025
+const MAX_PER_PAYMENT = 2_000_000n // 0.02 ℏ
+const SESSION_BUDGET = 2_500_000n // 0.025 ℏ
 
-  evaluate (accept) {
-    if (this.circuitBreakerTripped) return { approved: false, reason: 'CIRCUIT_BREAKER_ACTIVE' }
-    if (!this.allowedNetworks.has(accept.network)) return { approved: false, reason: `NETWORK_DENIED:${accept.network}` }
-    if (!this.allowedPayees.has(accept.payTo)) return { approved: false, reason: `UNAUTHORIZED_PAYEE:${accept.payTo}` }
-    if (BigInt(accept.amount) > this.maxTinybars) return { approved: false, reason: `CEILING_EXCEEDED:${accept.amount}` }
-    return { approved: true }
-  }
-}
-
+// ─── Main ──────────────────────────────────────────────────────────────────────
 const main = async () => {
-  console.log('--- SESSION START: Guardrails on official PaymentRequirements ---\n')
-  const { client, operatorId, operatorKey, merchantId } = getOperatorContext()
-  const policy = new AgentPolicyEngine({
-    maxTinybars: 200000n,
-    allowedPayees: [merchantId],
-    allowedNetworks: [X402_NETWORK]
-  })
+  console.log('--- SESSION START: Spending Guardrails for Agents ---\n')
+  const { client, operatorId, operatorKey } = getClient()
+  const agentId = process.env.ACCOUNT_1_ID
+  const agentKey = process.env.ACCOUNT_1_PRIVATE_KEY
+  const merchantId = process.env.ACCOUNT_2_ID
+  if (!agentId || !agentKey || !merchantId) throw new Error('Missing ACCOUNT_1 (agent) or ACCOUNT_2 (merchant). Create practice wallets or set them in .env.')
 
-  const pathName = '/api/v1/guarded'
-  const { app } = createPaidExpressApp({
-    route: `GET ${pathName}`,
-    payTo: merchantId,
-    price: { amount: LAB_PRICE_TINYBARS.challenge, asset: HBAR_ASSET_ID },
-    description: 'Guarded resource'
-  })
-  const { server, baseUrl } = await listenLocal(app)
+  let server
   try {
-    const unpaid = await fetch(`${baseUrl}${pathName}`)
-    const required = decodePaymentRequiredHeader(unpaid)
-    const accept = required.accepts[0]
-    console.log('[LOG] Official accept:', JSON.stringify(accept))
+    await ensureFunded(client, agentId, 1)
 
-    const rogue = { ...accept, payTo: '0.0.66699', amount: '999999999' }
-    console.log('[TEST] Rogue payTo =>', policy.evaluate(rogue))
-    console.log('[TEST] Over ceiling =>', policy.evaluate({ ...accept, amount: '999999999' }))
-    const ok = policy.evaluate(accept)
-    console.log('[TEST] Legitimate accept =>', ok)
-    if (!ok.approved) throw new Error(ok.reason)
+    // 1. A server with one fair route and two that a careful agent should refuse.
+    const { client: facilitator } = createLocalFacilitator(operatorId, operatorKey)
+    const resourceServer = new x402ResourceServer(facilitator).register(X402_NETWORK, new ExactHederaScheme())
+    const offer = (payTo, amount, description) => ({ accepts: [{ scheme: 'exact', network: X402_NETWORK, payTo, price: { amount, asset: HBAR_ASSET_ID } }], description })
+    const routes = {
+      'GET /api/quote': offer(merchantId, '1000000', 'Price quote (0.01 ℏ)'),
+      'GET /api/premium': offer(merchantId, '50000000', 'Premium report (0.5 ℏ)'),
+      'GET /api/rogue': offer(operatorId, '1000000', 'Pays someone the agent never agreed to')
+    }
+    const handlers = Object.fromEntries(Object.keys(routes).map((key) => [key, () => ({ route: key, data: 'ok' })]))
+    server = http.createServer(paywall(resourceServer, routes, handlers))
+    await new Promise((resolve) => server.listen(PORT, '127.0.0.1', resolve))
 
-    const fetchPaid = createPayingFetch(operatorId.toString(), operatorKey)
-    const paid = await fetchPaid(`${baseUrl}${pathName}`)
-    const settlement = decodePaymentResponse(paid)
-    console.log(`[SUCCESS] Paid HTTP ${paid.status}`, settlement)
+    // 2. The agent's guardrails.
+    const trustedMerchants = new Set([merchantId])
+    let spent = 0n
+    const agent = createBuyer(agentId, agentKey, { maxTinybars: MAX_PER_PAYMENT }) // spend control: cap per payment
+      // Policy: keep only offers that pay a merchant on the allowlist.
+      .registerPolicy((_version, offers) => offers.filter((o) => trustedMerchants.has(o.payTo)))
+      // Hook: refuse when this payment would take the session over budget.
+      .onBeforePaymentCreation(async ({ selectedRequirements }) => {
+        const amount = BigInt(selectedRequirements.amount)
+        if (spent + amount > SESSION_BUDGET) return { abort: true, reason: `session budget: ${formatHbar(spent)} spent of ${formatHbar(SESSION_BUDGET)}` }
+      })
+      .onAfterPaymentCreation(async ({ selectedRequirements }) => { spent += BigInt(selectedRequirements.amount) })
+    const fetchWithPayment = wrapFetchWithPayment(fetch, agent)
 
-    const topicTx = await new TopicCreateTransaction().setTopicMemo('x402:official_guardrail_audit').execute(client)
-    const topicId = (await topicTx.getReceipt(client)).topicId.toString()
-    await (await new TopicMessageSubmitTransaction()
+    // 3. Try every route and record what happened.
+    const decisions = []
+    for (const path of ['/api/rogue', '/api/premium', '/api/quote', '/api/quote', '/api/quote']) {
+      try {
+        const res = await fetchWithPayment(`http://127.0.0.1:${PORT}${path}`)
+        const receipt = readPaymentResponse(res)
+        decisions.push({ path, decision: receipt?.success ? 'PAID' : `HTTP ${res.status}`, detail: receipt?.transaction || '' })
+        console.log(`[SUCCESS] ${path} → paid, ${getHashscanUrl(receipt.transaction)}`)
+      } catch (error) {
+        // The client threw before signing: nothing left the agent.
+        const reason = error.message.replace(/^Failed to create payment payload: /, '')
+        decisions.push({ path, decision: 'REFUSED', detail: reason.slice(0, 90) })
+        console.log(`[BLOCKED] ${path} → ${reason.slice(0, 120)}`)
+      }
+    }
+    show.table(decisions)
+    console.log(`[LOG] Spent this session: ${formatHbar(spent)} (budget ${formatHbar(SESSION_BUDGET)})`)
+
+    // 4. Audit trail on HCS: one message with every decision.
+    const topicId = await reuseTopic('REUSE_M10_05_AUDIT_TOPIC', async () => {
+      const tx = await new TopicCreateTransaction().setTopicMemo('x402 agent spending audit').execute(client)
+      return (await tx.getReceipt(client)).topicId
+    })
+    const audit = await new TopicMessageSubmitTransaction()
       .setTopicId(topicId)
-      .setMessage(JSON.stringify({ action: 'X402_PAYMENT_APPROVED', accept, settlement }))
-      .execute(client)).getReceipt(client)
-    console.log(`[LOG] Audit topic ${topicId}`)
-    updateState('X402_AUDIT_TOPIC_ID', topicId)
+      .setMessage(JSON.stringify({ agent: agentId, budget: SESSION_BUDGET.toString(), spent: spent.toString(), decisions: decisions.map(({ path, decision }) => ({ path, decision })) }))
+      .execute(client)
+    await audit.getReceipt(client)
+    console.log(`[LOG] Audit message on topic ${topicId}: ${getHashscanUrl(audit)}`)
+
+    const paid = decisions.filter((d) => d.decision === 'PAID').length
+    if (paid !== 2 || decisions.filter((d) => d.decision === 'REFUSED').length !== 3) throw new Error('Guardrails did not behave as expected')
+
+    console.log('\n KEY CONCEPT:')
+    console.log('Three of five requests were refused on the agent side, before any')
+    console.log('signature existed: an untrusted payee, a price over the cap and a')
+    console.log('payment over budget. The two fair calls were paid and everything was logged.')
     console.log('\n--- SESSION COMPLETE ---')
   } finally {
-    server.close()
+    server?.close()
+    client.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main().then(() => process.exit(0)).catch((e) => { console.error('[FAILED]', e.message); process.exit(1) })
+  main()
+    .then(() => process.exit())
+    .catch((error) => {
+      console.error('[FAILED] Execution Error:', error.message)
+      process.exit(1)
+    })
 }

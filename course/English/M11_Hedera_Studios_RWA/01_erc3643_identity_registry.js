@@ -31,7 +31,7 @@
  * - https://erc3643.org/
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 07: Live AI Streaming Proxy Gateway
+ * - Previous: M10 Lab 08: Run Your Own Facilitator
  * - Next:     M11 Lab 02: Tranche Bonds on HTS (ERC-1400 Concepts)
  *
  * [SEQUENCE]

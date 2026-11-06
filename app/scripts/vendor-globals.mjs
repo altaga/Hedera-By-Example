@@ -11,3 +11,7 @@ export const process = globalThis.process || {
   cwd: () => '/',
   nextTick: (fn, ...args) => queueMicrotask(() => fn(...args))
 }
+
+// fetch() inside bundled libraries goes through the runner (Mirror Node rate limit,
+// and 127.0.0.1 requests reach the lab's in-page HTTP servers, e.g. an x402 facilitator).
+export const fetch = (...args) => ((globalThis.__HBE_NODE && globalThis.__HBE_NODE.fetch) || globalThis.fetch)(...args)

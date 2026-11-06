@@ -65,11 +65,16 @@ const toParagraphs = (lines) => {
   const paras = []
   let buf = []
   for (const raw of lines) {
-    const line = raw.trim()
+    const line = raw.trim().replace(/\s{2,}/g, ' ')
     if (!line || line === '*') {
       if (buf.length) paras.push(buf.join(' '))
       buf = []
     } else {
+      // A list item ("- …", "1. …") starts its own paragraph so lists stay one item per line.
+      if (/^(?:[-•]|\d+[.)])\s/.test(line) && buf.length) {
+        paras.push(buf.join(' '))
+        buf = []
+      }
       buf.push(line)
     }
   }
@@ -96,7 +101,9 @@ function parseSequence (lines) {
 // Modules the web runner provides (app/src/lib/labModules.ts); anything else is Node-only.
 const BROWSER_MODULES = new Set(['@hiero-ledger/sdk', '@hashgraph/sdk', 'ethers', 'protobufjs', 'buffer', 'crypto', 'path', 'fs',
   'fs/promises', 'events', 'perf_hooks', 'url', 'util', 'zlib', 'dotenv', 'dotenv/config', 'solc', 'http', 'sqlite',
-  '@hashgraphonline/standards-sdk', '@hiero-did-sdk/core'])
+  '@hashgraphonline/standards-sdk', '@hiero-did-sdk/core',
+  '@x402/core/client', '@x402/core/server', '@x402/core/facilitator', '@x402/core/http', '@x402/hedera',
+  '@x402/hedera/exact/client', '@x402/hedera/exact/server', '@x402/hedera/exact/facilitator', '@x402/fetch'])
 
 function nodeOnlyImports (source) {
   // Only the leading import block counts (same rule as extractImports in labModules.ts):

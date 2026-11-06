@@ -25,12 +25,12 @@ On Hedera, **tokens and consensus messaging are native network primitives**, exe
 | Dimension | **HCS (Consensus Service)** | **HTS (Token Service)** | **HSCS (Smart Contracts)** | **x402 Micropayments** |
 | :--- | :--- | :--- | :--- | :--- |
 | **Primary Purpose** | Verifiable logs, IoT telemetry, DePIN, multi-agent comms | Native fungible tokens, NFTs, RWA assets, stablecoins | Composable DeFi pools, dynamic lending, custom state machines | Autonomous AI agent HTTP payments & per-call API access |
-| **Throughput** | 10,000+ TPS | 10,000+ TPS | ~350–500 TPS (EVM bound) | Instant off-chain auth + sub-2s on-chain settlement |
+| **Throughput** | 10,000+ TPS | 10,000+ TPS | ~350–500 TPS (EVM bound) | One HBAR or HTS transfer per request, settled in seconds |
 | **Finality** | Sub-2 seconds | Sub-2 seconds | Sub-2 seconds | Sub-2 seconds |
 | **Fee Structure** | **Fixed $0.0001 USD** | **Fixed $0.001 USD** | Variable gas in tinybars (pegged to USD) | **Fixed $0.0001 USD** (HBAR transfer) |
 | **Reentrancy Risk** | **Zero** (No bytecode) | **Zero** (Native logic) | Present (Solidity patterns apply) | **Zero** (Atomic transfer) |
-| **Compliance Keys** | Submit Key, Admin Key | Admin, KYC, Freeze, Wipe, Supply, Fee Schedule, Pause | Custom contract modifiers | Challenge nonces / authorization signatures |
-| **EVM Compatibility**| Accessed via `0x168` precompile | Accessed via `0x167` precompile | 100% Solidity / Besu EVM | HTTP standard (`WWW-Authenticate: x402`) |
+| **Compliance Keys** | Submit Key, Admin Key | Admin, KYC, Freeze, Wipe, Supply, Fee Schedule, Pause | Custom contract modifiers | Buyer-signed transfer, facilitator pays the fee |
+| **EVM Compatibility**| Accessed via `0x168` precompile | Accessed via `0x167` precompile | 100% Solidity / Besu EVM | HTTP 402 + `PAYMENT-REQUIRED` / `PAYMENT-SIGNATURE` / `PAYMENT-RESPONSE` headers |
 
 ---
 
@@ -50,7 +50,7 @@ flowchart TD
     
     Q3 -- YES --> HCS["Use HCS (Hedera Consensus Service)<br/>• Decentralized ordering & timestamping<br/>• Sub-2-second finality<br/>• Fixed $0.0001 USD per message<br/>• Ed25519 hardware signatures"]
     
-    Q3 -- NO --> x402["Use x402 Micropayments<br/>• HTTP 402 Payment Required loop<br/>• Direct P2P or Sponsored Facilitator<br/>• Zero escrow smart contract overhead"]
+    Q3 -- NO --> x402["Use x402 Micropayments<br/>• HTTP 402 Payment Required loop<br/>• Facilitator pays the fee (hosted or self-hosted)<br/>• Zero escrow smart contract overhead"]
 ```
 
 ---
@@ -119,7 +119,7 @@ The following guardrails represent the most frequent technical errors encountere
 
 ### ⚠️ Trap 4: Transaction Memo Limit (100 UTF-8 Bytes)
 - **The Pitfall:** Trying to store large payloads, encryption keys, or multi-line logs in the `transactionMemo` field. Fails with `MEMO_TOO_LONG`.
-- **The Ground Truth:** Transaction memos are strictly limited to **100 UTF-8 bytes**. They are designed for routing tags, invoice references, or challenge nonces (e.g., `x402:direct:c8a2ef01...`).
+- **The Ground Truth:** Transaction memos are strictly limited to **100 UTF-8 bytes**. They are designed for routing tags, invoice references, or short correlation ids.
 - **Code Directive:**
   - For payloads $\le 100$ bytes: Use `Transaction.setTransactionMemo()`.
   - For payloads $> 100$ bytes: Use a dedicated **HCS Topic** (`TopicMessageSubmitTransaction`), which supports up to 1,024 bytes per message, or chunked messages up to any size.

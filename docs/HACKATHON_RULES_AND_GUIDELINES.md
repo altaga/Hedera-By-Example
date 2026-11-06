@@ -81,12 +81,11 @@ Hedera is offering **$15,000 USD** in bounties at ETHGlobal Mumbai across two co
 * **The Vision:** Build the machine-to-machine payment infrastructure for the autonomous AI economy using the HTTP `402 Payment Required` standard. Allow AI agents to discover, quote, and pay for services (model inferences, data APIs, agent marketplaces, or metered tool calls) dynamically on the fly.
 * **Why Hedera:** Sub-second finality, fixed $0.0001 USD transaction fees, native HBAR or HTS token settlements (e.g. USDC), and gasless client execution via facilitators.
 * **Mandatory Qualification Requirements:**
-  1. Implement at least one working `x402`-protected endpoint settling on Hedera Testnet or Mainnet (via supported facilitators or self-hosted direct P2P).
+  1. Implement at least one working `x402`-protected endpoint settling on Hedera Testnet or Mainnet (through a hosted facilitator or one you host yourself).
   2. Demonstrate an autonomous AI agent or client discovering the endpoint and executing a paid request end-to-end without human intervention.
   3. Include clickable HashScan explorer links showing genuine on-chain settlement receipts.
 * **Reference Implementation in this Repo:**
-  - [`src/06_x402_direct_p2p.js`](src/06_x402_direct_p2p.js): Direct 2-Party P2P micropayment loop with anti-replay challenge nonces.
-  - See also `M10_Agentic_Micropayments_x402` in the master curriculum for the 3-actor Sponsored Facilitator pattern.
+  - `M10_Agentic_Micropayments_x402` in the course: the official `exact` scheme on Hedera with `@x402/core`, `@x402/hedera` and `@x402/fetch` (Labs 01–07), and a self-hosted facilitator where the merchant pays the fee (Lab 08).
 
 ---
 
@@ -124,7 +123,7 @@ Before submitting your project:
 - [ ] Have you tested your code against live Hedera Testnet within the last few hours?
 - [ ] Are all transaction IDs clickable links leading to `https://hashscan.io/testnet/transaction/...`?
 - [ ] Have you removed all placeholder buttons, fake toggle switches, and non-working tabs from your UI?
-- [ ] Have you validated that single-use nonces prevent replay attacks in payment or telemetry flows?
+- [ ] Have you checked that a replayed payment or telemetry message is rejected (for x402 on Hedera, a reused transaction id fails with DUPLICATE_TRANSACTION)?
 - [ ] Does your README explain clearly how to run the project locally with environment setup instructions?
 - [ ] Can your demo run reliably in pure Node.js without crashing due to external dependencies?
 
