@@ -38,10 +38,10 @@ import path from 'path'
 const main = async () => {
   console.log('--- SESSION START: HCS-1 Data Reconstruction ---\n')
 
-  const topicId = getState('HCS_TOPIC_ID')
+  const topicId = getState('HCS1_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration. Run Lab 04 first.')
+    console.error('[FAILED] Missing HCS1_TOPIC_ID in state. Run M6 Lab 04 first.')
     process.exitCode = 1
     return
   }

@@ -28,7 +28,7 @@ Bienvenido al **Módulo 15**. Este módulo explora arquitecturas Web3 de vanguar
                        ▼
        ┌─────────────────────────────────┐
        │   HEDERA CONSENSUS SERVICE      │
-       │   • Finalidad < 2 segundos      │
+       │   • Finalidad en Segundos       │
        │   • Tarifa Fija de $0.0001 USD  │
        │   • Transferencias Atómicas     │
        └─────────────────────────────────┘

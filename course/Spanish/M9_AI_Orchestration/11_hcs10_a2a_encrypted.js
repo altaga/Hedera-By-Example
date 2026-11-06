@@ -64,7 +64,7 @@ const main = async () => {
   const agentBInbox = getState('HCS11_AGENT_B_INBOUND')
 
   if (!agentAId || !agentBId || !agentAInbox || !agentBInbox) {
-    console.error('[FALLO] Faltan identidades o canales para la orquestación cifrada.')
+    console.error('[FALLO] Faltan los agentes y sus tópicos de entrada. Ejecuta primero el Lab 04 de M9.')
     process.exitCode = 1
     return
   }

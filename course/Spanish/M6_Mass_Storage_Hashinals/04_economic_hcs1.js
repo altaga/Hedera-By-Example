@@ -118,7 +118,7 @@ const main = async () => {
     console.log('\n[ÉXITO] Ciclo de vida de almacenamiento HCS-1 completado.')
 
     // Persistir el Topic ID para el laboratorio de reconstrucción
-    updateState('HCS_TOPIC_ID', topicId.toString())
+    updateState('HCS1_TOPIC_ID', topicId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-1 es el estándar detrás de los "Hashinals". Al usar el')

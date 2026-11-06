@@ -12,7 +12,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Hashinals bring Bitcoin-style Ordinal inscriptions to Hedera with sub-second finality and negligible carbon footprint, binding permanent media inscriptions directly to HTS token serials.
+ * Hashinals bring Bitcoin-style Ordinal inscriptions to Hedera with finality in seconds and negligible carbon footprint, binding permanent media inscriptions directly to HTS token serials.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hashgraphonline.com/

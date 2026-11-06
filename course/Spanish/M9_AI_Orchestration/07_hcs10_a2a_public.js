@@ -62,7 +62,7 @@ const main = async () => {
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
   if (!agentAId || !agentBId || !inbox || !outbox) {
-    console.error('[FALLO] Faltan los IDs de los agentes o los tópicos en el estado. Ejecuta antes el Lab 04 de M9.')
+    console.error('[FALLO] Faltan los agentes y sus tópicos. Ejecuta primero el Lab 04 de M9.')
     process.exitCode = 1
     return
   }

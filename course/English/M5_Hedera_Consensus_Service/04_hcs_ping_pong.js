@@ -12,7 +12,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Benchmarking HCS consensus turnaround time provides empirical proof of sub-second finality. Measuring round-trip message timestamps confirms fair ordering across global consensus nodes.
+ * Benchmarking HCS consensus turnaround time provides empirical proof of finality in seconds. Measuring round-trip message timestamps confirms fair ordering across global consensus nodes.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/native/consensus
@@ -88,7 +88,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration.')
+    console.error('[FAILED] Missing HCS_TOPIC_ID in state. Run M5 Lab 01 first.')
     process.exitCode = 1
     return
   }

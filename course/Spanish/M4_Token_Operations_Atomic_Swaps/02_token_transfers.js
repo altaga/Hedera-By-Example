@@ -44,7 +44,7 @@ const main = async () => {
   const tokenId = getState('FT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[FALLO] Falta FT_TOKEN_ID en el estado o ACCOUNT_1 en el .env.')
+    console.error('[FALLO] Falta ACCOUNT_1_ID (.env) o FT_TOKEN_ID (ejecuta primero el Lab 01 de M3).')
     process.exitCode = 1
     return
   }

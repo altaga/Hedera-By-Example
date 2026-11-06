@@ -14,7 +14,7 @@
  * artefactos históricos.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los Hashinals llevan el concepto de inscripciones tipo Ordinals a Hedera con finalidad en subsegundos y huella de carbono despreciable, enlazando inscripciones permanentes a números de serie de HTS.
+ * Los Hashinals llevan el concepto de inscripciones tipo Ordinals a Hedera con finalidad en segundos y huella de carbono despreciable, enlazando inscripciones permanentes a números de serie de HTS.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hashgraphonline.com/

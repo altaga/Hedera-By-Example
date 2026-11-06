@@ -50,7 +50,7 @@ const main = async () => {
   const nftTokenId = getState('NFT_TOKEN_ID')
 
   if (!userId || !userKey || !nftTokenId) {
-    console.error('[FALLO] Faltan credenciales de ACCOUNT_1 o el NFT_TOKEN_ID en el estado.')
+    console.error('[FALLO] Faltan las credenciales de ACCOUNT_1 (.env) o NFT_TOKEN_ID (ejecuta primero el Lab 03 de M3).')
     process.exitCode = 1
     return
   }

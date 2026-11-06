@@ -64,7 +64,7 @@ const main = async () => {
   const agentBInbox = getState('HCS11_AGENT_B_INBOUND')
 
   if (!agentAId || !agentBId || !agentAInbox || !agentBInbox) {
-    console.error('[FAILED] Missing Agent data or Inbox Topics in configuration.')
+    console.error('[FAILED] Missing the agents and their inbox topics. Run M9 Lab 04 first.')
     process.exitCode = 1
     return
   }

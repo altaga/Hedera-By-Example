@@ -241,7 +241,7 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Al combinar pruebas de estado CLPR (HIP-1535) con el asignaciones HIP-336 y tarifas patrocinadas por el pagador,')
     console.log('Hedera se posiciona como el centro de liquidación de mayor rendimiento y menor fricción en Web3.')
-    console.log('Cero puentes vulnerables, cero barreras de gas y finalidad en menos de un segundo.')
+    console.log('Cero puentes vulnerables, cero barreras de gas y finalidad en segundos.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Las aplicaciones cross-chain modernas nunca deben exigir al usuario final adquirir tokens exóticos.')

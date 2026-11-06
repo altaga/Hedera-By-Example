@@ -9,7 +9,7 @@
 ## THE BRUTAL TRUTH
 Most blockchain courses teach you how to build slow, expensive, and fragile "Minimum Viable Products". **This is not that course.** 
 
-We focus on the **Hedera Hashgraph** ecosystem—a high-performance distributed ledger that delivers 10,000+ TPS, sub-second finality, and predictable fees. We use **Functional JavaScript** to build systems that are as elegant as they are powerful.
+We focus on the **Hedera Hashgraph** ecosystem—a high-performance distributed ledger that delivers 10,000+ TPS, finality in seconds, and predictable fees. We use **Functional JavaScript** to build systems that are as elegant as they are powerful.
 
 ---
 

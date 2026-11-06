@@ -13,7 +13,7 @@
  * en tiempo real sobre el ledger.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Medir el tiempo de respuesta en consenso de HCS proporciona prueba empírica de finalidad en subsegundos. Evaluar los tiempos de ida y vuelta confirma el ordenamiento justo a través de nodos globales.
+ * Medir el tiempo de respuesta en consenso de HCS proporciona prueba empírica de finalidad en segundos. Evaluar los tiempos de ida y vuelta confirma el ordenamiento justo a través de nodos globales.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/native/consensus
@@ -89,7 +89,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta el Lab 01 primero.')
+    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado. Ejecuta primero el Lab 01 de M5.')
     process.exitCode = 1
     return
   }

@@ -39,10 +39,10 @@ import path from 'path'
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Reconstrucción de Activos (HCS-1) ---\n')
 
-  const topicId = getState('HCS_TOPIC_ID')
+  const topicId = getState('HCS1_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local. Ejecuta Lab 04 primero.')
+    console.error('[FALLO] Falta HCS1_TOPIC_ID en el estado. Ejecuta primero el Lab 04 de M6.')
     process.exitCode = 1
     return
   }

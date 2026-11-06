@@ -40,10 +40,10 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Identidad Determinista (HCS-14) ---\n')
 
   // 1. Recuperar el ID del Agente de Auditoría (Creado en Lab 04)
-  const agentId = getState('HCS11_AGENT_C_ID')
+  const agentId = getState('HCS11_AGENT_A_ID')
 
   if (!agentId) {
-    console.error('[FALLO] HCS11_AGENT_C_ID no encontrado. Ejecuta Lab 04 primero.')
+    console.error('[FALLO] Falta HCS11_AGENT_A_ID en el estado. Ejecuta primero el Lab 04 de M9.')
     process.exitCode = 1
     return
   }

@@ -49,7 +49,7 @@ const main = async () => {
   const nftTokenId = getState('NFT_TOKEN_ID')
 
   if (!userId || !userKey || !nftTokenId) {
-    console.error('[FAILED] Missing ACCOUNT_1_ID, ACCOUNT_1_PRIVATE_KEY, or NFT_TOKEN_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1 credentials (.env) or NFT_TOKEN_ID (run M3 Lab 03 first).')
     process.exitCode = 1
     return
   }

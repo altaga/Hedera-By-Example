@@ -44,7 +44,7 @@ const main = async () => {
   const fileId = getState('HFS_FILE_ID')
 
   if (!fileId) {
-    console.error('[FALLO] Falta HFS_FILE_ID en el estado local. Ejecuta Lab 01/02 primero.')
+    console.error('[FALLO] Falta HFS_FILE_ID en el estado. Ejecuta primero el Lab 01 o 02 de M6.')
     process.exitCode = 1
     return
   }

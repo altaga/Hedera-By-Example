@@ -45,7 +45,7 @@ const main = async () => {
   const scheduleId = getState('SCHEDULE_ID')
 
   if (!userKey || !scheduleId) {
-    console.error('[FALLO] Faltan credenciales o el ID de programación. Ejecuta Lab 03 primero.')
+    console.error('[FALLO] Falta ACCOUNT_1_PRIVATE_KEY (.env) o SCHEDULE_ID (ejecuta primero el Lab 03 de M7).')
     process.exitCode = 1
     return
   }

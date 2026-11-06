@@ -42,7 +42,7 @@ const main = async () => {
   const agentId = getState('HCS11_AGENT_A_ID')
 
   if (!agentId) {
-    console.error('[FAILED] HCS11_AGENT_ID not found. Run previous labs first.')
+    console.error('[FAILED] Missing HCS11_AGENT_A_ID in state. Run M9 Lab 04 first.')
     process.exitCode = 1
     return
   }

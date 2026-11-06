@@ -42,7 +42,7 @@ const main = async () => {
   const tokenId = getState('FT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[FAILED] Missing ACCOUNT_1_ID or FT_TOKEN_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID (.env) or FT_TOKEN_ID (run M3 Lab 01 first).')
     process.exitCode = 1
     console.log('[INFO] Tip: Run M3.1 to issue tokens first.')
     return

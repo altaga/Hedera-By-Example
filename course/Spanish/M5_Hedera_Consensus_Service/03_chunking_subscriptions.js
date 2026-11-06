@@ -90,7 +90,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado local.')
+    console.error('[FALLO] Falta HCS_TOPIC_ID en el estado. Ejecuta primero el Lab 01 de M5.')
     process.exitCode = 1
     return
   }

@@ -42,7 +42,7 @@ const main = async () => {
   const tokenId = getState('NFT_TOKEN_ID')
 
   if (!targetId || !tokenId) {
-    console.error('[FAILED] Missing ACCOUNT_1_ID or NFT_TOKEN_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_ID (.env) or NFT_TOKEN_ID (run M3 Lab 03 first).')
     process.exitCode = 1
     console.log('[INFO] Tip: Run M3.3 to issue an NFT collection first.')
     return

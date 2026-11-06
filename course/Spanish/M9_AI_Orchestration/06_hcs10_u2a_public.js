@@ -62,7 +62,7 @@ const main = async () => {
   const operatorKeyRaw = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!agentId || !operatorId) {
-    console.error('[FALLO] Faltan los datos del Agente A o de la Cuenta 1 en la configuración.')
+    console.error('[FALLO] Falta el Agente A (ejecuta primero el Lab 04 de M9) o ACCOUNT_1 (.env).')
     process.exitCode = 1
     return
   }

@@ -10,7 +10,7 @@
  * autenticidad criptográfica Zero-Trust. Al firmar la telemetría en el Secure Enclave
  * del dispositivo (Ed25519) y transmitirla por MQTTS (TLS 1.3), una pasarela de ingesta
  * agrupa los cuadros rutinarios en una raíz Merkle para HCS, despachando de forma
- * inmediata alertas agudas de arritmia al Consenso de Hedera en < 2 segundos.
+ * inmediata alertas agudas de arritmia al Consenso de Hedera en cuestión de segundos.
  *
  * [ MOMENTO DE APRENDIZAJE ]
  * La publicación directa en la cadena de cada latido individual (50-100 Hz) saturaría
@@ -229,7 +229,7 @@ async function main () {
     console.log('\n CONCEPTO CLAVE:')
     console.log('DePIN combina criptografía de hardware IoT con el alto rendimiento de consenso de Hedera.')
     console.log('Las operaciones normales se agrupan fuera de la cadena para minimizar costos, mientras')
-    console.log('que las alertas críticas logran ordenamiento inmutable de consenso en menos de 2 segundos.')
+    console.log('que las alertas críticas logran ordenamiento inmutable de consenso en cuestión de segundos.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Nunca publiques lecturas individuales de sensores si puedes agruparlas mediante pruebas Merkle.')

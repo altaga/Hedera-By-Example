@@ -116,7 +116,7 @@ const main = async () => {
     console.log('[INFO] Every message is order-verified and cryptographically linked.')
 
     // Persist Topic ID for reconstruction in step 05
-    updateState('HCS_TOPIC_ID', topicId.toString())
+    updateState('HCS1_TOPIC_ID', topicId.toString())
 
     console.log('\n KEY CONCEPT:')
     console.log('The Cost of Consensus: By using HCS for storage, you pay only for the')

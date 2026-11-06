@@ -63,7 +63,7 @@ const main = async () => {
   const outbox = getState('HCS11_AGENT_B_OUTBOUND')
 
   if (!agentAId || !agentBId || !agentCId) {
-    console.error('[FAILED] Missing Agent IDs in configuration.')
+    console.error('[FAILED] Missing the agents and their topics. Run M9 Lab 04 first.')
     process.exitCode = 1
     return
   }

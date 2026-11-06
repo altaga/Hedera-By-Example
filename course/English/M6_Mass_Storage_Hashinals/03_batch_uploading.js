@@ -43,7 +43,7 @@ const main = async () => {
   const fileId = getState('HFS_FILE_ID')
 
   if (!fileId) {
-    console.error('[FAILED] Missing HFS_FILE_ID in configuration.')
+    console.error('[FAILED] Missing HFS_FILE_ID in state. Run M6 Lab 01 or 02 first.')
     process.exitCode = 1
     return
   }

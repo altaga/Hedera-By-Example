@@ -44,7 +44,7 @@ const main = async () => {
   const scheduleId = getState('SCHEDULE_ID')
 
   if (!userKey || !scheduleId) {
-    console.error('[FAILED] Missing ACCOUNT_1_PRIVATE_KEY or SCHEDULE_ID in configuration.')
+    console.error('[FAILED] Missing ACCOUNT_1_PRIVATE_KEY (.env) or SCHEDULE_ID (run M7 Lab 03 first).')
     process.exitCode = 1
     console.log('[INFO] Tip: Run Lab 03 first to schedule a transaction.')
     return

@@ -91,7 +91,7 @@ const main = async () => {
   const topicId = getState('HCS_TOPIC_ID')
 
   if (!topicId) {
-    console.error('[FAILED] Missing HCS_TOPIC_ID in configuration.')
+    console.error('[FAILED] Missing HCS_TOPIC_ID in state. Run M5 Lab 01 first.')
     process.exitCode = 1
     return
   }

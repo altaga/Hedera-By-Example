@@ -1,11 +1,11 @@
 /**
  * ============================================================================
- * Lab 07: NFTs Dinámicos (HIP-765)
+ * Lab 07: NFTs Dinámicos (HIP-657)
  * [CONCEPTO] Metadatos Mutables en HTS
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Históricamente, los NFTs en Hedera eran estrictamente inmutables una vez
- * minteados. Con la HIP-765, los desarrolladores pueden asignar una `metadataKey`
+ * minteados. Con la HIP-657, los desarrolladores pueden asignar una `metadataKey`
  * a una colección de tokens. Esto permite al poseedor de la llave usar
  * `TokenUpdateNftsTransaction` para alterar los metadatos de números de serie
  * específicos DESPUÉS de haber sido minteados. Esto habilita NFTs dinámicos

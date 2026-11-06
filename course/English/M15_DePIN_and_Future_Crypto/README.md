@@ -28,7 +28,7 @@ Welcome to **Module 15**. This module explores frontier Web3 architectures integ
                        ▼
        ┌─────────────────────────────────┐
        │   HEDERA CONSENSUS SERVICE      │
-       │   • Sub-2s Finality             │
+       │   • Finality in Seconds         │
        │   • $0.0001 Fixed Consensus Fee │
        │   • Multi-Leg Atomic Transfers  │
        └─────────────────────────────────┘

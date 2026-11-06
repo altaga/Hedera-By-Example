@@ -61,7 +61,7 @@ const main = async () => {
   const operatorKeyRaw = process.env.ACCOUNT_1_PRIVATE_KEY
 
   if (!agentId || !operatorId) {
-    console.error('[FAILED] Missing Agent A or Account 1 data in configuration.')
+    console.error('[FAILED] Missing Agent A (run M9 Lab 04 first) or ACCOUNT_1 (.env).')
     process.exitCode = 1
     return
   }
