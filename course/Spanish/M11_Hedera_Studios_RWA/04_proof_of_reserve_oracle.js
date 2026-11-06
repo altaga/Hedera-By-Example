@@ -18,7 +18,7 @@
  * - https://docs.hedera.com/solutions/tokenization/stablecoin
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M11 Lab 03: Roles en Stablecoin Studio
+ * - Anterior: M11 Lab 03: Roles de Stablecoin en HTS (Conceptos de Stablecoin Studio)
  * - Actual:   M11 Lab 04: Oráculo Proof-of-Reserve
  * - Siguiente: M11 Lab 05: Factoraje de Facturas RWA
  *

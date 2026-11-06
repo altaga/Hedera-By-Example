@@ -30,7 +30,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 09: HIP-1334 Encrypted Message Box
- * - Next:     Course Complete (Mastery Achieved)
+ * - Next:     M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
  *
  * [SEQUENCE]
  * Client -> Server: initialize + tools/list over stdio

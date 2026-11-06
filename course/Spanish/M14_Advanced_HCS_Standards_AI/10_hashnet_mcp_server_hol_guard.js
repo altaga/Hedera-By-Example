@@ -30,7 +30,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 09: Buzón de Mensajes Cifrado HIP-1334
- * - Siguiente: Curso Completado (Maestría Alcanzada)
+ * - Siguiente: M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
  *
  * [SECUENCIA]
  * Cliente -> Servidor: initialize + tools/list sobre stdio

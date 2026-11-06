@@ -30,7 +30,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M14 Lab 07: Enjambres Botánicos HCS-15..18
- * - Siguiente: M14 Lab 09: Buzón de Mensajes Cifrado Descentralizado HIP-1334
+ * - Siguiente: M14 Lab 09: Buzón de Mensajes Privado HIP-1334
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

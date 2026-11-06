@@ -21,7 +21,7 @@
  * anomaly thresholds are breached.
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 10: Hashnet MCP Server & HOL Guard
+ * - Previous: M14 Lab 10: Hedera MCP Server with a Custom Policy Guard
  * - Next:     M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC)
  *
  * [ OFFICIAL REFERENCES ]
