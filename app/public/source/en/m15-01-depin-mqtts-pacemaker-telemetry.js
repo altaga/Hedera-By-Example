@@ -10,7 +10,7 @@
  * cryptographic authenticity. By signing telemetry in the device's Secure Enclave
  * (Ed25519) and streaming over MQTTS (TLS 1.3), an ingestion gateway aggregates
  * routine frames into a Merkle root for HCS batching while immediately dispatching
- * acute arrhythmia alerts to Hedera Consensus in < 2 seconds.
+ * acute arrhythmia alerts to Hedera Consensus within seconds.
  *
  * [ LEARNABLE MOMENT ]
  * Direct on-chain publication of every single heartbeat (50-100 Hz) would overwhelm
@@ -229,7 +229,7 @@ async function main () {
     console.log('\n KEY CONCEPT:')
     console.log('DePIN combines IoT hardware cryptography with Hedera high-throughput consensus.')
     console.log('Normal operations are batched off-chain to minimize overhead, while life-critical')
-    console.log('alerts achieve immutable consensus ordering in under 2 seconds.')
+    console.log('alerts achieve immutable consensus ordering within seconds.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Never post individual raw sensor frames if you can batch via Merkle proofs.')

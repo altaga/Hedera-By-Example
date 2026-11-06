@@ -241,7 +241,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('By fusing CLPR (HIP-1535) state proofs with HIP-336 allowances and payer-sponsored fees,')
     console.log('Hedera becomes the highest-throughput, lowest-friction settlement hub in Web3.')
-    console.log('Zero bridge honeypots, zero gas barriers, sub-second finality.')
+    console.log('Zero bridge honeypots, zero gas barriers, finality in seconds.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Modern cross-chain applications should never force end users to acquire gas')

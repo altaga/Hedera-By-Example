@@ -19,7 +19,7 @@
  * - Consensus Timestamp Snapshot: Freezes cap table balances at an exact point in time.
  * - Prorated Dividend Engine: Calculates pro-rata entitlements and withholding logic.
  * - Atomic Multi-Party Settlement: Executes a single batch transfer transaction where
- *   all investor payouts settle simultaneously with sub-second finality.
+ *   all investor payouts settle simultaneously with finality in seconds.
  * - HCS Regulatory Certification: Anchors an immutable audit trail to Hedera Consensus
  *   Service for SEC, FINRA, or MiCA regulatory examination.
  *

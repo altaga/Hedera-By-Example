@@ -13,7 +13,7 @@
  * en tiempo real sobre el ledger.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Medir el tiempo de respuesta en consenso de HCS proporciona prueba empírica de finalidad en subsegundos. Evaluar los tiempos de ida y vuelta confirma el ordenamiento justo a través de nodos globales.
+ * Medir el tiempo de respuesta en consenso de HCS proporciona prueba empírica de finalidad en segundos. Evaluar los tiempos de ida y vuelta confirma el ordenamiento justo a través de nodos globales.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/native/consensus
