@@ -186,6 +186,8 @@ function parseSegments (lines, offset) {
         i++
       }
     } else {
+      // The CLI self-launcher is its own segment, so hiding it never hides the end of main()
+      if (/^if\s*\(\s*process\.argv\[1\]/.test(line)) flushIfCode()
       if (!cur.code.length) cur.start = offset + i + 1
       cur.code.push(line)
     }

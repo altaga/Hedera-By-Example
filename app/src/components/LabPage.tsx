@@ -158,13 +158,13 @@ function CompanionStrip ({
   )
 }
 
-function CodeLines ({ text, start, sdk }: { text: string; start: number; sdk: Set<string> }) {
+function CodeLines ({ text, start, sdk, numbers }: { text: string; start: number; sdk: Set<string>; numbers?: Array<number | null> }) {
   const lines = useMemo(() => text.split('\n'), [text])
   const highlighted = useMemo(() => highlightLines(lines, sdk), [lines, sdk])
   return (
     <pre className='code'><code>
       {highlighted.map((nodes, i) => (
-        <span key={i} className='code-line' data-line={start + i}>{nodes.length ? nodes : ' '}{'\n'}</span>
+        <span key={i} className='code-line' data-line={numbers ? (numbers[i] ?? '') : start + i}>{nodes.length ? nodes : ' '}{'\n'}</span>
       ))}
     </code></pre>
   )
@@ -616,7 +616,7 @@ export function LabPage (props: Props) {
                       )}
                     </div>
                     <div className='walk-code'>
-                      {seg.code ? <CodeLines text={seg.code} start={seg.start ?? 1} sdk={sdk} /> : null}
+                      {seg.code ? <CodeLines text={seg.code} start={seg.start ?? 1} sdk={sdk} numbers={seg.lines} /> : null}
                     </div>
                   </div>
                 )

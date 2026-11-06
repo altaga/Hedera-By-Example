@@ -20,13 +20,15 @@ export interface ExtractedCompanionModule {
   end: number
   startLine: number
   endLine: number
-  segments: Array<{ doc: string[]; code: string; start: number }>
+  segments: Array<{ doc: string[]; code: string; start: number; lines?: Array<number | null> }>
 }
 
 export interface LabWalkthroughSegment {
   doc: string[]
   code?: string
   start?: number
+  /** Real source line number per displayed line (null = spacer between merged parts). */
+  lines?: Array<number | null>
   /** Single extracted module (legacy); prefer companionModules for strips. */
   companionModule?: ExtractedCompanionModule
   /** Compact strip of extracted modules shown once in the main walkthrough. */
@@ -48,6 +50,29 @@ export interface LabCodeFile {
 
 const nonEmptyLines = (code?: string) =>
   (code || '').split('\n').filter((l) => l.trim().length > 0).length
+
+/** Real line numbers of a segment's displayed lines. */
+export const segmentLineNumbers = (seg: { code?: string; start?: number; lines?: Array<number | null> }): Array<number | null> => {
+  if (seg.lines) return seg.lines
+  const n = (seg.code || '').split('\n').length
+  return Array.from({ length: n }, (_, i) => (seg.start ?? 1) + i)
+}
+
+/** Drop blank lines at both ends only (keeps indentation); returns the new start line. */
+export const stripBlankEdges = (code: string, start: number): { code: string; start: number } => {
+  const lines = code.split('\n')
+  let s = start
+  while (lines.length && !lines[0].trim()) { lines.shift(); s++ }
+  while (lines.length && !lines[lines.length - 1].trim()) lines.pop()
+  return { code: lines.join('\n'), start: s }
+}
+
+/** Split a segment's code at a character index, keeping real start lines for both halves. */
+export const splitSegmentCode = (code: string, start: number, index: number) => {
+  const before = stripBlankEdges(code.slice(0, index), start)
+  const after = stripBlankEdges(code.slice(index), start + code.slice(0, index).split('\n').length - 1)
+  return { before, after }
+}
 
 const docChars = (doc?: string[]) => (doc || []).join(' ').trim().length
 
@@ -80,6 +105,7 @@ export function mergeWalkthroughSegments (
         doc: [...(seg.doc || [])],
         code: seg.code,
         start: seg.start,
+        lines: seg.lines,
       })
       continue
     }
@@ -103,8 +129,14 @@ export function mergeWalkthroughSegments (
       if (seg.code?.trim()) {
         const left = prev.code || ''
         const right = seg.code || ''
-        const joiner = left && right ? '\n\n' : ''
-        prev.code = `${left}${joiner}${right}`
+        if (left && right) {
+          prev.lines = [...segmentLineNumbers(prev), null, ...segmentLineNumbers(seg)]
+          prev.code = `${left}\n\n${right}`
+        } else {
+          prev.lines = left ? segmentLineNumbers(prev) : segmentLineNumbers(seg)
+          prev.code = left || right
+          if (!left) prev.start = seg.start
+        }
       }
       if (seg.doc?.length) prev.doc = [...(prev.doc || []), ...seg.doc]
       continue
@@ -114,6 +146,7 @@ export function mergeWalkthroughSegments (
       doc: [...(seg.doc || [])],
       code: seg.code,
       start: seg.start,
+      lines: seg.lines,
     })
   }
 
@@ -325,10 +358,12 @@ export function buildLabFileTabs({
     const trimmedCode = segCode.trim()
     if (!trimmedCode) return null
     const firstLine = trimmedCode.split('\n')[0].trim()
+    // Generic first lines (an import block, a lone brace) say nothing about which module owns the code
+    const distinctive = firstLine.length > 5 && !/^(import\b|export\b|[{}()\[\];,]+$)/.test(firstLine)
     for (const mod of modules) {
       if (
         mod.code.includes(trimmedCode) ||
-        (firstLine.length > 5 && mod.code.includes(firstLine)) ||
+        (distinctive && mod.code.includes(firstLine)) ||
         new RegExp(`(?:class|const|let|var|function)\\s+${mod.name}\\b`).test(firstLine)
       ) {
         return mod
@@ -345,18 +380,17 @@ export function buildLabFileTabs({
       const mainMatch = mainRegex.exec(seg.code || '')
 
       if (mainMatch) {
-        const modPartCode = seg.code.slice(0, mainMatch.index).trim()
-        const mainPartCode = seg.code.slice(mainMatch.index).trim()
+        const { before, after } = splitSegmentCode(seg.code, seg.start ?? 1, mainMatch.index)
 
-        if (modPartCode) {
-          matchedModule.segments.push({ ...seg, code: modPartCode })
+        if (before.code.trim()) {
+          matchedModule.segments.push({ ...seg, code: before.code, start: before.start })
         }
         ensureModuleStrip(matchedModule.startLine)
-        if (mainPartCode) {
+        if (after.code.trim()) {
           mainSegments.push({
             doc: lang === 'es' ? ['Flujo principal'] : ['Main flow'],
-            code: mainPartCode,
-            start: seg.start,
+            code: after.code,
+            start: after.start,
           })
         }
       } else {

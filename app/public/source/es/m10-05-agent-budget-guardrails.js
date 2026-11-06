@@ -1,7 +1,5 @@
 /* eslint-disable camelcase, no-unused-vars */
 
-import '@x402/fetch' // Node-only: official x402 client stack
-
 /**
  * ============================================================================
  * Lab 05: Guardrails financieros del agente autónomo
@@ -35,6 +33,8 @@ import '@x402/fetch' // Node-only: official x402 client stack
  * node Spanish/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================
  */
+
+import '@x402/fetch' // Node-only: official x402 client stack
 
 import {
   TopicCreateTransaction,
