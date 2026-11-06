@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 import { createHash } from 'crypto'
 import { AccountCreateTransaction, AccountId, ContractCreateFlow, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey, TokenId, TopicId, TransferTransaction } from '@hiero-ledger/sdk'
-import { getMirrorNodeBaseUrl } from './config.js'
+import { getMirrorNodeBaseUrl, parsePrivateKey } from './config.js'
 import { getState, updateState } from './storage.js'
 
 const sleepMs = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -189,7 +189,7 @@ export const ensureFunded = async (client, accountId, minHbar) => {
  */
 export const getJsonRpcSigner = async (client, operatorKey, { minHbar = 5 } = {}) => {
   const operatorId = client.operatorAccountId.toString()
-  const opKey = PrivateKey.fromStringDer(operatorKey)
+  const opKey = parsePrivateKey(operatorKey)
   if (opKey.type === 'secp256k1') {
     const derived = '0x' + opKey.publicKey.toEvmAddress()
     if ((await getAccountEvmAddress(operatorId)).toLowerCase() === derived.toLowerCase()) {

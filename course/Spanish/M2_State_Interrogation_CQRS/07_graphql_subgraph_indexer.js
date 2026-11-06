@@ -1,7 +1,7 @@
 /* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
 /**
  * ============================================================================
- * Lab 07: Indexador de Subgrafos GraphQL para Mirror Node
+ * Lab 07: Agregador de Consultas al Mirror Node (Resolvers Estilo GraphQL)
  * [CONCEPTO] Motor Unificado de Consultas en Grafo sobre el Estado de Hedera
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -26,6 +26,9 @@
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real
  * - Siguiente: M3 Lab 01: Emisión Inmutable
+ *
+ * [SIMULADO]
+ * No hay servidor GraphQL ni subgrafo: un resolver local estilo GraphQL ejecuta llamadas REST paralelas al Mirror Node y devuelve solo los campos seleccionados. Los datos son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

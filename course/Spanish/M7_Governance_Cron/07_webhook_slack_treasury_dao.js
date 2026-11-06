@@ -39,6 +39,9 @@
  * Fideicomisario 2 -> Hedera: ScheduleSign
  * Hedera -> Tesorería: Umbral cumplido: el pago se ejecuta solo
  *
+ * [SIMULADO]
+ * El webhook de Slack/Discord se imprime localmente, no se envía. La tesorería multifirma, el pago programado, las firmas y la consulta al Mirror Node son reales.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).

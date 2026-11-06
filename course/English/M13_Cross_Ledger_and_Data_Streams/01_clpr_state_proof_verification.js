@@ -23,7 +23,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 04: Scaffold-HBAR Architecture
+ * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  * - Next:     M13 Lab 02: Native Delegated Fee Sponsorship (HIP-336)
  *
  * [SIMULATED]

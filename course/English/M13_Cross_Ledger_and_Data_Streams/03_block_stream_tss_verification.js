@@ -26,7 +26,7 @@
  * - Next:     M13 Lab 04: Block Node Discovery & Data Lake (HIP-1081 / HIP-1137)
  *
  * [SIMULATED]
- * The TSS quorum verification is simulated (HIP-1056 is not live yet).
+ * The TSS quorum check uses a locally generated committee: network-aggregated TSS block proofs (HIP-1200 hinTS) only arrive with the November 2026 block-stream cutover (HIP-1193), and testnet block files sit in requester-pays buckets. The block and transactions read from the Mirror Node are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

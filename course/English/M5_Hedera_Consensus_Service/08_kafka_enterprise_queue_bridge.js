@@ -35,6 +35,9 @@
  * - Previous: M5 Lab 07: Merkle Batch Ingestion Engine
  * - Next:     M6 Lab 01: Native HFS
  *
+ * [SIMULATED]
+ * No Kafka or Redpanda broker is used: the partition events are generated in memory. The HCS watermark anchors are real.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
