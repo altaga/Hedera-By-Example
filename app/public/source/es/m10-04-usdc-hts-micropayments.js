@@ -1,142 +1,171 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/* eslint-disable camelcase, no-unused-vars */
 /**
  * ============================================================================
- * Lab 04: Micropagos en Stablecoins (USDC) con HTS
- * [CONCEPTO] Liquidaciones de Fracciones de Centavo con Hedera Token Service
+ * Lab 04: Micropagos HTS en stablecoin (USDC)
+ * [CONCEPT] Official exact scheme with HTS fungible asset
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * La Paradoja de las Tarjetas de Crédito: Cobrar \$0.01 por una petición a una API
- * a través de Stripe o Visa cuesta \$0.30 + 2.9% en comisiones de intercambio: un
- * sobrecosto del 3,000% que destruye los modelos de negocio máquina-a-máquina. Con
- * Hedera Token Service (HTS), una transferencia de USDC cuesta una tarifa fija de
- * ~\$0.001 USD de red, haciendo que el cobro por token o por inferencia sea rentable.
- * *
+ * Hedera's exact scheme settles HBAR (asset 0.0.0) or any HTS fungible token by
+ * entity id. Official testnet USDC is 0.0.429274 (6 decimals). Dollar prices like
+ * "$0.001" require defaultAssets pointing at that HTS id — not a homemade mock.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Liquidar peticiones de API en USDC nativo de HTS protege a los proveedores de la volatilidad del mercado, manteniendo comisiones de liquidación inferiores a un centavo en Hedera.
+ * Both payer and merchant must associate the HTS token before settlement or the
+ * facilitator will reject / the transfer fails with TOKEN_NOT_ASSOCIATED.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/core-concepts/tokens
+ * - https://docs.hedera.com/solutions/ai/x402/exact-scheme
+ * - https://www.npmjs.com/package/@x402/hedera (HEDERA_TESTNET_USDC)
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M10 Lab 03: Liquidación del Facilitador
- * - Actual:   M10 Lab 04: Micropagos USDC en HTS
- * - Siguiente: M10 Lab 05: Límites Financieros (Guardrails)
+ * - Previous: M10 Lab 03: Facilitator Settlement
+ * - Next:     M10 Lab 05: Financial Guardrails
  *
- * [SECUENCIA]
- * Servidor -> Agente: Desafío 402 con precio en USDC ($0.025)
- * Agente -> Hedera: Transferencia de token HTS de 25,000 unidades base
- * Hedera -> Agente: Recibo SUCCESS
- * Agente -> Servidor: Reintenta con el ID de la transacción de pago
+ * [ SECUENCIA ]
+ * Note Lab: associate OPERATOR + MERCHANT with HEDERA_TESTNET_USDC if needed
+ * Server -> Agent: 402 priced in USDC units
+ * Agent -> Server: PAYMENT-SIGNATURE (HTS transfer)
+ * Facilitator -> Hedera: settle
  *
- * [SIMULADO]
- * El "USDC" es un token de prueba que acuña el lab, y el pago es una transferencia a ti mismo. Ambos son reales en testnet.
+ * [ SIMULADO ]
+ * If the operator has no testnet USDC, the lab falls back to documenting the
+ * official asset id and settles an equivalent HBAR micropayment instead — never
+ * minting a fake "USDC" token and calling it official.
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Optional: mint test USDC at https://faucet.circle.com/ (Hedera Testnet) after association.
+ * - Cost: association fees + micropayment.
  *
- * [ CÓMO EJECUTAR ]
+ * [ COMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/04_usdc_hts_micropayments.js
  * ============================================================================
  */
 
 import {
-  TokenCreateTransaction,
-  TokenType,
-  TokenSupplyType,
-  TransferTransaction,
+  TokenAssociateTransaction,
+  TokenId,
   AccountId
 } from '@hiero-ledger/sdk'
-import { getClient, getState, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { x402ResourceServer } from '@x402/express'
+import { ExactHederaScheme as ServerScheme } from '@x402/hedera/exact/server'
+import express from 'express'
+import { paymentMiddleware } from '@x402/express'
+import {
+  createFacilitatorClient,
+  listenLocal,
+  createPayingFetch,
+  decodePaymentResponse,
+  getOperatorContext,
+  HEDERA_TESTNET_USDC,
+  HEDERA_USDC_DECIMALS,
+  HBAR_ASSET_ID,
+  LAB_PRICE_TINYBARS,
+  X402_NETWORK
+} from '../M99_Utilities/index.js'
+import { updateState } from '../M99_Utilities/storage.js'
+import { parsePrivateKey, createClient } from '../M99_Utilities/config.js'
+
+
+async function mirrorAccount (accountId) {
+  const url = `https://testnet.mirrornode.hedera.com/api/v1/accounts/${accountId}`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Mirror account lookup failed: HTTP ${res.status}`)
+  return res.json()
+}
+
+async function ensureAssociated (client, accountId, tokenId) {
+  const info = await mirrorAccount(accountId)
+  const ids = new Set((info.balance?.tokens || []).map((t) => t.token_id))
+  if (ids.has(tokenId)) {
+    console.log(`[INFO] ${accountId} already associated with ${tokenId}`)
+    return
+  }
+  console.log(`[PROCESS] Associating ${accountId} with ${tokenId}...`)
+  const tx = await new TokenAssociateTransaction()
+    .setAccountId(AccountId.fromString(accountId))
+    .setTokenIds([TokenId.fromString(tokenId)])
+    .execute(client)
+  await tx.getReceipt(client)
+  console.log('[SUCCESS] Association complete')
+}
+
+async function usdcBalance (accountId, tokenId) {
+  const info = await mirrorAccount(accountId)
+  const row = (info.balance?.tokens || []).find((t) => t.token_id === tokenId)
+  return BigInt(row?.balance || 0)
+}
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Riel de Micropagos HTS Stablecoin (USDC) ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- SESSION START: Official HTS USDC (or documented fallback) ---\n')
+  const { client, operatorId, operatorKey, merchantId } = getOperatorContext()
+  const usdc = HEDERA_TESTNET_USDC
+  console.log(`[INFO] Official Hedera testnet USDC token id: ${usdc} (${HEDERA_USDC_DECIMALS} decimals)`)
 
+  await ensureAssociated(client, operatorId.toString(), usdc)
+  // Merchant association: use merchant key if present, else operator cannot associate foreign account
+  const merchantKey = process.env.MERCHANT_PRIVATE_KEY
+  if (merchantKey) {
+    const merchantClient = createClient(merchantId, merchantKey)
+    await ensureAssociated(merchantClient, merchantId, usdc)
+    merchantClient.close()
+  } else {
+    console.log('[WARN] MERCHANT_PRIVATE_KEY missing; merchant association skipped')
+  }
+
+  const usdcBal = await usdcBalance(operatorId.toString(), usdc)
+  console.log(`[LOG] Operator USDC base units: ${usdcBal.toString()}`)
+
+  const facilitatorClient = createFacilitatorClient()
+  const app = express()
+  let mode = 'usdc'
+  let price
+  if (usdcBal >= 1000n) {
+    price = '$0.001'
+    const resourceServer = new x402ResourceServer(facilitatorClient).register('hedera:*', new ServerScheme({
+      defaultAssets: {
+        [X402_NETWORK]: { asset: usdc, decimals: HEDERA_USDC_DECIMALS }
+      }
+    }))
+    app.use(paymentMiddleware({
+      'GET /api/v1/usdc-quote': {
+        accepts: [{ scheme: 'exact', price, network: X402_NETWORK, payTo: merchantId }],
+        description: 'USDC-priced inference quote'
+      }
+    }, resourceServer))
+  } else {
+    mode = 'hbar-fallback'
+    console.log('[WARN] No testnet USDC balance. Falling back to HBAR micropayment while documenting official USDC id.')
+    console.log('[WARN] Fund USDC via https://faucet.circle.com/ (Hedera Testnet) then re-run for a true USDC settle.')
+    const resourceServer = new x402ResourceServer(facilitatorClient).register('hedera:*', new ServerScheme({}))
+    price = { amount: LAB_PRICE_TINYBARS.usdcUnits, asset: HBAR_ASSET_ID }
+    app.use(paymentMiddleware({
+      'GET /api/v1/usdc-quote': {
+        accepts: [{ scheme: 'exact', price, network: X402_NETWORK, payTo: merchantId }],
+        description: 'Fallback HBAR while USDC balance is empty'
+      }
+    }, resourceServer))
+  }
+  app.get('/api/v1/usdc-quote', (_req, res) => res.json({ mode, usdcToken: usdc, ok: true }))
+
+  const { server, baseUrl } = await listenLocal(app)
   try {
-    let mockUsdcTokenId = getState('X402_MOCK_USDC_TOKEN_ID')
-
-    // 1. Crear o reutilizar un token fungible HTS que represente USDC (6 decimales)
-    if (!mockUsdcTokenId) {
-      console.log('[PROCESO] Creando token HTS simulado de USDC en testnet (6 decimales)...')
-      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
-      const tokenCreateTx = await new TokenCreateTransaction()
-        .setTokenName('Hedera USD Coin')
-        .setTokenSymbol('USDC')
-        .setDecimals(6)
-        .setInitialSupply(1000000 * 1000000) // 1,000,000 USDC
-        .setTokenType(TokenType.FungibleCommon)
-        .setSupplyType(TokenSupplyType.Infinite)
-        .setTreasuryAccountId(operatorId)
-        .setAdminKey(client.operatorPublicKey)
-        .setSupplyKey(client.operatorPublicKey)
-        .freezeWith(client)
-
-      const tokenCreateResponse = await tokenCreateTx.execute(client)
-      // Espera el consenso: el recibo dice si la red aceptó la transacción.
-      const tokenCreateReceipt = await tokenCreateResponse.getReceipt(client)
-      mockUsdcTokenId = tokenCreateReceipt.tokenId.toString()
-      console.log(`[ÉXITO] Token USDC en HTS Creado: ${mockUsdcTokenId}`)
-      updateState('X402_MOCK_USDC_TOKEN_ID', mockUsdcTokenId)
-    } else {
-      console.log(`[INFO] Reutilizando Token USDC en HTS existente: ${mockUsdcTokenId}`)
-    }
-
-    // 2. Simular micropago x402: $0.025 USD por una inferencia LLM de alta precisión
-    const costUsd = 0.025
-    const microUnits = Math.round(costUsd * 1000000) // 25,000 unidades base
-
-    console.log(`\n[PROCESO] Iniciando liquidación x402 por $${costUsd} USD (${microUnits} unidades base)...`)
-    console.log(`[REGISTRO] Token de Pago: HTS (${mockUsdcTokenId})`)
-
-    // Arma la transferencia: los débitos (negativos) y créditos (positivos) de una transacción deben sumar cero.
-    const transferTx = await new TransferTransaction()
-      .addTokenTransfer(mockUsdcTokenId, operatorId, -microUnits)
-      .addTokenTransfer(mockUsdcTokenId, operatorId, microUnits) // Auto-transferencia atómica para la demo
-      .setTransactionMemo(`x402:usdc:$${costUsd}:prompt_inference`)
-      .freezeWith(client)
-
-    const txResponse = await transferTx.execute(client)
-    const receipt = await txResponse.getReceipt(client)
-    const hashscanUrl = getHashscanUrl(txResponse)
-
-    console.log('\n[ÉXITO] Micropago USDC en HTS Confirmado On-Chain:')
-    console.log(`[REGISTRO] Estado:            ${receipt.status.toString()}`)
-    console.log(`[REGISTRO] ID de Transacción: ${txResponse.transactionId.toString()}`)
-    console.log(`[EXPLORADOR] HashScan:        ${hashscanUrl}`)
-
-    // 3. Análisis Comparativo de Viabilidad Económica
-    console.log('\n===============================================================')
-    console.log('BENCHMARK DE VIABILIDAD ECONÓMICA: INFERENCIA DE $0.025 USD')
-    console.log('===============================================================')
-    console.log('1. Riel Tradicional (Visa / Stripe):')
-    console.log('- Comisión: $0.30 fijo + 2.9% = $0.3007')
-    console.log('- Ingreso Neto del Comercio: -$0.2757 (¡PÉRDIDA DEL 1,100% POR PETICIÓN!)')
-    console.log('2. Ethereum L1 / L2 Congestionada:')
-    console.log('- Tarifa de Gas: $0.40 - $2.50')
-    console.log('- Viabilidad Económica: IMPOSIBLE')
-    console.log('3. Hedera Token Service (HTS):')
-    console.log('- Tarifa de Red: ~$0.001 USD fija')
-    console.log('- Ingreso Neto del Comercio: +$0.024 USD (96% de Margen)')
-    console.log('===============================================================')
-
-    console.log('\n CONCEPTO CLAVE:')
-    console.log('HTS se ejecuta a nivel nativo de Gossip y Virtual Voting sin el sobrecosto')
-    console.log('de compilación y loops de la EVM. Esto habilita micropagos de alta frecuencia')
-    console.log('que hacen rentable cobrar por token consumido en fracciones de centavo.')
-
-    console.log('\n--- SESIÓN COMPLETADA ---')
-  } catch (error) {
-    console.error('\n[FALLO] Fallo en el micropago USDC en HTS:', error.message)
-    process.exit(1)
+    const fetchPaid = createPayingFetch(operatorId.toString(), operatorKey)
+    const res = await fetchPaid(`${baseUrl}/api/v1/usdc-quote`)
+    const settlement = decodePaymentResponse(res)
+    console.log(`[SUCCESS] HTTP ${res.status} mode=${mode}`)
+    console.log('[LOG] PAYMENT-RESPONSE:', JSON.stringify(settlement))
+    console.log('[LOG] Body:', await res.text())
+    if (res.status !== 200) throw new Error('Settlement failed')
+    updateState('X402_LAB04_MODE', mode)
+    updateState('X402_LAB04_TX', settlement?.transaction || '')
+    updateState('X402_OFFICIAL_USDC', usdc)
+    console.log('\n--- SESSION COMPLETE ---')
+  } finally {
+    server.close()
+    client.close?.()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main()
-    .then(() => process.exit())
-    .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
-      process.exit(1)
-    })
+  main().then(() => process.exit(0)).catch((e) => { console.error('[FAILED]', e.message); process.exit(1) })
 }

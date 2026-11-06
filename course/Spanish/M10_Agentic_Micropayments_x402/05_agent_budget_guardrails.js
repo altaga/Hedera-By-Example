@@ -1,42 +1,37 @@
-/* eslint-disable camelcase, no-unused-vars, no-return-assign, no-use-before-define, promise/param-names */
+/* eslint-disable camelcase, no-unused-vars */
+
+import '@x402/fetch' // Node-only: official x402 client stack
+
 /**
  * ============================================================================
- * Lab 05: Límites Financieros del Agente Autónomo (Guardrails)
- * [CONCEPTO] Motores de Políticas, Techos de Gasto y Disyuntores
+ * Lab 05: Guardrails financieros del agente autónomo
+ * [CONCEPT] Policy engine over official PaymentRequirements
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Radio de Impacto Financiero: Darle llaves privadas a un agente de IA sin límites
- * programáticos es catastrófico: un bucle recursivo del LLM o un ataque de inyección
- * de prompts podría vaciar miles de dólares en minutos. Un agente en producción
- * debe evaluar cada desafío x402 a través de un Motor de Políticas determinista
- * que imponga topes diarios, techos por petición y listas blancas de comercios
- * antes de generar cualquier firma criptográfica.
- * *
+ * Guardrails must evaluate the decoded official PaymentRequired.accepts[]
+ * fields (network, asset, amount, payTo, feePayer) — not homemade headers.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Nunca des a un agente autónomo una billetera sin límites. Aplicar topes diarios de gasto, listas blancas de comerciantes y circuit breakers evita espirales incontroladas de costo de inferencia.
+ * Spending ceilings, merchant allowlists, and circuit breakers sit in front of
+ * @x402/fetch so a runaway agent never creates a PAYMENT-SIGNATURE.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/approve-an-allowance
+ * - https://docs.hedera.com/solutions/ai/x402/pay-with-x402
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior: M10 Lab 04: Micropagos USDC en HTS
- * - Actual:   M10 Lab 05: Límites Financieros (Guardrails)
- * - Siguiente: M10 Lab 06: Agente de Mercado Autónomo
+ * - Previous: M10 Lab 04: HTS USDC Micropayments
+ * - Next:     M10 Lab 06: Autonomous Market Agent
  *
- * [SECUENCIA]
- * Servidor -> Agente: Solicitud 1: 0.5 ℏ a un comercio verificado
- * Nota Agente: Aprobada (dentro del presupuesto y la lista permitida)
- * Servidor -> Agente: Solicitud 2: 12 ℏ
- * Nota Agente: Rechazada: supera 1.5 ℏ por solicitud
- * Servidor -> Agente: Solicitud 3: comercio desconocido
- * Nota Agente: Rechazada: no está en la lista permitida
- * Agente -> Hedera: Auditar el pago aprobado en HCS
+ * [ SECUENCIA ]
+ * Server -> Agent: 402 PAYMENT-REQUIRED
+ * Note Agent: policy.evaluate(accept)
+ * Note Agent: reject over-budget / unknown payTo
+ * Agent -> Server: only approved accepts get PAYMENT-SIGNATURE
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - OPERATOR_ID + MERCHANT_ID; one real micropayment if policy approves.
  *
- * [ CÓMO EJECUTAR ]
+ * [ COMO EJECUTAR ]
  * node Spanish/M10_Agentic_Micropayments_x402/05_agent_budget_guardrails.js
  * ============================================================================
  */
@@ -45,146 +40,85 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import {
+  createPaidExpressApp,
+  listenLocal,
+  createPayingFetch,
+  decodePaymentRequiredHeader,
+  decodePaymentResponse,
+  getOperatorContext,
+  LAB_PRICE_TINYBARS,
+  HBAR_ASSET_ID,
+  X402_NETWORK
+} from '../M99_Utilities/index.js'
+import { updateState } from '../M99_Utilities/storage.js'
 
 class AgentPolicyEngine {
   constructor (config) {
-    this.dailyLimitHbar = config.dailyLimitHbar
-    this.maxPerRequestHbar = config.maxPerRequestHbar
-    this.merchantAllowlist = new Set(config.allowedMerchants)
-    this.currentDailySpend = 0
+    this.maxTinybars = BigInt(config.maxTinybars)
+    this.allowedPayees = new Set(config.allowedPayees)
+    this.allowedNetworks = new Set(config.allowedNetworks)
     this.circuitBreakerTripped = false
   }
 
-  evaluate (request) {
-    const { payee, amountHbar, resource } = request
-
-    if (this.circuitBreakerTripped) {
-      return { approved: false, reason: 'DISYUNTOR_ACTIVO: La billetera del agente está en pausa de emergencia.' }
-    }
-
-    if (!this.merchantAllowlist.has(payee)) {
-      return { approved: false, reason: `COMERCIO_NO_AUTORIZADO: El comercio ${payee} no está en la lista blanca verificada.` }
-    }
-
-    if (amountHbar > this.maxPerRequestHbar) {
-      return { approved: false, reason: `TECHO_EXCEDIDO: Los ${amountHbar} HBAR solicitados superan el límite de ${this.maxPerRequestHbar} HBAR.` }
-    }
-
-    if (this.currentDailySpend + amountHbar > this.dailyLimitHbar) {
-      return { approved: false, reason: `PRESUPUESTO_AGOTADO: Se superaría el límite acumulativo diario de ${this.dailyLimitHbar} HBAR.` }
-    }
-
-    // Aprobar y actualizar estado
-    this.currentDailySpend += amountHbar
-    return {
-      approved: true,
-      remainingDailyBudget: this.dailyLimitHbar - this.currentDailySpend,
-      auditPayload: {
-        timestamp: Date.now(),
-        payee,
-        amountHbar,
-        resource
-      }
-    }
-  }
-
-  tripCircuitBreaker (reason) {
-    this.circuitBreakerTripped = true
-    return `ALERTA DE EMERGENCIA: Disyuntor activado. Motivo: ${reason}`
+  evaluate (accept) {
+    if (this.circuitBreakerTripped) return { approved: false, reason: 'CIRCUIT_BREAKER_ACTIVE' }
+    if (!this.allowedNetworks.has(accept.network)) return { approved: false, reason: `NETWORK_DENIED:${accept.network}` }
+    if (!this.allowedPayees.has(accept.payTo)) return { approved: false, reason: `UNAUTHORIZED_PAYEE:${accept.payTo}` }
+    if (BigInt(accept.amount) > this.maxTinybars) return { approved: false, reason: `CEILING_EXCEEDED:${accept.amount}` }
+    return { approved: true }
   }
 }
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Límites Financieros del Agente Autónomo ---\n')
-  const { client, operatorId, network } = getClient()
+  console.log('--- SESSION START: Guardrails on official PaymentRequirements ---\n')
+  const { client, operatorId, operatorKey, merchantId } = getOperatorContext()
+  const policy = new AgentPolicyEngine({
+    maxTinybars: 200000n,
+    allowedPayees: [merchantId],
+    allowedNetworks: [X402_NETWORK]
+  })
 
+  const pathName = '/api/v1/guarded'
+  const { app } = createPaidExpressApp({
+    route: `GET ${pathName}`,
+    payTo: merchantId,
+    price: { amount: LAB_PRICE_TINYBARS.challenge, asset: HBAR_ASSET_ID },
+    description: 'Guarded resource'
+  })
+  const { server, baseUrl } = await listenLocal(app)
   try {
-    const verifiedMerchantA = operatorId.toString()
-    const verifiedMerchantB = '0.0.98765'
-    const rogueMerchant = '0.0.66699'
+    const unpaid = await fetch(`${baseUrl}${pathName}`)
+    const required = decodePaymentRequiredHeader(unpaid)
+    const accept = required.accepts[0]
+    console.log('[LOG] Official accept:', JSON.stringify(accept))
 
-    console.log('[PROCESO] Inicializando Motor de Políticas Determinista del Agente...')
-    const policy = new AgentPolicyEngine({
-      dailyLimitHbar: 5.0,
-      maxPerRequestHbar: 1.5,
-      allowedMerchants: [verifiedMerchantA, verifiedMerchantB]
-    })
+    const rogue = { ...accept, payTo: '0.0.66699', amount: '999999999' }
+    console.log('[TEST] Rogue payTo =>', policy.evaluate(rogue))
+    console.log('[TEST] Over ceiling =>', policy.evaluate({ ...accept, amount: '999999999' }))
+    const ok = policy.evaluate(accept)
+    console.log('[TEST] Legitimate accept =>', ok)
+    if (!ok.approved) throw new Error(ok.reason)
 
-    console.log('[REGISTRO] Límite Diario:              5.0 HBAR')
-    console.log('[REGISTRO] Costo Máximo por Petición:  1.5 HBAR')
-    console.log(`[REGISTRO] Comercios Verificados:      ${verifiedMerchantA}, ${verifiedMerchantB}`)
+    const fetchPaid = createPayingFetch(operatorId.toString(), operatorKey)
+    const paid = await fetchPaid(`${baseUrl}${pathName}`)
+    const settlement = decodePaymentResponse(paid)
+    console.log(`[SUCCESS] Paid HTTP ${paid.status}`, settlement)
 
-    // Escenario 1: Petición legítima dentro de la política
-    console.log('\n--- ESCENARIO 1: Petición Legítima ---')
-    const req1 = { payee: verifiedMerchantA, amountHbar: 0.5, resource: '/api/v1/sentiment' }
-    const res1 = policy.evaluate(req1)
-    console.log(`[PETICIÓN] Comercio: ${req1.payee} | Costo: ${req1.amountHbar} HBAR`)
-    console.log(`[RESULTADO] Aprobado: ${res1.approved} | Presupuesto Restante: ${res1.remainingDailyBudget} HBAR`)
-
-    // Escenario 2: Intento de cobro abusivo
-    console.log('\n--- ESCENARIO 2: Ataque de Paywall Exorbitante ---')
-    const req2 = { payee: verifiedMerchantB, amountHbar: 12.0, resource: '/api/v1/private-weights' }
-    const res2 = policy.evaluate(req2)
-    console.log(`[PETICIÓN] Comercio: ${req2.payee} | Costo: ${req2.amountHbar} HBAR`)
-    console.log(`[RESULTADO] Aprobado: ${res2.approved} | Motivo de Rechazo: ${res2.reason}`)
-
-    // Escenario 3: Comercio no verificado / phishing
-    console.log('\n--- ESCENARIO 3: Control de Lista Blanca de Comercios ---')
-    const req3 = { payee: rogueMerchant, amountHbar: 0.2, resource: '/api/v1/malicious-proxy' }
-    const res3 = policy.evaluate(req3)
-    console.log(`[PETICIÓN] Comercio: ${req3.payee} | Costo: ${req3.amountHbar} HBAR`)
-    console.log(`[RESULTADO] Aprobado: ${res3.approved} | Motivo de Rechazo: ${res3.reason}`)
-
-    // 4. Anclar auditoría de gasto a un Tópico Inmutable de HCS
-    console.log('\n[PROCESO] Anclando evento de auditoría de pago a Hedera Consensus Service...')
-    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('x402:agent_guardrail_audit')
-      .freezeWith(client)
-    const topicResponse = await topicTx.execute(client)
-    // Espera el consenso: el recibo dice si la red aceptó la transacción.
-    const topicReceipt = await topicResponse.getReceipt(client)
-    const auditTopicId = topicReceipt.topicId.toString()
-
-    const auditMessage = JSON.stringify({
-      agentAccount: operatorId.toString(),
-      action: 'X402_PAYMENT_APPROVED',
-      amountHbar: req1.amountHbar,
-      payee: req1.payee,
-      timestamp: Date.now()
-    })
-
-    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
-    const submitTx = await new TopicMessageSubmitTransaction()
-      .setTopicId(auditTopicId)
-      .setMessage(auditMessage)
-      .freezeWith(client)
-    const submitResponse = await submitTx.execute(client)
-    const submitReceipt = await submitResponse.getReceipt(client)
-
-    console.log(`[ÉXITO] Evento de Auditoría Registrado en Tópico HCS: ${auditTopicId}`)
-    console.log(`[REGISTRO] Mensaje de Auditoría: ${auditMessage}`)
-
-    updateState('X402_AUDIT_TOPIC_ID', auditTopicId)
-
-    console.log('\n CONCEPTO CLAVE:')
-    console.log('La identidad descentralizada y las políticas de gasto protegen al titular humano')
-    console.log('de contingencias financieras. Anclar las auditorías a HCS genera un registro')
-    console.log('irrefutable e inmutable de cada centavo gastado por agentes autónomos.')
-
-    console.log('\n--- SESIÓN COMPLETADA ---')
-  } catch (error) {
-    console.error('\n[FALLO] Fallo en la simulación de límites financieros:', error.message)
-    process.exit(1)
+    const topicTx = await new TopicCreateTransaction().setTopicMemo('x402:official_guardrail_audit').execute(client)
+    const topicId = (await topicTx.getReceipt(client)).topicId.toString()
+    await (await new TopicMessageSubmitTransaction()
+      .setTopicId(topicId)
+      .setMessage(JSON.stringify({ action: 'X402_PAYMENT_APPROVED', accept, settlement }))
+      .execute(client)).getReceipt(client)
+    console.log(`[LOG] Audit topic ${topicId}`)
+    updateState('X402_AUDIT_TOPIC_ID', topicId)
+    console.log('\n--- SESSION COMPLETE ---')
+  } finally {
+    server.close()
   }
 }
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  main()
-    .then(() => process.exit())
-    .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
-      process.exit(1)
-    })
+  main().then(() => process.exit(0)).catch((e) => { console.error('[FAILED]', e.message); process.exit(1) })
 }

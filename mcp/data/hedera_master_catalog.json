@@ -23,7 +23,12 @@
       "name": "Hedera AI Studio & Agent Kit",
       "category": "AI & Autonomous Agents",
       "layer": "Studio / SDK",
-      "audience": ["developer", "business", "founder", "architect"],
+      "audience": [
+        "developer",
+        "business",
+        "founder",
+        "architect"
+      ],
       "weight": 1.0,
       "summary": "Official framework for building verifiable, economically sovereign autonomous AI agents on Hedera. Integrates with LangChain, ElizaOS, LlamaIndex, and the Model Context Protocol (MCP).",
       "businessValue": "Enables machine-to-machine commerce, autonomous API monetization, and auditable AI agent decision logs with sub-cent settlement fees.",
@@ -34,32 +39,60 @@
         "github": "https://github.com/hedera-dev/hedera-agent-kit"
       },
       "antiHallucinationNotes": "Do not build agent memory on EVM storage slots; use HCS-28 agent audit streams and HCS-10 communication topics.",
-      "searchTriggers": ["agent kit", "ai studio", "autonomous agent", "mcp server", "langchain hedera", "elizaos hedera"]
+      "searchTriggers": [
+        "agent kit",
+        "ai studio",
+        "autonomous agent",
+        "mcp server",
+        "langchain hedera",
+        "elizaos hedera"
+      ]
     },
     {
       "id": "x402-protocol",
-      "name": "x402 Micropayments Protocol (Dual Architecture)",
+      "name": "x402 Micropayments Protocol (Official Hedera exact scheme)",
       "category": "AI & Autonomous Agents",
       "layer": "Standard / Protocol",
-      "audience": ["developer", "architect", "business"],
+      "audience": [
+        "developer",
+        "architect",
+        "business"
+      ],
       "weight": 0.95,
-      "summary": "HTTP 402 Payment Required machine-to-machine standard. Supports two topologies: 1) Direct P2P (Buyer + Seller) using on-chain memo nonces; 2) Sponsored Facilitator (Buyer + Seller + Facilitator) for gasless AI client execution.",
+      "summary": "HTTP 402 Payment Required standard (x402 v2). On Hedera, the official exact scheme uses a facilitator feePayer that /verify and /settle a partially signed TransferTransaction for HBAR (0.0.0) or HTS fungible tokens. Homemade Direct P2P / PAYMENT-TXID flows are not the official scheme.",
       "businessValue": "Monetizes APIs per-call or per-inference without credit cards, subscriptions, or KYC friction.",
-      "technicalStack": "@x402/hedera, HTTP 402, TransferTransaction, Blocky402",
+      "technicalStack": "@x402/core, @x402/express, @x402/fetch, @x402/hedera, @hiero-ledger/sdk",
       "urls": {
         "docs": "https://docs.hedera.com/solutions/ai/x402",
         "spec": "https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md",
-        "facilitator": "https://blocky402.com"
+        "facilitator": "https://x402.org/facilitator",
+        "supported": "https://x402.org/facilitator/supported",
+        "npm": "https://www.npmjs.com/package/@x402/hedera"
       },
-      "antiHallucinationNotes": "x402 has TWO variants. Always state whether implementing Direct P2P (2 actors) or Sponsored Facilitator (3 actors). Anti-replay requires single-use nonces in memo or signed headers.",
-      "searchTriggers": ["x402", "http 402", "micropayments", "pay per call", "pay per inference", "agent payments", "blocky402"]
+      "antiHallucinationNotes": "Use official @x402/* packages and a facilitator that advertises hedera:testnet (https://x402.org/facilitator). Wire format: PAYMENT-REQUIRED / PAYMENT-SIGNATURE / PAYMENT-RESPONSE. Do not invent x402-* custom headers or call Direct P2P memo/txid flows \"official Hedera x402\". payTo must differ from the payer account.",
+      "searchTriggers": [
+        "x402",
+        "http 402",
+        "micropayments",
+        "pay per call",
+        "pay per inference",
+        "agent payments",
+        "@x402/hedera",
+        "facilitator",
+        "PAYMENT-REQUIRED"
+      ]
     },
     {
       "id": "asset-tokenization-studio",
       "name": "Asset Tokenization Studio (ATS)",
       "category": "Asset Tokenization & RWA",
       "layer": "Studio / Enterprise",
-      "audience": ["business", "founder", "developer", "architect"],
+      "audience": [
+        "business",
+        "founder",
+        "developer",
+        "architect"
+      ],
       "weight": 1.0,
       "summary": "Full lifecycle issuance and compliance platform for Real-World Assets (RWAs), equity tokens, corporate debt, and invoice factoring using ERC-3643 and ERC-1400 standards on Hedera.",
       "businessValue": "Institutional-grade regulatory compliance, transfer restrictions, identity registry validation, cap table snapshots, and automated pro-rata corporate dividend distribution.",
@@ -70,14 +103,27 @@
         "github": "https://github.com/hashgraph/asset-tokenization-studio"
       },
       "antiHallucinationNotes": "ATS tokens are permissioned security tokens, not naked ERC-20s. Every transfer must pass identity registry checks (KYC/AML) before ledger execution.",
-      "searchTriggers": ["ats", "asset tokenization studio", "rwa", "erc-3643", "erc-1400", "security tokens", "dividends", "cap table"]
+      "searchTriggers": [
+        "ats",
+        "asset tokenization studio",
+        "rwa",
+        "erc-3643",
+        "erc-1400",
+        "security tokens",
+        "dividends",
+        "cap table"
+      ]
     },
     {
       "id": "stablecoin-studio",
       "name": "Stablecoin Studio",
       "category": "Stablecoins & Payments",
       "layer": "Studio / Enterprise",
-      "audience": ["business", "architect", "developer"],
+      "audience": [
+        "business",
+        "architect",
+        "developer"
+      ],
       "weight": 0.95,
       "summary": "Comprehensive SDK and UI suite for issuing, managing, and monitoring institutional fiat-pegged stablecoins with role segregation and Proof-of-Reserve (PoR) oracle integration.",
       "businessValue": "Enables banks and payment institutions to issue compliant stablecoins with multi-custody admin controls, freeze/wipe compliance keys, and automated reserves attestation.",
@@ -87,14 +133,24 @@
         "github": "https://github.com/hashgraph/stablecoin-studio"
       },
       "antiHallucinationNotes": "Stablecoins on Hedera run on HTS natively, not as costly EVM bytecode smart contracts. They achieve 10,000+ TPS at $0.0001 per transfer.",
-      "searchTriggers": ["stablecoin studio", "stablecoins", "proof of reserve", "por oracle", "fiat backed token", "usdc hedera"]
+      "searchTriggers": [
+        "stablecoin studio",
+        "stablecoins",
+        "proof of reserve",
+        "por oracle",
+        "fiat backed token",
+        "usdc hedera"
+      ]
     },
     {
       "id": "nft-studio",
       "name": "NFT Studio & HIP-412 Schema Ecosystem",
       "category": "Asset Tokenization & RWA",
       "layer": "Studio / Tooling",
-      "audience": ["developer", "founder"],
+      "audience": [
+        "developer",
+        "founder"
+      ],
       "weight": 0.85,
       "summary": "Creator and enterprise toolkit for minting digital collections, verifying HIP-412 JSON metadata schemas, calculating trait rarity, and executing pre-flight native airdrops (HIP-904).",
       "businessValue": "Fractional-cent minting ($0.05 per NFT collection creation), built-in enforcement of base-layer royalties (CustomRoyaltyFee), and zero smart contract vulnerability surface.",
@@ -104,14 +160,25 @@
         "standards": "https://hips.hedera.com/hip/hip-412"
       },
       "antiHallucinationNotes": "HTS NFT metadata is limited to 100 bytes on-chain per serial. Always store IPFS/Arweave URIs (`ipfs://...`), never raw JSON strings directly in TokenMintTransaction.",
-      "searchTriggers": ["nft studio", "hip-412", "nft metadata", "trait rarity", "custom royalties", "nft airdrop"]
+      "searchTriggers": [
+        "nft studio",
+        "hip-412",
+        "nft metadata",
+        "trait rarity",
+        "custom royalties",
+        "nft airdrop"
+      ]
     },
     {
       "id": "depin-mqtts-telemetry",
       "name": "DePIN High-Speed MQTTS & Hardware Enclave Architecture",
       "category": "DePIN & Hardware IoT",
       "layer": "Architecture / Reference",
-      "audience": ["developer", "architect", "business"],
+      "audience": [
+        "developer",
+        "architect",
+        "business"
+      ],
       "weight": 0.9,
       "summary": "Industry-standard IoT telemetry pipeline for high-frequency, mission-critical hardware (pacemakers, drones, automotive). Employs Ed25519 hardware signing, MQTTS (TLS 1.3), edge Merkle root batching, and sub-2s HCS emergency alerts.",
       "businessValue": "Reduces on-chain telemetry costs by 99.9% via Merkle batching ($0.0001 per batch) while guaranteeing cryptographic audit trails for insurance, medical, and aerospace SLA compliance.",
@@ -120,30 +187,52 @@
         "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Never write high-speed raw sensor heartbeats (50-100 Hz) directly to individual consensus messages. Batch routine frames off-chain via Merkle proofs, and submit directly only upon anomaly breaches.",
-      "searchTriggers": ["depin", "mqtts", "pacemaker", "iot telemetry", "hardware signing", "merkle batching", "ed25519 iot"]
+      "searchTriggers": [
+        "depin",
+        "mqtts",
+        "pacemaker",
+        "iot telemetry",
+        "hardware signing",
+        "merkle batching",
+        "ed25519 iot"
+      ]
     },
     {
       "id": "depin-rest-coldchain",
       "name": "DePIN Low-Power REST & Automated SLA Slashing",
       "category": "DePIN & Hardware IoT",
       "layer": "Architecture / Reference",
-      "audience": ["developer", "architect", "business"],
+      "audience": [
+        "developer",
+        "architect",
+        "business"
+      ],
       "weight": 0.85,
       "summary": "Low-power ambient IoT telemetry architecture (battery-constrained sensors, cold-chain biologics, shipping containers). Uses deep-sleep intervals, HTTP REST with API Key + HMAC-SHA256 signatures, and automated SLA breach bond forfeiture.",
-      "businessValue": "Prevents cargo tampering and pharmaceutical spoilage (e.g. +2°C to +8°C vaccine SLAs) with legally indisputable consensus proofs that trigger automated insurance payouts.",
+      "businessValue": "Prevents cargo tampering and pharmaceutical spoilage (e.g. +2\u00b0C to +8\u00b0C vaccine SLAs) with legally indisputable consensus proofs that trigger automated insurance payouts.",
       "technicalStack": "HTTP REST, HMAC-SHA256, HCS, HTS Slashing / Escrow",
       "urls": {
         "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Constrained microcontrollers (ESP32, nRF9160) should not run full TLS handshakes on every wake cycle; use API Key + HMAC-SHA256 header signatures to guarantee zero-tamper security.",
-      "searchTriggers": ["cold chain", "vaccine iot", "hmac-sha256", "sla slashing", "iot rest", "low power depin"]
+      "searchTriggers": [
+        "cold chain",
+        "vaccine iot",
+        "hmac-sha256",
+        "sla slashing",
+        "iot rest",
+        "low power depin"
+      ]
     },
     {
       "id": "intent-solver-cow",
       "name": "Intent-Based DeFi Settlement Solvers (ERC-7683)",
       "category": "DeFi & Intent Settlement",
       "layer": "Architecture / Standard",
-      "audience": ["developer", "architect"],
+      "audience": [
+        "developer",
+        "architect"
+      ],
       "weight": 0.9,
       "summary": "Off-chain declarative trade intent framework. Users sign zero-gas orders with min output and expiry; decentralized solvers match Coincidence of Wants (CoW) and settle atomically via Hedera TransferTransaction with net-zero balance across all legs.",
       "businessValue": "Eliminates Maximal Extractable Value (MEV), sandwich attacks, and automated market maker (AMM) liquidity pool slippage.",
@@ -153,14 +242,25 @@
         "hederaTransfers": "https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency"
       },
       "antiHallucinationNotes": "Hedera does NOT need a massive Uniswap router contract for atomic swaps. A single native TransferTransaction can bundle up to 10 HBAR and 10 HTS token legs with native atomic rollback.",
-      "searchTriggers": ["erc-7683", "intent solver", "cow swap", "mev protection", "atomic swap", "zero slippage"]
+      "searchTriggers": [
+        "erc-7683",
+        "intent solver",
+        "cow swap",
+        "mev protection",
+        "atomic swap",
+        "zero slippage"
+      ]
     },
     {
       "id": "webauthn-passkeys",
       "name": "WebAuthn & Passkeys Biometric Authentication (NIST P-256)",
       "category": "Identity & Passkeys",
       "layer": "Security / Identity",
-      "audience": ["developer", "architect", "business"],
+      "audience": [
+        "developer",
+        "architect",
+        "business"
+      ],
       "weight": 0.9,
       "summary": "Seedless Web3 onboarding using hardware-bound biometrics (Apple TouchID / FaceID, Android Biometrics, Windows Hello, YubiKey) on curve NIST P-256 (secp256r1 / prime256v1).",
       "businessValue": "Eliminates 100% of seed phrase loss, phishing, and clipboard malware drainers. Mass-market UX for mainstream adoption.",
@@ -170,14 +270,26 @@
         "docs": "https://docs.hedera.com/hedera/core-concepts/keys-and-signatures"
       },
       "antiHallucinationNotes": "WebAuthn signatures cannot sign arbitrary raw text directly; they sign `authenticatorData || sha256(clientDataJSON)`, binding origin and RP ID to prevent cross-site phishing.",
-      "searchTriggers": ["passkeys", "webauthn", "p-256", "secp256r1", "biometrics", "faceid hedera", "seedless wallet"]
+      "searchTriggers": [
+        "passkeys",
+        "webauthn",
+        "p-256",
+        "secp256r1",
+        "biometrics",
+        "faceid hedera",
+        "seedless wallet"
+      ]
     },
     {
       "id": "zktls-web-proofs",
       "name": "zk-TLS & Cryptographic Web Proofs (TLSNotary Model)",
       "category": "Privacy & zk-TLS",
       "layer": "Privacy / Cryptography",
-      "audience": ["developer", "architect", "business"],
+      "audience": [
+        "developer",
+        "architect",
+        "business"
+      ],
       "weight": 0.9,
       "summary": "Proves authentic off-chain Web2 data (accredited investor net worth, medical license, bank balance) to Web3 smart contracts without revealing passwords, session tokens, or private PII on-chain.",
       "businessValue": "Enables institutional compliance and KYC qualification while maintaining 100% GDPR, CCPA, and personal data privacy.",
@@ -187,14 +299,26 @@
         "docs": "https://docs.hedera.com/native/consensus"
       },
       "antiHallucinationNotes": "Never post private banking statements or KYC credentials directly to HCS. Post only the blinded commitment hash and notary cryptographic attestation signature.",
-      "searchTriggers": ["zktls", "tlsnotary", "web proofs", "selective disclosure", "zero knowledge compliance", "accredited investor proof"]
+      "searchTriggers": [
+        "zktls",
+        "tlsnotary",
+        "web proofs",
+        "selective disclosure",
+        "zero knowledge compliance",
+        "accredited investor proof"
+      ]
     },
     {
       "id": "hcs-consensus-service",
       "name": "Hedera Consensus Service (HCS)",
       "category": "Core L1 Services",
       "layer": "Core Protocol",
-      "audience": ["developer", "architect", "business", "founder"],
+      "audience": [
+        "developer",
+        "architect",
+        "business",
+        "founder"
+      ],
       "weight": 1.0,
       "summary": "Decentralized consensus timestamping and sequencing engine. Provides fixed $0.0001 USD transaction fees, sub-2-second finality, public and private authenticated topics (SubmitKey), and automatic chunking (HIP-9).",
       "businessValue": "Provides trustless audit trails, supply chain provenance, and decentralized messaging without maintaining high-cost smart contract state.",
@@ -204,14 +328,26 @@
         "explorer": "https://hashscan.io"
       },
       "antiHallucinationNotes": "HCS is a consensus ordering service, not a blob database. For payloads > 1024 bytes, use SDK automatic chunking or store data in HFS/IPFS and submit the content hash to HCS.",
-      "searchTriggers": ["hcs", "consensus service", "audit trail", "decentralized ordering", "chunking", "topics"]
+      "searchTriggers": [
+        "hcs",
+        "consensus service",
+        "audit trail",
+        "decentralized ordering",
+        "chunking",
+        "topics"
+      ]
     },
     {
       "id": "hts-token-service",
       "name": "Hedera Token Service (HTS)",
       "category": "Core L1 Services",
       "layer": "Core Protocol",
-      "audience": ["developer", "architect", "business", "founder"],
+      "audience": [
+        "developer",
+        "architect",
+        "business",
+        "founder"
+      ],
       "weight": 1.0,
       "summary": "Native token issuance and management platform for fungible tokens and NFTs. Governed directly by consensus nodes at 10,000+ TPS with built-in custom fees (fixed, fractional, royalties), freeze/KYC/wipe keys, and HIP-904 native airdrops.",
       "businessValue": "Avoids smart contract risk, gas auctions, and EVM reentrancy vulnerabilities. Costs $0.0001 per transfer regardless of market congestion.",
@@ -220,14 +356,25 @@
         "docs": "https://docs.hedera.com/learn/core-concepts/tokens"
       },
       "antiHallucinationNotes": "Accounts cannot receive tokens unless they have an open auto-association slot or explicitly submit a TokenAssociateTransaction (or use HIP-904 native airdrops).",
-      "searchTriggers": ["hts", "token service", "fungible token", "nft", "custom fees", "royalties", "airdrop"]
+      "searchTriggers": [
+        "hts",
+        "token service",
+        "fungible token",
+        "nft",
+        "custom fees",
+        "royalties",
+        "airdrop"
+      ]
     },
     {
       "id": "hscs-smart-contract-service",
       "name": "Hedera Smart Contract Service (HSCS)",
       "category": "Smart Contracts & EVM",
       "layer": "Core Protocol",
-      "audience": ["developer", "architect"],
+      "audience": [
+        "developer",
+        "architect"
+      ],
       "weight": 1.0,
       "summary": "Fully EVM-equivalent smart contract execution engine running Hyperledger Besu. Features direct Solidity access to native HTS tokens via System Contract precompiles (0x167), exchange rates (0x168), and pseudo-random numbers (0x169).",
       "businessValue": "Allows deploying battle-tested Ethereum Solidity contracts with 1/1000th the gas cost and instant finality, bridged natively to Hedera tokens.",
@@ -237,14 +384,26 @@
         "systemContracts": "https://docs.hedera.com/evm/hedera-services/system-contracts"
       },
       "antiHallucinationNotes": "EVM contracts interact with HTS tokens through the HTS System Contract address `0x167` (`HederaTokenService.sol`) or direct ERC-20 facade wrappers.",
-      "searchTriggers": ["hscs", "evm", "smart contracts", "solidity", "system contracts", "0x167", "hardhat", "foundry"]
+      "searchTriggers": [
+        "hscs",
+        "evm",
+        "smart contracts",
+        "solidity",
+        "system contracts",
+        "0x167",
+        "hardhat",
+        "foundry"
+      ]
     },
     {
       "id": "hiero-sdks",
       "name": "Hiero Ledger SDKs (LF Decentralized Trust)",
       "category": "Developer Tooling & Infrastructure",
       "layer": "Core SDK",
-      "audience": ["developer", "architect"],
+      "audience": [
+        "developer",
+        "architect"
+      ],
       "weight": 1.0,
       "summary": "Official Linux Foundation Decentralized Trust SDKs for building on Hedera. Available in JavaScript/TypeScript (@hiero-ledger/sdk), Java, Go, Rust, Python, and Swift.",
       "businessValue": "Enterprise-maintained, open governance, active security audits, native gRPC consensus node routing.",
@@ -255,14 +414,23 @@
         "github": "https://github.com/hiero-ledger/hiero-sdk-js"
       },
       "antiHallucinationNotes": "Prefer `@hiero-ledger/sdk` as the modern package name over legacy `@hashgraph/sdk`, although both share identical class signatures.",
-      "searchTriggers": ["hiero sdk", "hashgraph sdk", "hedera sdk js", "client.fortestnet", "hierosdk"]
+      "searchTriggers": [
+        "hiero sdk",
+        "hashgraph sdk",
+        "hedera sdk js",
+        "client.fortestnet",
+        "hierosdk"
+      ]
     },
     {
       "id": "json-rpc-relay",
       "name": "Hedera JSON-RPC Relay (Hashio)",
       "category": "Developer Tooling & Infrastructure",
       "layer": "Infrastructure",
-      "audience": ["developer", "architect"],
+      "audience": [
+        "developer",
+        "architect"
+      ],
       "weight": 0.95,
       "summary": "Open-source compatibility server translating standard Ethereum JSON-RPC calls (eth_call, eth_sendRawTransaction, eth_getBalance) into Hedera consensus and mirror node transactions.",
       "businessValue": "Enables out-of-the-box compatibility with MetaMask, Coinbase Wallet, Wagmi, RainbowKit, Hardhat, and existing EVM tooling without rewriting frontend code.",
@@ -273,14 +441,24 @@
         "github": "https://github.com/hiero-ledger/hiero-json-rpc-relay"
       },
       "antiHallucinationNotes": "EVM addresses in Hedera are 20-byte aliases derived from ECDSA secp256k1 public keys or contract IDs (`0x000...<contractNum>`).",
-      "searchTriggers": ["json rpc relay", "hashio", "metamask hedera", "ethers hedera", "web3 rpc"]
+      "searchTriggers": [
+        "json rpc relay",
+        "hashio",
+        "metamask hedera",
+        "ethers hedera",
+        "web3 rpc"
+      ]
     },
     {
       "id": "hedera-portal-tools",
       "name": "Hedera Developer Portal Suite (Contract Builder, Agent Lab, Playground)",
       "category": "Developer Tooling & Infrastructure",
       "layer": "Portal / Cloud Tools",
-      "audience": ["developer", "founder", "judge"],
+      "audience": [
+        "developer",
+        "founder",
+        "judge"
+      ],
       "weight": 0.95,
       "summary": "Unified cloud environment providing account management, testnet faucets, contract compiling (Contract Builder), autonomous AI agent registration (Agent Lab), and in-browser execution (Playground).",
       "businessValue": "Instant developer onboarding: test ideas, compile contracts, and debug agent transactions in seconds without local installation.",
@@ -292,14 +470,24 @@
         "playground": "https://portal.hedera.com/playground"
       },
       "antiHallucinationNotes": "The Developer Portal faucet provides free testnet HBAR (1,000 HBAR renewals) for testing and hackathon prototyping.",
-      "searchTriggers": ["portal hedera", "contract builder", "agent lab", "hedera playground", "faucet hedera"]
+      "searchTriggers": [
+        "portal hedera",
+        "contract builder",
+        "agent lab",
+        "hedera playground",
+        "faucet hedera"
+      ]
     },
     {
       "id": "hbar-foundation",
       "name": "The HBAR Foundation & Ecosystem Grants",
       "category": "Business, Grants & Governance",
       "layer": "Ecosystem / Foundation",
-      "audience": ["business", "founder", "judge"],
+      "audience": [
+        "business",
+        "founder",
+        "judge"
+      ],
       "weight": 1.0,
       "summary": "Independent organization providing grant funding, operational assistance, technical mentorship, and go-to-market advisory for builders on Hedera.",
       "businessValue": "Funding tracks for AI, Fintech & Payments, Climate & ESG, RWA Tokenization, Consumer & Gaming, and Infrastructure.",
@@ -310,14 +498,25 @@
         "caseStudies": "https://hedera.com/users"
       },
       "antiHallucinationNotes": "The HBAR Foundation funds projects building directly on Hedera; applications require clear milestones, architectural diagrams, and open-source commitments.",
-      "searchTriggers": ["hbar foundation", "grants", "funding hedera", "accelerator", "hackathon prizes", "venture"]
+      "searchTriggers": [
+        "hbar foundation",
+        "grants",
+        "funding hedera",
+        "accelerator",
+        "hackathon prizes",
+        "venture"
+      ]
     },
     {
       "id": "hip-1535-clpr",
       "name": "Cross-Ledger Protocol (CLPR, HIP-1535)",
       "category": "DeFi & Intent Settlement",
       "layer": "Protocol (draft HIP)",
-      "audience": ["developer", "architect", "founder"],
+      "audience": [
+        "developer",
+        "architect",
+        "founder"
+      ],
       "weight": 0.8,
       "summary": "Draft HIP for a chain-agnostic, bridgeless cross-ledger messaging standard: state proofs instead of multisig bridges, message channels, pluggable proof verifiers, permissionless relaying and bonded connectors, integrated with the Hedera Consensus Service.",
       "businessValue": "Moves value and messages between ledgers without bridge honeypots, so the trust assumption is the source ledger's consensus, not a bridge operator.",
@@ -327,7 +526,18 @@
         "lab": "course/English/M13_Cross_Ledger_and_Data_Streams/01_clpr_state_proof_verification.js"
       },
       "antiHallucinationNotes": "HIP-1535 is a draft: there is no CLPR SDK class or network endpoint yet. Course labs simulate the state proof and only anchor real data on HCS. Do not invent CLPR APIs or claim it is live on mainnet.",
-      "searchTriggers": ["clpr", "cross-ledger", "cross chain", "bridge", "bridgeless", "state proof", "interoperability", "hip-1535", "relayer", "connector"]
+      "searchTriggers": [
+        "clpr",
+        "cross-ledger",
+        "cross chain",
+        "bridge",
+        "bridgeless",
+        "state proof",
+        "interoperability",
+        "hip-1535",
+        "relayer",
+        "connector"
+      ]
     }
   ]
 }
