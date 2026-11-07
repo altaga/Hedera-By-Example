@@ -5,6 +5,7 @@
  */
 
 import { deferTask } from 'expo-server';
+import type { McpCaller } from './mcpIdentity';
 
 /**
  * Runs an analytics task after the response is sent (Expo `deferTask`), so it never blocks a
@@ -25,6 +26,7 @@ const POSTHOG_QUERY_HOST = 'https://us.posthog.com';
 
 export const HBE_EVENT_FAUCET_CLAIM = 'hbe_faucet_claimed';
 export const HBE_EVENT_MCP_TOOL = 'hbe_mcp_tool_called';
+export const HBE_EVENT_MCP_SESSION = 'hbe_mcp_session_started';
 export const HBE_APP_TAG = 'hedera-by-example';
 
 let cachedUserCount = { count: 0, timestamp: 0 };
@@ -85,30 +87,11 @@ export async function recordFaucetClaim({
   }
 }
 
-/**
- * Records one MCP tool call. Never sends the query text (only its length) and never throws:
- * analytics must not break or slow down a tool call.
- */
-export async function recordMcpToolCall({
-  tool,
-  isError = false,
-  durationMs,
-  labSlug,
-  queryLength,
-  client,
-}: {
-  tool: string;
-  isError?: boolean;
-  durationMs?: number;
-  labSlug?: string;
-  queryLength?: number;
-  client?: string;
-}): Promise<boolean> {
+/** Sends one MCP event to PostHog. Never throws: analytics must not break or slow down the MCP. */
+async function captureMcpEvent(event: string, caller: McpCaller, properties: Record<string, unknown>): Promise<boolean> {
   if (process.env.POSTHOG_DISABLED === 'true') return false;
   const apiKey = process.env.HBE_HOG_API_KEY || process.env.HOG_API_KEY;
   if (!apiKey) return false;
-
-  const clientName = String(client || 'unknown').slice(0, 80);
   try {
     const res = await fetch(POSTHOG_CAPTURE_URL, {
       method: 'POST',
@@ -116,17 +99,18 @@ export async function recordMcpToolCall({
       signal: AbortSignal.timeout(2000),
       body: JSON.stringify({
         api_key: apiKey,
-        event: HBE_EVENT_MCP_TOOL,
-        distinct_id: `mcp:${clientName}`,
+        event,
+        distinct_id: caller.distinctId,
         properties: {
           app: HBE_APP_TAG,
           service: 'mcp',
-          tool,
-          is_error: isError,
-          duration_ms: durationMs ?? null,
-          lab_slug: labSlug || null,
-          query_length: queryLength ?? null,
-          client: clientName,
+          client_name: caller.clientName,
+          client_version: caller.clientVersion || null,
+          id_source: caller.idSource,
+          user_agent: caller.userAgent || null,
+          // Kept for the dashboard insights built on the old property.
+          client: caller.clientName,
+          ...properties,
           $process_person_profile: false,
           timestamp: new Date().toISOString(),
         },
@@ -137,6 +121,39 @@ export async function recordMcpToolCall({
     console.warn('[ANALYTICS] Failed to emit PostHog MCP event:', err?.message || err);
     return false;
   }
+}
+
+/** One MCP connection started (an `initialize` call). */
+export function recordMcpSessionStarted(caller: McpCaller, protocolVersion: string): Promise<boolean> {
+  return captureMcpEvent(HBE_EVENT_MCP_SESSION, caller, { protocol_version: protocolVersion });
+}
+
+/**
+ * Records one MCP tool call. Never sends the query text (only its length) and never throws:
+ * analytics must not break or slow down a tool call.
+ */
+export function recordMcpToolCall({
+  caller,
+  tool,
+  isError = false,
+  durationMs,
+  labSlug,
+  queryLength,
+}: {
+  caller: McpCaller;
+  tool: string;
+  isError?: boolean;
+  durationMs?: number;
+  labSlug?: string;
+  queryLength?: number;
+}): Promise<boolean> {
+  return captureMcpEvent(HBE_EVENT_MCP_TOOL, caller, {
+    tool,
+    is_error: isError,
+    duration_ms: durationMs ?? null,
+    lab_slug: labSlug || null,
+    query_length: queryLength ?? null,
+  });
 }
 
 export async function getFaucetUniqueUsersCount(): Promise<{ ok: boolean; count: number; cached?: boolean; error?: string }> {

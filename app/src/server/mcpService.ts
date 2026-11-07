@@ -12,7 +12,8 @@ import indexData from '../content/index.json'
 import enData from '../content/en.json'
 import esData from '../content/es.json'
 import catalogData from './data/hedera_master_catalog.json'
-import { recordMcpToolCall, runAnalyticsSilently } from './posthogAnalytics'
+import { recordMcpSessionStarted, recordMcpToolCall, runAnalyticsSilently } from './posthogAnalytics'
+import { createSessionId, identifyCaller } from './mcpIdentity'
 import { ARCHITECTURE_DOC, HACKATHON_DOC, RESOURCES_DOC } from './mcpDocsData'
 
 export const VERSION = '2.0.0'
@@ -621,7 +622,11 @@ Start with search_labs (or list_labs), read a lab with get_lab, check anti_hallu
 const rpcError = (id: any, code: number, message: string) => ({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })
 const rpcResult = (id: any, result: any) => ({ jsonrpc: '2.0', id, result })
 
-export type McpContext = { client?: string }
+/**
+ * Per-request context from the HTTP route. sessionId / ip / userAgent identify the caller for
+ * analytics; newSessionId is set by `initialize` so the route returns it as Mcp-Session-Id.
+ */
+export type McpContext = { sessionId?: string | null, ip?: string | null, userAgent?: string | null, newSessionId?: string }
 
 export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
   if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0') return rpcError(msg?.id, -32600, 'Invalid Request')
@@ -634,6 +639,11 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
       case 'initialize': {
         const requested = params.protocolVersion
         const protocolVersion = SUPPORTED_PROTOCOLS.includes(requested) ? requested : SUPPORTED_PROTOCOLS[0]
+        // One session per connection: the route returns it as Mcp-Session-Id and compliant
+        // clients send it back on every request (MCP Streamable HTTP transport).
+        const sessionId = createSessionId(params.clientInfo || {})
+        ctx.newSessionId = sessionId
+        runAnalyticsSilently(async () => recordMcpSessionStarted(await identifyCaller({ ...ctx, sessionId }), protocolVersion))
         return rpcResult(id, {
           protocolVersion,
           capabilities: { tools: { listChanged: false }, resources: { listChanged: false, subscribe: false }, prompts: { listChanged: false } },
@@ -649,14 +659,17 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         const args = params.arguments || {}
         const started = Date.now()
         // Fire-and-forget: analytics never delays or fails a tool call.
-        const track = (isError: boolean) => { const durationMs = Date.now() - started; runAnalyticsSilently(() => recordMcpToolCall({
-          tool: name,
-          isError,
-          durationMs,
-          labSlug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : undefined,
-          queryLength: typeof args.query === 'string' ? args.query.length : undefined,
-          client: ctx.client
-        })) }
+        const track = (isError: boolean) => {
+          const durationMs = Date.now() - started
+          runAnalyticsSilently(async () => recordMcpToolCall({
+            caller: await identifyCaller(ctx),
+            tool: name,
+            isError,
+            durationMs,
+            labSlug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : undefined,
+            queryLength: typeof args.query === 'string' ? args.query.length : undefined
+          }))
+        }
         try {
           const text = await callTool(name, args)
           void track(false)

@@ -9,7 +9,7 @@
  * ============================================================================
  */
 
-import { dispatchMcpRpc, getMcpMetadata } from '../../server/mcpService';
+import { dispatchMcpRpc, getMcpMetadata, type McpContext } from '../../server/mcpService';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -23,6 +23,11 @@ export async function OPTIONS() {
     status: 204,
     headers: CORS_HEADERS,
   });
+}
+
+// A client closing its session. The server keeps no session state, so there is nothing to delete.
+export async function DELETE() {
+  return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
 export async function GET() {
@@ -48,11 +53,19 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await dispatchMcpRpc(payload, { client: request.headers.get('user-agent') || undefined });
+    // Who is calling (for anonymous analytics only): the session id we issued on `initialize`,
+    // or, for clients that ignore sessions, the IP + User-Agent that mcpIdentity hashes per day.
+    const ctx: McpContext = {
+      sessionId: request.headers.get('mcp-session-id'),
+      ip: request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
+      userAgent: request.headers.get('user-agent'),
+    };
+    const response = await dispatchMcpRpc(payload, ctx);
+    const sessionHeader: Record<string, string> = ctx.newSessionId ? { 'Mcp-Session-Id': ctx.newSessionId } : {};
     if (!response) {
       return new Response(null, {
         status: 202,
-        headers: CORS_HEADERS,
+        headers: { ...CORS_HEADERS, ...sessionHeader },
       });
     }
 
@@ -60,6 +73,7 @@ export async function POST(request: Request) {
       status: 200,
       headers: {
         ...CORS_HEADERS,
+        ...sessionHeader,
         'Content-Type': 'application/json',
       },
     });
