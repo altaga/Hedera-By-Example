@@ -83,6 +83,13 @@ function labBody (slug, lang) {
 const labCode = (body) => body.segments.map((s) => s.code).filter(Boolean).join('\n\n')
 const moduleId = (m) => `M${m.n}`
 
+/** "M9", "m09", "9" and "09" all mean M9 (lab slugs use the zero-padded form, m09-01-...). */
+const normalizeModule = (value) => {
+  if (value == null || value === '') return null
+  const n = parseInt(String(value).replace(/^m/i, ''), 10)
+  return Number.isNaN(n) ? String(value).toUpperCase() : `M${n}`
+}
+
 /** Markdown for one lab: what it teaches, what it needs, and its code. */
 function labMarkdown (slug, lang, { includeCode = true } = {}) {
   const entry = labCatalog().find((e) => e.lab.slug === slug)
@@ -121,7 +128,7 @@ const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-
 /** Ranks labs for a free-text query: every word counts, SDK class names and titles count most. */
 function searchLabs ({ query = '', lang = 'en', module, limit = 5 } = {}) {
   const words = tokens(query)
-  const modFilter = module ? String(module).toUpperCase().replace(/^M?/, 'M') : null
+  const modFilter = normalizeModule(module)
   const scored = []
   for (const { module: m, lab } of labCatalog()) {
     if (modFilter && moduleId(m) !== modFilter) continue
@@ -511,7 +518,7 @@ function handleListLabs (p = {}) {
   const lang = langOf(p.lang)
   const index = readJson('index')
   if (!index) return 'Course content not built: run `npm run compile:course` first.'
-  const mod = p.module ? String(p.module).toUpperCase().replace(/^M?/, 'M') : null
+  const mod = normalizeModule(p.module)
   return index.modules.filter((m) => !mod || moduleId(m) === mod).map((m) => [
     `## ${moduleId(m)} — ${m[lang]?.title || m.en.title}`,
     ...m.labs.map((l) => `- ${l.n} ${(l[lang] || l.en).title} — \`${l.slug}\``)

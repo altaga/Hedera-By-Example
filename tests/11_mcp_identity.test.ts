@@ -79,4 +79,11 @@ await t('a forged session header is ignored (falls back to the daily hash)', asy
   assert.equal(caller.idSource, 'daily_hash')
 })
 
+await t('list_labs accepts M9, m09, 9 and 09', async () => {
+  for (const module of ['M9', 'm09', '9', '09']) {
+    const r: any = await dispatchMcpRpc({ jsonrpc: '2.0', id: 9, method: 'tools/call', params: { name: 'list_labs', arguments: { module } } })
+    assert.match(r.result.content[0].text, /m09-01-/, module)
+  }
+})
+
 console.log(`\n${n} passed`)

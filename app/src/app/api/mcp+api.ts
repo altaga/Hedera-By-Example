@@ -30,7 +30,12 @@ export async function DELETE() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-export async function GET() {
+export async function GET(request: Request) {
+  // MCP clients open a server-to-client event stream with GET + Accept: text/event-stream.
+  // This server does not push messages, so the spec says to answer 405; anyone else gets the metadata.
+  if ((request.headers.get('accept') || '').includes('text/event-stream')) {
+    return new Response(null, { status: 405, headers: { ...CORS_HEADERS, Allow: 'POST, DELETE, OPTIONS' } });
+  }
   const meta = getMcpMetadata();
   return Response.json(meta, {
     status: 200,

@@ -44,6 +44,13 @@ function labBody (slug: string, lang: 'en' | 'es') {
 const labCode = (body: any) => (body.segments || []).map((s: any) => s.code).filter(Boolean).join('\n\n')
 const moduleId = (m: any) => `M${m.n}`
 
+/** "M9", "m09", "9" and "09" all mean M9 (lab slugs use the zero-padded form, m09-01-...). */
+const normalizeModule = (value: unknown): string | null => {
+  if (value == null || value === '') return null
+  const n = parseInt(String(value).replace(/^m/i, ''), 10)
+  return Number.isNaN(n) ? String(value).toUpperCase() : `M${n}`
+}
+
 const LABELS_EN = { lab: 'Lab', concept: 'Concept', moment: 'Learnable moment', sdk: 'SDK classes', simulated: 'Simulated in this lab', browser: 'Run it in the browser', source: 'Source', local: 'Run locally', env: 'needs a `.env` with OPERATOR_ID and OPERATOR_PRIVATE_KEY', refs: 'Official references', code: 'Code' }
 const LABELS_ES: typeof LABELS_EN = { lab: 'Lab', concept: 'Concepto', moment: 'Momento clave', sdk: 'Clases del SDK', simulated: 'Simulado en este lab', browser: 'Ejecútalo en el navegador', source: 'Código fuente', local: 'Ejecutar localmente', env: 'requiere un `.env` con OPERATOR_ID y OPERATOR_PRIVATE_KEY', refs: 'Referencias oficiales', code: 'Código' }
 
@@ -82,7 +89,7 @@ const norm = (s: any) => String(s || '').toLowerCase().normalize('NFD').replace(
 
 function searchLabs ({ query = '', lang = 'en', module, limit = 5 }: { query?: string; lang?: 'en' | 'es'; module?: string; limit?: number } = {}) {
   const words = tokens(query)
-  const modFilter = module ? String(module).toUpperCase().replace(/^M?/, 'M') : null
+  const modFilter = normalizeModule(module)
   const scored: any[] = []
   for (const { module: m, lab } of labCatalog()) {
     if (modFilter && moduleId(m) !== modFilter) continue
@@ -461,7 +468,7 @@ function handleListLabs (p: any = {}) {
   const lang = langOf(p.lang)
   const idx = indexData as any
   if (!idx?.modules) return 'Course content not found.'
-  const mod = p.module ? String(p.module).toUpperCase().replace(/^M?/, 'M') : null
+  const mod = normalizeModule(p.module)
   return idx.modules.filter((m: any) => !mod || moduleId(m) === mod).map((m: any) => [
     `## ${moduleId(m)} — ${m[lang]?.title || m.en.title}`,
     ...m.labs.map((l: any) => `- ${l.n} ${(l[lang] || l.en).title} — \`${l.slug}\``)
