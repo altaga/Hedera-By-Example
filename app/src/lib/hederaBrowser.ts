@@ -760,10 +760,14 @@ export async function executeInBrowser (
       return { accountId: receipt.accountId, privateKey }
     }
     /** HBAR balance in tinybars from the Mirror Node, always fresh (M99 getMirrorHbarTinybars). */
+    // A brand-new account takes a few seconds to reach the Mirror Node: a 404 is retried for up to ~15 s.
     const getMirrorHbarTinybars = async (accountId: string) => {
-      const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`, { ttlMs: 0 })
-      if (!res.ok) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
-      return Number((await res.json()).balance.balance)
+      for (let attempt = 0; ; attempt++) {
+        const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`, { ttlMs: 0 })
+        if (res.ok) return Number((await res.json()).balance.balance)
+        if (res.status !== 404 || attempt >= 7) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
+        await sleep(2000)
+      }
     }
     /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
     /** A reused entity gets its HashScan link right away, since no transaction will print one. */

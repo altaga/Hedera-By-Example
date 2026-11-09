@@ -373,8 +373,12 @@ export const createLabAccount = async (client, { hbar = 0.1, ecdsa = false, auto
 }
 
 /** Reads an account's HBAR balance (tinybars) from the Mirror Node. */
+// A brand-new account takes a few seconds to reach the Mirror Node: a 404 is retried for up to ~15 s.
 export const getMirrorHbarTinybars = async (accountId) => {
-  const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
-  if (!res.ok) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
-  return Number((await res.json()).balance.balance)
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`)
+    if (res.ok) return Number((await res.json()).balance.balance)
+    if (res.status !== 404 || attempt >= 7) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
+    await sleepMs(2000)
+  }
 }
