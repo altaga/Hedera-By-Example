@@ -20,7 +20,7 @@
  * [ MOMENTO DE APRENDIZAJE ]
  * Al utilizar la precompilación nativa 0x168, los protocolos DeFi (mercados de préstamos,
  * stablecoins algorítmicas, distribuidores de tarifas) eliminan la dependencia de oráculos
- * externos y el riesgo de ataques de préstamos flash sobre oráculos desfasados.
+ * externos para la tasa HBAR/USD, que ningún préstamo flash puede mover.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/evm/hedera-services/system-contracts
@@ -147,7 +147,7 @@ const main = async () => {
     console.log('[INFO] Precio obtenido directamente del estado de consenso en 1 llamada sin costo de oráculos.')
 
     // 3. Inspeccionar Capacidades del Servicio de Cuentas de Hedera (HAS 0x16a)
-    console.log('\n[PROCESO] Paso 3: Verificando Capacidades de la Precompilación HAS (0x16a)...')
+    console.log('\n[PROCESO] Paso 3: Sobre el contrato de sistema HAS (0x16a) (se describe, no se llama)...')
     console.log('Dirección de Precompilación: 0x000000000000000000000000000000000000016a')
     console.log('Especificaciones HIP:        HIP-632 & HIP-906')
     console.log('Funcionalidad:               Permite a contratos EVM verificar firmas de cualquier cuenta')

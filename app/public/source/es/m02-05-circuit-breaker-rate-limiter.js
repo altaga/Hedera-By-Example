@@ -197,9 +197,9 @@ const main = async () => {
     updateState('CIRCUIT_BREAKER_FAILURES_BLOCKED', 3)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('CQRS con Cero Caídas: Al acoplar caché en memoria con un Circuit Breaker,')
+    console.log('Degradación Controlada: Al acoplar caché en memoria con un Circuit Breaker,')
     console.log('tu dApp se mantiene disponible durante límites de tasa o caídas de red,')
-    console.log('entregando datos verificados sin degradar la experiencia del usuario final.')
+    console.log('entregando el último estado en caché (marcado como caché) en lugar de fallar.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

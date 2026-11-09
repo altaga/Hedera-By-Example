@@ -24,7 +24,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M3 Lab 08: Metadatos NFT HIP-412
- * - Siguiente: M3 Lab 10: Hedera NFT Studio — Inspector de Rareza y Verificador Previo de Airdrop
+ * - Siguiente: M3 Lab 10: Inspector de Rareza y Verificador Previo de Airdrop
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -98,7 +98,7 @@ const main = async () => {
     // 3. HIP-850 en Acción: ¡Actualizar Metadatos en Tesorería usando SOLO la SupplyKey!
     console.log('\n[PROCESO] [HIP-850] Revelando Serie #1 en Tesorería usando SupplyKey...')
     const revealedMeta = Buffer.from('ipfs://bafkrei-genesis-dragon-revealed/dragon1.json')
-    // Actualiza la metadata del NFT: solo la metadata key puede hacerlo (HIP-657).
+    // HIP-850: mientras el NFT está en la tesorería, la supply key puede actualizar su metadata.
     const updateTreasuryTx = await new TokenUpdateNftsTransaction()
       .setTokenId(tokenId)
       .setSerialNumbers([serialNum])
@@ -157,11 +157,13 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('La HIP-850 otorga flexibilidad pre-distribución en la Cuenta de Tesorería')
-    console.log('mientras garantiza un 100% de inmutabilidad matemática cuando el NFT llega al coleccionista.')
+    console.log('y la supply key pierde ese poder cuando el NFT sale de ella. Esta colección no')
+    console.log('tiene metadataKey, así que después de la entrega nadie puede cambiar la metadata.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La seguridad y la experiencia de usuario no tienen por qué oponerse. Al vincular la mutabilidad')
-    console.log('a la custodia en Tesorería, Hedera elimina el riesgo de "rug-pull de metadatos" para el comprador.')
+    console.log('a la custodia en Tesorería (y omitir la metadataKey), el comprador ya no enfrenta')
+    console.log('a un creador que pueda reescribir su NFT después de la venta.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

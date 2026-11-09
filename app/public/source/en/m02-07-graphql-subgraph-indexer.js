@@ -24,7 +24,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M2 Lab 06: Real-Time WebSocket Ledger Event Bus
- * - Next:     M3 Lab 01: HTS Immutable Issuance
+ * - Next:     M3 Lab 01: HTS Fungible Token Issuance
  *
  * [ SIMULATED ]
  * There is no GraphQL server or subgraph: a local GraphQL-style resolver runs parallel Mirror Node REST calls and returns only the selected fields. The data is real.
@@ -150,7 +150,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('Eliminating REST Waterfalls: Instead of firing serial HTTP requests from')
     console.log('your UI, the GraphQL Subgraph indexer resolves multi-entity relationships')
-    console.log('in parallel, delivering production-grade dashboards with sub-100ms roundtrips.')
+    console.log(`in parallel (this run: ${result.metadata.resolverDurationMs} ms for the whole query).`)
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -121,9 +121,9 @@ const main = async () => {
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
-    await setTx.getReceipt(client)
+    const setReceipt = await setTx.getReceipt(client)
     console.log(`[REGISTRO] Tx set(42) en HashScan: ${getHashscanUrl(setTx)}`)
-    console.log('[ÉXITO] Estado del contrato actualizado a 42.')
+    console.log(`[ÉXITO] set(42) aceptado: ${setReceipt.status.toString()}`)
 
     // FASE D: Consulta (Lectura de Estado)
     console.log("[PROCESO] Consultando valor actual vía 'get()...'")

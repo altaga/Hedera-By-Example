@@ -1,18 +1,19 @@
 /**
  * ============================================================================
- * Lab 05: Registro Descentralizado HCS-6
+ * Lab 05: Registro Descentralizado de Apps en HCS
  * [CONCEPTO] Descubrimiento de Servicios On-Chain
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * HCS-6 es un estándar de la comunidad para crear registros descentralizados
- * sobre el Hedera Consensus Service. En lugar de depender de una base de datos
- * centralizada (como Apple App Store o Google Play), los desarrolladores pueden
- * publicar los metadatos, sitio web y contratos inteligentes de su dApp en un
- * tópico público de HCS. Cualquier cliente puede escuchar este tópico para
- * descubrir nuevos servicios dinámicamente.
+ * Un registro en HCS es un tópico donde cada mensaje registra una entrada, y
+ * cualquiera puede reconstruir la lista leyendo el tópico en orden. En lugar de
+ * depender de una tienda de apps central, los desarrolladores publican el nombre,
+ * sitio web y direcciones de su dApp en un tópico público, y los clientes lo
+ * escuchan para descubrir servicios. Los estándares de HOL definen formatos de
+ * registro (HCS-2 para registros, HCS-6 para hashinals dinámicos). Este lab usa su
+ * propio esquema sencillo para mostrar el patrón; no implementa HCS-6.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * HCS-6 define un estándar para registros descentralizados sobre consenso. Anclar configuraciones clave-valor a HCS permite que aplicaciones distribuidas consulten registros a prueba de censura sin bases de datos centrales.
+ * Un tópico de registro le da a cada entrada un orden y una marca de tiempo de consenso que nadie puede reescribir. Acordar un esquema de mensaje común (como HCS-2) es lo que permite a otras apps leer tu registro sin pedirte permiso.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-6/
@@ -40,7 +41,7 @@ import { getClient, exitIfStuck } from '../M99_Utilities/index.js'
 const main = async () => {
   // Nunca colgarse: falla con un mensaje claro si la red nunca responde.
   exitIfStuck(180_000, 'mensajes de la suscripción')
-  console.log('--- INICIO DE SESIÓN: Registro HCS-6 ---\n')
+  console.log('--- INICIO DE SESIÓN: Registro de Apps en HCS ---\n')
 
   const { client } = getClient()
 
@@ -48,29 +49,28 @@ const main = async () => {
     // 1. Crear un Tópico para que actúe como nuestro Registro descentralizado
     console.log('[PROCESO] Creando un Tópico HCS para el Registro...')
     let tx = await new TopicCreateTransaction()
-      .setTopicMemo('Registro Global de Apps HCS-6')
+      .setTopicMemo('Registro de Apps HBE (demo)')
       .execute(client)
 
     let receipt = await tx.getReceipt(client)
     const topicId = receipt.topicId
     console.log(`[ÉXITO] Tópico del Registro creado: ${topicId.toString()}`)
 
-    // 2. Definir la Carga Útil Compatible con HCS-6
-    // El estándar HCS-6 dicta una estructura JSON específica para registrar un servicio.
+    // 2. Definir la carga útil de registro (un esquema sencillo hecho para este lab)
     const hcs6Payload = {
-      p: 'hcs-6',
+      p: 'hbe-app-registry', // this lab's own schema (not HCS-6)
       op: 'register',
       name: 'Hedera For Dummies dApp',
-      description: 'La principal plataforma educativa para desarrolladores de Hedera.',
+      description: 'Labs prácticos de Hedera (entrada de demo del curso).',
       tags: ['educacion', 'web3', 'hiero'],
-      url: 'https://hedera.com',
+      url: 'https://hbe.expo.app',
       metadata: {
         version: '1.0.0',
         author: 'VAI'
       }
     }
 
-    console.log('\n[PROCESO] Enviando Carga Útil de Registro HCS-6...')
+    console.log('\n[PROCESO] Enviando Carga Útil de Registro...')
     console.log(JSON.stringify(hcs6Payload, null, 2))
 
     tx = await new TopicMessageSubmitTransaction()
@@ -96,7 +96,7 @@ const main = async () => {
             const content = Buffer.from(message.contents).toString('utf8')
             try {
               const parsed = JSON.parse(content)
-              if (parsed.p === 'hcs-6' && parsed.op === 'register') {
+              if (parsed.p === 'hbe-app-registry' && parsed.op === 'register') {
                 console.log('\n[DESCUBIERTO] ¡Nueva dApp Registrada!')
                 console.log(`- Nombre: ${parsed.name}`)
                 console.log(`- Desc:   ${parsed.description}`)
@@ -114,9 +114,9 @@ const main = async () => {
     })
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('HCS-6 permite al ecosistema construir App Stores descentralizadas donde')
-    console.log('ninguna entidad individual puede bloquear a un desarrollador. Actúa como')
-    console.log('una sección amarilla global y resistente a la censura para servicios Web3.')
+    console.log('Un tópico de registro público permite listar o descubrir servicios sin un')
+    console.log('único guardián. Como el tópico es abierto, cualquiera puede publicar basura,')
+    console.log('así que los lectores deben filtrar entradas (por ejemplo, con submit key o firmas).')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

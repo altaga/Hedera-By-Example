@@ -9,9 +9,9 @@
  * depender de bots off-chain centralizados o costosas redes de keepers (Chainlink
  * Automation, Gelato). Si un keeper se queda sin gas o se desconecta, el protocolo falla.
  *
- * Hedera revoluciona la automatización de contratos inteligentes mediante la Precompilación HSS 0x16b:
- * 1. Cron Autónomo Nativo: Un contrato inteligente en Solidity puede invocar `0x16b`
- *    (`IHederaScheduleService.scheduleNative`) directamente desde el bytecode EVM.
+ * Hedera ofrece automatización de contratos inteligentes mediante el contrato de sistema HSS 0x16b:
+ * 1. Autoprogramación: Un contrato inteligente en Solidity puede invocar `0x16b`
+ *    (`IHederaScheduleService.scheduleCall`, HIP-1215) directamente desde el bytecode EVM.
  * 2. Programación Nativa en Capa 1: La transacción futura se envía a la capa de
  *    consenso de Hedera como una transacción programada con su ventana de ejecución.
  * 3. Ejecución Libre de Keepers: Al alcanzarse el momento o condición programada, los
@@ -19,9 +19,9 @@
  *    autónoma sin requerir bots, servidores ni relayers externos.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los smart contracts autónomos hacen posible la verdadera DeFi perpetua: reinversión
- * automática de rendimientos, renovaciones periódicas de suscripciones, nóminas recurrentes
- * y subastas de liquidación que se ejecutan con certeza matemática en Capa 1.
+ * Cada scheduleCall es una sola llamada futura, pagada por el propio contrato. Las tareas
+ * recurrentes (reinversión de rendimientos, suscripciones, nóminas) salen de que la llamada
+ * programada programe la siguiente, así que el contrato debe conservar HBAR suficiente.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/evm/hedera-services/system-contracts/schedule-service
@@ -34,7 +34,7 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Costo: ~16 ℏ la primera vez (crea un contrato, cerca de 1 USD, y le carga 1 ℏ para sus llamadas programadas); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/11_solidity_autonomous_hss_cron.js
@@ -47,10 +47,10 @@ import {
   ContractCreateTransaction,
   ContractExecuteTransaction,
   ContractFunctionParameters,
-  PrivateKey,
-  AccountId
+  ContractCallQuery,
+  Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, getHashscanUrl, getState, updateState, executeWithGas } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, getState, updateState, executeWithGas, sleep, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 import solc from 'solc'
 
 const compileCronVaultContract = () => {
@@ -82,7 +82,7 @@ const compileCronVaultContract = () => {
   if (compiled.errors) {
     const fatal = compiled.errors.filter(e => e.severity === 'error')
     if (fatal.length > 0) {
-      throw new Error(`Error de compilación Solidity: ${fatal[0].formattedMessage}`)
+      throw new Error(`Error de compilación de Solidity: ${fatal[0].formattedMessage}`)
     }
   }
 
@@ -93,13 +93,23 @@ const compileCronVaultContract = () => {
   }
 }
 
+const DELAY_SECONDS = 20
+
+const readCounter = async (client, contractId) => {
+  const result = await new ContractCallQuery()
+    .setContractId(contractId)
+    .setGas(50000)
+    .setFunction('heartbeatCounter')
+    .execute(client)
+  return Number(result.getUint256(0))
+}
+
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Precompilación HSS Cron Autónomo (0x16b) ---\n')
-  const { client, operatorId, operatorKey } = getClient()
-  const adminKey = PrivateKey.fromStringDer(operatorKey)
+  const { client } = getClient()
 
   try {
-    let contractIdStr = getState('AUTONOMOUS_CRON_VAULT_ID')
+    let contractIdStr = getState('AUTONOMOUS_CRON_VAULT_V3_ID')
     let contractId
 
     if (contractIdStr) {
@@ -109,65 +119,94 @@ const main = async () => {
       const { bytecode } = compileCronVaultContract()
       console.log(`[ÉXITO] ¡Contrato Compilado! Longitud del Bytecode: ${bytecode.length} caracteres hex`)
 
-      console.log('\n[PROCESO] Paso 1: Desplegando AutonomousCronVault en Hedera EVM...')
-      // Despliega el contrato: el bytecode va on-chain y la red devuelve su contract ID y su dirección EVM.
+      console.log('\n[PROCESO] Paso 1: Desplegando AutonomousCronVault con 1 ℏ para pagar sus llamadas programadas...')
+      // Desplegar el contrato: el bytecode va on-chain y la red devuelve su contract ID y dirección EVM.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
-        .setAdminKey(adminKey), client, { gas: 1500000 })
+        .setInitialBalance(new Hbar(1)), client, { gas: 1500000 })
+      // Sin admin key a propósito: así la llave del contrato es su propio ID y puede autorizar
+      // (y pagar) las llamadas que programa. Con admin key, HSS necesitaría la firma de esa llave.
 
-      // Espera el consenso: el recibo dice si la red aceptó la transacción.
+      // Esperar el consenso: el recibo dice si la red aceptó la transacción.
       const deployReceipt = await deployTx.getReceipt(client)
       contractId = deployReceipt.contractId
       contractIdStr = contractId.toString()
-      updateState('AUTONOMOUS_CRON_VAULT_ID', contractIdStr)
+      updateState('AUTONOMOUS_CRON_VAULT_V3_ID', contractIdStr)
 
       console.log(`[ÉXITO] AutonomousCronVault Desplegado con Contract ID: ${contractIdStr}`)
       console.log(`[REGISTRO] Dirección EVM: 0x${contractId.toEvmAddress()}`)
       console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(deployTx)}`)
     }
 
-    // 2. Disparar Latido Autónomo On-Chain
-    console.log('\n[PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat()...')
-    // Llama al contrato: una llamada que cambia estado es una transacción y paga gas.
+    // 2. Ejecutar la tarea una vez a mano
+    console.log('\n[PROCESO] Paso 2: Ejecutando performAutonomousHeartbeat() a mano...')
+    // Llamar al contrato: una llamada que cambia estado es una transacción y paga gas.
     const heartbeatTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('performAutonomousHeartbeat'), client, { gas: 200000 })
-
     const heartbeatRecord = await heartbeatTx.getRecord(client)
     console.log(`[ÉXITO] ¡Latido Ejecutado! Estado: ${heartbeatRecord.receipt.status.toString()}`)
-    console.log(`[REGISTRO] ID de Transacción de Consenso: ${heartbeatTx.transactionId.toString()}`)
+    const counterBefore = await readCounter(client, contractId)
+    console.log(`[REGISTRO] heartbeatCounter = ${counterBefore}`)
 
-    // 3. Programar Ejecución Futura mediante Precompilación HSS 0x16b
-    console.log('\n[PROCESO] Paso 3: Disparando scheduleNextHeartbeat() mediante Precompilación 0x16b...')
-    const payerEvmAddress = `0x${AccountId.fromString(operatorId).toEvmAddress()}`
-
+    // 3. Pedir a HSS (0x16b) que ejecute el siguiente latido por su cuenta
+    console.log(`\n[PROCESO] Paso 3: El contrato pide a HSS (0x16b scheduleCall) ejecutar el siguiente latido en ${DELAY_SECONDS} s...`)
     const scheduleCallTx = await executeWithGas((gas) => new ContractExecuteTransaction()
       .setContractId(contractId)
       .setGas(gas)
-      .setFunction('scheduleNextHeartbeat', new ContractFunctionParameters().addAddress(payerEvmAddress)), client, { gas: 300000 })
+      .setFunction('scheduleNextHeartbeat', new ContractFunctionParameters().addUint256(DELAY_SECONDS)), client, { gas: 400000 })
 
     const scheduleRecord = await scheduleCallTx.getRecord(client)
-    console.log(`[ÉXITO] ¡Tarea Cron Autónoma Programada! Estado: ${scheduleRecord.receipt.status.toString()}`)
-    console.log(`[REGISTRO] ID de Transacción de Programación: ${scheduleCallTx.transactionId.toString()}`)
-    console.log(`[EXPLORADOR] Ver en HashScan:             ${getHashscanUrl(scheduleCallTx)}`)
-
+    const responseCode = Number(scheduleRecord.contractFunctionResult.getInt64(0))
+    const scheduleAddress = scheduleRecord.contractFunctionResult.getAddress(1)
+    console.log(`[REGISTRO] Estado de la llamada: ${scheduleRecord.receipt.status.toString()} | Código de respuesta HSS: ${responseCode}`)
+    console.log(`[EXPLORADOR] Ver en HashScan: ${getHashscanUrl(scheduleCallTx)}`)
     updateState('AUTONOMOUS_CRON_LAST_TX_ID', scheduleCallTx.transactionId.toString())
 
+    if (responseCode !== 22) {
+      console.log(`[INFO] HSS no creó la programación (código ${responseCode}; -1 significa que falló la llamada a 0x16b).`)
+      console.log('[INFO] Puede que scheduleCall (HIP-1215) aún no esté activo en esta red. No se programó nada.')
+    } else {
+      const scheduleId = `0.0.${parseInt(scheduleAddress, 16)}`
+      console.log(`[ÉXITO] Programación ${scheduleId} creada por el propio contrato (0x${scheduleAddress})`)
+
+      // 4. Esperar a que la red la ejecute y leer el resultado en el Mirror Node
+      console.log(`\n[PROCESO] Paso 4: Esperando a que la red ejecute la programación ${scheduleId}...`)
+      let executedAt = null
+      for (let i = 0; i < 12 && !executedAt; i++) {
+        await sleep(5000)
+        const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/schedules/${scheduleId}`)
+        if (res.ok) executedAt = (await res.json()).executed_timestamp
+      }
+      if (!executedAt) {
+        console.log(`[INFO] La programación ${scheduleId} aún no se ejecuta (o el Mirror Node no se ha puesto al día). Revísala en HashScan.`)
+      } else {
+        const txRes = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/transactions?timestamp=${executedAt}`)
+        const result = txRes.ok ? (await txRes.json()).transactions?.[0]?.result : 'unknown'
+        const counterAfter = await readCounter(client, contractId)
+        console.log(`[REGISTRO] La llamada programada se ejecutó en el consenso ${executedAt}: ${result}`)
+        if (result === 'SUCCESS' && counterAfter > counterBefore) {
+          console.log(`[VERIFY] heartbeatCounter pasó de ${counterBefore} a ${counterAfter}: la red ejecutó la llamada sin ningún keeper.`)
+        } else {
+          console.log(`[INFO] La llamada programada se ejecutó pero no tuvo éxito (${result}); heartbeatCounter es ${counterAfter}.`)
+        }
+      }
+    }
+
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Arquitectura Autoprogramada 0x16b: Los contratos inteligentes en Hedera pueden')
-    console.log('programar sus propias operaciones recurrentes de manera autónoma sin servidores ni bots.')
-    console.log('La transacción vive en la capa de consenso hasta madurar su momento de ejecución.')
+    console.log('Autoprogramación 0x16b: un contrato puede pedirle a Hedera que lo llame más tarde, y la')
+    console.log('red ejecuta esa llamada sola cuando llega el momento, sin bots keeper. El contrato la')
+    console.log('paga con su propio saldo de HBAR.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Eliminación de Dependencias de Keepers: Al reemplazar redes externas con precompilaciones')
-    console.log('HSS nativas, los protocolos reducen la complejidad operativa a cero y garantizan su')
-    console.log('ejecución incluso ante congestiones de red o caídas de nubes externas.')
+    console.log('Cada scheduleCall es una sola llamada futura. Para una tarea recurrente, la llamada')
+    console.log('programada programa la siguiente, y el contrato debe conservar HBAR para todas.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en la Ejecución de Cron Autónomo:', error.message)
+    console.error('\n[FALLO] Falló la ejecución del cron autónomo:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -178,7 +217,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -4,13 +4,12 @@
  * [CONCEPTO] El Escudo Anti-Spam y Opt-In de Activos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Seguridad del Estado: En Hedera, no es posible enviar tokens a una cuenta
- * de forma no solicitada (Spam). Para recibir cualquier tipo de activo
- * (FT o NFT), la cuenta debe realizar explícitamente un "Opt-In" mediante una
- * operación de `TokenAssociate`. Este mecanismo garantiza que tu billetera
- * nunca se sature con activos inútiles o maliciosos, permitiendo que el
- * estado de tu cuenta sea utilizado únicamente para los activos en los que
- * confías y has decidido participar voluntariamente.
+ * Seguridad del Estado: Una cuenta recibe un token solo después de asociarse
+ * a él ("Opt-In"), ya sea con `TokenAssociate` o mediante sus espacios de
+ * auto-asociación. Una cuenta sin espacios libres no puede recibir tokens que
+ * no eligió; los airdrops hacia ella quedan pendientes hasta que los reclame
+ * (HIP-904). Las cuentas con auto-asociación ilimitada (como en M0 Lab 03)
+ * aceptan cualquier token, así que esa protección es una opción que tú eliges.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
  * Al desplegar smart contracts que manejen o almacenen USDC u otros tokens de HTS, el contrato debe asociar el token (vía el precompilado 0x167 o previo a transferencias) para recibir fondos con éxito.
@@ -60,9 +59,9 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('La asociación es una característica de seguridad única de Hedera.')
-    console.log('Protege a los usuarios de "AirDrops de Spam" y ataques de phishing')
-    console.log('basados en tokens maliciosos, asegurando que solo los activos')
-    console.log('validados por el usuario residan en su balance de cuenta.')
+    console.log('Sin espacios de auto-asociación libres, una billetera solo guarda tokens')
+    console.log('a los que se asoció a propósito. La auto-asociación ilimitada cambia esa')
+    console.log('protección por comodidad.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

@@ -92,7 +92,7 @@ const main = async () => {
     const badSignature = account1Key.sign(bytes)
 
     if (publicKey.verify(bytes, badSignature)) {
-      console.log('└─ [FALLO] Fallo de Seguridad: Una firma no autorizada fue aceptada.')
+      throw new Error('Fallo de Seguridad: Una firma no autorizada fue aceptada.')
     } else {
       console.log('└─ [ÉXITO] Acceso Denegado: La firma no coincide con el dueño del DID.')
     }
@@ -108,7 +108,7 @@ const main = async () => {
       console.log(`[REGISTRO]  ${didDocument.id}`)
       console.log('--------------------------------------------------')
     } else {
-      console.log('\n   └─ [FALLO] Error Crítico: La firma legítima fue rechazada por el verificador.')
+      throw new Error('Error Crítico: La firma legítima fue rechazada por el verificador.')
     }
 
     console.log('\n CONCEPTO CLAVE:')

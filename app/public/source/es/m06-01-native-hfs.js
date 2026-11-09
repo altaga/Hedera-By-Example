@@ -4,16 +4,16 @@
  * [CONCEPTO] Persistencia de Capa 1 y Anclas de Veracidad
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Inmutabilidad Nativa: El Hedera File Service (HFS) es la capa de
+ * Almacenamiento Nativo: El Hedera File Service (HFS) es la capa de
  * almacenamiento persistente directa del ledger. A diferencia de IPFS, donde
  * los archivos pueden desaparecer si no se "pinean", los archivos en HFS
- * están resguardados por los mismos nodos de consenso nacionales de la red.
+ * están guardados en los mismos nodos de consenso de la red.
  * Un archivo en HFS es el "ancla" definitiva: solo quien posee la llave de
- * administración puede actualizarlo, pero cualquier persona en el mundo
- * puede leerlo de forma gratuita y verificada.
+ * administración puede actualizarlo, pero cualquier persona puede leerlo
+ * con un FileContentsQuery (una consulta de costo muy bajo).
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * El Hedera File Service (HFS) almacena datos directamente en los nodos de consenso con inmutabilidad criptográfica. Para archivos de menos de 1024 bytes, FileCreateTransaction ofrece almacenamiento inmediato para contratos o llaves públicas.
+ * El Hedera File Service (HFS) almacena datos directamente en los nodos de consenso. Quien tenga las llaves del archivo puede actualizarlo o borrarlo, y todo archivo tiene fecha de vencimiento (31 días en este lab), así que decide ambas cosas antes de guardar algo importante.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service
@@ -78,10 +78,9 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('Acabas de anclar un activo binario directamente al ledger.')
-    console.log('Este File ID es ahora una dirección permanente. Cualquier')
-    console.log('aplicación puede consultar su contenido vía REST API del')
-    console.log('Mirror Node, garantizando la disponibilidad global sin')
-    console.log('depender de servidores de almacenamiento centralizados.')
+    console.log('Cualquier aplicación puede leer su contenido con un FileContentsQuery')
+    console.log('a los nodos, sin depender de servidores de almacenamiento centralizados.')
+    console.log('Este archivo conserva tu llave y vence en 31 días.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

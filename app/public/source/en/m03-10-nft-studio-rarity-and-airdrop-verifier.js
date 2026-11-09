@@ -1,11 +1,13 @@
 /**
  * ============================================================================
- * Lab 10: Hedera NFT Studio — Rarity Inspector & Airdrop Pre-Flight Verifier
+ * Lab 10: Rarity Inspector & Airdrop Pre-Flight Verifier
  * [CONCEPT] Collection Trait Entropy, Schema Audits & HIP-904 Distribution
  * ============================================================================
  * [ KEY CONCEPT ]
- * Hedera NFT Studio is the official creator-focused suite for launching digital
- * collections, auditing metadata compliance, and executing secure on-chain airdrops.
+ * Before a collection launch, creators check two things: that the metadata is
+ * valid HIP-412 and that each recipient can actually receive the airdrop. Hedera's
+ * NFT Studio offers tools for this; this lab writes small versions of the same
+ * ideas itself (it does not call NFT Studio).
  *
  * In production NFT launches, two catastrophic failure modes frequently occur:
  * 1. Broken Metadata & Trait Skew: Unverified JSON schemas (violating HIP-412) or
@@ -14,7 +16,7 @@
  *    their auto-association limits (max_automatic_token_associations) causes
  *    transactions to fail or creates stranded pending airdrops requiring manual claims.
  *
- * This laboratory implements the official NFT Studio core engines:
+ * This laboratory implements, in a few lines each:
  * - HIP-412 Schema Validator: Validates required metadata keys, mime-types, and format.
  * - Rarity Inspector Engine: Calculates statistical trait frequencies across the entire
  *   collection and computes the standardized Rarity Score:
@@ -37,6 +39,9 @@
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
  * - Next:     M4 Lab 01: Native HBAR Transfers
+ *
+ * [ SIMULATED ]
+ * The three-NFT collection (names, traits, images) is sample data written in the lab. The Mirror Node checks, the mint and the HIP-904 airdrop are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -92,7 +97,7 @@ class Hip412Validator {
 }
 
 /**
- * 2. NFT Studio Rarity Inspector Engine
+ * 2. Rarity Inspector Engine
  * Calculates trait frequencies, individual trait scores, and ranks collection assets.
  */
 class RarityInspector {
@@ -209,7 +214,7 @@ class AirdropVerifier {
 
 const main = async () => {
   console.log('====================================================================')
-  console.log('HEDERA NFT STUDIO: RARITY INSPECTOR & AIRDROP PRE-FLIGHT VERIFIER')
+  console.log('RARITY INSPECTOR & AIRDROP PRE-FLIGHT VERIFIER')
   console.log('====================================================================\n')
 
   const { client, operatorId, operatorKey } = getClient()
@@ -221,7 +226,7 @@ const main = async () => {
     {
       id: 1,
       name: 'Cyber Sentinel #001',
-      creator: 'Hedera NFT Studio',
+      creator: 'HBE Course Demo',
       description: 'First generation algorithmic guardian on Hedera Hashgraph.',
       image: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/1.png',
       type: 'image/png',
@@ -236,7 +241,7 @@ const main = async () => {
     {
       id: 2,
       name: 'Cyber Sentinel #002',
-      creator: 'Hedera NFT Studio',
+      creator: 'HBE Course Demo',
       description: 'Tactical skirmisher unit forged with HTS native compliance.',
       image: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/2.png',
       type: 'image/png',
@@ -251,7 +256,7 @@ const main = async () => {
     {
       id: 3,
       name: 'Cyber Sentinel #003',
-      creator: 'Hedera NFT Studio',
+      creator: 'HBE Course Demo',
       description: 'Heavy vanguard sentinel maintaining network consensus.',
       image: 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/3.png',
       type: 'image/png',
@@ -266,7 +271,7 @@ const main = async () => {
   ]
 
   // Step 1: Execute HIP-412 Schema Validation
-  console.log('[1/4]  Running NFT Studio HIP-412 Metadata Compliance Audit...')
+  console.log('[1/4]  Running HIP-412 Metadata Compliance Audit...')
   for (const item of rawCollection) {
     const audit = Hip412Validator.validate(item)
     if (!audit.valid) {
@@ -277,7 +282,7 @@ const main = async () => {
   console.log(`HIP-412 Schema Audit Passed: All ${rawCollection.length} assets adhere to HIP412@2.0.0 standard.\n`)
 
   // Step 2: Run Rarity Inspector
-  console.log('[2/4]  Executing NFT Studio Rarity Inspector Engine...')
+  console.log('[2/4]  Executing Rarity Inspector Engine...')
   const inspector = new RarityInspector(rawCollection)
   const rankedCollection = inspector.analyze()
 
@@ -316,7 +321,7 @@ const main = async () => {
   const tokenId = await reuseToken('REUSE_M3_10_TOKEN', async () => {
     // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
     const createTx = await new TokenCreateTransaction()
-      .setTokenName('NFT Studio Sentinel Collection')
+      .setTokenName('HBE Rarity Demo Collection')
       .setTokenSymbol('SENTINEL')
       .setTokenType(TokenType.NonFungibleUnique)
       .setSupplyType(TokenSupplyType.Finite)
@@ -370,7 +375,7 @@ const main = async () => {
   updateState('NFT_STUDIO_AIRDROP_VERIFIED', true)
 
   console.log('\n====================================================================')
-  console.log('NFT STUDIO LAB COMPLETE: METADATA, RARITY & AIRDROP VERIFIED')
+  console.log('LAB COMPLETE: METADATA, RARITY & AIRDROP VERIFIED')
   console.log('====================================================================')
 
   client.close()

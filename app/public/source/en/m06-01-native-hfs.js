@@ -12,7 +12,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Hedera File Service (HFS) stores data directly on consensus nodes with cryptographic immutability. For files under 1024 bytes, FileCreateTransaction provides instant on-chain document storage for legal contracts or public keys.
+ * Hedera File Service (HFS) stores data directly on the consensus nodes. Whoever holds the file's keys can update or delete it, and every file has an expiration time (31 days in this lab), so decide both before you store something important.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/file-service

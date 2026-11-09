@@ -19,7 +19,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M3 Lab 10: Hedera NFT Studio — Inspector de Rareza y Verificador Previo de Airdrop
+ * - Anterior:  M3 Lab 10: Inspector de Rareza y Verificador Previo de Airdrop
  * - Siguiente: M4 Lab 02: Transferencias de Tokens Fungibles
  *
  * [ ANTES DE EJECUTAR ]

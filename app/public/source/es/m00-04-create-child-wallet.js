@@ -5,8 +5,8 @@
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Independencia de la Tesorería: Usar cuentas secundarias permite observar
- * las tarifas en acción, ya que la red de Hedera a menudo exonera a la
- * cuenta de tesorería (Operador) de pagar ciertas tarifas. Este script es
+ * las tarifas en acción: por ejemplo, las comisiones personalizadas de un
+ * token nunca se cobran a su tesorería ni a sus cobradores de comisiones. Este script es
  * "Idempotente": detecta si las cuentas ya están configuradas en el .env
  * para evitar duplicidad y desperdicio de HBAR, asegurando que tu entorno
  * esté listo para pruebas de transferencias complejas.

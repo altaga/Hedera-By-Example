@@ -16,6 +16,7 @@
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M5 Lab 01: Creación de Topic HCS Inmutable
@@ -35,15 +36,15 @@ import { TopicMessageSubmitTransaction, TopicId } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
 
 /**
- * Generador de mensajes compatible con el estándar de descubrimiento HCS-2
+ * Construye un mensaje "register" de HCS-2: { p, op, t_id, m }.
+ * Especificación: https://hol.org/docs/standards/hcs-2/
  */
 const buildHcs2DiscoveryMessage = (registryName, topicIdPointer, description) => {
   const payload = {
-    h: 'hcs-2', // Header del protocolo
-    t: 'registry', // Tipo de mensaje estructural
-    r: registryName, // Nombre del registro
-    tid: topicIdPointer, // Puntero al Topic ID principal
-    d: description // Metadata descriptiva
+    p: 'hcs-2', // protocolo
+    op: 'register', // operación
+    t_id: topicIdPointer, // el tópico al que apunta esta entrada del registro
+    m: `${registryName}: ${description}`.slice(0, 500) // memo (HCS-2 permite hasta 500 caracteres)
   }
   return JSON.stringify(payload)
 }
@@ -61,7 +62,8 @@ const main = async () => {
   }
 
   try {
-    console.log(`[PROCESO] Preparando mensaje estructurado para el Topic: ${topicId}`)
+    console.log(`[PROCESO] Preparando un mensaje register de HCS-2 para el Topic: ${topicId}`)
+    console.log('[INFO] Solo el mensaje sigue HCS-2: un tópico de registro completo también lleva un memo "hcs-2:<tipo>:<ttl>", y este es el tópico del Lab 01.')
 
     const message = buildHcs2DiscoveryMessage(
       'Hedera For Dummies Registry',
@@ -86,9 +88,9 @@ const main = async () => {
     console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(response)}`)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Al adoptar HCS-2, permites que indexadores externos como Kabila')
-    console.log('o SentX identifiquen tu Topic y muestren los datos al mundo de')
-    console.log('forma automática, acelerando la adopción de tu protocolo.')
+    console.log('Al adoptar HCS-2, cualquier indexador que entienda el estándar puede leer')
+    console.log('tu registro sin pedirte una API privada: el formato del mensaje ya')
+    console.log('dice qué significa cada campo.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

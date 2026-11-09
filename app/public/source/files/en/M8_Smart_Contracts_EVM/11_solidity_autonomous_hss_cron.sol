@@ -2,35 +2,41 @@
 pragma solidity ^0.8.20;
 
 /**
- * Hedera Schedule Service (HSS) Precompile Interface (0x16b)
- * Enables smart contracts to schedule autonomous future executions on Layer 1.
+ * Hedera Schedule Service (HSS) system contract at 0x16b (HIP-1215).
+ * scheduleCall creates a scheduled transaction that calls `to` with `callData`
+ * at `expirySecond`. The calling contract pays for that future call.
  */
 interface IHederaScheduleService {
-    function scheduleNative(
-        address targetContract,
-        bytes memory callData,
-        address payerAccount
+    function scheduleCall(
+        address to,
+        uint256 expirySecond,
+        uint256 gasLimit,
+        uint64 value,
+        bytes memory callData
     ) external returns (int64 responseCode, address scheduleAddress);
 }
 
 contract AutonomousCronVault {
     address constant HSS_SYSTEM_CONTRACT = address(0x16b);
+    int64 constant SUCCESS = 22;
 
     address public owner;
     uint256 public heartbeatCounter;
     uint256 public lastExecutionTimestamp;
 
     event HeartbeatExecuted(uint256 counter, uint256 timestamp);
-    event TaskScheduled(address indexed scheduleAddress, uint256 targetCounter);
+    event TaskScheduled(address indexed scheduleAddress, int64 responseCode, uint256 expirySecond);
 
-    constructor() {
+    // Payable: the contract keeps a small HBAR balance to pay for the calls it schedules.
+    constructor() payable {
         owner = msg.sender;
-        heartbeatCounter = 0;
         lastExecutionTimestamp = block.timestamp;
     }
 
+    receive() external payable {}
+
     /**
-     * Autonomous task executed by the scheduler
+     * The task the scheduler runs.
      */
     function performAutonomousHeartbeat() external {
         heartbeatCounter += 1;
@@ -39,28 +45,31 @@ contract AutonomousCronVault {
     }
 
     /**
-     * Schedules the next autonomous heartbeat call using HSS 0x16b precompile
+     * Asks HSS to call performAutonomousHeartbeat() `delaySeconds` from now.
+     * Returns the HSS response code (22 = SUCCESS) and the schedule address. No silent
+     * fallback: if HSS refuses, the caller sees the real code (-1 if the call itself failed).
      */
-    function scheduleNextHeartbeat(address payerAccount) external returns (address scheduleAddress) {
+    function scheduleNextHeartbeat(uint256 delaySeconds) external returns (int64 responseCode, address scheduleAddress) {
         require(msg.sender == owner, "ONLY_OWNER");
 
+        uint256 expirySecond = block.timestamp + delaySeconds;
         bytes memory callData = abi.encodeWithSelector(this.performAutonomousHeartbeat.selector);
 
-        // Low-level call to 0x16b HSS Precompile for graceful cross-environment support
-        (bool success, bytes memory result) = HSS_SYSTEM_CONTRACT.call(
-            abi.encodeWithSelector(IHederaScheduleService.scheduleNative.selector, address(this), callData, payerAccount)
+        (bool ok, bytes memory result) = HSS_SYSTEM_CONTRACT.call(
+            abi.encodeWithSelector(
+                IHederaScheduleService.scheduleCall.selector,
+                address(this),
+                expirySecond,
+                uint256(100000),
+                uint64(0),
+                callData
+            )
         );
 
-        if (success && result.length >= 32) {
-            (int64 responseCode, address scheduled) = abi.decode(result, (int64, address));
-            if (responseCode == 22) {
-                emit TaskScheduled(scheduled, heartbeatCounter + 1);
-                return scheduled;
-            }
+        responseCode = -1;
+        if (ok && result.length >= 64) {
+            (responseCode, scheduleAddress) = abi.decode(result, (int64, address));
         }
-
-        // Graceful fallback for testnet / simulation environments
-        emit TaskScheduled(HSS_SYSTEM_CONTRACT, heartbeatCounter + 1);
-        return HSS_SYSTEM_CONTRACT;
+        emit TaskScheduled(scheduleAddress, responseCode, expirySecond);
     }
 }

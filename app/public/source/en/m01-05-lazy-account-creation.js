@@ -8,8 +8,8 @@
  * for a user using `AccountCreateTransaction`.
  * With Lazy Account Creation, you simply transfer HBAR to a raw EVM address
  * (an ECDSA public key alias). Hedera automatically intercepts the transfer,
- * creates the Hedera Account behind the scenes, and deducts the creation fee
- * from the transferred amount. This is vital for onboarding Ethereum users.
+ * creates the Hedera Account behind the scenes, and charges the creation fee
+ * to the payer of the transfer (the recipient gets the full amount). This is vital for onboarding Ethereum users.
  * *
  * [ LEARNABLE MOMENT ]
  * HIP-32 enables frictionless Web3 onboarding: you can send funds to an uninstantiated EVM address (0x...), and the Hedera consensus nodes will lazily spawn a hollow account on the fly waiting for the first signed transaction to bind the public key.
@@ -19,7 +19,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M1 Lab 04: Account Key Rotation
- * - Next:     M1 Lab 06: Native Staking (HIP-584)
+ * - Next:     M1 Lab 06: Native Staking (HIP-406)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -75,9 +75,9 @@ const main = async () => {
     }
 
     console.log('\n KEY CONCEPT:')
-    console.log('You just onboarded an Ethereum wallet directly to Hedera without')
-    console.log('paying the account creation fee upfront. The network automatically')
-    console.log('handled the account creation during the HBAR transfer.')
+    console.log('You just onboarded an Ethereum wallet directly to Hedera without a separate')
+    console.log('AccountCreateTransaction: the network created the account during the HBAR')
+    console.log('transfer, and the creation fee was added to what you, the sender, paid.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -8,23 +8,24 @@
  * multiplican por 100 durante la congestión de la red, Hedera utiliza un
  * esquema de tarifas determinista anclado al dólar estadounidense (HIP-1261).
  *
- * El costo de cada transacción se divide estrictamente en tres componentes:
- * 1. Node Fee: Compensa al nodo de consenso específico que recibe la tx ($0.0001 USD).
- * 2. Network Fee: Compensa a todos los nodos por el gossip y el ordenamiento ($0.0008 USD).
- * 3. Service Fee: Compensa a la red por la mutación del estado (CryptoTransfer = $0.0001 USD).
+ * La tarifa de cada transacción es la suma de tres componentes:
+ * 1. Node Fee: paga al nodo de consenso que recibió la transacción.
+ * 2. Network Fee: paga a los nodos por el gossip y el ordenamiento del consenso.
+ * 3. Service Fee: paga el cambio de estado (aquí, un CryptoTransfer).
+ * Juntas forman el precio publicado en USD; para una transferencia básica de HBAR es $0.0001.
  *
- * Este laboratorio interroga el archivo de tipo de cambio en vivo de Hedera, calcula
- * el costo exacto en tinybars antes de la transmisión, ejecuta la transacción y
- * verifica la tarifa liquidada con precisión sub-centavo.
+ * Este laboratorio interroga el archivo de tipo de cambio en vivo de Hedera, convierte
+ * el precio publicado en USD a tinybars antes de transmitir, ejecuta la transacción y
+ * compara la cotización con la tarifa que la red cobró de verdad.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * A diferencia de las subastas de gas que expulsan a los usuarios en momentos de alta congestión, las comisiones de Hedera están fijadas en USD ($0.0001 por mensaje, $0.001 por transferencia) y convertidas deterministamente a HBAR.
+ * A diferencia de las subastas de gas que expulsan a los usuarios en momentos de alta congestión, las comisiones de Hedera se fijan en USD en una tabla publicada (una transferencia básica de HBAR cuesta $0.0001) y se convierten a HBAR con el tipo de cambio de la red, así que el monto en HBAR solo cambia con ese tipo de cambio.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1261
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M1 Lab 06: Staking Nativo (HIP-584)
+ * - Anterior:  M1 Lab 06: Staking Nativo (HIP-406)
  * - Siguiente: M1 Lab 08: Asignaciones de HBAR y Gasto Patrocinado (HIP-336)
  *
  * [ ANTES DE EJECUTAR ]
@@ -94,21 +95,11 @@ const main = async () => {
 
     console.log('\n[PROCESO] Paso 2: Descomponiendo esquema de tarifas HIP-1261 para CryptoTransfer...')
 
-    // Constantes en USD de la tabla de tarifas estándar de Hedera para CryptoTransfer
-    const NODE_FEE_USD = 0.0001
-    const NETWORK_FEE_USD = 0.0008
-    const SERVICE_FEE_USD = 0.0001
-    const TOTAL_STANDARD_FEE_USD = NODE_FEE_USD + NETWORK_FEE_USD + SERVICE_FEE_USD // $0.0010 USD total
+    // Precio publicado en USD de una transferencia básica de HBAR (tarifas de nodo, red y servicio juntas).
+    const TOTAL_STANDARD_FEE_USD = 0.0001
+    const totalPredictedTinybars = calculateTinybars(TOTAL_STANDARD_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
 
-    const nodeFeeTinybars = calculateTinybars(NODE_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
-    const networkFeeTinybars = calculateTinybars(NETWORK_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
-    const serviceFeeTinybars = calculateTinybars(SERVICE_FEE_USD, rateInfo.cents, rateInfo.hbarEquiv)
-    const totalPredictedTinybars = nodeFeeTinybars + networkFeeTinybars + serviceFeeTinybars
-
-    console.log('\n---  DESGLOSE PREDICTIVO DE TARIFAS (HIP-1261) ---')
-    console.log(`Node Fee:     $${NODE_FEE_USD.toFixed(4)} USD -> ${nodeFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`Network Fee:  $${NETWORK_FEE_USD.toFixed(4)} USD -> ${networkFeeTinybars.toLocaleString()} tinybars`)
-    console.log(`Service Fee:  $${SERVICE_FEE_USD.toFixed(4)} USD -> ${serviceFeeTinybars.toLocaleString()} tinybars`)
+    console.log('\n---  COTIZACIÓN DE TARIFA (precio publicado) ---')
     console.log(`Cotización:   $${TOTAL_STANDARD_FEE_USD.toFixed(4)} USD -> ${totalPredictedTinybars.toLocaleString()} tinybars (~${(totalPredictedTinybars / 1e8).toFixed(6)} ℏ)`)
 
     console.log('\n[PROCESO] Paso 3: Ejecutando CryptoTransfer en vivo para verificar facturación de consenso...')
@@ -136,9 +127,9 @@ const main = async () => {
     updateState('HIP1261_RATE_USD_PER_HBAR', rateInfo.rateUsdPerHbar)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Cero Subastas de Gas: En Hedera, las tarifas son fijas en USD y deterministas.')
-    console.log('Las empresas presupuestan sus costos de ledger con 100% de previsibilidad financiera,')
-    console.log('sabiendo que una transferencia cuesta exactamente $0.001 USD sin importar el volumen de red.')
+    console.log('Sin Subastas de Gas: en Hedera, las tarifas se fijan en USD y no dependen de la demanda.')
+    console.log(`Esta transferencia se cotizó en $${TOTAL_STANDARD_FEE_USD} y se cobró $${actualFeeUsd.toFixed(6)}; la`)
+    console.log('diferencia viene de extras como las firmas y el tamaño de la transacción.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

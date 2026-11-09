@@ -16,7 +16,7 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 01: HTS Immutable Issuance
+ * - Previous: M3 Lab 01: HTS Fungible Token Issuance
  * - Next:     M3 Lab 03: HIP-412 NFT Metadata & On-Chain Storage (HFS)
  *
  * [ BEFORE YOU RUN ]
@@ -102,7 +102,7 @@ const main = async () => {
     }
 
     // 4. Grant KYC
-    console.log(`\n[PROCESS] Granting KYC clearance to ${targetId} via adminKey...`)
+    console.log(`\n[PROCESS] Granting KYC clearance to ${targetId} with the kycKey...`)
     const kycTx = await new TokenGrantKycTransaction()
       .setAccountId(userId)
       .setTokenId(tokenId)
@@ -113,15 +113,15 @@ const main = async () => {
     console.log(`[LOG] KYC Grant Status: ${kycReceipt.status.toString()}`)
 
     // 5. Demonstrate Freezing
-    console.log(`\n[PROCESS] Freezing token assets for ${targetId} (Temporary Lock simulation)...`)
+    console.log(`\n[PROCESS] Freezing token assets for ${targetId} (temporary lock)...`)
     const freezeTx = await new TokenFreezeTransaction()
       .setAccountId(userId)
       .setTokenId(tokenId)
       .freezeWith(client)
 
     const freezeResponse = await freezeTx.execute(client)
-    await freezeResponse.getReceipt(client)
-    console.log('[SUCCESS] Freeze Status: SUCCESS')
+    const freezeReceipt = await freezeResponse.getReceipt(client)
+    console.log(`[SUCCESS] Freeze Status: ${freezeReceipt.status.toString()}`)
 
     // 6. Demonstrate Unfreezing
     console.log(`\n[PROCESS] Unfreezing token assets for ${targetId} (Restoring Access)...`)
@@ -131,8 +131,8 @@ const main = async () => {
       .freezeWith(client)
 
     const unfreezeResponse = await unfreezeTx.execute(client)
-    await unfreezeResponse.getReceipt(client)
-    console.log('[SUCCESS] Unfreeze Status: SUCCESS')
+    const unfreezeReceipt = await unfreezeResponse.getReceipt(client)
+    console.log(`[SUCCESS] Unfreeze Status: ${unfreezeReceipt.status.toString()}`)
 
     console.log('\n[INFO] Ready for Lab 03 (NFT HIP-412).')
 

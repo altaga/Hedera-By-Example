@@ -97,8 +97,8 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Este patrón es aplicable a cualquier dato persistente que supere')
     console.log('el límite de la red. Al usar un solo File ID para múltiples')
-    console.log('transacciones, mantienes la integridad de la información bajo')
-    console.log('un único identificador global e inmutable.')
+    console.log('transacciones, mantienes toda la información bajo')
+    console.log('un único identificador global.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

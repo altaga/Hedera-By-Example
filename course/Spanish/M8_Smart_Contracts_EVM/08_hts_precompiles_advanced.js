@@ -7,8 +7,8 @@
  * Los Contratos Inteligentes en Hedera pueden interactuar con el Hedera Token
  * Service (HTS) nativo usando el precompilado 0x167. Esto significa que un
  * contrato Solidity puede MINTEAR, QUEMAR o TRANSFERIR tokens nativos de Hedera
- * a velocidades de 10,000 TPS, combinando la programabilidad EVM con el
- * rendimiento de HTS.
+ * combinando la programabilidad EVM con el
+ * servicio de tokens nativo.
  * Para lograr esto, el ID del Contrato Inteligente debe establecerse como
  * la Llave de Suministro (Supply Key) del token.
  * *

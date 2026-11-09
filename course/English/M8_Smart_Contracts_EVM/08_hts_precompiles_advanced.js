@@ -6,8 +6,8 @@
  * [ KEY CONCEPT ]
  * Smart Contracts on Hedera can interact with the native Hedera Token Service
  * (HTS) using the 0x167 precompile. This means a Solidity contract can MINT,
- * BURN, or TRANSFER native Hedera tokens at 10,000 TPS speeds, combining EVM
- * programmability with HTS performance.
+ * BURN, or TRANSFER native Hedera tokens, combining EVM programmability with
+ * the native token service.
  * To achieve this, the Smart Contract ID must be set as the Supply Key of the token.
  * *
  * [ LEARNABLE MOMENT ]

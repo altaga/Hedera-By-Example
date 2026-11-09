@@ -17,7 +17,7 @@
  *    o 10 segundos), los grupos de consumidores calculan un resumen criptográfico
  *    del estado de los offsets de cada partición y los hashes de los payloads.
  * 3. Anclaje de Consenso en HCS: El puente ancla la marca de agua a un tema inmutable
- *    de HCS por $0.0001. Hedera estampa una marca de tiempo inalterable y justa.
+ *    de HCS por el costo de un mensaje. Hedera le asigna una marca de tiempo de consenso justa.
  * 4. Auditoría y Recuperación a Prueba de Manipulaciones: Si una réplica se desincroniza
  *    o enfrenta una auditoría, la empresa puede reproducir los eventos desde el último
  *    anclaje en HCS, demostrando matemáticamente que ningún registro fue alterado o borrado.
@@ -167,13 +167,13 @@ const main = async () => {
     updateState('KAFKA_STATE_CHECKSUM', clusterStateChecksum)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Arquitectura Empresarial Híbrida: Kafka procesa más de 100,000 msgs/seg internamente.')
+    console.log('Arquitectura Empresarial Híbrida: el broker procesa internamente el flujo de alto volumen.')
     console.log('HCS actúa como el tribunal criptográfico de registro. Cualquier auditor puede verificar')
     console.log('que el estado de los offsets en el momento del consenso coincide con el ancla externa.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Al desacoplar el procesamiento de flujos de alta velocidad del anclaje de consenso,')
-    console.log('las organizaciones obtienen conformidad SOC-2, HIPAA y Basilea III a un costo predecible de $0.0001 por anclaje.')
+    console.log('las organizaciones obtienen un rastro de auditoría independiente y con marca de tiempo por el precio de un mensaje HCS por anclaje.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

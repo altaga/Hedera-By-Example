@@ -6,7 +6,8 @@
  * [ CONCEPTO CLAVE ]
  * SLA Descentralizado: La "Latencia de Consenso" es el tiempo que tarda la
  * red en recibir tu mensaje, alcanzar el quorum entre los nodos ("Gossip
- * about Gossip") y asignarle un timestamp global e inmutable. Medir el RTT
+ * about Gossip"), asignarle un timestamp global, y que el Mirror Node te lo
+ * entregue de vuelta por la suscripción. Medir el RTT
  * (Round-Trip Time) es vital para entender las capacidades reales de tu dApp.
  * En Hedera, este número es consistente y suele oscilar entre 2 y 5 segundos,
  * siendo el límite duro que define la experiencia de usuario (UX)
@@ -20,7 +21,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M5 Lab 03: Fragmentación de Mensajes y Suscripciones gRPC
- * - Siguiente: M5 Lab 05: Registro Descentralizado HCS-6
+ * - Siguiente: M5 Lab 05: Registro Descentralizado de Apps en HCS
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

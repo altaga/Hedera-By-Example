@@ -196,9 +196,9 @@ const main = async () => {
     updateState('CIRCUIT_BREAKER_FAILURES_BLOCKED', 3)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Zero Downtime CQRS: By coupling in-memory caching with a Circuit Breaker,')
+    console.log('Graceful Degradation: By coupling in-memory caching with a Circuit Breaker,')
     console.log('your dApp remains responsive during upstream rate-limits or outages,')
-    console.log('serving verifiable cached state without crashing end-user experiences.')
+    console.log('serving the last cached state (marked as cached) instead of crashing.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -10,7 +10,7 @@
  * tanto los metadatos como la imagen binaria directamente desde el Mirror Node.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * La verificación en el cliente de inscripciones NFT HCS-1 garantiza su autenticidad: las billeteras pueden consultar el Mirror Node, reensamblar los fragmentos en memoria y renderizar el arte sin servidores externos.
+ * Verificación en el cliente de inscripciones NFT al estilo HCS-1: las billeteras pueden consultar el Mirror Node, reensamblar los fragmentos en memoria, recalcular el SHA-256 y mostrar el arte sin servidores externos.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -30,6 +30,7 @@
  */
 
 import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
+import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -105,7 +106,11 @@ const main = async () => {
       let fullBase64 = ''
       for (const shard of shards) fullBase64 += shard.d
       show.shards({ id: 'hcs1-stitch', title: 'Fragmentos reensamblados', total: totalExpected, done: shards.length })
-      return Buffer.from(fullBase64, 'base64')
+      const buffer = Buffer.from(fullBase64, 'base64')
+      // The FID in the pointer is the SHA-256 of the original file: recompute it.
+      if (crypto.createHash('sha256').update(buffer).digest('hex') !== targetFid) throw new Error(`Falló la verificación del FID ${targetFid}: el SHA-256 no coincide.`)
+      console.log(`[VERIFY] El SHA-256 coincide con el FID ${targetFid.slice(0, 16)}...`)
+      return buffer
     }
 
     // 3. Reconstruir JSON de Metadatos
@@ -118,7 +123,7 @@ const main = async () => {
     // 4. Extraer y Reconstruir Imagen
     const imagePointer = metadata.image
     if (!imagePointer.startsWith('hcs://')) {
-      throw new Error('El puntero de imagen en los metadatos no cumple con HCS-1.')
+      throw new Error('El puntero de imagen en los metadatos no es un enlace hcs://.')
     }
 
     const [, imageQueryPart] = imagePointer.replace('hcs://', '').split('?')
@@ -143,8 +148,8 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Activos de Confianza Cero: Nota cómo nunca usamos una base de datos')
     console.log('central o IPFS. Cada byte de los metadatos y la imagen vino directamente')
-    console.log('del Hedera Consensus Service a través de un Mirror Node. Esto es')
-    console.log('permanencia real.')
+    console.log('del Hedera Consensus Service a través de un Mirror Node, y se')
+    console.log('comprobó su SHA-256.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

@@ -19,6 +19,10 @@
  * - Previous: M1 Lab 01: Hedera Fundamentals - aBFT & Consensus Simulation
  * - Next:     M1 Lab 03: Cryptography and Signature Delegation (KMS / HSM)
  *
+ * [ SIMULATED ]
+ * Hedera has not switched on account rent (auto-renewal fees) yet, so nothing is charged today.
+ * The projection uses an assumed price of $0.01 per 90-day period. The balance and exchange rate are real.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
@@ -68,22 +72,22 @@ const main = async () => {
     console.log(`[LOG] Current Balance: ${balance.hbars.toString()} (${currentHbar} HBAR)`)
 
     // --- STAGE 3: MATH (The Rent Projection) ---
-    const renewalFeeUsd = 0.01 // Hedera standard periodic rent
+    const renewalFeeUsd = 0.01 // assumed price per 90-day renewal (rent is not charged yet)
 
     const totalUsdValue = currentHbar * liveHbarPrice
     const totalCycles = totalUsdValue / renewalFeeUsd
     const totalDaysCovered = totalCycles * 90
     const totalYearsCovered = (totalDaysCovered / 365).toFixed(1)
 
-    console.log('\n---  Rent Runway Projection ---')
+    console.log('\n---  Rent Runway Projection (assumed $0.01 per period) ---')
     console.log(`└─ Total USD Value:   $${totalUsdValue.toFixed(4)} USD`)
     console.log(`└─ Renewal Cycles:    ${Math.floor(totalCycles)} periods (90 days each)`)
     console.log(`└─ Total Lifespan:    ~${totalYearsCovered} Years`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('As long as this account holds HBAR, it will automatically pay')
-    console.log('its own rent every 90 days. If the balance hits 0, the node')
-    console.log('will eventually delete the account to free up memory.')
+    console.log('Once rent is switched on, an account that holds HBAR pays its own renewal')
+    console.log('every auto-renew period; an account that cannot pay expires and is later')
+    console.log('removed. Today the network does not charge it yet.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -7,12 +7,12 @@
  * Web3 Authentication: This lab demonstrates a "Password-less Login" flow.
  * Instead of storing a password in a database, the server generates a random
  * "challenge" and the user signs it with their private key. By resolving the
- * user's Public Key from the HCS DID Topic, the server can verify the signature
- * with 100% mathematical certainty. This is the foundation of "Sign-in with
+ * user's Public Key from the HCS DID Topic, the server can check the signature
+ * without ever storing a secret. This is the foundation of "Sign-in with
  * Hedera".
  * *
  * [ LEARNABLE MOMENT ]
- * Challenge-response authentication using Hedera DID keys eliminates passwords: users sign a cryptographic server nonce, providing zero-knowledge authentication verified against consensus state.
+ * Challenge-response authentication using Hedera DID keys eliminates passwords: users sign a cryptographic server nonce, and the server checks it against the public key published on HCS, so no password is ever stored or sent.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://github.com/hiero-ledger/hiero-did-sdk-js
@@ -91,7 +91,7 @@ const main = async () => {
     const badSignature = account1Key.sign(bytes)
 
     if (publicKey.verify(bytes, badSignature)) {
-      console.log('[FAILED] Security Breach: Untrusted signature was accepted!')
+      throw new Error('Security Breach: Untrusted signature was accepted!')
     } else {
       console.log('[SUCCESS] Expected Rejection: Cryptographic mismatch.')
     }
@@ -106,7 +106,7 @@ const main = async () => {
       console.log(`[INFO] Welcome back, ${didDocument.nickname}!`)
       console.log(`[LOG] Authenticated Identity: ${didDocument.id}`)
     } else {
-      console.log('[FAILED] Authorized signature was rejected!')
+      throw new Error('Authorized signature was rejected!')
     }
 
     console.log('\n KEY CONCEPT:')
@@ -114,7 +114,7 @@ const main = async () => {
     console.log('Instead of storing a password in a database, the server generates a')
     console.log('random "challenge" and the user signs it with their private key.')
     console.log('By resolving the user\'s Public Key from the HCS DID Topic, the')
-    console.log('server can verify the signature with 100% mathematical certainty.')
+    console.log('server can check the signature without storing any secret.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

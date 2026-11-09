@@ -130,9 +130,9 @@ const main = async () => {
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
-    await setTx.getReceipt(client)
+    const setReceipt = await setTx.getReceipt(client)
     console.log(`[LOG] set(42) tx on HashScan: ${getHashscanUrl(setTx)}`)
-    console.log('[SUCCESS] State updated to 42.')
+    console.log(`[SUCCESS] set(42) accepted: ${setReceipt.status.toString()}`)
 
     // Step D: Query (Get)
     console.log("\n[PROCESS] Querying 'get()' value from on-chain state...")

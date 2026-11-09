@@ -16,7 +16,7 @@
  * transacción de Hedera.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * La seguridad institucional prohíbe almacenar llaves privadas en disco o en memoria RAM. Simular un módulo de seguridad en hardware (HSM/KMS) asegura que las transacciones se firmen en enclaves físicos sin exponer la llave privada.
+ * La custodia institucional mantiene las llaves privadas fuera del disco y de la memoria de la aplicación: con un HSM/KMS en la nube los bytes se firman dentro del módulo y la llave nunca sale de él. El callback de signWith es lo que permite firmar así una transacción de Hedera.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.aws.amazon.com/kms/latest/developerguide/overview.html
@@ -26,7 +26,7 @@
  * - Siguiente: M0 Lab 06: Telemetría de Consenso con OpenTelemetry
  *
  * [ SIMULADO ]
- * El enclave de AWS KMS se simula en memoria salvo que configures credenciales de AWS y AWS_KMS_KEY_ARN. La transacción que firma es real.
+ * El enclave de AWS KMS se simula en memoria salvo que configures credenciales de AWS y AWS_KMS_KEY_ARN. La transacción que firma es real. En modo simulado la llave SÍ está en memoria (es tu llave de operador). En modo real, la llave de KMS debe ser la llave de la cuenta que paga.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -93,7 +93,7 @@ const unpackDerToRaw = (derBytes) => {
 
 /**
  * Interfaz de Cliente AWS KMS y Simulador de Enclave de Hardware.
- * Se ajusta al 100% a la interfaz SignCommand de `@aws-sdk/client-kms` de AWS SDK v3.
+ * Usa la misma forma de entrada y salida que SignCommand de `@aws-sdk/client-kms` (AWS SDK v3).
  */
 class EnterpriseKmsAdapter {
   constructor (config = {}) {
@@ -165,8 +165,9 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
   const custodyKey = PrivateKey.fromStringDer(operatorKey)
   const isECDSA = custodyKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')
+  const kmsLive = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_KMS_KEY_ARN)
 
-  console.log('[SEGURIDAD] Modo de Custodia: Firmador KMS Air-Gapped')
+  console.log(`[SEGURIDAD] Modo de Custodia: ${kmsLive ? 'Firmador AWS KMS (real)' : 'Firmador KMS simulado (llave en memoria)'}`)
   console.log(`[REGISTRO] ID de Cuenta:        ${operatorId.toString()}`)
   console.log(`[REGISTRO] Llave Pública (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
   console.log(`[REGISTRO] Algoritmo de Llave:   ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
@@ -213,10 +214,15 @@ const main = async () => {
     console.log(`[EXPLORADOR] Ver en HashScan:  ${getHashscanUrl(txResponse)}`)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Cero Exposición de Claves: El entorno de la aplicación NUNCA posee la clave privada.')
-    console.log('Los bytes de la transacción se enviaron a un módulo de seguridad de hardware (HSM),')
-    console.log('se firmaron en hardware y se verificaron en Hedera. Esta es la arquitectura obligatoria')
-    console.log('para cumplimiento regulatorio SOC2, ISO27001 y banca institucional.')
+    if (kmsAdapter.isLiveAws) {
+      console.log('Cero Exposición de Claves: AWS KMS firmó los bytes de la transacción y la')
+      console.log('aplicación nunca tuvo la llave privada. Hedera aceptó la firma.')
+    } else {
+      console.log('La firma pasó por el mismo callback con forma de KMS, pero el "enclave" se')
+      console.log('simuló en memoria con tu llave de operador. Con credenciales de AWS y')
+      console.log('AWS_KMS_KEY_ARN configurados, el mismo código le pide a AWS KMS que firme y la')
+      console.log('llave nunca entra en este proceso.')
+    }
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

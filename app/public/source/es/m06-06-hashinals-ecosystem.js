@@ -7,14 +7,14 @@
  * Resiliencia Total: Un "Hashinal" representa el grado máximo de
  * descentralización. A diferencia de otros NFTs que dependen de gateways de
  * IPFS o servidores web, un Hashinal combina HTS (el token), HFS (el
- * manifiesto) y HCS (los datos binarios) en un stack 100% on-chain. Este
- * activo es virtualmente indestructible y resistente a la censura: mientras
- * la red Hedera exista, el activo y sus metadatos estarán disponibles sin
- * dependencias externas, creando el estándar de oro para el arte digital y
- * artefactos históricos.
+ * manifiesto) y HCS (los datos binarios) en un stack on-chain, sin dependencias
+ * externas. Ojo: en este lab el archivo de HFS conserva su llave y vence en 31
+ * días; un activo de larga vida necesita renovar su archivo.
+ * En sentido estricto, un Hashinal (HCS-5) apunta a una inscripción HCS-1
+ * (hcs://1/<tópico>); este lab apunta a un archivo de HFS para mostrar la misma idea.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los Hashinals llevan el concepto de inscripciones tipo Ordinals a Hedera con finalidad en segundos y huella de carbono despreciable, enlazando inscripciones permanentes a números de serie de HTS.
+ * Los Hashinals llevan el concepto de inscripciones tipo Ordinals a Hedera con finalidad en segundos y huella de carbono despreciable, enlazando medios guardados en el ledger a números de serie de HTS.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hashgraphonline.com/
@@ -123,8 +123,8 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Un Hashinal es la expresión máxima de un activo digital.')
     console.log('Al eliminar dependencias de servidores externos (como AWS o')
-    console.log('gateways de IPFS), garantizas que el valor del activo sea tan')
-    console.log('permanente como la red Hedera misma.')
+    console.log('gateways de IPFS), el activo depende solo de la red Hedera, siempre')
+    console.log('que su archivo de HFS se mantenga vigente.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

@@ -5,9 +5,9 @@
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * State Rent: A diferencia de otras blockchains donde el crecimiento del
- * estado es descontrolado, Hedera implementa un modelo de "Renta del Estado".
- * Cada 90 días, la red deduce una pequeña tarifa (~$0.01 USD) para cubrir
- * el costo de memoria en los nodos. Este diseño mantiene la red liviana,
+ * estado es descontrolado, Hedera define un modelo de "Renta del Estado":
+ * cada periodo de auto-renovación (90 días por defecto) la cuenta pagaría una
+ * pequeña tarifa para cubrir el costo de memoria en los nodos. Este diseño mantiene la red liviana,
  * predecible y auditable. Con unos pocos HBAR, una cuenta puede mantenerse
  * activa por décadas de forma autónoma.
  * *
@@ -20,6 +20,10 @@
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M1 Lab 01: Arquitectura aBFT y Simulación de Consenso
  * - Siguiente: M1 Lab 03: Firmas Externas con HSM / KMS
+ *
+ * [ SIMULADO ]
+ * Hedera todavía no ha activado la renta de cuentas (tarifas de auto-renovación), así que hoy no se cobra nada.
+ * La proyección usa un precio supuesto de $0.01 por periodo de 90 días. El saldo y el tipo de cambio son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -69,13 +73,13 @@ const main = async () => {
     console.log(`[REGISTRO] Saldo Actual: ${balance.hbars.toString()} (${currentHbar} HBAR)`)
 
     // --- ETAPA 3: PROYECCIÓN DE RENTA ---
-    const renewalFeeUsd = 0.01 // Costo fijo por ciclo de 90 días
+    const renewalFeeUsd = 0.01 // precio supuesto por renovación de 90 días (la renta aún no se cobra)
     const totalUsdValue = currentHbar * liveHbarPrice
     const totalCycles = totalUsdValue / renewalFeeUsd
     const totalDaysCovered = totalCycles * 90
     const totalYearsCovered = (totalDaysCovered / 365).toFixed(1)
 
-    console.log('\n---  [REGISTRO] Resumen de Autonomía de Renta ---')
+    console.log('\n---  [REGISTRO] Resumen de Autonomía de Renta (supuesto: $0.01 por periodo) ---')
     console.log(`└─ Valor USD Total:   $${totalUsdValue.toFixed(4)} USD`)
     console.log(`└─ Ciclos de Renov.:  ${Math.floor(totalCycles)} periodos de 90 días`)
     console.log(`└─ Días Totales:      ~${Math.floor(totalDaysCovered)} Días`)
@@ -84,10 +88,9 @@ const main = async () => {
     console.log('\n[ÉXITO] Proyección de ciclo de vida calculada.')
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Mientras esta cuenta mantenga HBAR, pagará automáticamente su propia')
-    console.log('renta cada 90 días. Si el saldo llega a 0, el nodo eventualmente')
-    console.log('eliminará la cuenta para liberar memoria, garantizando la eficiencia')
-    console.log('del ledger a largo plazo.')
+    console.log('Cuando la renta se active, una cuenta con HBAR pagará su propia renovación')
+    console.log('cada periodo de auto-renovación; una cuenta que no pueda pagar expira y')
+    console.log('luego se elimina. Hoy la red todavía no la cobra.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

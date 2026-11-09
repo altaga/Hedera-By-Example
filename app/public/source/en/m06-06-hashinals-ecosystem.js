@@ -6,13 +6,16 @@
  * [ KEY CONCEPT ]
  * The hedera:// Protocol: This is a network-native way to reference files. By
  * using this URI in your metadata, you are making your assets "Ledger-Native"
- * and globally resolvable by any Hedera-compatible application. Unlike
- * traditional NFTs that point to a web URL (which can disappear), a Hashinal
- * points directly to an immutable HFS File ID or HCS Topic.
+ * and readable straight from the network by any app that resolves hedera://
+ * links (support varies by wallet). Unlike NFTs that point to a web URL (which
+ * can disappear), this one points to an HFS File ID. In this lab the file keeps
+ * its key and expires in 31 days; a long-lived asset needs its file renewed.
+ * Strictly, a Hashinal (HCS-5) points to an HCS-1 inscription (hcs://1/<topic>);
+ * this lab points to an HFS file instead, to show the same idea with HFS.
  *
  *
  * [ LEARNABLE MOMENT ]
- * Hashinals bring Bitcoin-style Ordinal inscriptions to Hedera with finality in seconds and negligible carbon footprint, binding permanent media inscriptions directly to HTS token serials.
+ * Hashinals bring Bitcoin-style Ordinal inscriptions to Hedera with finality in seconds and negligible carbon footprint, binding on-ledger media to HTS token serials.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hashgraphonline.com/
@@ -121,8 +124,8 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('The hedera:// Protocol: This is a network-native way to reference')
     console.log('files. By using this URI in your metadata, you are making your assets')
-    console.log('"Ledger-Native" and globally resolvable by any Hedera-compatible')
-    console.log('application.')
+    console.log('"Ledger-Native": any app that resolves hedera:// links can read them')
+    console.log('straight from the network, while the HFS file is kept alive.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

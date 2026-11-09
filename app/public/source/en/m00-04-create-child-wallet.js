@@ -5,8 +5,8 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * Treasury Independence: Using accounts other than the operator allows
- * you to see fees in action, as Hedera often exempts the treasury from
- * certain fee types.
+ * you to see fees in action: token custom fees, for example, are never
+ * charged to a token's treasury or to its fee collectors.
  *
  *
  * [ LEARNABLE MOMENT ]
@@ -79,8 +79,8 @@ const main = async () => {
 
     console.log('\n KEY CONCEPT:')
     console.log('You now have three accounts: Operator (Treasury), Account 1, and Account 2.')
-    console.log('This allows you to test fees and multi-party flows without being')
-    console.log('exempt by the Treasury.')
+    console.log('This lets you test fees and multi-party flows from accounts that are not')
+    console.log('the token treasury, so custom-fee exemptions do not hide the fees.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

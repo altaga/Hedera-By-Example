@@ -59,7 +59,7 @@ const main = async () => {
 
   try {
     // --- PHASE 1: ATTEMPT WITH 1 SIGNATURE (ALICE ONLY) ---
-    console.log('\n--- Phase 1: Under-Threshold Simulation ---')
+    console.log('\n--- Phase 1: Under-Threshold Test ---')
     console.log('[PROCESS] Proposing transfer with only 1 signature (Alice)...')
 
     const failTx = await new TransferTransaction()
@@ -78,7 +78,7 @@ const main = async () => {
     }
 
     // --- PHASE 2: ATTEMPT WITH 2 SIGNATURES (ALICE + BOB) ---
-    console.log('\n--- Phase 2: Threshold Compliance Simulation ---')
+    console.log('\n--- Phase 2: Threshold Compliance Test ---')
     console.log('[PROCESS] Proposing transfer with 2 required signatures (Alice + Bob)...')
 
     const successTx = await new TransferTransaction()

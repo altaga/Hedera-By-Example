@@ -110,7 +110,7 @@ const main = async () => {
       console.log(`${sizeStr}| ${totalStr}| ${avgStr}`)
     })
     console.log('='.repeat(60))
-    console.log('[INFO] Observation: Hedera supports extreme horizontal scaling.')
+    console.log('[INFO] Observation: compare Avg Time/Tx across the batch sizes above (one client, testnet).')
     console.log('='.repeat(60))
 
     console.log('\n KEY CONCEPT:')

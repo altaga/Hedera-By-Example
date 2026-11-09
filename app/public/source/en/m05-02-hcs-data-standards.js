@@ -16,6 +16,7 @@
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
+ * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 01: Immutable HCS Primitives
@@ -35,15 +36,15 @@ import { TopicMessageSubmitTransaction, TopicId } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, getState } from '../M99_Utilities/index.js'
 
 /**
- * Ensures HCS-2 Discovery Schema compliance
+ * Builds an HCS-2 "register" message: { p, op, t_id, m }.
+ * Spec: https://hol.org/docs/standards/hcs-2/
  */
 const buildHcs2DiscoveryMessage = (registryName, topicIdPointer, description) => {
   const payload = {
-    h: 'hcs-2', // Header definition
-    t: 'registry', // Message Type
-    r: registryName,
-    tid: topicIdPointer, // The reference to the core topic
-    d: description
+    p: 'hcs-2', // protocol
+    op: 'register', // operation
+    t_id: topicIdPointer, // the topic this registry entry points to
+    m: `${registryName}: ${description}`.slice(0, 500) // memo (HCS-2 allows up to 500 characters)
   }
   return JSON.stringify(payload)
 }
@@ -62,7 +63,8 @@ const main = async () => {
   }
 
   try {
-    console.log(`[INFO] Preparing HCS-2 compliant message for Topic: ${topicId}`)
+    console.log(`[INFO] Preparing an HCS-2 register message for Topic: ${topicId}`)
+    console.log('[INFO] Only the message follows HCS-2: a full registry topic also carries an "hcs-2:<type>:<ttl>" memo, and this one is the Lab 01 topic.')
 
     const message = buildHcs2DiscoveryMessage(
       'Hedera Syllabus Registry',

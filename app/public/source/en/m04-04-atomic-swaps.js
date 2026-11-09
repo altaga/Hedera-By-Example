@@ -41,7 +41,7 @@ import { AccountId, PrivateKey, TransferTransaction, TokenId, NftId, Hbar } from
 import { getClient, getHashscanUrl, getState, findOwnedSerial } from '../M99_Utilities/index.js'
 
 const main = async () => {
-  console.log('--- SESSION START: Atomic Swap Simulation ---\n')
+  console.log('--- SESSION START: Atomic Swap ---\n')
 
   const { client, operatorId } = getClient()
   const userId = process.env.ACCOUNT_1_ID
@@ -64,7 +64,7 @@ const main = async () => {
       process.exitCode = 1
       return
     }
-    console.log('[PROCESS] Initiating Atomic Swap (Primary Sale Simulation):')
+    console.log('[PROCESS] Initiating Atomic Swap (Primary Sale):')
     console.log(`└─ Operator (Seller) sends NFT Serial #${serial} -> User (Buyer)`)
     console.log('└─ User (Buyer) sends 1 HBAR -> Operator (Seller)')
 
@@ -90,7 +90,7 @@ const main = async () => {
 
     const receipt = await response.getReceipt(client)
     console.log(`\n[SUCCESS] Success! Atomic Swap Status: ${receipt.status.toString()}`)
-    console.log('[INFO] Ownership and HBAR have been exchanged atomically in one block.')
+    console.log('[INFO] Ownership and HBAR have been exchanged atomically in one transaction.')
 
     console.log('\n KEY CONCEPT:')
     console.log('The Multi-Signer Flow: Because both parties are giving up assets, both')
