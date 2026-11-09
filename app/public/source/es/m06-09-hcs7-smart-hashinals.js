@@ -25,6 +25,9 @@
  * - Anterior:  M6 Lab 08: Reconstrucción de NFT HCS-1
  * - Siguiente: M6 Lab 10: Bóveda Cifrada Zero-Trust (Privacidad Corporativa en Consenso Público)
  *
+ * [ SIMULADO ]
+ * El contrato de precios de la configuración EVM es una dirección de ejemplo: no hay ningún contrato desplegado ahí, así que nada lee un precio. El registro HCS-7 y sus mensajes son reales.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
@@ -71,7 +74,7 @@ const main = async () => {
     console.log(`[REGISTRO] Memo Oficial HOL: "${topicInfo.topicMemo}"`)
 
     // 2. Inscribir Configuración Lectora de Estado EVM (`t: "evm"`) vía `buildHcs7EvmMessageTx`
-    console.log('\n[PROCESO] Paso 2: Inscribiendo Lector de Estado EVM (Oráculo de Volatilidad HBAR)...')
+    console.log('\n[PROCESO] Paso 2: Inscribiendo una configuración de lectura EVM (feed de precios de ejemplo, dirección de ejemplo)...')
     const evmConfigTx = buildHcs7EvmMessageTx({
       topicId: registryTopicId,
       config: {
@@ -83,7 +86,7 @@ const main = async () => {
           stateMutability: 'view',
           type: 'function'
         },
-        memo: 'Lee el precio en vivo HBAR/USD del oráculo para mutar el aura del Hashinal'
+        memo: 'Ejemplo: lee latestAnswer() de un contrato de precios para elegir el aura del Hashinal (dirección de ejemplo)'
       },
       transactionMemo: 'hcs-7:op:0:0'
     })

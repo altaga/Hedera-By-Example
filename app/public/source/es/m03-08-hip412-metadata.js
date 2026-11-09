@@ -20,6 +20,9 @@
  * - Anterior:  M3 Lab 07: NFTs Dinámicos (HIP-657)
  * - Siguiente: M3 Lab 09: Actualización en Tesorería con Supply-Key y Bloqueo Post-Envío (HIP-850)
  *
+ * [ SIMULADO ]
+ * El CID de IPFS es un ejemplo: el JSON de metadatos no se sube a IPFS, así que el enlace no lleva a nada. La colección y la acuñación son reales.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
@@ -87,6 +90,7 @@ const main = async () => {
     // Para este laboratorio, asumiremos que lo subimos y obtuvimos un CID:
     const mockCid = 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/metadata.json'
     const metadataBuffer = Buffer.from(mockCid)
+    console.log(`[INFO] Puntero de metadatos: ${mockCid} (CID de ejemplo: en este lab el JSON no se sube a IPFS)`)
 
     // 2. Crear la Colección NFT
     console.log('\n[PROCESO] Creando Colección NFT...')
