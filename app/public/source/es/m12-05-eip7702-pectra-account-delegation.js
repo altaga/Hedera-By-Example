@@ -33,7 +33,7 @@
  * - Siguiente: M12 Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
  *
  * [ SIMULADO ]
- * La ejecución por lotes de EIP-7702 es simulada (estado SIMULATED_CONFIRMED); aquí el relay no ejecuta transacciones Type 4.
+ * El lote de EIP-7702 se arma y se firma pero no se ejecuta: este lab no envía ninguna transacción Type 4.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -155,7 +155,7 @@ const main = async () => {
     ]
 
     multiCallBatch.forEach((call, i) => console.log(`[Acción ${i + 1}] ${call.label} -> ${call.target}`))
-    console.log('[ÉXITO] ¡Lote ejecutado atómicamente en el contexto de la EOA! Estado: SIMULATED_CONFIRMED')
+    console.log('[INFO] Lote NO ejecutado: este lab no envía transacciones Type 4, así que el lote de arriba solo se arma y se firma (simulado).')
 
     updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)
     updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)

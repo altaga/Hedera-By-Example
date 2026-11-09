@@ -106,6 +106,7 @@ const main = async () => {
     // --- SCENARIO 1: LESS THAN THE MINIMUM (EXPECT FAIL) ---
     console.log('\n--- Scenario 1: Amount less than Min Fee (Network Error Simulation) ---')
     console.log('[PROCESS] Attempting to send 5 tokens (Minimum custom fee is 20)...')
+    let failStatus = null
     try {
       const failTx = await new TransferTransaction()
         .addTokenTransfer(tokenId, account1Id, -5)
@@ -114,8 +115,10 @@ const main = async () => {
         .sign(account1PrivateKey)
       await (await failTx.execute(client)).getReceipt(client)
     } catch (error) {
-      console.log('[SUCCESS] Success: Transfer failed as expected (Payout < Fee).')
+      failStatus = String(error.status ?? error.message)
     }
+    if (!failStatus) throw new Error('The 5-token transfer was expected to fail, but the network accepted it')
+    console.log(`[SUCCESS] The network rejected it as expected: ${failStatus}`)
 
     const scenarios = [
       { name: 'The Minimum (400 tokens -> 20 fee)', amount: 400, expectFee: 20 },
@@ -131,13 +134,15 @@ const main = async () => {
         .freezeWith(client)
         .sign(account1PrivateKey)
 
-      await (await transferTx.execute(client)).getReceipt(client)
+      // What the network charged, from the transaction record: the fractional fee in FRT and the fixed 1 ℏ fee.
+      const record = await (await transferTx.execute(client)).getRecord(client)
+      const fees = record.assessedCustomFees.map((f) => (f.tokenId ? `${f.amount} FRT` : `${Number(f.amount) / 1e8} ℏ`)).join(' + ')
       await sleep(3500)
 
       const balance1 = await new MirrorNodeTokenBalanceQuery().setAccountId(account1Id).setTokenId(tokenId).execute(client)
       const balance2 = await new MirrorNodeTokenBalanceQuery().setAccountId(account2Id).setTokenId(tokenId).execute(client)
 
-      console.log(`[SUCCESS] Sent ${scenario.amount}. Fee of ${scenario.expectFee} was protocol-enforced.`)
+      console.log(`[SUCCESS] Sent ${scenario.amount}. Fees assessed by the network: ${fees} (expected ${scenario.expectFee} FRT + 1 ℏ).`)
       console.log(`[LOG] Sender Balance:   ${balance1.balance.toString()} FRT`)
       console.log(`[LOG] Receiver Balance: ${balance2.balance.toString()} FRT`)
     }

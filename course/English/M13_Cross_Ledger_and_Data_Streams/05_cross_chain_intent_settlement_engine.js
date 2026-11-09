@@ -196,7 +196,10 @@ const main = async () => {
 
     console.log('[SUCCESS] CLPR Settlement Proof Assembled:')
     console.log(`[LOG] Proof Digest:   ${settlementPayload}`)
-    console.log(`[LOG] TSS Quorum:     ${tssSignatures.length}/3 Council Signatures Verified`)
+    // Each signature is checked by recovering its signer from the digest.
+    const verifiedSignatures = tssSignatures.filter(({ validator, sig }) => ethers.recoverAddress(settlementPayload, sig) === validator).length
+    if (verifiedSignatures < 3) throw new Error(`Only ${verifiedSignatures}/3 council signatures verified`)
+    console.log(`[LOG] TSS Quorum:     ${verifiedSignatures}/3 council signatures verified (simulated council keys)`)
 
     // 6. Live Delegated Allowance Settlement on Hedera Testnet
     console.log('\n[PROCESS] Relayer settling Hedera leg via Approved Allowance (`addApprovedHbarTransfer`)...')
@@ -224,11 +227,11 @@ const main = async () => {
     console.log('\n┌────────────────────────────────────────────────────────────────────────┐')
     console.log('│                   CROSS-CHAIN INTENT SETTLEMENT AUDIT                  │')
     console.log('├────────────────────────────────────────────────────────────────────────┤')
-    console.log('│ Intent Status:          RESOLVED & VERIFIED                            │')
-    console.log('│ Settlement Mechanism:   CLPR Bridgeless State Proof (HIP-1535)         │')
+    console.log('│ Intent Status:          SETTLED ON HEDERA (Arbitrum leg simulated)     │')
+    console.log('│ Proof:                  CLPR-style TSS proof (simulated council)       │')
     console.log('│ Fee Mechanism:          Native Delegated Sponsorship (HIP-336)        │')
-    console.log(`│ Destination Fill Tx:    ${solverFillTxHash.slice(0, 32)}...   │`)
-    console.log(`│ Trader Spent Gas:       ${traderGasSpent.toFixed(8)} HBAR (100% Sponsored)               │`)
+    console.log(`│ Destination Fill Tx:    ${solverFillTxHash.slice(0, 22)}... (simulated)│`)
+    console.log(`│ Trader Spent Gas:       ${traderGasSpent.toFixed(8)} HBAR ${traderGasSpent === 0 ? '(100% sponsored)' : '(not fully sponsored)'}               │`)
     console.log(`│ Trader Final Balance:   ${(finalTraderBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
     console.log(`│ Solver Final Balance:   ${(finalSolverBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
     console.log('└────────────────────────────────────────────────────────────────────────┘')

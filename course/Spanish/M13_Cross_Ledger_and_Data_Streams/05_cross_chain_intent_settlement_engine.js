@@ -196,7 +196,10 @@ const main = async () => {
 
     console.log('[ÉXITO] Paquete de Liquidación CLPR Ensamblado:')
     console.log(`[REGISTRO] Resumen de Prueba:   ${settlementPayload}`)
-    console.log(`[REGISTRO] Quórum TSS:          ${tssSignatures.length}/3 Firmas de Consejo Verificadas`)
+    // Cada firma se comprueba recuperando a su firmante a partir del digest.
+    const verifiedSignatures = tssSignatures.filter(({ validator, sig }) => ethers.recoverAddress(settlementPayload, sig) === validator).length
+    if (verifiedSignatures < 3) throw new Error(`Solo ${verifiedSignatures}/3 firmas del consejo se verificaron`)
+    console.log(`[REGISTRO] Quórum TSS:          ${verifiedSignatures}/3 firmas del consejo verificadas (llaves del consejo simuladas)`)
 
     // 6. Liquidación Real Delegada en Hedera Testnet
     console.log('\n[PROCESO] Relayer liquidando tramo en Hedera mediante asignación aprobada (`addApprovedHbarTransfer`)...')
@@ -224,11 +227,11 @@ const main = async () => {
     console.log('\n┌────────────────────────────────────────────────────────────────────────┐')
     console.log('│             AUDITORÍA DE LIQUIDACIÓN DE INTENCIONES CROSS-CHAIN        │')
     console.log('├────────────────────────────────────────────────────────────────────────┤')
-    console.log('│ Estado de la Intención: RESUELTA Y VERIFICADA                          │')
-    console.log('│ Mecanismo Liquidación:  Prueba de Estado Sin Puentes CLPR (HIP-1535)   │')
+    console.log('│ Estado de la Intención: LIQUIDADA EN HEDERA (tramo Arbitrum simulado)  │')
+    console.log('│ Prueba:                 Prueba TSS estilo CLPR (consejo simulado)      │')
     console.log('│ Mecanismo de Tarifas:   Patrocinio Nativo Delegado (HIP-336)          │')
-    console.log(`│ Hash de Destino:        ${solverFillTxHash.slice(0, 32)}...   │`)
-    console.log(`│ Gas Gastado por Trader: ${traderGasSpent.toFixed(8)} HBAR (100% Patrocinado)             │`)
+    console.log(`│ Hash de Destino:        ${solverFillTxHash.slice(0, 22)}... (simulado) │`)
+    console.log(`│ Gas Gastado por Trader: ${traderGasSpent.toFixed(8)} HBAR ${traderGasSpent === 0 ? '(100% patrocinado)' : '(no del todo patrocinado)'}             │`)
     console.log(`│ Balance Final Trader:   ${(finalTraderBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
     console.log(`│ Balance Final Solver:   ${(finalSolverBalNum.toFixed(4) + 'HBAR').padEnd(30)} │`)
     console.log('└────────────────────────────────────────────────────────────────────────┘')

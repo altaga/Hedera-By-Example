@@ -111,6 +111,7 @@ const main = async () => {
 
     // Escenario 1: Monto menor al mínimo (Fallo esperado)
     console.log('[PROCESO] Intento 1: Enviar 5 FRT (Monto < Fee Mínimo)...')
+    let failStatus = null
     try {
       const failTx = await new TransferTransaction()
         .addTokenTransfer(tokenId, account1Id, -5)
@@ -119,8 +120,10 @@ const main = async () => {
         .sign(account1PrivateKey)
       await (await failTx.execute(client)).getReceipt(client)
     } catch (error) {
-      console.log('└─ [ÉXITO] La red rechazó la transacción por fondos insuficientes para cubrir el fee.')
+      failStatus = String(error.status ?? error.message)
     }
+    if (!failStatus) throw new Error('Se esperaba que la transferencia de 5 tokens fallara, pero la red la aceptó')
+    console.log(`[ÉXITO] La red la rechazó, como se esperaba: ${failStatus}`)
 
     const scenarios = [
       { name: 'El mínimo (400 tokens -> comisión de 20)', amount: 400, expectFee: 20 },
@@ -136,13 +139,15 @@ const main = async () => {
         .freezeWith(client)
         .sign(account1PrivateKey)
 
-      await (await transferTx.execute(client)).getReceipt(client)
+      // Lo que la red cobró, según el registro de la transacción: la comisión fraccional en FRT y la fija de 1 ℏ.
+      const record = await (await transferTx.execute(client)).getRecord(client)
+      const fees = record.assessedCustomFees.map((f) => (f.tokenId ? `${f.amount} FRT` : `${Number(f.amount) / 1e8} ℏ`)).join(' + ')
       await sleep(3500)
 
       const balance1 = await new MirrorNodeTokenBalanceQuery().setAccountId(account1Id).setTokenId(tokenId).execute(client)
       const balance2 = await new MirrorNodeTokenBalanceQuery().setAccountId(account2Id).setTokenId(tokenId).execute(client)
 
-      console.log(`[ÉXITO] Se enviaron ${scenario.amount}. El protocolo cobró una comisión de ${scenario.expectFee}.`)
+      console.log(`[ÉXITO] Se enviaron ${scenario.amount}. Comisiones cobradas por la red: ${fees} (esperado: ${scenario.expectFee} FRT + 1 ℏ).`)
       console.log(`[REGISTRO] Saldo del emisor:   ${balance1.balance.toString()} FRT`)
       console.log(`[REGISTRO] Saldo del receptor: ${balance2.balance.toString()} FRT`)
     }

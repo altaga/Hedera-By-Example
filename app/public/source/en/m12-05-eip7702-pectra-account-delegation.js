@@ -33,7 +33,7 @@
  * - Next:     M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
  *
  * [ SIMULATED ]
- * The EIP-7702 batch execution is simulated (status SIMULATED_CONFIRMED); the relay does not run Type 4 transactions here.
+ * The EIP-7702 batch is built and signed but not executed: this lab sends no Type 4 transaction.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -155,7 +155,7 @@ const main = async () => {
     ]
 
     multiCallBatch.forEach((call, i) => console.log(`[Action ${i + 1}] ${call.label} -> ${call.target}`))
-    console.log('[SUCCESS] Batch executed atomically within EOA context! Status: SIMULATED_CONFIRMED')
+    console.log('[INFO] Batch NOT executed: this lab does not send Type 4 transactions, so the batch above is only built and signed (simulated).')
 
     updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)
     updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
