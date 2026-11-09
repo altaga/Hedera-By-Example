@@ -7,7 +7,7 @@
  * In mainstream web3 onboarding and autonomous AI agent operations, end users
  * and software agents do not have native cryptocurrency (HBAR or ETH) in their
  * newly generated wallets. Forcing users to purchase crypto before their first
- * interaction creates a 99% churn rate.
+ * interaction is one of the biggest onboarding barriers.
  *
  * ERC-4337 Account Abstraction solves this via Paymaster Gas Sponsorship:
  * 1. UserOperation Struct: The user or agent signs a pseudo-transaction struct
@@ -21,9 +21,10 @@
  *    enjoys completely gasless, seamless onboarding.
  *
  * [ LEARNABLE MOMENT ]
- * Hedera's ultra-predictable, sub-cent transaction fees make Paymasters extraordinarily
- * cost-effective. Sponsoring 100,000 user transactions on Hedera costs roughly $10,
- * compared to thousands of dollars on Ethereum or Layer-2 rollups.
+ * Hedera's fees are fixed in USD, so a Paymaster can budget its sponsorship
+ * exactly instead of absorbing gas-price spikes. The signatures are what make the
+ * scheme safe: the EntryPoint only spends the Paymaster's deposit for a
+ * UserOperation the Paymaster itself signed.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://eips.ethereum.org/EIPS/eip-4337
@@ -34,11 +35,13 @@
  * - Next:     M13 Lab 01: Cross-Ledger Protocol (CLPR) & Cryptographic State Proofs (HIP-1535)
  *
  * [ SIMULATED ]
- * The ERC-4337 bundler and UserOperation flow are simulated. The final settlement on Hedera is real.
+ * No bundler runs and nothing is submitted or charged. The lab builds and signs a real
+ * ERC-4337 (v0.6) UserOperation, verifies both signatures the way an EntryPoint would,
+ * and asks the Mirror Node whether an EntryPoint contract exists on Hedera testnet.
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: <1 ℏ (network fees only).
+ * - Wallet: none (only a Mirror Node read).
+ * - Cost: free (no transactions are sent).
  *
  * [ HOW TO RUN ]
  * node English/M12_Modern_EVM_Tooling/06_erc4337_paymaster_gasless.js
@@ -46,7 +49,7 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
 
 /**
  * ERC-4337 Paymaster & UserOperation Packaging Engine
@@ -99,7 +102,7 @@ class Erc4337PaymasterEngine {
   }
 
   /**
-   * Evaluates sponsorship policy and generates paymasterAndData
+   * Signs the sponsorship and builds paymasterAndData (a real Paymaster applies its policy first)
    */
   async sponsorUserOp (paymasterWallet, userOp, validUntil, validAfter) {
     // Pack paymaster validation data: [paymasterAddress(20) || validUntil(6) || validAfter(6)]
@@ -140,10 +143,9 @@ class Erc4337PaymasterEngine {
 
 const main = async () => {
   console.log('--- SESSION START: ERC-4337 Paymaster Gasless Architecture ---\n')
-  const { client } = getClient()
 
   try {
-    const ENTRY_POINT_ADDRESS = '0x0000000071727De22E5E9d8BAf0edAc6f37da032' // Canonical ERC-4337 EntryPoint v0.6
+    const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789' // Canonical ERC-4337 EntryPoint v0.6 (matches this UserOperation format)
     const engine = new Erc4337PaymasterEngine(ENTRY_POINT_ADDRESS, 296) // Hedera Testnet
 
     // 1. Provision User Smart Account & Institutional Paymaster Sponsor
@@ -157,7 +159,7 @@ const main = async () => {
 
     // 2. Assemble UserOperation Struct
     console.log('\n[PROCESS] Step 2: Assembling ERC-4337 UserOperation for Gasless Transfer...')
-    const sampleCallData = ethers.hexlify(ethers.toUtf8Bytes('hedera:transfer:gasless:0.0.11226623'))
+    const sampleCallData = ethers.hexlify(ethers.toUtf8Bytes('demo: gasless call'))
 
     const userOp = {
       sender: userWallet.address,
@@ -173,8 +175,8 @@ const main = async () => {
       signature: '0x'
     }
 
-    // 3. Paymaster Policy Screening & Sponsorship Attachment
-    console.log('\n[PROCESS] Step 3: Screening UserOperation against Enterprise Sponsorship Policy...')
+    // 3. The Paymaster signs its sponsorship
+    console.log('\n[PROCESS] Step 3: The Paymaster signs its sponsorship (with a validity window)...')
     const validUntil = Math.floor(Date.now() / 1000) + 3600 // 1 hour validity
     const validAfter = Math.floor(Date.now() / 1000)
 
@@ -186,7 +188,7 @@ const main = async () => {
     )
 
     userOp.paymasterAndData = sponsorship.paymasterAndData
-    console.log('[SUCCESS] Policy Approved: Paymaster Gas Sponsorship Granted!')
+    console.log('[SUCCESS] Paymaster signed the sponsorship (a real one would first apply its own policy: KYC, quotas...).')
     console.log(`[LOG] Paymaster Digest: ${sponsorship.paymasterDigest}`)
     console.log(`[LOG] Sponsorship Window: ${validAfter} ➔ ${validUntil}`)
     console.log(`[LOG] paymasterAndData Length: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
@@ -202,15 +204,22 @@ const main = async () => {
     console.log(`[LOG] Final UserOp Hash: ${finalUserOpHash}`)
     console.log(`[LOG] User Signature:   ${userOp.signature.substring(0, 24)}...`)
 
-    // 5. Bundler Simulation & Hedera Settlement
-    console.log('\n[PROCESS] Step 5: Bundler Verifying Gas Sponsorship & Broadcasting to Hedera...')
-    console.log('Verification 1: Sender signature valid ➔ CONFIRMED')
-    console.log('Verification 2: Paymaster signature valid ➔ CONFIRMED')
-    console.log('Verification 3: Paymaster balance sufficient to sponsor gas ➔ CONFIRMED')
-    console.log('Verification 4: Gas charged to Paymaster, ZERO HBAR deducted from User ➔ CONFIRMED')
+    // 5. Check it the way the EntryPoint would, then say plainly what is not done here
+    console.log('\n[PROCESS] Step 5: Verifying both signatures, as the EntryPoint would...')
+    const signer = ethers.recoverAddress(finalUserOpHash, userOp.signature)
+    if (signer !== userWallet.address) throw new Error('The UserOperation signature does not match the sender')
+    console.log(`[VERIFY] User signature recovers ${signer}: the sender.`)
+    const paymasterSignature = ethers.dataSlice(userOp.paymasterAndData, 32) // after address (20) + validUntil (6) + validAfter (6)
+    const sponsor = ethers.recoverAddress(sponsorship.paymasterDigest, paymasterSignature)
+    if (sponsor !== paymasterWallet.address) throw new Error('The paymaster signature does not match the paymaster')
+    console.log(`[VERIFY] Paymaster signature recovers ${sponsor}: the paymaster, valid until ${new Date(validUntil * 1000).toISOString()}.`)
 
-    console.log('\n[SUCCESS] ERC-4337 UserOperation Cleared! Status: SETTLED_GASLESS')
-
+    const entryPoint = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${ENTRY_POINT_ADDRESS}`)
+    console.log(entryPoint.ok
+      ? `[LOG] Mirror Node: an EntryPoint contract exists at ${ENTRY_POINT_ADDRESS} on Hedera testnet (${(await entryPoint.json()).contract_id}).`
+      : `[LOG] Mirror Node: no contract at ${ENTRY_POINT_ADDRESS} on Hedera testnet (HTTP ${entryPoint.status}); a bundler would need an EntryPoint deployed first.`)
+    console.log('[INFO] No bundler runs in this lab, so nothing was submitted or charged. A bundler would send this')
+    console.log('UserOperation to the EntryPoint (handleOps), which charges the gas to the Paymaster\'s deposit.')
     updateState('ERC4337_PAYMASTER_ADDRESS', paymasterWallet.address)
     updateState('ERC4337_LAST_USEROP_HASH', finalUserOpHash)
 
@@ -220,15 +229,13 @@ const main = async () => {
     console.log('gas costs behind the scenes through ERC-4337 Paymaster sponsorship.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Hedera is the ideal home for ERC-4337 Account Abstraction because low, deterministic')
-    console.log('gas pricing prevents Paymaster treasuries from being drained by sudden network fee spikes.')
+    console.log('Hedera fees are fixed in USD, so a Paymaster can budget sponsorship exactly. The signatures')
+    console.log('you just verified are what stop anyone from spending the Paymaster\'s deposit without consent.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
     console.error('\n[FAILED] ERC-4337 Paymaster Failure:', error.message)
     process.exit(1)
-  } finally {
-    client.close()
   }
 }
 
