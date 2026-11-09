@@ -10,10 +10,13 @@
  * el titular de la identidad tiene el control total sobre sus llaves de
  * verificación y servicios. Esto permite presentar credenciales verificables
  * (VCs) y realizar autenticaciones criptográficas manteniendo la privacidad
- * selectiva, sentando las bases de la confianza en la Web3.
+ * selectiva. Este lab publica un documento simplificado; el método did:hedera
+ * completo (Hiero DID SDK) publica eventos DID firmados y usa identificadores como
+ * did:hedera:testnet:<llave>_<tópico>. En un tópico abierto, el resolutor también
+ * debe comprobar quién firmó cada actualización.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Publicar Identificadores Descentralizados W3C (DIDs) en HCS otorga identidades autosoberanas que no pueden ser revocadas ni alteradas por proveedores de identidad centralizados.
+ * Publicar Identificadores Descentralizados (DIDs) en HCS otorga identidades que ningún proveedor central puede revocar; solo quien tiene la llave puede firmar actualizaciones válidas.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://github.com/hiero-ledger/hiero-did-sdk-js
@@ -53,7 +56,7 @@ const main = async () => {
 
     console.log(`\n[ÉXITO] Tópico de Registro DID Creado: ${topicId.toString()}`)
 
-    // 2. Construir un Documento DID W3C usando el estándar de @hiero-did-sdk
+    // 2. Construir un Documento DID simplificado con forma W3C (llave codificada con @hiero-did-sdk)
     // Usamos la llave del Operador para que el Lab 06 demuestre posesión en el login
     const didKey = PrivateKey.fromStringDer(operatorKey)
 
@@ -70,7 +73,7 @@ const main = async () => {
       bio: 'Arquitecto Soberano de Hedera y Pionero DID',
       verificationMethod: [{
         id: keyId,
-        type: 'Ed25519VerificationKey2020',
+        type: didKey.publicKey.toStringDer().startsWith('302d300706052b8104000a') ? 'EcdsaSecp256k1VerificationKey2019' : 'Ed25519VerificationKey2020',
         controller: did,
         publicKeyMultibase
       }],
@@ -78,7 +81,7 @@ const main = async () => {
       assertionMethod: [keyId]
     }
 
-    console.log('\n[REGISTRO] Documento DID W3C Generado (formato @hiero-did-sdk):')
+    console.log('\n[REGISTRO] Documento DID Generado (simplificado, con forma W3C):')
     console.log(JSON.stringify(didDocument, null, 2))
 
     // 3. Anclar el Documento DID a HCS

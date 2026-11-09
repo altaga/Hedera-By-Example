@@ -21,7 +21,7 @@
  *    using their assigned `adminKey`. The proposal is permanently purged on Layer 1.
  *
  * [ LEARNABLE MOMENT ]
- * Unlike Ethereum TimelockController contracts that cost $30-$100 to deploy and operate,
+ * Unlike Ethereum TimelockController contracts, which you must deploy and pay gas to operate,
  * Hedera provides cryptographic timelocks and veto deletion directly in the core
  * consensus protocol. Scheduled transactions cannot be hijacked, re-ordered, or front-run.
  *
@@ -86,7 +86,7 @@ const main = async () => {
     console.log(`[LOG] Trustee Multi-Sig Key:   ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
 
     // 2. Schedule a Timelocked Treasury Action
-    console.log('\n[PROCESS] Step 2: Scheduling Timelocked Treasury Payout (48h Window)...')
+    console.log('\n[PROCESS] Step 2: Scheduling Timelocked Treasury Payout (24h Window)...')
 
     // Inner transaction: Transfer 0 tinybars to self
     const innerTransferTx = new TransferTransaction()
@@ -143,7 +143,7 @@ const main = async () => {
     console.log('Native Timelock Security: Hedera Schedule Service allows organizations to define')
     console.log('an admin key on any scheduled transaction. If the Security Council or risk monitors')
     console.log('detect fraudulent parameters, the admin key can delete the transaction before the')
-    console.log('timelock matures, preventing unauthorized funds movement with mathematical certainty.')
+    console.log('timelock matures, so the funds never move.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Because Hedera native scheduling is enforced by consensus nodes directly, there is')

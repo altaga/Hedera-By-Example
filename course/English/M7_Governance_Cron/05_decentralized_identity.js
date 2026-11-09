@@ -6,13 +6,15 @@
  * [ KEY CONCEPT ]
  * Self-Sovereign Identity: This pattern allows for verifiable,
  * cryptographically secure identity that cannot be revoked by a third party.
- * By anchoring a W3C-compliant "DID Document" to a permanent HCS topic,
- * you own your identity data. Anyone can verify your signature by querying
- * the topic to resolve your current public keys. Hedera acts as the
- * ultimate, neutral directory of truth.
+ * By anchoring a W3C-shaped "DID Document" to an HCS topic, you publish your
+ * keys without a central provider. Anyone can verify your signature by reading
+ * the topic to resolve your public key. This lab posts a simplified document;
+ * the full did:hedera method (Hiero DID SDK) publishes signed DID events and
+ * uses identifiers like did:hedera:testnet:<key>_<topic>. On an open topic,
+ * resolvers must also check who signed each update.
  * *
  * [ LEARNABLE MOMENT ]
- * Publishing W3C Decentralized Identifiers (DIDs) on HCS gives users self-sovereign cryptographic identities that cannot be revoked or altered by third-party centralized identity providers.
+ * Publishing Decentralized Identifiers (DIDs) on HCS gives users identities that no central identity provider can revoke; only the key holder can sign valid updates.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://github.com/hiero-ledger/hiero-did-sdk-js
@@ -52,7 +54,7 @@ const main = async () => {
 
     console.log(`\n[SUCCESS] DID Registry Topic Created: ${topicId.toString()}`)
 
-    // 2. Construct a W3C DID Document using @hiero-did-sdk standard
+    // 2. Construct a simplified W3C-shaped DID Document (key encoded with @hiero-did-sdk)
     // We use the Operator Key so Lab 06 can prove ownership during login
     const didKey = PrivateKey.fromStringDer(operatorKey)
 
@@ -69,7 +71,7 @@ const main = async () => {
       bio: 'Sovereign Hedera Architect & DID Pioneer',
       verificationMethod: [{
         id: keyId,
-        type: 'Ed25519VerificationKey2020',
+        type: didKey.publicKey.toStringDer().startsWith('302d300706052b8104000a') ? 'EcdsaSecp256k1VerificationKey2019' : 'Ed25519VerificationKey2020',
         controller: did,
         publicKeyMultibase
       }],
@@ -77,7 +79,7 @@ const main = async () => {
       assertionMethod: [keyId]
     }
 
-    console.log('\n[LOG] Generated W3C DID Document (using @hiero-did-sdk format):')
+    console.log('\n[LOG] Generated DID Document (simplified, W3C-shaped):')
     console.log(JSON.stringify(didDocument, null, 2))
 
     // 3. Anchor the DID Document to HCS

@@ -21,8 +21,8 @@
  *    La propuesta es eliminada irreversiblemente en Capa 1.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * A diferencia de los contratos TimelockController de Ethereum que cuestan $30-$100 en desplegar
- * y operar, Hedera ofrece timelocks criptográficos y eliminación por veto directamente
+ * A diferencia de los contratos TimelockController de Ethereum, que hay que desplegar
+ * y pagar gas para operar, Hedera ofrece timelocks criptográficos y eliminación por veto directamente
  * en el protocolo de consenso. Las transacciones programadas no pueden ser secuestradas ni adelantadas (front-run).
  *
  * [ REFERENCIAS OFICIALES ]
@@ -86,7 +86,7 @@ const main = async () => {
     console.log(`[REGISTRO] Clave Multifirma Fideicomiso: ${trusteeKey.publicKey.toStringDer().substring(0, 32)}...`)
 
     // 2. Programar una Acción de Tesorería con Bloqueo Temporal (Timelock)
-    console.log('\n[PROCESO] Paso 2: Programando Pago de Tesorería con Timelock (Ventana de 48h)...')
+    console.log('\n[PROCESO] Paso 2: Programando Pago de Tesorería con Timelock (Ventana de 24h)...')
 
     // Transacción interna: Transferir 0 HBAR a modo de ping benigno
     const innerTransferTx = new TransferTransaction()

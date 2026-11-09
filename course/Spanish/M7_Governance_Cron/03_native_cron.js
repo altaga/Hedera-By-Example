@@ -14,7 +14,7 @@
  * delegando la confiabilidad a la red global de Hedera.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * El Schedule Service (HSS) actúa como un demonio cron nativo en el ledger: permite programar transacciones para ejecución automática en una marca de tiempo futura sin servidores centralizados.
+ * El Schedule Service (HSS) actúa como un temporizador nativo en el ledger (de un solo disparo, no recurrente): una transacción programada se ejecuta en cuanto reúne sus firmas (este lab, waitForExpiry false) o justo en su fecha de expiración (waitForExpiry true, ver Lab 08), sin cron en un servidor.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction

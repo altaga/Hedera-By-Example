@@ -13,7 +13,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Hedera Schedule Service (HSS) acts as a native on-chain cron daemon: transactions can be scheduled to execute automatically at an exact future consensus timestamp without centralized server crons.
+ * Hedera Schedule Service (HSS) acts as a native on-chain timer (one-shot, not recurring): a scheduled transaction runs as soon as its signatures are in (this lab, waitForExpiry false) or exactly at its expiration time (waitForExpiry true, see Lab 08), with no server cron.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/schedule-transaction
