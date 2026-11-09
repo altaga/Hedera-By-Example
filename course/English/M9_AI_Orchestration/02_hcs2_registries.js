@@ -54,7 +54,7 @@ const main = async () => {
   const { client, network } = getClient()
 
   // Grab the Lab 01 Topic ID from our local state
-  const targetAgentTopicId = getState('HCS1_TOPIC_ID')
+  const targetAgentTopicId = getState('M9_POLICY_TOPIC_ID')
 
   if (!targetAgentTopicId) {
     console.error('[FAILED] Missing HCS-1 Topic ID. Please run Lab 01 first.')

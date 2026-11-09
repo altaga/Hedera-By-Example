@@ -54,7 +54,7 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Registros de Descubrimiento (HCS-2) ---\n')
 
   const { client, network } = getClient()
-  const targetAgentTopicId = getState('HCS1_TOPIC_ID')
+  const targetAgentTopicId = getState('M9_POLICY_TOPIC_ID')
 
   if (!targetAgentTopicId) {
     console.error('[FALLO] No se encontró el ID del tópico del Lab 01 en el estado. Ejecuta Lab 01 primero.')

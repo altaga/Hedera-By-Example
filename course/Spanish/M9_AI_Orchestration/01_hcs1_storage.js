@@ -73,7 +73,7 @@ const main = async () => {
 
     console.log(`[ÉXITO] Tópico de la política creado: ${topicId}`)
     console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(createResponse)}`)
-    updateState('HCS1_TOPIC_ID', topicId)
+    updateState('M9_POLICY_TOPIC_ID', topicId)
 
     // 2. Fragmentación y Envío de la Política de IA
     console.log(`\n[PROCESO] Anclando Política de IA (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)

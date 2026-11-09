@@ -74,7 +74,7 @@ const main = async () => {
     console.log(`[LOG] View on HashScan: ${getHashscanUrl(createResponse)}`)
 
     console.log('[INFO] Synchronizing state.json with the Policy Topic...')
-    updateState('HCS1_TOPIC_ID', topicId)
+    updateState('M9_POLICY_TOPIC_ID', topicId)
 
     // 2. Submit the massive Anti-Cheat Policy
     console.log(`\n[PROCESS] Submitting Anti-Cheat Policy (${Buffer.byteLength(AI_POLICY_PAYLOAD)} bytes)...`)
