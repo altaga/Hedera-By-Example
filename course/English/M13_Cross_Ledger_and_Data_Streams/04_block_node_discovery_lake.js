@@ -8,7 +8,7 @@
  * produce blocks while specialized Block Nodes (HIP-1081) store and serve them.
  * HIP-1137 lets Block Nodes register on-chain; the Mirror Node serves that
  * registry at /api/v1/network/registered-nodes. This decouples transaction execution from massive
- * historical storage, enabling infinite horizontal scaling.
+ * historical storage, so history can scale out across more Block Nodes.
  *
  * [ LEARNABLE MOMENT ]
  * Consensus nodes must stay lean in RAM. Offloading historical storage to a
@@ -160,7 +160,7 @@ const main = async () => {
       }
     }
 
-    console.log('[SUCCESS] Block Lake cryptographic continuity audit passed 100%!')
+    console.log('[SUCCESS] Block Lake continuity audit passed: every block links to the previous hash.')
 
     // Persist state
     updateState('BLOCK_NODE_OPTIMAL_ID', optimalNode.nodeId)

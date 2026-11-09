@@ -200,7 +200,7 @@ const main = async () => {
     console.log(`[LOG] Target Leaf Hash:    ${targetLeafHash}`)
 
     const isProofValid = verifyMerkleProof(targetLeafHash, proof, merkleTree.root)
-    console.log(`\n[AUDIT] Cryptographic Verification: ${isProofValid ? 'VERIFIED (100% INCLUDED)' : 'FRAUDULENT'}`)
+    console.log(`\n[AUDIT] Cryptographic Verification: ${isProofValid ? 'VERIFIED (leaf is in the anchored root)' : 'FRAUDULENT'}`)
 
     if (!isProofValid) throw new Error('Merkle inclusion proof verification failed!')
 
@@ -212,12 +212,12 @@ const main = async () => {
 
     console.log('\n KEY CONCEPT:')
     console.log('HCS-27 gives you the best of both worlds: Millions of micro-operations run off-chain')
-    console.log('with zero network congestion, while a single periodic HCS message establishes')
-    console.log('unbreakable, mathematically verifiable truth on Hedera.')
+    console.log('without one transaction each, while a single periodic HCS message anchors a root')
+    console.log('that anyone can check an inclusion proof against.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Batching 10,000 operations into a single Merkle root reduces consensus fees by 99.99%')
-    console.log('while preserving 100% mathematical and legal auditability.')
+    console.log('Batching 10,000 operations into a single Merkle root needs 1 message instead of 10,000 (99.99% fewer fees)')
+    console.log('while each operation can still be proven with its inclusion proof.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

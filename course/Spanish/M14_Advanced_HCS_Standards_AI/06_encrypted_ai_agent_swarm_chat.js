@@ -18,7 +18,7 @@
  * Las blockchains públicas ofrecen ordenamiento inmutable, no confidencialidad.
  * Al combinar Hedera Consensus Service para la secuenciación de mensajes con
  * criptografía autenticada en el cliente (ECDH + AES-GCM), se crea una red
- * de inteligencia privada, resistente a la censura y matemáticamente segura.
+ * de inteligencia privada: el orden lo da el consenso y la confidencialidad, el cifrado.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-10/

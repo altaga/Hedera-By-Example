@@ -160,7 +160,7 @@ const main = async () => {
       }
     }
 
-    console.log('[ÉXITO] ¡Auditoría de continuidad criptográfica del Block Lake superada al 100%!')
+    console.log('[ÉXITO] Auditoría de continuidad del Block Lake superada: cada bloque enlaza con el hash anterior.')
 
     // Persistir estado
     updateState('BLOCK_NODE_OPTIMAL_ID', optimalNode.nodeId)
@@ -175,7 +175,7 @@ const main = async () => {
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Al consultar endpoints descubiertos dinámicamente y verificar la continuidad de hashes localmente,')
-    console.log('las dApps se vuelven inmunes a caídas o manipulaciones de proveedores centralizados de RPC.')
+    console.log('las dApps dependen menos de un único proveedor de RPC y detectan si alguno altera los datos.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

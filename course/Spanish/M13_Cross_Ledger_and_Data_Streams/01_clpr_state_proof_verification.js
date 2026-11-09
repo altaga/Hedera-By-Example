@@ -14,7 +14,7 @@
  * [ MOMENTO DE APRENDIZAJE ]
  * Varios de los hacks más grandes en la historia de Web3 (miles de millones de dólares) ocurrieron en puentes
  * multi-sig (Ronin, Wormhole, Nomad). Con CLPR no hay custodia compartida:
- * la verdad criptográfica de Hedera es probada matemáticamente en la máquina EVM de destino.
+ * el destino comprueba la prueba de estado de Hedera verificando firmas, sin confiar en un custodio.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1535

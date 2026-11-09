@@ -4,7 +4,7 @@
  * [CONCEPTO] Compatibilidad EVM y Compilación en Tiempo Real
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Finalidad Inmediata: Hedera es 100% compatible con la Ethereum Virtual
+ * Finalidad Inmediata: Hedera es compatible (con pocas diferencias documentadas) con la Ethereum Virtual
  * Machine (EVM). Esto permite que el mismo código Solidity de Ethereum
  * funcione en Hedera, pero con las ventajas del Hashgraph: finalidad de
  * transacciones en ~3 segundos y costos de gas fijos expresados en USD,

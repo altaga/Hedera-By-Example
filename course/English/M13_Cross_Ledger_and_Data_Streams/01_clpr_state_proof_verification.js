@@ -14,7 +14,7 @@
  * [ LEARNABLE MOMENT ]
  * Several of the largest exploits in Web3 history (billions of dollars) targeted multi-sig bridges
  * (Ronin, Wormhole, Nomad). With CLPR there is no shared custodial escrow:
- * Hedera's consensus truth is verified mathematically on the destination EVM.
+ * the destination checks Hedera's state proof by verifying signatures, not by trusting a custodian.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hips.hedera.com/hip/hip-1535

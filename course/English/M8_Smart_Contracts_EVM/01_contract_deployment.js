@@ -7,7 +7,7 @@
  * Direct Bytecode: Unlike some environments that require the SDK to "bundle"
  * your contract, here we are interacting with the ledger at the byte level.
  * This gives you absolute control over the deployment cost and configuration.
- * Hedera is 100% EVM-compatible, meaning you gain the performance and finality
+ * Hedera is EVM-compatible (with a few documented differences), so you gain the finality
  * of Hashgraph while using industry-standard Solidity code.
  *
  *

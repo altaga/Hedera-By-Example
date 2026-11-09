@@ -14,7 +14,7 @@
  * [ LEARNABLE MOMENT ]
  * Users do not want to wait 20 minutes or buy gas on multiple networks just to
  * move liquidity. Intents shift execution risk to professional solvers while
- * Hedera guarantees atomic final settlement in 2.5 seconds for fractions of a cent.
+ * Hedera settles the legs atomically, with finality in a few seconds, for fractions of a cent.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hips.hedera.com/hip/hip-1535

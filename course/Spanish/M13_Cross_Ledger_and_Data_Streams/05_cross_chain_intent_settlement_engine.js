@@ -13,8 +13,8 @@
  *
  * [ MOMENTO DE APRENDIZAJE ]
  * Los usuarios no quieren esperar 20 minutos ni pagar gas en múltiples redes para mover liquidez.
- * Las intenciones trasladan el riesgo al solver profesional, mientras Hedera garantiza la
- * liquidación atómica final en 2.5 segundos con costo de centavos.
+ * Las intenciones trasladan el riesgo al solver profesional, mientras Hedera liquida los
+ * tramos de forma atómica, con finalidad en pocos segundos y costo de fracciones de centavo.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hips.hedera.com/hip/hip-1535

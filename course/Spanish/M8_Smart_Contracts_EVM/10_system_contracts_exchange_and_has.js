@@ -162,9 +162,9 @@ const main = async () => {
     console.log('verificar firmas de cuentas multi-curva (0x16a) y ejecutar operaciones de tokens nativos (0x167).')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Cero Manipulaciones de Oráculos: Los protocolos construidos con 0x168 son inmunes')
-    console.log('a la manipulación de precios de pools de liquidez descentralizados, ya que la tasa de cambio')
-    console.log('está gobernada por la mediana ponderada de los nodos de consenso del Consejo de Gobierno de Hedera.')
+    console.log('Menos Exploits de Oráculos: la tasa de 0x168 no se mueve vaciando un pool de un DEX,')
+    console.log('porque viene del archivo de tipo de cambio de la red (mantenido por el consejo de')
+    console.log('Hedera), no del trading on-chain. Solo cubre HBAR/USD.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
