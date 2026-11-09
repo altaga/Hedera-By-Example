@@ -25,7 +25,7 @@
  * - Siguiente: M13 Lab 04: Descubrimiento de Block Nodes y Lago de Datos (HIP-1081 / HIP-1137)
  *
  * [ SIMULADO ]
- * La verificación del quórum TSS usa un comité generado localmente: las pruebas de bloque TSS agregadas por la red (hinTS, HIP-1200) llegan con la transición a block streams de noviembre de 2026 (HIP-1193), y los archivos de bloque de testnet están en buckets requester-pays. El bloque y las transacciones leídos del Mirror Node son reales.
+ * La verificación del quórum TSS usa un comité generado localmente: este lab no lee pruebas de bloque TSS agregadas por la red, y el encabezado del bloque (incluido stateChangesRoot) es una codificación propia del lab, no el hash de bloque de Hedera. El bloque y las transacciones leídos del Mirror Node son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

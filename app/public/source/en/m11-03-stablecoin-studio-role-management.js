@@ -76,8 +76,8 @@ const main = async () => {
     // 2. Token where every power is a different key
     console.log('\n[PROCESS] Step 2: Creating the stablecoin with one key per role...')
     const { receipt: createReceipt } = await run(new TokenCreateTransaction()
-      .setTokenName('Hedera Digital Dollar')
-      .setTokenSymbol('USDD')
+      .setTokenName('Course Demo Dollar')
+      .setTokenSymbol('HBEUSD')
       .setDecimals(6)
       .setInitialSupply(0)
       .setTokenType(TokenType.FungibleCommon)
@@ -102,13 +102,13 @@ const main = async () => {
       console.log(`[REJECTED] ${error.status ?? error.message}`)
     }
 
-    // 4. Cash-In key mints 250,000 USDD
-    console.log('\n[PROCESS] Step 4: Cash-In role mints 250,000 USDD after the (narrative) bank wire...')
+    // 4. Cash-In key mints 250,000 HBEUSD
+    console.log('\n[PROCESS] Step 4: Cash-In role mints 250,000 HBEUSD after the (narrative) bank wire...')
     const { res: mintRes, receipt: mintReceipt } = await run(new TokenMintTransaction().setTokenId(tokenId).setAmount(250_000 * 1_000_000), client, roles.cashIn)
     console.log(`[SUCCESS] Total supply ${mintReceipt.totalSupply} — ${getHashscanUrl(mintRes)}`)
 
     // 5. KYC + transfer to a holder
-    console.log('\n[PROCESS] Step 5: KYC role approves a holder; treasury sends 1,000 USDD...')
+    console.log('\n[PROCESS] Step 5: KYC role approves a holder; treasury sends 1,000 HBEUSD...')
     const holder = await createLabAccount(client, { hbar: 0.05 })
     await run(new TokenAssociateTransaction().setAccountId(holder.accountId).setTokenIds([tokenId]), client, holder.privateKey)
     await run(new TokenGrantKycTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.kyc)
@@ -116,7 +116,7 @@ const main = async () => {
       .addTokenTransfer(tokenId, operatorId, -amount)
       .addTokenTransfer(tokenId, holder.accountId, amount), client)
     await send(1_000 * 1_000_000)
-    console.log(`[SUCCESS] Holder ${holder.accountId} received 1,000 USDD`)
+    console.log(`[SUCCESS] Holder ${holder.accountId} received 1,000 HBEUSD`)
 
     // 6. Freeze role
     console.log('\n[PROCESS] Step 6: Freeze role freezes the flagged holder; a new transfer must fail...')
@@ -134,7 +134,7 @@ const main = async () => {
     // Wipe requires an unfrozen relationship: unfreeze first, then claw back
     await run(new TokenUnfreezeTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.freeze)
     const { res: wipeRes, receipt: wipeReceipt } = await run(new TokenWipeTransaction().setTokenId(tokenId).setAccountId(holder.accountId).setAmount(1_000 * 1_000_000), client, roles.wipe)
-    console.log(`[SUCCESS] Wiped 1,000 USDD; total supply now ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
+    console.log(`[SUCCESS] Wiped 1,000 HBEUSD; total supply now ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
 
     updateState('STABLECOIN_TOKEN_ID', tokenId.toString())
     updateState('STABLECOIN_MINT_TX_ID', mintRes.transactionId.toString())

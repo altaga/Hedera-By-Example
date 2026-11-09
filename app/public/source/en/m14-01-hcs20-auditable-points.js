@@ -42,7 +42,7 @@ import {
   HCS20MintMessageSchema,
   HCS20TransferMessageSchema
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState, requireEnv } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, requireEnv, waitForMirror } from '../M99_Utilities/index.js'
 
 /**
  * Builds and validates standard HCS-20 inscription messages using official
@@ -195,10 +195,19 @@ const main = async () => {
     stateEngine.processMessage(transferMsg, transferReceipt.topicSequenceNumber)
     console.log(`[SUCCESS] Transferred 12,500 AIPNT at Consensus Sequence #${transferReceipt.topicSequenceNumber}`)
 
-    // 5. Indexer State Reconstruction & Audit
-    console.log('\n[AUDIT] Reconstructed HCS-20 Ledger State:')
-    console.log(`[LOG] Operator (${operatorId}) Balance:       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
-    console.log(`[LOG] Recipient Agent (${recipientAgent}) Balance: ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
+    // 5. Indexer reconstruction: read the inscriptions back from the Mirror Node and replay them
+    console.log('\n[PROCESS] Replaying the topic from the Mirror Node, as any HCS-20 indexer would...')
+    const messages = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?order=asc&limit=100`)
+      const data = res.ok ? await res.json() : null
+      return data?.messages?.length >= 3 ? data.messages : null
+    })
+    if (!messages) throw new Error('The Mirror Node did not return the 3 inscriptions in time')
+    const indexer = new HCS20StateEngine()
+    for (const m of messages) indexer.processMessage(JSON.parse(Buffer.from(m.message, 'base64').toString('utf8')), m.sequence_number)
+    console.log(`[AUDIT] Reconstructed HCS-20 Ledger State (${messages.length} messages replayed):`)
+    console.log(`[LOG] Operator (${operatorId}) Balance:       ${indexer.getBalance('AIPNT', operatorId.toString())} AIPNT`)
+    console.log(`[LOG] Recipient Agent (${recipientAgent}) Balance: ${indexer.getBalance('AIPNT', recipientAgent)} AIPNT`)
 
     // Persist state
     updateState('HCS20_TOPIC_ID', topicId)

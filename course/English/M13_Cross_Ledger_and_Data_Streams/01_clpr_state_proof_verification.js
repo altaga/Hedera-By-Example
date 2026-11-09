@@ -12,7 +12,7 @@
  * the Hedera consensus state proof without trusting any intermediary.
  *
  * [ LEARNABLE MOMENT ]
- * The largest exploits in Web3 history (> $2.5B) targeted multi-sig bridges
+ * Several of the largest exploits in Web3 history (billions of dollars) targeted multi-sig bridges
  * (Ronin, Wormhole, Nomad). With CLPR there is no shared custodial escrow:
  * Hedera's consensus truth is verified mathematically on the destination EVM.
  *
@@ -222,8 +222,8 @@ const main = async () => {
     console.log('Polygon verifies the TSS consensus signature directly to release native assets.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('By eliminating custodial intermediaries, the single most exploited attack vector')
-    console.log('in crypto history is reduced to zero. Future interoperability is purely cryptographic.')
+    console.log('Without a custodial escrow there is no pot of locked funds for an attacker to drain:')
+    console.log('the destination trusts a signature it can check, not a bridge operator.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

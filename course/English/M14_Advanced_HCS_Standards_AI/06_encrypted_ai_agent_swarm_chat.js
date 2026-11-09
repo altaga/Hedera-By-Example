@@ -36,6 +36,9 @@
  * Alpha -> Hedera: AES-256-GCM encrypted message
  * Beta -> Hedera: Read and decrypt
  *
+ * [ SIMULATED ]
+ * Both agents run in this script and their dialogue is scripted. The ECDH handshake, the AES-256-GCM encryption and every HCS message are real, and the lab checks on the Mirror Node that no plaintext reached the topic.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <0.1 ℏ (network fees only).
@@ -50,7 +53,7 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, waitForMirror } from '../M99_Utilities/index.js'
 
 /**
  * Encrypts a plaintext message using AES-256-GCM with a shared symmetric key.
@@ -149,7 +152,7 @@ const main = async () => {
     const keyFingerprint = crypto.createHash('sha256').update(aesKeyOracle).digest('hex')
 
     const keysMatch = aesKeyOracle.equals(aesKeyArbitrageur)
-    console.log(`[SUCCESS] Shared Symmetric Secret Established: ${keysMatch ? 'MATCH (100% SECURE)' : 'MISMATCH'}`)
+    console.log(`[SUCCESS] Shared Symmetric Secret Established: ${keysMatch ? 'MATCH (both agents derived the same key)' : 'MISMATCH'}`)
     console.log(`[KEY] Non-Reversible SHA-256 Key Fingerprint: ${keyFingerprint.slice(0, 32)}...`)
 
     // 4. Conversation Simulation: Encrypted OTC Negotiation
@@ -210,13 +213,23 @@ const main = async () => {
       console.log(`└─  Decrypted Plaintext by Receiver:    "${decryptedText}"`)
     }
 
+    // Read everything the topic holds and confirm no dialogue text appears in it.
+    const published = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?order=asc&limit=100`)
+      const data = res.ok ? await res.json() : null
+      return data?.messages?.length >= dialogue.length + 2 ? data.messages : null
+    })
+    if (!published) throw new Error('The Mirror Node did not return the topic messages in time')
+    const leaks = published.filter((m) => dialogue.some((d) => Buffer.from(m.message, 'base64').toString('utf8').includes(d.text.slice(0, 24)))).length
+    if (leaks) throw new Error(`Plaintext found in ${leaks} published messages`)
+
     console.log('\n═════════════════════════════════════════════════════════════════════════')
     console.log('CONFIDENTIALITY AUDIT REPORT                       ')
     console.log('═════════════════════════════════════════════════════════════════════════')
     console.log(`[LOG] Hedera Topic ID:       ${topicId}`)
     console.log('[LOG] Encryption Algorithm:  AES-256-GCM (NIST SP 800-38D GMAC Tag)')
-    console.log('[LOG] Public Visibility:     ZERO plain-text leakage on Mirror Nodes or explorers')
-    console.log('[LOG] Consensus Ordering:    100% fair timestamped sequence numbers on Hedera')
+    console.log(`[VERIFY] Mirror Node check:  ${published.length} messages read back, plaintext found in ${leaks} of them`)
+    console.log('[LOG] Consensus Ordering:    each message has a consensus timestamp and sequence number')
 
     // Persist state (never persist raw encryption keys — only the non-reversible fingerprint!)
     updateState('ENCRYPTED_CHAT_TOPIC_ID', topicId)
@@ -224,9 +237,8 @@ const main = async () => {
     updateState('ENCRYPTED_CHAT_SHARED_KEY_DIGEST', keyFingerprint)
 
     console.log('\n KEY CONCEPT:')
-    console.log('This architecture is the Holy Grail for enterprise and AI agents:')
-    console.log('You get decentralized, tamper-proof ordering from Hedera Consensus Service,')
-    console.log('while preserving military-grade data privacy through client-side encryption.')
+    console.log('Hedera Consensus Service gives the agents tamper-proof ordering; client-side')
+    console.log('encryption keeps the content private: the network only ever sees ciphertext.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('True privacy does not come from hiding the ledger, but from ensuring that')

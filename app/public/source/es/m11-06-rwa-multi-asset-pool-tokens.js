@@ -1,12 +1,11 @@
 /**
  * ============================================================================
- * Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
+ * Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA
  * [CONCEPTO] Portafolios Tokenizados Componibles y Liquidación Atómica de Canastas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Uno de los mayores avances institucionales de tokenización en Hedera (implementado
- * junto con Archax, abrdn, Lloyds Banking Group y el Asset Tokenization Studio) es el
- * **Pool Token**: un token nativo de HTS que representa la participación proporcional
+ * Los fondos tokenizados y otros activos del mundo real (RWAs) ya existen en Hedera como
+ * tokens de HTS. Un **Pool Token** se construye sobre ellos: un token nativo de HTS que representa la participación proporcional
  * sobre una canasta subyacente de múltiples activos del mundo real regulados (ej. 50%
  * Fondo de Mercado Monetario del Tesoro de EE.UU., 30% Bono Corporativo Verde y 20%
  * Bienes Raíces Comerciales).
@@ -17,7 +16,7 @@
  * [ MOMENTO DE APRENDIZAJE ]
  * En las finanzas tradicionales, crear o redimir una canasta de ETF toma T+1 o T+2 días
  * de conciliación en cámaras de compensación. En Hedera, la creación de Pool Tokens
- * multi-activo se liquida atómicamente en 2.5 segundos por $0.001 USD.
+ * multi-activo se liquida atómicamente, en segundos, por una comisión pequeña fijada en USD.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/solutions/tokenization/ats
@@ -26,6 +25,9 @@
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
  * - Siguiente: M11 Lab 07: Puente de Integración ERP Institucional (Facturas UBL -> HCS -> Tramos HTS)
+ *
+ * [ SIMULADO ]
+ * Los tres "RWAs" subyacentes son tokens de demostración que crea el lab (no fondos, bonos ni bienes raíces reales), y la tesorería del pool es tu propia cuenta. Los tokens, el fondeo del participante y el intercambio atómico de la canasta son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -55,7 +57,7 @@ const BASKET_WEIGHTS = [
 ]
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Pool Tokens Multi-Activo Institucionales (Patrón Archax / ATS) ---\n')
+  console.log('--- INICIO DE SESIÓN: Pool Tokens Multi-Activo Institucionales ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const issuerKey = PrivateKey.fromStringDer(operatorKey)
 
@@ -90,7 +92,7 @@ const main = async () => {
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
     const poolTokenId = await reuseToken('REUSE_M11_06_POOL', async () => {
       const poolTx = await new TokenCreateTransaction()
-        .setTokenName('Canasta Institucional RWA Estilo Archax')
+        .setTokenName('Canasta Institucional RWA de Demostración')
         .setTokenSymbol('POOL-RWA')
         .setDecimals(0)
         .setInitialSupply(10000)
@@ -153,7 +155,7 @@ const main = async () => {
       .setAccountId(apAccountId)
       .setTokenId(poolTokenId)
       .execute(client)
-    console.log(`\n[AUDITORÍA] Balance Final del AP: ${apPoolBal.balance.toString()} POOL-RWA (Respaldado 1:1 por 3 Tramos RWA en Bóveda)`)
+    console.log(`\n[AUDITORÍA] Balance Final del AP: ${apPoolBal.balance.toString()} POOL-RWA (1,000 unidades de los 3 tokens RWA de demostración depositadas a cambio)`)
 
     updateState('RWA_POOL_TOKEN_ID', poolTokenId.toString())
     updateState('RWA_AP_ACCOUNT_ID', apAccountId.toString())

@@ -1,12 +1,11 @@
 /**
  * ============================================================================
- * Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
+ * Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets
  * [CONCEPT] Composable Tokenized Portfolios & Atomic Basket Settlement
  * ============================================================================
  * [ KEY CONCEPT ]
- * One of Hedera's landmark institutional tokenization breakthroughs (pioneered
- * with Archax, abrdn, Lloyds Banking Group, and the Asset Tokenization Studio)
- * is the **Pool Token**: a native HTS token that represents a proportional claim
+ * Tokenized funds and other real-world assets (RWAs) already live on Hedera as HTS
+ * tokens. A **Pool Token** builds on them: a native HTS token that represents a proportional claim
  * on an underlying basket of distinct regulated RWAs (e.g., 50% Tokenized US
  * Treasury Money Market Fund, 30% Corporate Green Bond, 20% Commercial Real Estate).
  * Because Hedera `TransferTransaction` supports up to 10 token legs atomically,
@@ -16,7 +15,7 @@
  * [ LEARNABLE MOMENT ]
  * In traditional finance, creating or redeeming an ETF basket takes T+1 or T+2 days
  * of clearinghouse reconciliation. On Hedera, multi-asset Pool Token creation and
- * collateral transfers settle atomically in 2.5 seconds for $0.001.
+ * collateral transfers settle atomically, in seconds, for a small fee fixed in USD.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/solutions/tokenization/ats
@@ -25,6 +24,9 @@
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 05: Real-World Asset (RWA) Invoice Factoring Pipeline
  * - Next:     M11 Lab 07: Institutional ERP Integration Bridge (UBL Invoice -> HCS -> HTS Tranches)
+ *
+ * [ SIMULATED ]
+ * The three underlying "RWAs" are demo tokens the lab creates (not real funds, bonds or real estate), and the pool treasury is your own account. The tokens, the funding of the participant and the atomic basket swap are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -54,7 +56,7 @@ const BASKET_WEIGHTS = [
 ]
 
 const main = async () => {
-  console.log('--- SESSION START: Institutional Multi-Asset Pool Tokens (Archax / ATS Pattern) ---\n')
+  console.log('--- SESSION START: Institutional Multi-Asset Pool Tokens ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const issuerKey = PrivateKey.fromStringDer(operatorKey)
 
@@ -89,7 +91,7 @@ const main = async () => {
     const poolMemo = `ats:pool_v1:${underlyingTokens.map(t => `${t.tokenId.toString()}_${t.weight}`).join('|')}`
     const poolTokenId = await reuseToken('REUSE_M11_06_POOL', async () => {
       const poolTx = await new TokenCreateTransaction()
-        .setTokenName('Archax-Style Institutional RWA Basket Pool')
+        .setTokenName('Demo Institutional RWA Basket Pool')
         .setTokenSymbol('POOL-RWA')
         .setDecimals(0)
         .setInitialSupply(10000)
@@ -152,7 +154,7 @@ const main = async () => {
       .setAccountId(apAccountId)
       .setTokenId(poolTokenId)
       .execute(client)
-    console.log(`\n[AUDIT] AP Final Pool Token Balance: ${apPoolBal.balance.toString()} POOL-RWA (Backed 1:1 by 3 RWA Vault Legs)`)
+    console.log(`\n[AUDIT] AP Final Pool Token Balance: ${apPoolBal.balance.toString()} POOL-RWA (1,000 units of the 3 demo RWA tokens deposited for them)`)
 
     updateState('RWA_POOL_TOKEN_ID', poolTokenId.toString())
     updateState('RWA_AP_ACCOUNT_ID', apAccountId.toString())

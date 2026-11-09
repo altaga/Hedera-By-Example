@@ -231,7 +231,7 @@ async function main () {
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Never post confidential banking statements or personal identity data directly on-chain.')
-    console.log('Zero-knowledge commitments allow instant mathematical verification while preserving 100% privacy.')
+    console.log('A hash commitment plus a notary signature lets anyone check the claim without seeing the private fields.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

@@ -15,7 +15,7 @@ In this module, we bridge the gap for Ethereum native developers. You will learn
 | **01** | **Direct HTS ERC-20 Facade** | Calling native HTS tokens directly from Solidity as `IERC20` without legacy precompiles (HIP-719). |
 | **02** | **JSON-RPC Relay via Ethers.js** | Querying state and executing standard Ethereum transactions using pure Ethers.js v6 on Hashio. |
 | **03** | **Foundry & Hardhat Workflows** | Configuring `foundry.toml` and `hardhat.config.ts` for automated testnet compilation and deployment. |
-| **04** | **Scaffold-HBAR Architecture** | Integrating full-stack Next.js dApps with RainbowKit, Wagmi v2, Viem, and Hedera Testnet. |
+| **04** | **Scaffold-HBAR Architecture** | What the create-scaffold-hbar CLI generates (Next.js, Hardhat or Foundry, Hedera config), checked against Hashio. |
 | **05** | **EIP-7702 Account Delegation** | Ethereum Pectra account delegation on Hedera JSON-RPC Relay for zero-cost smart account capabilities. |
 | **06** | **ERC-4337 Paymaster Gasless** | Gas sponsorship architecture, UserOperation signing, and EntryPoint verification for zero-gas dApps. |
 

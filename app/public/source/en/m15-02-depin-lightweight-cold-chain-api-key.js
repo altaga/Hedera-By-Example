@@ -259,7 +259,7 @@ async function main () {
     console.log('\n KEY CONCEPT:')
     console.log('Low-power IoT nodes save energy with lightweight HTTP + HMAC-SHA256 signatures.')
     console.log('When an enterprise gateway detects an SLA breach, anchoring the event to HCS provides')
-    console.log('verifiable evidence that automates bond slashing and prevents insurance fraud.')
+    console.log('verifiable evidence that a bond-slashing or insurance process can act on.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Always authenticate both device identity (API Key) and payload integrity (HMAC).')

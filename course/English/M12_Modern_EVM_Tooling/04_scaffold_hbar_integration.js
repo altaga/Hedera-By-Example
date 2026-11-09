@@ -1,14 +1,14 @@
 /**
  * ============================================================================
  * Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
- * [CONCEPT] Next.js, RainbowKit, Wagmi v2, and Hedera Integration
+ * [CONCEPT] A Generated Next.js + Contracts Monorepo Wired to Hedera
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Hackathon Super-Weapon: Building a full-stack dApp from scratch during
  * a 36-hour hackathon wastes precious hours on wallet connection modals, RPC
  * providers, and contract artifact syncing. Scaffold-HBAR (npm create scaffold-hbar@latest)
- * delivers a production-ready monorepo with RainbowKit, Wagmi v2, Viem, and
- * Hashio pre-configured out-of-the-box.
+ * is an interactive CLI that generates a monorepo with a Next.js (App Router)
+ * frontend, Hardhat or Foundry contracts, and the Hedera network configuration.
  * *
  * [ LEARNABLE MOMENT ]
  * Scaffold-HBAR streamlines full-stack Web3 application development on Hedera, connecting modern React/Next.js frontends with EVM contracts and native HTS token flows out-of-the-box.
@@ -88,18 +88,17 @@ const main = async () => {
     console.log('Run in your terminal:')
     console.log('npx create-scaffold-hbar@latest')
     console.log('\nWhat this bootstraps out-of-the-box:')
-    console.log('1. packages/nextjs   -> Next.js 14 App Router + TailwindCSS + DaisyUI')
-    console.log('2. packages/hardhat  -> Smart contracts, deployment scripts & typechain')
-    console.log('3. Web3 Connectors  -> MetaMask, Coinbase Wallet, WalletConnect via RainbowKit')
-    console.log('4. Debug Contract UI -> Hot-reloading frontend to read/write smart contracts')
+    console.log('1. Frontend  -> Next.js (App Router)')
+    console.log('2. Contracts -> Hardhat or Foundry (your choice; or none)')
+    console.log('3. Network   -> Hedera configuration (chain 296 on testnet, as checked above)')
+    console.log('Templates are fetched from a Git branch, so their exact stack can change between versions.')
     console.log('===============================================================')
 
     updateState('SCAFFOLD_HBAR_VERIFIED', true)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Scaffold-HBAR is the ultimate hackathon accelerator. Teams that bootstrap')
-    console.log('with Scaffold-HBAR have a fully functioning UI connected to MetaMask and')
-    console.log('Hedera Testnet within 5 minutes, allowing them to focus 100% on their core bounty logic.')
+    console.log('Scaffold-HBAR saves the setup a hackathon team would otherwise repeat: a frontend,')
+    console.log('a contracts workspace and the Hedera network config, generated in one command.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

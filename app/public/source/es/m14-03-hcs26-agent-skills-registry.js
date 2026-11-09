@@ -165,8 +165,8 @@ const main = async () => {
     console.log('pueden organizarse y negociar sin que un ingeniero humano programe APIs manualmente.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Al estandarizar los manifiestos bajo Model Context Protocol (MCP) en Hedera,')
-    console.log('cualquier LLM (Claude, GPT, DeepSeek, Gemini) puede interactuar nativamente con agentes Web3.')
+    console.log('Los manifiestos que describen sus herramientas en términos de MCP los puede leer cualquier agente que')
+    console.log('siga el tópico del registro; un cliente MCP igual tiene que conectarse a la herramienta para usarla.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

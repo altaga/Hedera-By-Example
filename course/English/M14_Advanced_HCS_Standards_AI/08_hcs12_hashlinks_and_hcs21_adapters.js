@@ -17,10 +17,10 @@
  *    execute tampered off-chain code.
  *
  * [ LEARNABLE MOMENT ]
- * Phishing links and poisoned npm packages are the #1 attack vector against
+ * Phishing links and poisoned npm packages are common attack vectors against
  * crypto users and AI agents. By combining HCS-12 on-chain UI assemblies with
  * HCS-21 SHA-256 package fingerprint verification (the core philosophy behind
- * HOL Guard), both the frontend widget and backend adapter are 100% auditable.
+ * HOL Guard), both the frontend widget and the backend adapter can be checked against what was published on-chain.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-12/
@@ -180,8 +180,8 @@ const main = async () => {
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('When an AI agent presents an interactive transaction card to a user via HCS-12,')
-    console.log('verifying the backing adapter via HCS-21 eliminates both frontend spoofing and')
-    console.log('backend supply-chain poisoning in one unified flow.')
+    console.log('checking the backing adapter against its HCS-21 fingerprint lets the user detect a swapped')
+    console.log('interface or a tampered package before signing anything.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

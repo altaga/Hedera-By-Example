@@ -12,7 +12,7 @@
  * la prueba de consenso de Hedera sin confiar en ningún intermediario centralizado.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los hacks más grandes en la historia de Web3 (> $2.5B) ocurrieron en puentes
+ * Varios de los hacks más grandes en la historia de Web3 (miles de millones de dólares) ocurrieron en puentes
  * multi-sig (Ronin, Wormhole, Nomad). Con CLPR no hay custodia compartida:
  * la verdad criptográfica de Hedera es probada matemáticamente en la máquina EVM de destino.
  *
@@ -222,8 +222,8 @@ const main = async () => {
     console.log('Polygon verifica directamente la firma TSS de consenso para liberar activos nativos.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Al eliminar intermediarios de custodia, se reduce a cero el vector de ataque más explotado')
-    console.log('del ecosistema cripto. La interoperabilidad del futuro es puramente criptográfica.')
+    console.log('Sin una custodia compartida no hay un fondo bloqueado que un atacante pueda vaciar:')
+    console.log('el destino confía en una firma que puede comprobar, no en un operador de puente.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

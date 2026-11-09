@@ -42,7 +42,7 @@ import {
   HCS20MintMessageSchema,
   HCS20TransferMessageSchema
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState, requireEnv } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, requireEnv, waitForMirror } from '../M99_Utilities/index.js'
 
 /**
  * Construye y valida mensajes estándar de inscripción HCS-20 mediante los esquemas
@@ -195,10 +195,19 @@ const main = async () => {
     stateEngine.processMessage(transferMsg, transferReceipt.topicSequenceNumber)
     console.log(`[ÉXITO] Transferidos 12,500 AIPNT en Secuencia de Consenso #${transferReceipt.topicSequenceNumber}`)
 
-    // 5. Auditoría y Reconstrucción del Estado por el Indexador
-    console.log('\n[AUDITORÍA] Estado Reconstruido del Libro HCS-20:')
-    console.log(`[REGISTRO] Balance Operador (${operatorId}):       ${stateEngine.getBalance('AIPNT', operatorId.toString())} AIPNT`)
-    console.log(`[REGISTRO] Balance Agente Destino (${recipientAgent}): ${stateEngine.getBalance('AIPNT', recipientAgent)} AIPNT`)
+    // 5. Reconstrucción del indexador: leer las inscripciones del Mirror Node y reproducirlas
+    console.log('\n[PROCESO] Reproduciendo el tópico desde el Mirror Node, como lo haría cualquier indexador HCS-20...')
+    const messages = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?order=asc&limit=100`)
+      const data = res.ok ? await res.json() : null
+      return data?.messages?.length >= 3 ? data.messages : null
+    })
+    if (!messages) throw new Error('The Mirror Node did not return the 3 inscriptions in time')
+    const indexer = new HCS20StateEngine()
+    for (const m of messages) indexer.processMessage(JSON.parse(Buffer.from(m.message, 'base64').toString('utf8')), m.sequence_number)
+    console.log(`[AUDITORÍA] Estado Reconstruido del Libro HCS-20 (${messages.length} mensajes reproducidos):`)
+    console.log(`[REGISTRO] Balance Operador (${operatorId}):       ${indexer.getBalance('AIPNT', operatorId.toString())} AIPNT`)
+    console.log(`[REGISTRO] Balance Agente Destino (${recipientAgent}): ${indexer.getBalance('AIPNT', recipientAgent)} AIPNT`)
 
     // Persistir estado
     updateState('HCS20_TOPIC_ID', topicId)

@@ -18,10 +18,10 @@
  *    agentes jamás ejecuten código adulterado.
  *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los enlaces de phishing y los paquetes npm envenenados son el vector de ataque
- * #1 contra usuarios cripto y agentes de IA. Al combinar interfaces on-chain
+ * Los enlaces de phishing y los paquetes npm envenenados son vectores de ataque
+ * comunes contra usuarios cripto y agentes de IA. Al combinar interfaces on-chain
  * HCS-12 con verificación de huella SHA-256 en HCS-21 (la base de HOL Guard),
- * tanto el widget visual como el adaptador quedan 100% auditados en consenso.
+ * tanto el widget visual como el adaptador se pueden contrastar con lo publicado on-chain.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-12/
@@ -181,8 +181,8 @@ const main = async () => {
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Cuando un agente de IA presenta una tarjeta de transacción interactiva vía HCS-12,')
-    console.log('verificar el adaptador mediante HCS-21 elimina tanto la suplantación de interfaz')
-    console.log('como el envenenamiento de paquetes de software en un mismo flujo.')
+    console.log('contrastar el adaptador con su huella en HCS-21 permite detectar una interfaz cambiada')
+    console.log('o un paquete alterado antes de firmar nada.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

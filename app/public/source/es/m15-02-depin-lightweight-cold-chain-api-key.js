@@ -261,7 +261,7 @@ async function main () {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Los nodos IoT de bajo consumo ahorran energía con HTTP ligero y firmas HMAC-SHA256.')
     console.log('Cuando una pasarela empresarial detecta una ruptura de SLA, anclar el evento a HCS')
-    console.log('proporciona evidencia verificable que automatiza la confiscación de depósitos y fianza.')
+    console.log('proporciona evidencia verificable sobre la que puede actuar un proceso de penalización o de seguro.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Autentica siempre tanto la identidad del dispositivo (API Key) como la integridad del dato (HMAC).')

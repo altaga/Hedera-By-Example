@@ -15,7 +15,7 @@ En este módulo cerramos la brecha para los desarrolladores nativos de Ethereum.
 | **01** | **Fachada Directa HTS ERC-20** | Consumo de tokens HTS nativos desde Solidity como `IERC20` sin precompilados obsoletos (HIP-719). |
 | **02** | **JSON-RPC Relay con Ethers.js** | Consulta de estado y ejecución de transacciones estándar de Ethereum usando Ethers.js v6 en Hashio. |
 | **03** | **Flujos con Foundry y Hardhat** | Configuración de `foundry.toml` y `hardhat.config.ts` para compilación y despliegue automatizado. |
-| **04** | **Arquitectura Scaffold-HBAR** | Integración de dApps full-stack con Next.js, RainbowKit, Wagmi v2, Viem y Hedera Testnet. |
+| **04** | **Arquitectura Scaffold-HBAR** | Lo que genera la CLI create-scaffold-hbar (Next.js, Hardhat o Foundry, configuración de Hedera), verificado contra Hashio. |
 | **05** | **Delegación EIP-7702 Pectra** | Delegación de cuentas Pectra en el Relay JSON-RPC de Hedera para capacidades de cuenta inteligente sin costo. |
 | **06** | **Paymaster ERC-4337 Sin Gas** | Arquitectura de patrocinio de gas, firma de UserOperation y verificación de EntryPoint para dApps sin gas. |
 

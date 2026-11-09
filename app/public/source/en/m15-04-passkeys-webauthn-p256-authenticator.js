@@ -222,7 +222,7 @@ async function main () {
     const challengeHex = gateway.generateChallenge()
     console.log(`[ GATEWAY CHALLENGE] ${challengeHex}`)
 
-    console.log('[ TOUCH SENSOR] User presents biometric scan: Verified (User Present=1, User Verified=1)')
+    console.log('[ TOUCH SENSOR] (emulated) The authenticator reports User Present=1, User Verified=1')
     const assertion = authenticator.generateAssertion(challengeHex)
     console.log(`[ ASSERTION DER] Signature: ${assertion.signatureHex.substring(0, 32)}... (Valid P-256 DER)`)
 

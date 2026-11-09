@@ -31,11 +31,11 @@
  * Alice -> Solver: Signed intent: USD for HBAR
  * Bob -> Solver: Signed intent: HBAR for USD
  * Note Solver: Matches the intents off-chain
- * Solver -> Hedera: One atomic transfer settles both
+ * Solver -> Hedera: One transfer settles the HBAR leg (the USD leg is simulated)
  * Solver -> Hedera: Settlement record on HCS
  *
  * [ SIMULATED ]
- * Alice, Bob and the solver run in one process, and their intents are matched locally. The settlement transfer and HCS record are real.
+ * Alice, Bob and the solver run in one process, and their intents are matched locally. There is no stablecoin token, so the USD leg is simulated: only the HBAR leg (0.01 HBAR from Alice to Bob) settles on Hedera. That transfer, the intent signatures and the HCS record are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -202,10 +202,9 @@ async function main () {
       throw new Error('Solver failed to find matching CoW orders')
     }
 
-    console.log('[ COW MATCH FOUND] Alice Order  Bob Order matched at 1:1 par with ZERO slippage!')
-    console.log('• Sell Leg 1: Alice transfers 1.50 HBAR equivalent')
-    console.log('• Sell Leg 2: Bob transfers matching liquidity')
-    console.log('• Solver Protocol Fee: 0.0001 HBAR')
+    console.log('[ COW MATCH FOUND] Each intent gives what the other asks, at the price both signed.')
+    console.log('• HBAR leg: Alice -> Bob, settled on Hedera in the next step (0.01 HBAR on testnet)')
+    console.log('• USD leg:  Bob -> Alice, simulated (this lab has no stablecoin token)')
 
     // 5. Execute Atomic Settlement on Hedera Consensus
     console.log('\n[5/5] Executing Atomic Multi-Leg Settlement on Hedera...')
@@ -248,9 +247,9 @@ async function main () {
     updateState('INTENT_SOLVER_BOB_HASH', bobOrder.intentHash)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Intent Solvers eliminate the MEV, sandwich attacks, and pool slippage of traditional AMMs.')
-    console.log('Makers sign zero-gas declarations; decentralized solvers match mutual interests and')
-    console.log('execute multi-party trades in an atomic Hedera TransferTransaction.')
+    console.log('Intents never sit in a public mempool, so there is no pending order to front-run or sandwich.')
+    console.log('Makers sign off-chain declarations; a solver matches them and settles the legs in one')
+    console.log('atomic Hedera TransferTransaction (here only the HBAR leg is real).')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Hedera TransferTransactions enforce net-zero atomic balance sums across all legs.')

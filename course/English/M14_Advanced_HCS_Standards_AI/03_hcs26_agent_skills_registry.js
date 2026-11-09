@@ -163,8 +163,8 @@ const main = async () => {
     console.log('and negotiate multi-agent pipelines without a human engineer writing API bindings.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('By standardizing skill manifests under the Model Context Protocol (MCP) on Hedera,')
-    console.log('any LLM (Claude, GPT, DeepSeek, Gemini) can natively discover and invoke Web3 tools.')
+    console.log('Skill manifests that describe their tools in MCP terms can be read by any agent that')
+    console.log('watches the registry topic; an MCP client still has to connect to the tool to call it.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

@@ -232,7 +232,7 @@ async function main () {
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Nunca publiques extractos bancarios o datos de identidad confidenciales directamente en la cadena.')
-    console.log('Los compromisos de conocimiento cero permiten verificación matemática instantánea preservando la privacidad.')
+    console.log('Un compromiso con hash más la firma de un notario permite a cualquiera comprobar la afirmación sin ver los campos privados.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

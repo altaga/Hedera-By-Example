@@ -36,6 +36,9 @@
  * Alpha -> Hedera: Mensaje cifrado con AES-256-GCM
  * Beta -> Hedera: Leer y descifrar
  *
+ * [ SIMULADO ]
+ * Los dos agentes corren en este script y su diálogo está escrito de antemano. El intercambio ECDH, el cifrado AES-256-GCM y cada mensaje en HCS son reales, y el lab comprueba en el Mirror Node que ningún texto plano llegó al tópico.
+ *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <0.1 ℏ (solo comisiones de red).
@@ -50,7 +53,7 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, updateState, waitForMirror } from '../M99_Utilities/index.js'
 
 /**
  * Encripta un mensaje en texto plano usando AES-256-GCM con una clave simétrica compartida.
@@ -149,7 +152,7 @@ const main = async () => {
     const keyFingerprint = crypto.createHash('sha256').update(aesKeyOracle).digest('hex')
 
     const keysMatch = aesKeyOracle.equals(aesKeyArbitrageur)
-    console.log(`[ÉXITO] Secreto Simétrico Compartido Establecido: ${keysMatch ? 'COINCIDENCIA (100% SEGURO)' : 'DISCREPANCIA'}`)
+    console.log(`[ÉXITO] Secreto Simétrico Compartido Establecido: ${keysMatch ? 'COINCIDENCIA (ambos agentes derivaron la misma llave)' : 'DISCREPANCIA'}`)
     console.log(`[CLAVE] Huella No Reversible SHA-256 de la Clave: ${keyFingerprint.slice(0, 32)}...`)
 
     // 4. Negociación OTC Encriptada en Vivo
@@ -210,13 +213,23 @@ const main = async () => {
       console.log(`└─  Texto Plano Descifrado por Receptor: "${decryptedText}"`)
     }
 
+    // Read everything the topic holds and confirm no dialogue text appears in it.
+    const published = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${topicId}/messages?order=asc&limit=100`)
+      const data = res.ok ? await res.json() : null
+      return data?.messages?.length >= dialogue.length + 2 ? data.messages : null
+    })
+    if (!published) throw new Error('The Mirror Node did not return the topic messages in time')
+    const leaks = published.filter((m) => dialogue.some((d) => Buffer.from(m.message, 'base64').toString('utf8').includes(d.text.slice(0, 24)))).length
+    if (leaks) throw new Error(`Plaintext found in ${leaks} published messages`)
+
     console.log('\n═════════════════════════════════════════════════════════════════════════')
     console.log('INFORME DE AUDITORÍA DE CONFIDENCIALIDAD               ')
     console.log('═════════════════════════════════════════════════════════════════════════')
     console.log(`[REGISTRO] Tópico de Hedera:       ${topicId}`)
     console.log('[REGISTRO] Algoritmo Cifrado:      AES-256-GCM (Etiqueta Autenticada NIST SP 800-38D GMAC)')
-    console.log('[REGISTRO] Visibilidad Pública:    CERO filtración de texto plano en exploradores')
-    console.log('[REGISTRO] Orden de Consenso:      Números de secuencia 100% justos en Hedera')
+    console.log(`[VERIFY] Revisión en Mirror Node: ${published.length} mensajes leídos, texto plano encontrado en ${leaks} de ellos`)
+    console.log('[REGISTRO] Orden de Consenso:      cada mensaje tiene marca de tiempo y número de secuencia de consenso')
 
     // Persistir estado (¡jamás guardar la clave de cifrado cruda, solo la huella SHA-256!)
     updateState('ENCRYPTED_CHAT_TOPIC_ID', topicId)
@@ -224,9 +237,8 @@ const main = async () => {
     updateState('ENCRYPTED_CHAT_SHARED_KEY_DIGEST', keyFingerprint)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Esta arquitectura es el Santo Grial para empresas y agentes de IA:')
-    console.log('Se obtiene el orden inmutable y descentralizado de Hedera Consensus Service,')
-    console.log('mientras se preserva privacidad militar en los datos mediante criptografía en cliente.')
+    console.log('Hedera Consensus Service da a los agentes un orden a prueba de manipulación; el cifrado')
+    console.log('en el cliente mantiene privado el contenido: la red solo ve texto cifrado.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La privacidad real no proviene de ocultar la blockchain, sino de asegurar')

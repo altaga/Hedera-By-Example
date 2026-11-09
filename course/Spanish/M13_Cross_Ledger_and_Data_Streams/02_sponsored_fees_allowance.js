@@ -159,7 +159,7 @@ const main = async () => {
     const finalSponsorBal = await queryBalance(operatorId.toString(), network)
 
     console.log('\n[REGISTRO] Auditoría Posterior a la Ejecución (Verificada por Mirror Node):')
-    console.log(`[REGISTRO] Gas Gastado por Agente en Paso 2: ${agentGasSpent} HBAR (100% Patrocinado)`)
+    console.log(`[REGISTRO] Gas Gastado por Agente en Paso 2: ${agentGasSpent} HBAR ${Number(agentGasSpent) === 0 ? '(100% patrocinado)' : '(no del todo patrocinado)'}`)
     console.log(`[REGISTRO] Balance Final del Agente:         ${finalZeroAgentBal.formatted} (Recibió 0.25 HBAR vía Allowance)`)
     console.log(`[REGISTRO] Balance Final del Patrocinador:   ${finalSponsorBal.formatted}`)
 

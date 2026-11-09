@@ -11,7 +11,8 @@
  * Historically on EVM chains, smart contract account abstraction (ERC-4337)
  * forced users to abandon their private key EOAs and deploy costly smart contract
  * wallets (Safe, Biconomy, Kernel).
- * Under EIP-7702 supported on Hedera's JSON-RPC Relay:
+ * Under EIP-7702 (whether a given Hedera network and relay version accept Type 4
+ * transactions is something to check before relying on it; this lab sends none):
  * 1. An EOA signs an Authorization Tuple: `[chainId, contractAddress, nonce, yParity, r, s]`.
  * 2. When the transaction executes, the EOA temporarily behaves AS the designated
  *    smart contract module (e.g. BatchExecutor or SessionKeyValidator).
@@ -139,7 +140,7 @@ const main = async () => {
     console.log(`Auth Digest: ${authorization.authHash}`)
 
     // 3. Cryptographic Signature Verification
-    console.log('\n[PROCESS] Step 3: Verifying Cryptographic Recovery via Hedera JSON-RPC Relay Engine...')
+    console.log('\n[PROCESS] Step 3: Recovering the signer from the authorization (locally, with ethers)...')
     const recovered = delegationEngine.verifyAuthorization(authorization)
 
     if (recovered.toLowerCase() !== delegatorWallet.address.toLowerCase()) {
@@ -161,13 +162,12 @@ const main = async () => {
     updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Zero Contract Deployment Cost: Traditional smart accounts require deploying a proxy')
-    console.log('contract on-chain. With EIP-7702, existing Hedera EOAs gain smart contract superpowers')
-    console.log('ephemerally or for designated sessions with ZERO deployment gas overhead.')
+    console.log('No per-user proxy: traditional smart accounts deploy a contract for every user. With EIP-7702')
+    console.log('an EOA points to one already-deployed implementation, so each user only signs an authorization.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Hedera JSON-RPC Relay seamlessly supports EIP-7702 transactions, allowing full compatibility')
-    console.log('with modern Ethereum wallet standards (Viem, Wagmi, RainbowKit) on top of Hedera.')
+    console.log('The authorization is a plain signature over (chainId, contract, nonce): anyone can verify it, as')
+    console.log('step 3 did. Executing it needs a network and relay that accept Type 4 transactions.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

@@ -137,7 +137,7 @@ async function main () {
     console.log('\n[2/5] Initializing Implantable Pacemaker Device (Ed25519 Keystore)...')
     const device = new PacemakerHardwareDevice()
     console.log(`[ DEVICE ID] ${device.deviceId}`)
-    console.log('[ HARDWARE KEY] Secure Enclave Ed25519 Keypair generated.')
+    console.log('[ DEVICE KEY] Ed25519 keypair generated in software (emulating the device secure element).')
 
     // 3. Emulate High-Frequency MQTTS Telemetry Stream
     console.log('\n[3/5] Streaming High-Speed MQTTS Telemetry Frames...')

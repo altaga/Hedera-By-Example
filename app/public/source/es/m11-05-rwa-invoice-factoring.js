@@ -28,7 +28,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M11 Lab 04: Oráculo Proof-of-Reserve (PoR) y Disyuntores de Seguridad
- * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
+ * - Siguiente: M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA
  *
  * [ SECUENCIA ]
  * PyME -> Hedera: Ancla el hash de la factura en HCS y emite el token de factura

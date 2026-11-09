@@ -33,11 +33,11 @@
  * Alice -> Solver: Intención firmada: USD por HBAR
  * Bob -> Solver: Intención firmada: HBAR por USD
  * Nota Solver: Empareja las intenciones fuera de la cadena
- * Solver -> Hedera: Una transferencia atómica liquida a ambos
+ * Solver -> Hedera: Una transferencia liquida el tramo de HBAR (el de USD es simulado)
  * Solver -> Hedera: Registro de liquidación en HCS
  *
  * [ SIMULADO ]
- * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. La transferencia de liquidación y el registro en HCS son reales.
+ * Alice, Bob y el solver corren en un solo proceso, y sus intenciones se emparejan localmente. No hay token de stablecoin, así que el tramo en USD es simulado: solo el tramo de HBAR (0.01 HBAR de Alice a Bob) se liquida en Hedera. Esa transferencia, las firmas de las intenciones y el registro en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -204,10 +204,9 @@ async function main () {
       throw new Error('El Solver no pudo encontrar órdenes CoW emparejables')
     }
 
-    console.log('[ COINCIDENCIA COW HALLADA] Orden Alice  Orden Bob emparejadas 1:1 con CERO deslizamiento!')
-    console.log('• Pata Venta 1: Alice transfiere 1.50 HBAR equivalente')
-    console.log('• Pata Venta 2: Bob transfiere liquidez coincidente')
-    console.log('• Comisión de Protocolo Solver: 0.0001 HBAR')
+    console.log('[ COINCIDENCIA COW HALLADA] Cada intención da lo que la otra pide, al precio que ambos firmaron.')
+    console.log('• Tramo HBAR: Alice -> Bob, se liquida en Hedera en el siguiente paso (0.01 HBAR en testnet)')
+    console.log('• Tramo USD:  Bob -> Alice, simulado (este lab no tiene token de stablecoin)')
 
     // 5. Ejecutar Liquidación Atómica en el Consenso de Hedera
     console.log('\n[5/5] Ejecutando Liquidación Atómica Multi-Pata en Hedera...')
@@ -250,9 +249,9 @@ async function main () {
     updateState('INTENT_SOLVER_BOB_HASH', bobOrder.intentHash)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Los solvers de intenciones eliminan el MEV, los ataques sandwich y el deslizamiento de precios.')
-    console.log('Los emisores firman declaraciones sin gas; los solvers descentralizados emparejan intereses')
-    console.log('mutuos y ejecutan intercambios multipartitas en una TransferTransaction atómica de Hedera.')
+    console.log('Las intenciones nunca están en un mempool público, así que no hay orden pendiente que adelantar o "sandwichear".')
+    console.log('Los emisores firman declaraciones fuera de la cadena; un solver las empareja y liquida los tramos en una')
+    console.log('TransferTransaction atómica de Hedera (aquí solo el tramo de HBAR es real).')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Las TransferTransactions de Hedera exigen una suma atómica neta de cero en todas sus patas.')

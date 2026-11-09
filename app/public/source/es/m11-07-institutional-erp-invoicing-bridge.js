@@ -4,8 +4,7 @@
  * [CONCEPTO] Tokenización de Finanzas Comerciales, Anclaje Legal y Filtro KYC ERC-3643
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * En las finanzas comerciales institucionales globales (pioneras en Hedera mediante
- * DLA Piper TOKO, abrdn y consorcios bancarios), la liquidez de la cadena de suministro
+ * En las finanzas comerciales globales, la liquidez de la cadena de suministro
  * está bloqueada por sistemas ERP heredados (SAP, Oracle, NetSuite) que producen
  * facturas PDF/XML que demoran de 60 a 90 días en liquidarse mediante factoraje manual.
  *
@@ -31,7 +30,7 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA (Archax / ATS)
+ * - Anterior:  M11 Lab 06: Pool Tokens Multi-Activo Institucionales y Canastas RWA
  * - Siguiente: M11 Lab 08: Acciones Corporativas y Pagos Masivos (Conceptos de Asset Tokenization Studio)
  *
  * [ SECUENCIA ]
@@ -338,9 +337,9 @@ const main = async () => {
     console.log('deuda fraccionada con llaves nativas de KYC/AML en Capa 1 sin picos de gas.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('El factoraje comercial tradicional toma de 3 a 4 semanas y cobra de 3% a 5% en comisiones manuales.')
+    console.log('El factoraje tradicional implica semanas de papeleo y varios intermediarios.')
     console.log('Al convertir facturas XML UBL en tramos conformes de HTS, las cuentas por cobrar se liquidan')
-    console.log('en 2.5 segundos con cero riesgo de contraparte y auditabilidad institucional.')
+    console.log('en segundos, de forma atómica y con un registro de auditoría público.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

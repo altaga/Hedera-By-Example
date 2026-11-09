@@ -137,7 +137,7 @@ async function main () {
     console.log('\n[2/5] Inicializando Dispositivo Marcapasos (Almacén de Claves Ed25519)...')
     const device = new PacemakerHardwareDevice()
     console.log(`[ ID DISPOSITIVO] ${device.deviceId}`)
-    console.log('[ CLAVE HARDWARE] Par de claves Ed25519 de Secure Enclave generado.')
+    console.log('[ LLAVE DEL DISPOSITIVO] Par de llaves Ed25519 generado en software (emulando el elemento seguro del dispositivo).')
 
     // 3. Emular Flujo de Telemetría MQTTS de Alta Frecuencia
     console.log('\n[3/5] Transmitiendo Marcos de Telemetría MQTTS de Alta Velocidad...')

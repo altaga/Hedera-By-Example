@@ -11,7 +11,8 @@
  * Históricamente en cadenas EVM, la abstracción de cuentas (ERC-4337) obligaba a los
  * usuarios a abandonar sus EOAs y desplegar costosos contratos inteligentes de billetera
  * (Safe, Biconomy, Kernel).
- * Con EIP-7702 soportado en el Relay JSON-RPC de Hedera:
+ * Con EIP-7702 (antes de depender de ello hay que comprobar si una red y versión del relay de
+ * Hedera aceptan transacciones Type 4; este lab no envía ninguna):
  * 1. Una EOA firma una Tupla de Autorización: `[chainId, contractAddress, nonce, yParity, r, s]`.
  * 2. Al ejecutarse la transacción, la EOA se comporta temporalmente COMO el módulo
  *    del contrato inteligente designado (ej. Ejecutor por Lotes o Validador de Llaves de Sesión).
@@ -139,7 +140,7 @@ const main = async () => {
     console.log(`Digest Auth: ${authorization.authHash}`)
 
     // 3. Verificación de Firma Criptográfica
-    console.log('\n[PROCESO] Paso 3: Verificando Recuperación Criptográfica en el Relay JSON-RPC de Hedera...')
+    console.log('\n[PROCESO] Paso 3: Recuperando al firmante de la autorización (localmente, con ethers)...')
     const recovered = delegationEngine.verifyAuthorization(authorization)
 
     if (recovered.toLowerCase() !== delegatorWallet.address.toLowerCase()) {
@@ -161,13 +162,12 @@ const main = async () => {
     updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Cero Costo de Despliegue de Contratos: Las cuentas inteligentes tradicionales requieren')
-    console.log('desplegar un contrato proxy on-chain. Con EIP-7702, las EOAs existentes de Hedera obtienen')
-    console.log('capacidades de smart contract efímeras o por sesión con CERO costo de gas de despliegue.')
+    console.log('Sin proxy por usuario: las cuentas inteligentes tradicionales despliegan un contrato por usuario. Con')
+    console.log('EIP-7702 una EOA apunta a una implementación ya desplegada, así que cada usuario solo firma una autorización.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('El Relay JSON-RPC de Hedera soporta transacciones EIP-7702 de manera transparente,')
-    console.log('permitiendo total compatibilidad con los estándares de billeteras modernas (Viem, Wagmi, RainbowKit).')
+    console.log('La autorización es una firma simple sobre (chainId, contrato, nonce): cualquiera puede verificarla,')
+    console.log('como hizo el paso 3. Ejecutarla requiere una red y un relay que acepten transacciones Type 4.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

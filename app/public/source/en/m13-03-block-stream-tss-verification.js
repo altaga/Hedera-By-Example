@@ -25,7 +25,7 @@
  * - Next:     M13 Lab 04: Block Node Discovery & Decentralized Data Lake (HIP-1081 / HIP-1137)
  *
  * [ SIMULATED ]
- * The TSS quorum check uses a locally generated committee: network-aggregated TSS block proofs (HIP-1200 hinTS) only arrive with the November 2026 block-stream cutover (HIP-1193), and testnet block files sit in requester-pays buckets. The block and transactions read from the Mirror Node are real.
+ * The TSS quorum check uses a locally generated committee: this lab does not read network-aggregated TSS block proofs, and the block header (including stateChangesRoot) is the lab's own encoding, not Hedera's block hash. The block and transactions read from the Mirror Node are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -171,7 +171,7 @@ const main = async () => {
 
     const calculatedHash = calculateBlockHash(blockHeader)
     console.log(`[LOG] Transactions Merkle Root: ${txMerkleRoot}`)
-    console.log(`[LOG] Canonical Header Digest:  ${calculatedHash.slice(0, 48)}...`)
+    console.log(`[LOG] Lab Header Digest:        ${calculatedHash.slice(0, 48)}... (this lab's encoding, not Hedera's hash)`)
 
     // 3. [ARCHITECTURAL SIMULATION] Assemble and verify TSS consensus quorum
     console.log('\n[PROCESS] [ARCHITECTURAL SIMULATION] Verifying HIP-1056 TSS Consensus Quorum...')
