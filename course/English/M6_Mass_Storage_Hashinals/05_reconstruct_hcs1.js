@@ -4,10 +4,10 @@
  * [CONCEPT] Subscription-to-State Mirror Node Retrieval
  * ============================================================================
  * [ KEY CONCEPT ]
- * Trustless Reconstruction: Because each shard is cryptographically
- * timestamped and ordered by Hedera, the client knows with 100% certainty
- * that the reconstructed image is the exact same one that was anchored in
- * the past. By querying the Mirror Node REST API and sorting fragments by
+ * Trustless Reconstruction: Each shard is timestamped and ordered by Hedera
+ * and carries the SHA-256 of the whole file. After stitching, the client
+ * recomputes that hash: if it matches, the image is byte-for-byte the one
+ * that was anchored. By querying the Mirror Node REST API and sorting fragments by
  * index, we can rebuild assets on-the-fly without a central database.
  *
  *
@@ -32,6 +32,7 @@
  */
 
 import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
+import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -109,7 +110,7 @@ const main = async () => {
       .filter(sh => sh && sh.h === 'hcs-1')
 
     if (shards.length === 0) {
-      throw new Error('No HCS-1 compliant shards found in this topic.')
+      throw new Error('No HCS-1-style shards found in this topic.')
     }
 
     // 2. Group shards by File Identity (FID)
@@ -139,6 +140,10 @@ const main = async () => {
 
     // 6. Convert back to binary and save as PNG
     const resultBuffer = Buffer.from(fullBase64, 'base64')
+    // Recompute the hash: the FID every shard carries is the SHA-256 of the original file.
+    const digest = crypto.createHash('sha256').update(resultBuffer).digest('hex')
+    if (digest !== latestFid) throw new Error("Integrity check failed: the rebuilt file's SHA-256 does not match the FID.")
+    console.log(`[VERIFY] SHA-256 of the rebuilt file matches the FID: ${digest}`)
     const dateStr = new Date().toISOString().split('T')[0]
     const outputPath = path.resolve(import.meta.dirname, `./output/reconstructed_${dateStr}.png`)
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
@@ -149,10 +154,9 @@ const main = async () => {
     console.log(`[INFO] Successfully saved to: ${outputPath}`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Trustless Reconstruction: Because each shard is cryptographically')
-    console.log('timestamped by Hedera, the client knows with 100% certainty that the')
-    console.log('reconstructed image is the exact same one that was anchored in the')
-    console.log('past.')
+    console.log('Trustless Reconstruction: the shards came back in consensus order, and the')
+    console.log('recomputed SHA-256 matched the FID they carry, so the rebuilt image is')
+    console.log('byte-for-byte the one that was anchored.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

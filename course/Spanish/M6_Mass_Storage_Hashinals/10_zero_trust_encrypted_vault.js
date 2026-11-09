@@ -4,24 +4,24 @@
  * [CONCEPTO] Fragmentación Cifrada de Extremo a Extremo con Gzip, AES-256-GCM y HCS-1
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Los registros públicos garantizan orden justo e inmutabilidad absoluta, pero los
+ * Los registros públicos garantizan orden justo e inmutabilidad, pero los
  * datos en claro son visibles para cualquier operador de nodo o indexador de Mirror Node.
  * La arquitectura empresarial moderna exige "Consenso Zero-Trust": registros sensibles
- * (normativa GDPR, historiales médicos, pistas de auditoría financiera) deben ser
+ * (historiales médicos, pistas de auditoría financiera) deben ser
  * sellados criptográficamente antes de transmitirse a la Capa 1 de Hedera. Combinando:
  * 1. Compresión de Flujo (Gzip) para reducir los costos por byte en consenso.
  * 2. Cifrado Autenticado (AES-256-GCM) con IV de 96 bits y etiquetas GMAC de 128 bits.
  * 3. Cifrado de Sobre (Envelope Encryption) aislando la Llave de Cifrado de Datos (DEK).
- * 4. Fragmentación JSON compatible con HCS-1 en secuencias de consenso.
+ * 4. Fragmentación JSON al estilo HCS-1 en secuencias de consenso.
  *
- * Las empresas logran confidencialidad absoluta respaldada por la prueba inmutable de Hedera.
+ * El ledger conserva el orden y las marcas de tiempo; la confidencialidad dura mientras las llaves
+ * estén a salvo. Los datos cifrados igual quedan en el ledger para siempre, así que los datos
+ * personales que quizá haya que borrar (por ejemplo, por GDPR) no deben ir on-chain ni cifrados.
  *
  * [ MOMENTO DE APRENDIZAJE ]
  * Los Hashinals y HCS no se limitan a imágenes públicas o JSON abierto. Con AES-GCM,
- * la red opera como una bóveda inmutable de conocimiento cero (Zero-Trust). Aunque un
- * adversario extraiga cada mensaje de todos los Mirror Nodes del planeta, sin la llave
- * de sobre autorizada, las cargas en consenso son indistinguibles de ruido seudoaleatorio,
- * y cualquier intento de alteración invalida el código de autenticación GMAC de 128 bits.
+ * el ledger solo guarda texto cifrado. Cualquiera puede leer los mensajes desde un
+ * Mirror Node, pero sin la llave de sobre no puede descifrarlos, y cualquier intento de alteración invalida el código de autenticación GMAC de 128 bits.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -30,6 +30,9 @@
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 09: Smart Hashinals HCS-7 (Estado EVM + Inscripciones Dinámicas WASM)
  * - Siguiente: M7 Lab 01: Gobernanza con Multi-firma (KeyList y Thresholds)
+ *
+ * [ SIMULADO ]
+ * El reporte de auditoría son datos de ejemplo inventados (institución, clientes, nombres de políticas e IDs son ficticios), y la llave maestra es un texto fijo de demo en lugar de una llave de KMS. El cifrado, los mensajes HCS y la prueba de manipulación son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -76,7 +79,7 @@ const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
   // E. Calcular la Huella Digital SHA-256 del documento original en claro
   const documentFingerprint = crypto.createHash('sha256').update(rawBuffer).digest('hex')
 
-  // F. Fragmentar el texto cifrado en partes compatibles con HCS-1 (ej. 250 caracteres Base64 por fragmento)
+  // F. Fragmentar el texto cifrado en partes al estilo HCS-1 (ej. 250 caracteres Base64 por fragmento)
   const cipherBase64 = encryptedPayload.toString('base64')
   const CHUNK_SIZE = 250
   const rawChunks = []
@@ -176,11 +179,10 @@ const main = async () => {
       vaultId: 'VAULT-CORP-SEC-2026-X9',
       classification: 'RESTRINGIDO / ESTRICTAMENTE CONFIDENCIAL',
       timestamp: new Date().toISOString(),
-      institution: 'Alianza de Custodia Empresarial Hedera',
+      institution: 'Demo Custody Co. (ficticia)',
       compliance: {
-        gdprCompliant: true,
-        zeroTrustPolicy: 'ISO-27001-DLT-V3',
-        auditorId: '0.0.12345'
+        policy: 'demo-policy-v1',
+        auditorId: 'demo-auditor-01'
       },
       sensitiveRecords: [
         { client: 'Tesorería Global Acme', vaultBalanceHbar: 15000000, kycTier: 3, riskScore: 0.02 },

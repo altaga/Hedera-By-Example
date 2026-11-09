@@ -4,23 +4,24 @@
  * [CONCEPT] End-to-End Encrypted Sharding via Gzip, AES-256-GCM, and HCS-1
  * ============================================================================
  * [ KEY CONCEPT ]
- * Public ledgers guarantee fair ordering and absolute immutability, but public
+ * Public ledgers guarantee fair ordering and immutability, but public
  * payloads are visible to any node runner or mirror node indexer.
  * Enterprise architectures require "Zero-Trust Consensus": sensitive records
- * (GDPR data, medical vaults, financial audit trails) must be cryptographically
+ * (medical vaults, financial audit trails) must be cryptographically
  * sealed before reaching Layer 1. By combining:
  * 1. Stream Compression (Gzip) to minimize consensus byte fees.
  * 2. Authenticated Encryption (AES-256-GCM) with 96-bit IV and 128-bit GMAC tags.
  * 3. Envelope Encryption separating the Data Encryption Key (DEK) from Master Keys.
- * 4. HCS-1 JSON Sharding across consensus sequences.
+ * 4. HCS-1-style JSON sharding across consensus sequences.
  *
- * Enterprises achieve complete confidentiality alongside Hedera's immutable proof.
+ * The ledger keeps the order and timestamps; confidentiality lasts as long as the keys stay safe.
+ * Encrypted data still stays on the ledger forever, so personal data that may need erasing
+ * (for example under GDPR) should not go on-chain even encrypted.
  *
  * [ LEARNABLE MOMENT ]
  * Hashinals and HCS are not limited to public jpegs or open JSON. With AES-GCM,
- * the ledger acts as a zero-knowledge immutable vault. Even if an adversary
- * scrapes every mirror node on earth, without the authorized key envelope, the
- * consensus messages are indistinguishable from pseudorandom noise, and any
+ * the ledger only ever stores ciphertext. Anyone can read the messages from a
+ * Mirror Node, but without the key envelope they cannot decrypt them, and any
  * tamper attempt fails the 128-bit Galois Message Authentication Code (GMAC).
  *
  * [ OFFICIAL REFERENCES ]
@@ -30,6 +31,9 @@
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 09: HCS-7 Smart Hashinals (EVM State + WASM Dynamic Inscriptions)
  * - Next:     M7 Lab 01: Multi-signature Models and KeyLists
+ *
+ * [ SIMULATED ]
+ * The audit report is made-up sample data (institution, clients, policy names and IDs are fictional), and the master key is a hard-coded demo string instead of a KMS key. The encryption, HCS messages and tamper check are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -76,7 +80,7 @@ const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
   // E. Calculate SHA-256 Fingerprint of the original unencrypted document
   const documentFingerprint = crypto.createHash('sha256').update(rawBuffer).digest('hex')
 
-  // F. Shard the ciphertext into HCS-1 compliant chunks (e.g., 250 chars Base64 per chunk)
+  // F. Shard the ciphertext into HCS-1-style chunks (e.g., 250 chars Base64 per chunk)
   const cipherBase64 = encryptedPayload.toString('base64')
   const CHUNK_SIZE = 250
   const rawChunks = []
@@ -176,11 +180,10 @@ const main = async () => {
       vaultId: 'VAULT-CORP-SEC-2026-X9',
       classification: 'RESTRICTED / STRICT CONFIDENTIAL',
       timestamp: new Date().toISOString(),
-      institution: 'Hedera Enterprise Custody Alliance',
+      institution: 'Demo Custody Co. (fictional)',
       compliance: {
-        gdprCompliant: true,
-        zeroTrustPolicy: 'ISO-27001-DLT-V3',
-        auditorId: '0.0.12345'
+        policy: 'demo-policy-v1',
+        auditorId: 'demo-auditor-01'
       },
       sensitiveRecords: [
         { client: 'Acme Global Treasury', vaultBalanceHbar: 15000000, kycTier: 3, riskScore: 0.02 },

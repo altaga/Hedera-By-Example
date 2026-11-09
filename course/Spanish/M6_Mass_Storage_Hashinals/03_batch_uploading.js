@@ -7,7 +7,7 @@
  * Un Solo Registro: En lugar de crear un File ID independiente por cada
  * activo binario, este patrón empaqueta múltiples archivos (imágenes,
  * JSON, scripts) en un único registro de HFS usando un "Manifiesto". Al
- * delimitar los archivos con metadatos internos, creas un "Bundle" inmutable
+ * delimitar los archivos con metadatos internos, creas un "Bundle"
  * (similar a un .zip on-chain). Esta es la arquitectura base de las
  * dApps que almacenan toda su interfaz de usuario (HTML/CSS/JS) en un
  * único identificador global e indestructible.
@@ -106,7 +106,7 @@ const main = async () => {
     console.log('Al usar un solo File ID para todo tu set de activos, reduces')
     console.log('considerablemente los costos de creación en la red y simplificas')
     console.log('la gobernanza de tus datos, permitiendo que una dApp entera')
-    console.log('resida bajo una única dirección inmutable.')
+    console.log('resida bajo una única dirección (editable con la llave del archivo).')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

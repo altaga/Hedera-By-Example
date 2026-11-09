@@ -8,7 +8,7 @@
  * for 100 assets, you can "Stream" them all into a single File ID by
  * manually managing the byte boundaries. This is highly efficient, reduces
  * "On-Chain Noise", and allows you to package entire decentralized
- * applications (UI, logic, and assets) inside a single, immutable ledger record.
+ * applications (UI, logic, and assets) inside a single ledger record.
  *
  *
  * [ LEARNABLE MOMENT ]
@@ -103,7 +103,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('The Composite Asset Pattern: This demonstrates how to package complex')
     console.log('decentralized applications where the UI, the logic, and the assets all')
-    console.log('live inside a single, immutable ledger record.')
+    console.log('live inside a single ledger record (it stays editable by the file key).')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

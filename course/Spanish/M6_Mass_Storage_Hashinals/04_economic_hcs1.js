@@ -12,9 +12,14 @@
  * Topic. Esto permite registrar datasets masivos en el ledger por una
  * fracción del costo, ideal para datos de larga duración y alta
  * disponibilidad descentralizada.
+ *
+ * Nota de formato: este lab usa un fragmento simplificado al estilo HCS-1 ({ h, fid, i, t, d },
+ * sin compresión) para que puedas leer cada mensaje. El HCS-1 real comprime con zstd, pone
+ * el hash en el memo del tópico y envía mensajes { o, c }, así que las herramientas HCS-1
+ * no leerán estos tópicos.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * El estándar HCS-1 permite inscripciones on-chain altamente económicas: fragmentar archivos en mensajes ordenados de consenso en vez de almacenamiento en smart contracts reduce los costos en un 99%.
+ * El estándar HCS-1 permite inscripciones on-chain altamente económicas: fragmentar archivos en mensajes ordenados de consenso en vez de almacenamiento en smart contracts cuesta solo una tarifa de mensaje por fragmento, muy por debajo del almacenamiento en contratos.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -99,7 +104,7 @@ const main = async () => {
     console.log(`[REGISTRO] Huella Digital (SHA-256): ${fileHash}`)
 
     const payloads = constructHcs1Payloads(fileBuffer, topicId.toString())
-    console.log(`[INFO] Archivo fragmentado en ${payloads.length} mensajes compatibles.\n`)
+    console.log(`[INFO] Archivo fragmentado en ${payloads.length} mensajes al estilo HCS-1 (formato simplificado).\n`)
 
     // 2. Enviar fragmentos (Shards)
     console.log('[PROCESO] Anclando fragmentos al ledger de consenso...')

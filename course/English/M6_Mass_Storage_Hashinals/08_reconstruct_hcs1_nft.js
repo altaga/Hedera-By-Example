@@ -10,7 +10,7 @@
  * the high-res binary image directly from Mirror Node shards.
  * *
  * [ LEARNABLE MOMENT ]
- * Client-side verification of HCS-1 NFT inscriptions guarantees provenance: wallets can query the Mirror Node, reassemble the chunks in browser memory, and render verified on-chain artwork autonomously.
+ * Client-side verification of HCS-1-style NFT inscriptions: wallets can query the Mirror Node, reassemble the chunks in memory, recompute the SHA-256 and render the artwork without a server.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -30,6 +30,7 @@
  */
 
 import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
+import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -105,7 +106,11 @@ const main = async () => {
       let fullBase64 = ''
       for (const shard of shards) fullBase64 += shard.d
       show.shards({ id: 'hcs1-stitch', title: 'Shards stitched back together', total: totalExpected, done: shards.length })
-      return Buffer.from(fullBase64, 'base64')
+      const buffer = Buffer.from(fullBase64, 'base64')
+      // The FID in the pointer is the SHA-256 of the original file: recompute it.
+      if (crypto.createHash('sha256').update(buffer).digest('hex') !== targetFid) throw new Error(`Integrity check failed for FID ${targetFid}: SHA-256 mismatch.`)
+      console.log(`[VERIFY] SHA-256 matches FID ${targetFid.slice(0, 16)}...`)
+      return buffer
     }
 
     // 3. Reconstruct Metadata JSON
@@ -118,7 +123,7 @@ const main = async () => {
     // 4. Extract and Reconstruct Image
     const imagePointer = metadata.image
     if (!imagePointer.startsWith('hcs://')) {
-      throw new Error('Metadata image pointer is not HCS-1 compliant.')
+      throw new Error('Metadata image pointer is not an hcs:// link.')
     }
 
     const [, imageQueryPart] = imagePointer.replace('hcs://', '').split('?')
@@ -143,7 +148,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('Zero-Trust Assets: Notice how we never used a central database or IPFS.')
     console.log('Every byte of the metadata and the image came directly from the')
-    console.log('Hedera Consensus Service via a Mirror Node. This is true permanence.')
+    console.log('Hedera Consensus Service via a Mirror Node, and its SHA-256 was checked.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

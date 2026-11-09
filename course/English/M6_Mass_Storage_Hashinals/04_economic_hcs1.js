@@ -11,9 +11,13 @@
  * datasets to be anchored to the ledger for a fraction of the cost of
  * traditional blockchain storage.
  *
+ * Format note: this lab uses a simplified HCS-1-style shard ({ h, fid, i, t, d }, no
+ * compression) so you can read every message. Real HCS-1 compresses with zstd, puts
+ * the hash in the topic memo and sends { o, c } messages, so HCS-1 tools will not
+ * read these topics.
  *
  * [ LEARNABLE MOMENT ]
- * The HCS-1 standard enables cost-effective on-chain inscriptions: by sharding large files across ordered consensus messages instead of expensive smart contract storage, developers achieve 99% cost reduction.
+ * The HCS-1 standard enables cost-effective on-chain inscriptions: by sharding large files across ordered consensus messages instead of smart contract storage, developers pay only one message fee per shard, far below contract storage costs.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -96,7 +100,7 @@ const main = async () => {
     console.log(`[LOG] Payload Identity (SHA-256): ${fileHash}`)
 
     const payloads = constructHcs1Payloads(fileBuffer, topicId.toString())
-    console.log(`[INFO] Asset split into ${payloads.length} HCS-1 compliant shards.\n`)
+    console.log(`[INFO] Asset split into ${payloads.length} HCS-1-style shards (simplified format).\n`)
 
     // 2. Submit Chunked Messages
     for (const payload of payloads) {
@@ -113,7 +117,7 @@ const main = async () => {
     }
 
     console.log('\n[SUCCESS] HCS-1 Sharding Lifecycle Complete!')
-    console.log('[INFO] Every message is order-verified and cryptographically linked.')
+    console.log('[INFO] Every shard carries the file\'s SHA-256, so a reader can check the rebuilt file.')
 
     // Persist Topic ID for reconstruction in step 05
     updateState('HCS1_TOPIC_ID', topicId.toString())

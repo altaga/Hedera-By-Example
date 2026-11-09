@@ -6,11 +6,15 @@
  * [ KEY CONCEPT ]
  * Beyond IPFS: While IPFS is common, it still relies on external availability.
  * By storing BOTH the NFT metadata and the actual image data in HCS shards,
- * your asset becomes 100% "Ledger-Native". Any Mirror Node becomes your
- * storage provider, ensuring the asset exists as long as the network does.
+ * your asset becomes "Ledger-Native": any Mirror Node that keeps topic history
+ * can serve it, with no pinning service to pay.
+ * Format note: this lab uses a simplified HCS-1-style shard ({ h, fid, i, t, d }, no
+ * compression) so you can read every message. Real HCS-1 compresses with zstd, puts
+ * the hash in the topic memo and sends { o, c } messages, so HCS-1 tools will not
+ * read these topics.
  * *
  * [ LEARNABLE MOMENT ]
- * Binding an HCS-1 inscription topic directly to an HTS non-fungible token creates a fully on-chain 100% decentralized digital asset with zero reliance on external IPFS pinning services.
+ * Binding an HCS-1 inscription topic directly to an HTS non-fungible token creates a fully on-chain digital asset with no reliance on external IPFS pinning services.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-1/

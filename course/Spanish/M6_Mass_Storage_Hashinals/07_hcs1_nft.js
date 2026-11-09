@@ -6,11 +6,15 @@
  * [ CONCEPTO CLAVE ]
  * Más allá de IPFS: Aunque IPFS es común, sigue dependiendo de disponibilidad
  * externa. Al almacenar TANTO los metadatos como la imagen en shards de HCS,
- * tu activo se vuelve 100% "Nativo del Ledger". Cualquier Mirror Node se
- * convierte en tu proveedor de almacenamiento.
+ * tu activo se vuelve "Nativo del Ledger": cualquier Mirror Node que conserve el
+ * historial del tópico puede servirlo, sin pagar un servicio de pinning.
+ * Nota de formato: este lab usa un fragmento simplificado al estilo HCS-1 ({ h, fid, i, t, d },
+ * sin compresión) para que puedas leer cada mensaje. El HCS-1 real comprime con zstd, pone
+ * el hash en el memo del tópico y envía mensajes { o, c }, así que las herramientas HCS-1
+ * no leerán estos tópicos.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Vincular un topic de inscripción HCS-1 directamente a un NFT en HTS crea un activo digital 100% descentralizado e inmutable sin depender de servicios externos de fijación en IPFS.
+ * Vincular un topic de inscripción HCS-1 directamente a un NFT en HTS crea un activo digital totalmente on-chain sin depender de servicios externos de fijación en IPFS.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/

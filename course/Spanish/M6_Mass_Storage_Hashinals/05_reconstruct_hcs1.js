@@ -10,7 +10,7 @@
  * El resultado es un activo criptográficamente idéntico al original porque
  * cada fragmento está vinculado al SHA-256 del archivo completo. Aquí no
  * confías en el servidor que entrega los datos; confías en las matemáticas
- * y en el orden inmutable del ledger.
+ * en el orden inmutable del ledger, y lo compruebas recalculando el SHA-256.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
  * Reconstruir activos inscritos exige ordenar los fragmentos de HCS por número de secuencia y verificar el hash SHA-256 acumulado antes de ensamblar las imágenes o documentos en base64.
@@ -33,6 +33,7 @@
  */
 
 import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
+import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
@@ -107,7 +108,7 @@ const main = async () => {
       .filter(sh => sh && sh.h === 'hcs-1')
 
     if (shards.length === 0) {
-      throw new Error('No se encontraron fragmentos compatibles con el estándar HCS-1.')
+      throw new Error('No se encontraron fragmentos al estilo HCS-1 en este tópico.')
     }
 
     // 2. Identificar el activo más reciente (FID)
@@ -136,6 +137,10 @@ const main = async () => {
 
     // 6. Persistir resultado reconstruido como binario
     const resultBuffer = Buffer.from(fullBase64, 'base64')
+    // Recompute the hash: the FID every shard carries is the SHA-256 of the original file.
+    const digest = crypto.createHash('sha256').update(resultBuffer).digest('hex')
+    if (digest !== latestFid) throw new Error('Falló la verificación: el SHA-256 del archivo reconstruido no coincide con el FID.')
+    console.log(`[VERIFY] El SHA-256 del archivo reconstruido coincide con el FID: ${digest}`)
     const dateStr = new Date().toISOString().split('T')[0]
     const outputPath = path.resolve(import.meta.dirname, `./output/reconstructed_${dateStr}.png`)
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
