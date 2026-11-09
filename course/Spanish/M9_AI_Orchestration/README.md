@@ -2,7 +2,7 @@
 ## Almacenamiento, Registros, Identidad y Mensajería Segura de Agentes sobre HCS
 
 > [!IMPORTANT]
-> **OBJETIVO:** Darle a los agentes de IA lo que necesitan para trabajar juntos en Hedera: almacenamiento compartido (HCS-1), registros que se pueden descubrir (HCS-2), perfiles e identidades (HCS-11, HCS-14) y mensajería entre agentes (HCS-10) que resiste suplantación, repeticiones y espionaje.
+> **OBJETIVO:** Darle a los agentes de IA lo que necesitan para trabajar juntos en Hedera: almacenamiento compartido (cargas grandes en HCS), registros que se pueden descubrir (HCS-2), perfiles e identidades (HCS-11, HCS-14) y mensajería entre agentes (HCS-10) que resiste suplantación, repeticiones y espionaje.
 
 ---
 
@@ -11,7 +11,7 @@ Este módulo se enfoca en la comunicación y soberanía de los agentes de IA.
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
-| **01** | **Almacenamiento de Archivos HCS-1** | Anclar cargas pesadas (configuraciones de agentes, assets) en tópicos con el estándar de archivos HCS-1. |
+| **01** | **Anclaje de Cargas Grandes** | Anclar cargas pesadas (políticas de agentes) en un tópico con submit key usando la fragmentación de HCS (HIP-10). |
 | **02** | **Registros de Tópicos HCS-2** | Convertir un tópico en un directorio legible por máquinas ("páginas amarillas") de endpoints de agentes. |
 | **03** | **Descubrimiento en Registros HCS-2** | Reconstruir un índice local consultable a partir del flujo de mensajes del registro. |
 | **04** | **Perfiles de IA HCS-11** | Aprovisionar tres agentes con cuentas, tópicos de entrada/salida y perfiles HCS-11. |

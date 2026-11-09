@@ -11,11 +11,12 @@
  * titular de la clave de sesión y no ha sido alterado en tránsito.
  * 2. VALIDACIÓN DE SECUENCIA: Asegura que el mensaje es reciente y no una
  * repetición (Replay) de datos históricos. Al combinar estas capas, el
- * sistema de arbitraje se vuelve inmune a la suplantación de identidad y
- * a la manipulación de la telemetría del juego.
+ * sistema rechaza falsificaciones y repeticiones. La llave de sesión la
+ * comparten ambos agentes, así que una firma válida prueba "uno de los dos
+ * agentes", no cuál; con llaves por agente se podrían distinguir.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Al firmar cada mensaje A2A con la llave privada del agente e incluir marcas de tiempo efímeras, los agentes autónomos verifican la firma criptográfica de sus pares y descartan mensajes falsificados.
+ * Al firmar cada mensaje A2A con una llave de sesión e incluir un número de ronda, los agentes rechazan mensajes falsificados (firma inválida) y repeticiones (ronda vieja).
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-10/
@@ -25,10 +26,10 @@
  * - Siguiente: M9 Lab 10: Auditoría de Seguridad con Defensa Activa
  *
  * [ SECUENCIA ]
- * Agente A -> Buzón del agente B: Contenido + hash + firma (llave de sesión)
- * Nota Agente B: Verifica la firma con la llave del agente A
- * Agente B -> Buzón del agente A: Respuesta firmada
- * Nota Agente A: Verifica antes de confiar en la respuesta
+ * Agente A -> Buzón del agente B: Contenido + firma (llave de sesión compartida)
+ * Nota Agente B: Verifica la firma y luego que la ronda sea nueva
+ * Agente B -> Buzón del agente A: Respuesta (sin firma en este lab)
+ * Nota Agente A: Identifica la respuesta por su número de ronda
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

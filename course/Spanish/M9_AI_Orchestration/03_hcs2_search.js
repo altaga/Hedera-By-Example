@@ -72,14 +72,13 @@ const main = async () => {
           const entry = JSON.parse(payloadString)
 
           // 2. Filtrado Lógico (Búsqueda local sobre el stream de datos)
-          if (entry.h === 'hcs-2' && entry.cat === 'ANTI_CHEAT_ORACLE') {
+          if (entry.p === 'hcs-2' && entry.op === 'register' && String(entry.m || '').startsWith('ANTI_CHEAT_ORACLE')) {
             agentsFound++
 
             console.log(`--- [ÉXITO] AGENTE ENCONTRADO #${agentsFound} ---`)
-            console.log(`[INFO] ${entry.r}`)
-            console.log(`[REGISTRO]  ${entry.tid} (Referencia HCS-1)`)
-            console.log(`[INFO]     ${entry.status}`)
-            console.log(`[INFO]      ${new Date(entry.ts).toLocaleString()}`)
+            console.log(`[INFO] Memo:           ${entry.m}`)
+            console.log(`[REGISTRO] Tópico:     ${entry.t_id} (del Lab 01)`)
+            console.log(`[INFO] Registrado el:  ${message.consensusTimestamp.toDate().toLocaleString()} (hora de consenso)`)
             console.log('--------------------------------------------------')
           }
         } catch (parseError) {
@@ -90,7 +89,8 @@ const main = async () => {
 
   // El script escucha en tiempo real. Esperamos 5 segundos para fines de demostración.
   setTimeout(() => {
-    console.log('\n[ÉXITO] Búsqueda finalizada. Stream de descubrimiento cerrado.')
+    if (agentsFound) console.log(`\n[ÉXITO] Búsqueda finalizada: ${agentsFound} entrada(s) encontrada(s).`)
+    else console.log('\n[INFO] Aún no hay entradas HCS-2 que coincidan (el Mirror Node puede ir atrasado, o el Lab 02 no se ha ejecutado desde este cambio de formato).')
     console.log('\n CONCEPTO CLAVE:')
     console.log('Así funcionan las aplicaciones frontend descentralizadas. Un cliente de juego Web3')
     console.log('no necesita una API key para hallar reglas: simplemente lee el stream del registro')

@@ -30,7 +30,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M8 Lab 10: System Contracts Deep-Dive: 0x168 Exchange Rate & 0x16a HAS Precompile
- * - Next:     M9 Lab 01: HCS-1 Static File Storage (Heavy Payloads)
+ * - Next:     M9 Lab 01: Large Payload Anchoring (HCS Chunking)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

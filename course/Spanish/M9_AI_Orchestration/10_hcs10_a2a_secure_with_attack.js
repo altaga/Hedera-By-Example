@@ -14,7 +14,7 @@
  * juicio de la IA incluso bajo fuego enemigo.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * La defensa activa en HCS-10 intercepta ataques de repetición y mensajes falsificados en tiempo real, demostrando que la procedencia criptográfica neutraliza ataques de intermediario en ledgers públicos.
+ * La defensa activa en HCS-10 intercepta ataques de repetición y mensajes falsificados en tiempo real, mostrando que firmas más números de ronda detienen la falsificación y la repetición en un tópico público.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-10/

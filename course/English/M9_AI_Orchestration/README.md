@@ -2,7 +2,7 @@
 ## Agent Storage, Registries, Identity and Secure Messaging over HCS
 
 > [!IMPORTANT]
-> **OBJECTIVE:** Give AI agents what they need to work together on Hedera: shared storage (HCS-1), discoverable registries (HCS-2), profiles and identities (HCS-11, HCS-14), and agent-to-agent messaging (HCS-10) that resists impersonation, replays and eavesdropping.
+> **OBJECTIVE:** Give AI agents what they need to work together on Hedera: shared storage (large HCS payloads), discoverable registries (HCS-2), profiles and identities (HCS-11, HCS-14), and agent-to-agent messaging (HCS-10) that resists impersonation, replays and eavesdropping.
 
 ---
 
@@ -11,7 +11,7 @@ This module focuses on the communication and sovereignty of AI agents.
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
-| **01** | **HCS-1 File Storage** | Anchoring heavy payloads (agent configs, assets) in topics with the HCS-1 file standard. |
+| **01** | **Large Payload Anchoring** | Anchoring heavy payloads (agent policies) in a submit-key topic with HCS chunking (HIP-10). |
 | **02** | **HCS-2 Topic Registries** | Turning a topic into a machine-readable directory ("yellow pages") of agent endpoints. |
 | **03** | **HCS-2 Registry Discovery** | Rebuilding a local, searchable index from the registry's message stream. |
 | **04** | **HCS-11 AI Profiles** | Provisioning three agents with accounts, inbound/outbound topics and HCS-11 profiles. |

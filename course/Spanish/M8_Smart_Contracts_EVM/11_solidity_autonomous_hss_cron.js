@@ -30,7 +30,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M8 Lab 10: Inmersión en Contratos del Sistema: Tasa de Cambio 0x168 y Precompilación HAS 0x16a
- * - Siguiente: M9 Lab 01: Almacenamiento Estático HCS-1
+ * - Siguiente: M9 Lab 01: Anclaje de Cargas Grandes (Fragmentación HCS)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * Lab 01: Almacenamiento Estático HCS-1
+ * Lab 01: Anclaje de Cargas Grandes (Fragmentación HCS)
  * [CONCEPTO] Cargas Útiles "Pesadas" y Fragmentación Nativa
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Integridad Orquestada: HCS-1 es la base de los datos agénticos. Los
- * mensajes tradicionales de HCS están limitados a 1,024 bytes, pero el
- * estándar HCS-1 permite anclar archivos masivos dividiéndolos
- * automáticamente en fragmentos secuenciales. Antes de que una IA de
+ * Integridad Orquestada: Los mensajes de HCS están limitados a 1,024 bytes,
+ * pero el SDK divide una carga mayor en fragmentos secuenciales (fragmentación
+ * HIP-10) y la suscripción del SDK los vuelve a unir. (HCS-1 es otro estándar,
+ * de inscripción de archivos; ver M6 Labs 04-08.) Antes de que una IA de
  * arbitraje juzgue un torneo de eSports de $1M, debe bloquear su
  * "Reglamento de Detección" en un registro inmutable. Esto garantiza una
  * imparcialidad innegable: la comunidad puede auditar que la IA actuó bajo
@@ -15,7 +15,7 @@
  * del evento.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los agentes de IA requieren memoria inmutable. Inscribir plantillas de prompts y bases de conocimiento en topics HCS-1 permite verificar la procedencia cognitiva y resistir ataques de alteración de prompts.
+ * Los agentes de IA requieren memoria inmutable. Inscribir plantillas de prompts y bases de conocimiento en tópicos HCS donde solo ellos pueden escribir (submit key) les permite demostrar qué reglas siguieron y cuándo se publicaron.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -41,7 +41,7 @@ import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.j
 
 // --- CONFIGURACIÓN: Carga útil de IA (Criterios Anti-Cheat) ---
 const AI_POLICY_PAYLOAD = JSON.stringify({
-  schema: 'HCS-1',
+  schema: 'esports-anticheat-policy',
   version: '2.0.0',
   type: 'ESPORTS_ANTI_CHEAT_POLICY',
   description: 'Parámetros Oficiales de Arbitraje - Gran Final $1M',
@@ -55,15 +55,15 @@ const AI_POLICY_PAYLOAD = JSON.stringify({
 })
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Auditoría de Persistencia IA (HCS-1) ---\n')
+  console.log('--- INICIO DEL LABORATORIO: Anclaje de Cargas Grandes (fragmentación HCS) ---\n')
 
   const { client, network } = getClient()
 
   try {
-    // 1. Crear el Tema Seguro para el Registro HCS-1
-    console.log(`[PROCESO] Creando canal inmutable HCS-1 en ${network}...`)
+    // 1. Crear el tópico de archivo de la política
+    console.log(`[PROCESO] Creando un tópico de archivo (submit key: solo tú puedes escribir) en ${network}...`)
     const createTx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-1: AI_AntiCheat_Registry_V2')
+      .setTopicMemo('AI_AntiCheat_Registry_V2')
       .setSubmitKey(client.operatorPublicKey) // Seguridad: solo el emisor puede escribir
       .freezeWith(client)
 
@@ -71,7 +71,7 @@ const main = async () => {
     const createReceipt = await createResponse.getReceipt(client)
     const topicId = createReceipt.topicId.toString()
 
-    console.log(`[ÉXITO] Canal Raíz HCS-1 anclado: ${topicId}`)
+    console.log(`[ÉXITO] Tópico de la política creado: ${topicId}`)
     console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(createResponse)}`)
     updateState('HCS1_TOPIC_ID', topicId)
 
@@ -94,13 +94,13 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Las reglas de la IA ahora son inmutables. Si un jugador es')
     console.log('sancionado, el ID del Tema sirve como prueba pública de que')
-    console.log('el juicio se basó en criterios definidos matemáticamente antes')
-    console.log('de que comenzara el evento, eliminando el sesgo humano.')
+    console.log('las reglas se publicaron, y cuándo, antes de que comenzara el')
+    console.log('evento. (Si la IA las siguió es otra verificación.)')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] El anclaje HCS-1 falló:', error.message)
+    console.error('\n[FALLO] El anclaje de la política falló:', error.message)
     process.exitCode = 1
   }
 }

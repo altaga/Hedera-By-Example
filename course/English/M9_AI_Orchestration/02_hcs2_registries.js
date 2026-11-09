@@ -5,8 +5,9 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Public Index: HCS-2 defines a JSON schema that turns an HCS topic into
- * a machine-readable directory. Wallets and explorers use this to surface
- * agent endpoints automatically. Instead of forcing players to guess where
+ * a machine-readable directory: the topic memo says it is a registry
+ * ("hcs-2:<indexed>:<ttl>") and each message is a { p, op, t_id, m } entry,
+ * so any HCS-2 reader can list your agents. Instead of forcing players to guess where
  * your Anti-Cheat rules are, you register your Agent Topic in this "Yellow
  * Pages" registry, making your services globally discoverable and verifiable
  * without central APIs.
@@ -19,7 +20,7 @@
  * - https://hol.org/docs/standards/hcs-2/
  *
  * [ LEARNING PATH ]
- * - Previous: M9 Lab 01: HCS-1 Static File Storage (Heavy Payloads)
+ * - Previous: M9 Lab 01: Large Payload Anchoring (HCS Chunking)
  * - Next:     M9 Lab 03: HCS-2 Registry Discovery
  *
  * [ BEFORE YOU RUN ]
@@ -39,14 +40,12 @@ import {
 import { getClient, getHashscanUrl, updateState, getState } from '../M99_Utilities/index.js'
 
 // ─── HCS-2 Schema Builder ────────────────────────────────────────────────────
+// HCS-2 "register" entry: https://hol.org/docs/standards/hcs-2/
 const buildHcs2RegistryMessage = (registryName, topicIdPointer, category, status) => ({
-  h: 'hcs-2', // Protocol header
-  t: 'registry', // Message type
-  r: registryName, // Registry name
-  tid: topicIdPointer, // Topic ID being registered
-  cat: category, // Agent category for discovery filters
-  status, // 'ACTIVE', 'DEPRECATED', etc.
-  ts: Date.now()
+  p: 'hcs-2', // protocol
+  op: 'register', // operation
+  t_id: topicIdPointer, // topic being registered
+  m: `${category} | ${registryName} | ${status}` // memo (max 500 chars): readers filter on the category
 })
 
 // ─── Main ────────────────────────────────────────────────────────────────────
@@ -67,7 +66,7 @@ const main = async () => {
     // 1. Create the Verified Esports Agent Registry topic
     console.log(`[PROCESS] Creating "Verified Esports Registry" topic on ${network}...`)
     const registryTx = await new TopicCreateTransaction()
-      .setTopicMemo('hcs-2:verified_esports_agents_v1')
+      .setTopicMemo('hcs-2:0:86400') // HCS-2 registry memo: indexed (0), 1-day TTL
       .setSubmitKey(client.operatorPublicKey)
       .freezeWith(client)
 
@@ -105,9 +104,9 @@ const main = async () => {
     console.log(JSON.stringify(discoveryPayload, null, 4))
 
     console.log('\n KEY CONCEPT:')
-    console.log('By registering your specific Anti-Cheat topic in a standardized HCS-2 registry,')
-    console.log('third-party tournament clients, leaderboards, and auditors can automatically')
-    console.log('discover and verify your game\'s rules without needing your API keys.')
+    console.log('By registering your Anti-Cheat topic in a standard HCS-2 registry, any client')
+    console.log('that reads HCS-2 (tournament apps, leaderboards, auditors) can find your')
+    console.log('game\'s rules without needing your API keys.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
