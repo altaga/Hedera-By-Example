@@ -10,7 +10,7 @@
 
 | Lab | Tema | Descripción |
 | :--- | :--- | :--- |
-| **01** | **Emisión Inmutable** | Creación de tokens con suministro fijo y sin llaves de administración. |
+| **01** | **Emisión de Token Fungible** | Creación de un token fungible y elección de qué llaves (admin, suministro, pausa) conservar. |
 | **02** | **Identidad Financiera** | Uso de llaves de KYC y Congelación (Freeze) para cumplimiento regulatorio. |
 | **03** | **NFTs y HIP-412** | Creación de NFTs siguiendo el estándar de metadatos de la comunidad. |
 | **04** | **Lectura On-Chain** | Consulta de metadatos y estados de tokens desde Mirror Nodes. |
@@ -19,7 +19,7 @@
 | **07** | **NFTs Dinámicos (HIP-657)** | Mutación dinámica de metadatos on-chain usando la Metadata Key. |
 | **08** | **Esquema HIP-412** | Construcción y validación de esquemas JSON enriquecidos para NFTs. |
 | **09** | **Bloqueo Post-Tesorería (HIP-850)** | Revelación de metadatos en Tesorería con SupplyKey e inmutabilidad al entregar al usuario. |
-| **10** | **NFT Studio: Rareza y Verificador** | Herramientas de creador para puntajes de rareza de rasgos, cumplimiento HIP-412 y airdrops verificados. |
+| **10** | **Inspector de Rareza y Verificador de Airdrop** | Herramientas de creador para puntajes de rareza de rasgos, cumplimiento HIP-412 y airdrops verificados. |
 
 ---
 

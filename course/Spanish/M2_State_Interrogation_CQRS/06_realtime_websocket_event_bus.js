@@ -182,7 +182,7 @@ const main = async () => {
     console.log('\n---  RESUMEN DE TRANSMISIÓN REACTIVA ---')
     console.log(`Total de Eventos Emitidos:   ${eventBus.eventsDispatched}`)
     console.log(`Total de Eventos Recibidos:  ${receivedEvents.length}`)
-    console.log(`Integridad de Entrega:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (CERO PÉRDIDA DE PAQUETES)' : 'PARCIAL'}`)
+    console.log(`Integridad de Entrega:       ${receivedEvents.length === eventBus.eventsDispatched ? 'todos los eventos entregados' : 'PARCIAL'}`)
 
     updateState('EVENT_BUS_LAST_PORT', BUS_PORT)
     updateState('EVENT_BUS_EVENTS_PROCESSED', receivedEvents.length)
@@ -190,7 +190,7 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Push sobre Pull: Al transformar las fuentes de consenso del Mirror Node')
     console.log('en flujos reactivos basados en push, las interfaces frontend y los bots')
-    console.log('se actualizan al instante exacto de la finalidad, eliminando cuellos de botella.')
+    console.log('se actualizan en cuanto el gateway reenvía un evento, sin que cada cliente consulte.')
 
     consumerReq.destroy()
     await eventBus.close()

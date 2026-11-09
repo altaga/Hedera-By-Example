@@ -141,7 +141,8 @@ const main = async () => {
     let ingestedCount = 0
 
     for (const tx of transactions) {
-      const txId = tx.transaction_id || `tx_${Math.random()}`
+      if (!tx.transaction_id) continue // toda transacción del Mirror Node tiene id; nunca inventamos uno
+      const txId = tx.transaction_id
       const timestamp = tx.consensus_timestamp
       const result = tx.result || 'UNKNOWN'
 
@@ -213,7 +214,7 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('CQRS aísla la mutación de estado de la lectura de estado. Al materializar eventos')
     console.log('de consenso de Hedera en un motor SQLite embebido (`node:sqlite`), la aplicación')
-    console.log('obtiene consultas analíticas en microsegundos e inmunidad ante límites de peticiones HTTP.')
+    console.log('responde consultas analíticas en local, y las lecturas repetidas ya no chocan con los límites del Mirror Node.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('Nunca realices peticiones de red REST dentro de bucles de trading de alta frecuencia')

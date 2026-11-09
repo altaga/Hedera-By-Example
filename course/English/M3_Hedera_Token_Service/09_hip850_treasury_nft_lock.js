@@ -25,7 +25,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M3 Lab 08: HIP-412 NFT Metadata
- * - Next:     M3 Lab 10: Hedera NFT Studio — Rarity Inspector & Airdrop Pre-Flight Verifier
+ * - Next:     M3 Lab 10: Rarity Inspector & Airdrop Pre-Flight Verifier
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -99,7 +99,7 @@ const main = async () => {
     // 3. HIP-850 In Action: Update Metadata in Treasury using ONLY SupplyKey!
     console.log('\n[PROCESS] [HIP-850] Updating Serial #1 in Treasury using SupplyKey...')
     const revealedMeta = Buffer.from('ipfs://bafkrei-genesis-dragon-revealed/dragon1.json')
-    // Update NFT metadata: only the metadata key can do this (HIP-657).
+    // HIP-850: while the NFT sits in the treasury, the supply key may update its metadata.
     const updateTreasuryTx = await new TokenUpdateNftsTransaction()
       .setTokenId(tokenId)
       .setSerialNumbers([serialNum])
@@ -158,11 +158,13 @@ const main = async () => {
 
     console.log('\n KEY CONCEPT:')
     console.log('HIP-850 gives issuers pre-distribution flexibility in the Treasury Account')
-    console.log('while guaranteeing 100% mathematical immutability once the NFT reaches the collector.')
+    console.log('and the supply key loses that power once the NFT leaves it. This collection has')
+    console.log('no metadataKey, so after delivery nobody can change the metadata.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Security and UX do not have to be a trade-off. By tying mutability to Treasury')
-    console.log('custody, Hedera eliminates the "rug-pullable metadataKey" risk for collectors.')
+    console.log('custody (and skipping the metadataKey), collectors no longer face a creator who can')
+    console.log('rewrite their NFT after the sale.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

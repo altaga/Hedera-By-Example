@@ -150,7 +150,7 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('Eliminando Cascadas REST: En lugar de disparar múltiples peticiones HTTP')
     console.log('desde el frontend, el indexador de subgrafos resuelve relaciones complejas')
-    console.log('en paralelo, entregando paneles de producción con tiempos sub-100ms.')
+    console.log(`en paralelo (esta ejecución: ${result.metadata.resolverDurationMs} ms para toda la consulta).`)
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

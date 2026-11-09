@@ -17,7 +17,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/cryptocurrency/transfer-cryptocurrency
  *
  * [ LEARNING PATH ]
- * - Previous: M3 Lab 10: Hedera NFT Studio — Rarity Inspector & Airdrop Pre-Flight Verifier
+ * - Previous: M3 Lab 10: Rarity Inspector & Airdrop Pre-Flight Verifier
  * - Next:     M4 Lab 02: Fungible Token Transfers (HTS)
  *
  * [ BEFORE YOU RUN ]

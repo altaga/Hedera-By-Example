@@ -10,7 +10,7 @@
 
 | Lab | Topic | Description |
 | :--- | :--- | :--- |
-| **01** | **Immutable Issuance** | Creating tokens with a fixed supply and no admin keys. |
+| **01** | **Fungible Token Issuance** | Creating a fungible token and choosing which keys (admin, supply, pause) to keep. |
 | **02** | **Financial Identity** | Using KYC and Freeze keys for regulatory compliance. |
 | **03** | **NFTs and HIP-412** | Creating NFTs following the community metadata standard. |
 | **04** | **On-Chain Resolution** | Querying token metadata and states from Mirror Nodes. |
@@ -19,7 +19,7 @@
 | **07** | **Dynamic NFTs (HIP-657)** | Mutating on-chain NFT metadata dynamically using the Metadata Key. |
 | **08** | **HIP-412 Metadata Schema** | Constructing and validating rich multi-file JSON schemas for NFTs. |
 | **09** | **Treasury Supply-Key Lock (HIP-850)** | Updating NFT metadata in Treasury with SupplyKey and locking upon holder delivery. |
-| **10** | **NFT Studio Rarity & Airdrop Verifier** | Creator tools for statistical trait rarity scoring, HIP-412 compliance, and verified airdrops. |
+| **10** | **Rarity Inspector & Airdrop Verifier** | Creator tools for statistical trait rarity scoring, HIP-412 compliance, and verified airdrops. |
 
 ---
 

@@ -119,8 +119,8 @@ const main = async () => {
 
     console.log('\n KEY CONCEPT:')
     console.log('Dynamic NFTs open up entirely new paradigms for gaming, supply chain,')
-    console.log('and ticketing. Hedera achieves this securely at the base layer without')
-    console.log('relying on external, hackable smart contracts to manage metadata states.')
+    console.log('and ticketing. Hedera does this at the base layer: only the metadataKey can')
+    console.log('change the metadata, with no smart contract in between.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

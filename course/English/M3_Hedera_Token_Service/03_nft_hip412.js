@@ -1,13 +1,14 @@
 /**
  * ============================================================================
  * Lab 03: HIP-412 NFT Metadata & On-Chain Storage (HFS)
- * [CONCEPT] Verifiable Digital Ownership & Immutable Files
+ * [CONCEPT] Verifiable Digital Ownership & Files on HFS
  * ============================================================================
  * [ KEY CONCEPT ]
- * HIP-412 is the "Gold Standard" for Hedera NFTs. By following it, your
- * NFTs automatically become compatible with all Hedera wallets and
- * marketplaces. Storing metadata on the Hedera File Service (HFS) ensures
- * the digital asset's "Identity" is just as decentralized as its "Ownership".
+ * HIP-412 is the standard metadata format for Hedera NFTs: wallets and
+ * marketplaces that support it know how to read your NFT. This lab stores the
+ * image and the JSON on the Hedera File Service (HFS), with a 31-day expiry to
+ * keep testnet cost low. Production collections usually host them on IPFS or
+ * Arweave, which wallets resolve more widely than hedera:// links.
  *
  *
  * [ LEARNABLE MOMENT ]
@@ -154,7 +155,7 @@ const main = async () => {
     console.log('\n[LOG] Generated HIP-412 V2 Metadata:')
     console.log(JSON.stringify(metadataJSON, null, 2))
 
-    console.log('\n[PROCESS] Uploading Metadata JSON to HFS as an immutable file...')
+    console.log('\n[PROCESS] Uploading Metadata JSON to HFS (key kept, 31-day expiry)...')
     const metadataStr = JSON.stringify(metadataJSON)
     const metadataFileTx = await new FileCreateTransaction()
       .setExpirationTime(new Date(Date.now() + 31 * 24 * 3600 * 1000)) // Storage is billed by size x lifetime: keep it short on testnet
@@ -190,9 +191,9 @@ const main = async () => {
     console.log(`[LOG] Metadata File: ${metadataFileId.toString()}`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('HIP-412 is the "Gold Standard" for Hedera NFTs. By following it, your')
-    console.log('NFTs automatically become compatible with all Hedera wallets and')
-    console.log('marketplaces (like HashPack and SentX).')
+    console.log('HIP-412 is the standard metadata format for Hedera NFTs. Wallets and')
+    console.log('marketplaces that support it can read these NFTs; whether they also resolve')
+    console.log('hedera:// file links depends on each app.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

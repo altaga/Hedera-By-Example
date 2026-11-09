@@ -4,12 +4,11 @@
  * [CONCEPTO] Almacenamiento Nativo y Estándares de Interoperabilidad
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * El Estándar de Oro: HIP-412 V2 es la especificación que garantiza que tus
- * NFTs sean compatibles con todas las billeteras y marketplaces (HashPack,
- * Kabila, SentX). A diferencia de otras redes que dependen de servidores
- * externos, Hedera permite usar the Hedera File Service (HFS) para almacenar
- * la imagen y el JSON de metadatos directamente en los nodos del ledger,
- * asegurando la permanencia e inmutabilidad total del activo digital.
+ * HIP-412 V2 es el formato estándar de metadatos para NFTs de Hedera: las
+ * billeteras y marketplaces que lo soportan saben leer tu NFT. Este lab guarda
+ * la imagen y el JSON en el Hedera File Service (HFS), con vencimiento de 31 días
+ * para mantener bajo el costo en testnet. Las colecciones en producción suelen
+ * alojarlos en IPFS o Arweave, que las billeteras resuelven más que los enlaces hedera://.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
  * Nunca almacenes imágenes pesadas directamente en el ledger. Aloja el contenido multimedia en IPFS, Arweave o HCS, y acuña el NFT con su URI JSON estándar HIP-412 para optimizar rendimiento y renta de estado.
@@ -66,7 +65,7 @@ const generateHIP412Metadata = (name, description, imageURI, creator, attributes
 }
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Creación de Colección NFT Inmutable ---\n')
+  console.log('--- INICIO DEL LABORATORIO: Creación de Colección NFT HIP-412 ---\n')
 
   const { client, operatorId, operatorKey } = getClient()
   const treasuryKey = PrivateKey.fromString(operatorKey)
@@ -185,10 +184,9 @@ const main = async () => {
     console.log(`\n[ÉXITO] Seriales Emitidos: ${mintReceipt.serials.join(', ')}`)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Al usar el protocolo `hedera://` para apuntar de un archivo')
-    console.log('a otro, creas un ecosistema de datos 100% auditable y')
-    console.log('permanente, sin depender de la volatilidad de servidores web')
-    console.log('tradicionales.')
+    console.log('El protocolo `hedera://` apunta de un archivo de HFS a otro, así que todo')
+    console.log('queda en el ledger y se puede auditar. Estos archivos conservan su llave y')
+    console.log('vencen en 31 días; si una billetera resuelve hedera:// depende de cada app.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

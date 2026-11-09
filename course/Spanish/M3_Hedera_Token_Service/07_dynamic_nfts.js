@@ -120,8 +120,8 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('Los NFTs Dinámicos abren nuevos paradigmas para videojuegos, cadenas de')
-    console.log('suministro y boletaje. Hedera logra esto de forma segura en la capa base')
-    console.log('sin depender de contratos inteligentes externos y hackeables.')
+    console.log('suministro y boletaje. Hedera lo hace en la capa base: solo la metadataKey')
+    console.log('puede cambiar la metadata, sin un contrato inteligente de por medio.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

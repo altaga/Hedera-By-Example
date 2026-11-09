@@ -181,7 +181,7 @@ const main = async () => {
     console.log('\n---  REACTIVE STREAMING SUMMARY ---')
     console.log(`Total Events Broadcasted: ${eventBus.eventsDispatched}`)
     console.log(`Total Events Received:    ${receivedEvents.length}`)
-    console.log(`Delivery Integrity:       ${receivedEvents.length === eventBus.eventsDispatched ? '100% (ZERO PACKET LOSS)' : 'PARTIAL'}`)
+    console.log(`Delivery Integrity:       ${receivedEvents.length === eventBus.eventsDispatched ? 'all events delivered' : 'PARTIAL'}`)
 
     updateState('EVENT_BUS_LAST_PORT', BUS_PORT)
     updateState('EVENT_BUS_EVENTS_PROCESSED', receivedEvents.length)
@@ -189,7 +189,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('Push Over Pull: By transforming Mirror Node consensus feeds into push-based')
     console.log('event streams, reactive interfaces (React dashboards, automated trading engines)')
-    console.log('update the instant consensus finality occurs, eliminating polling bottlenecks.')
+    console.log('update as soon as the gateway relays an event, without each client polling.')
 
     consumerReq.destroy()
     await eventBus.close()

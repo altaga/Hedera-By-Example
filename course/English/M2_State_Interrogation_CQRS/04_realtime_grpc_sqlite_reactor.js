@@ -141,7 +141,8 @@ const main = async () => {
     let ingestedCount = 0
 
     for (const tx of transactions) {
-      const txId = tx.transaction_id || `tx_${Math.random()}`
+      if (!tx.transaction_id) continue // every Mirror Node transaction has an id; never invent one
+      const txId = tx.transaction_id
       const timestamp = tx.consensus_timestamp
       const result = tx.result || 'UNKNOWN'
 
@@ -213,7 +214,7 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('CQRS isolates state mutation from state reading. By materializing Hedera')
     console.log('consensus events into an embedded SQLite engine (`node:sqlite`), the application')
-    console.log('achieves microsecond analytical queries and immunity from network rate-limits.')
+    console.log('answers analytical queries locally, and repeated reads no longer hit Mirror Node rate limits.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Never make direct network REST calls inside high-frequency trading loops or')

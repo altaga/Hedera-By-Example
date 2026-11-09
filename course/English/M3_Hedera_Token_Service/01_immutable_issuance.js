@@ -1,18 +1,18 @@
 /**
  * ============================================================================
- * Lab 01: HTS Immutable Issuance
+ * Lab 01: HTS Fungible Token Issuance
  * [CONCEPT] Protocol-Level Fungible Tokens
  * ============================================================================
  * [ KEY CONCEPT ]
  * Power of Keys: By setting an `adminKey`, you keep the power to update the
  * token's properties. By setting a `supplyKey`, you keep the power to mint
- * more. If you remove these keys (set them to `null`), the token becomes
- * "Immutable"—mathematically guaranteed to never change. This is the
- * foundation of native trust on Hedera.
+ * more. A token created without these keys can never be updated or minted
+ * again: the network has no key to accept the change from. This lab keeps the
+ * admin, supply and pause keys, because later labs mint and pause this token.
  *
  *
  * [ LEARNABLE MOMENT ]
- * Omission is true immutability: by deliberately setting adminKey = null when creating a token, you permanently surrender control. The token rules and supply become mathematically enforced by the consensus layer forever.
+ * Omission is true immutability: a key you never set cannot be added later, so leaving out the adminKey (and supplyKey) at creation permanently gives up control over the token's properties (and supply). Decide which keys to keep before you create the token.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/define-a-token
@@ -77,12 +77,13 @@ const main = async () => {
 
     console.log(`[LOG] Treasury Account: ${operatorId}`)
     console.log('[INFO] Initial Supply is now ready in the Treasury.')
+    console.log('[INFO] Keys kept: admin, supply, pause (this token is NOT immutable).')
 
     console.log('\n KEY CONCEPT:')
     console.log('Power of Keys: By setting an `adminKey`, you keep the power to update')
     console.log("the token's properties. By setting a `supplyKey`, you keep the power")
-    console.log('to mint more. If you remove these keys (set them to `null`), the token')
-    console.log('becomes "Immutable"—mathematically guaranteed to never change.')
+    console.log('to mint more. A token created without these keys can never be updated')
+    console.log('or minted again, because no key exists to approve the change.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

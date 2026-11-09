@@ -6,14 +6,14 @@
  * [ CONCEPTO CLAVE ]
  * Inmutabilidad y Confianza: En Hedera, los tokens son entidades NATIVAS del
  * protocolo, no Smart Contracts. Esto elimina el riesgo de bugs en Solidity
- * y reduce costos operativos. Un token cuya `supplyKey` y `adminKey` están
- * fijadas es matemáticamente INMUTABLE: ninguna entidad, ni siquiera el
- * creador, puede alterar su suministro total o sus propiedades una vez
- * desplegado. Esta es la base de la confianza en las finanzas
+ * y reduce costos operativos. Un token creado SIN `supplyKey` ni `adminKey`
+ * no se puede actualizar ni emitir de nuevo: nadie, ni siquiera el creador,
+ * tiene una llave con la cual aprobar el cambio. Este lab conserva las llaves
+ * de admin, suministro y pausa porque labs posteriores emiten y pausan este token. Esta es la base de la confianza en las finanzas
  * descentralizadas (DeFi) institucionales.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * La omisión es verdadera inmutabilidad: al omitir la adminKey al crear un token, renuncias permanentemente al control. Las reglas y suministro quedan fijadas matemáticamente por la capa de consenso para siempre.
+ * La omisión es verdadera inmutabilidad: una llave que nunca definiste no se puede agregar después, así que omitir la adminKey (y la supplyKey) al crear el token renuncia para siempre al control de sus propiedades (y su suministro). Decide qué llaves conservar antes de crear el token.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/define-a-token
@@ -78,12 +78,13 @@ const main = async () => {
 
     console.log(`[REGISTRO] Cuenta de tesorería: ${operatorId}`)
     console.log('[INFO] El suministro inicial ya está en la tesorería.')
+    console.log('[INFO] Llaves conservadas: admin, suministro y pausa (este token NO es inmutable).')
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('El poder de las llaves: con una `adminKey` conservas el poder de actualizar')
     console.log('las propiedades del token. Con una `supplyKey` conservas el poder de emitir')
-    console.log('más. Si quitas esas llaves (las pones en `null`), el token se vuelve')
-    console.log('"Inmutable": está garantizado matemáticamente que nunca cambiará.')
+    console.log('más. Un token creado sin esas llaves no se puede actualizar ni emitir')
+    console.log('de nuevo, porque no existe una llave que apruebe el cambio.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
