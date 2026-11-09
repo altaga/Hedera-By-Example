@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 06: Native Staking (HIP-584)
+ * Lab 06: Native Staking (HIP-406)
  * [CONCEPT] Consensus Node Delegation & Rewards
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -11,10 +11,10 @@
  * account. You can configure this via `AccountUpdateTransaction`.
  * *
  * [ LEARNABLE MOMENT ]
- * Hedera native staking (HIP-584) involves zero lockups, zero slashing, and zero smart contract risks. Your HBAR never leaves your wallet, yet you earn network staking rewards automatically distributed by consensus nodes.
+ * Hedera native staking (HIP-406) involves zero lockups, zero slashing, and zero smart contract risks. Your HBAR never leaves your wallet, yet you earn staking rewards, paid by the network to your account the next time it takes part in a transaction.
  *
  * [ OFFICIAL REFERENCES ]
- * - https://hips.hedera.com/hip/hip-584
+ * - https://hips.hedera.com/hip/hip-406
  *
  * [ LEARNING PATH ]
  * - Previous: M1 Lab 05: Lazy Account Creation (Account Abstraction)

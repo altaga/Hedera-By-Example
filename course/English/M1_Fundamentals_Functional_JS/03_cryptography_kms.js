@@ -54,7 +54,7 @@ class RemoteHSMVault {
    * The private key NEVER leaves this function.
    */
   async signPayload (payloadBuffer) {
-    console.log('[PROCESS] Vault: Signing payload securely inside HSM enclave...')
+    console.log('[PROCESS] Vault: Signing payload inside the mock HSM (in memory)...')
     return new Promise((resolve) => {
       setTimeout(() => {
         const signature = this._privateKey.sign(payloadBuffer)

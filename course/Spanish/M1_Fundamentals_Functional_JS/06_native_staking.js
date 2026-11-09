@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 06: Staking Nativo (HIP-584)
+ * Lab 06: Staking Nativo (HIP-406)
  * [CONCEPTO] Delegación a Nodos de Consenso y Recompensas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -11,10 +11,10 @@
  * nativamente a la cuenta. Puedes configurar esto vía `AccountUpdateTransaction`.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * El staking nativo de Hedera (HIP-584) no tiene bloqueos, slashing ni riesgo de contratos. Tus HBAR jamás abandonan tu billetera, pero recibes recompensas calculadas y distribuidas por los nodos de consenso.
+ * El staking nativo de Hedera (HIP-406) no tiene bloqueos, slashing ni riesgo de contratos. Tus HBAR jamás abandonan tu billetera, pero recibes recompensas que la red paga a tu cuenta la próxima vez que participa en una transacción.
  *
  * [ REFERENCIAS OFICIALES ]
- * - https://hips.hedera.com/hip/hip-584
+ * - https://hips.hedera.com/hip/hip-406
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M1 Lab 05: Creación Perezosa de Cuentas (Abstracción de Cuentas)

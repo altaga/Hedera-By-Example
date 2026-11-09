@@ -13,7 +13,7 @@
  * Fault-Tolerant (aBFT), rápido y equitativo.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * A diferencia de las cadenas Proof-of-Work que sufren de finalidad probabilística y reorganizaciones de bloques, Hashgraph alcanza tolerancia a fallas bizantinas asíncrona (aBFT) en 3-5 segundos con certeza matemática absoluta.
+ * A diferencia de las cadenas Proof-of-Work que sufren de finalidad probabilística y reorganizaciones de bloques, Hashgraph es tolerante a fallas bizantinas asíncronas (aBFT): cuando una transacción alcanza consenso, normalmente en pocos segundos, es final y no puede revertirse por una reorganización.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hedera.com/learning/consensus-algorithms/what-is-asynchronous-byzantine-fault-tolerance-abft

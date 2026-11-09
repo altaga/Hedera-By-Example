@@ -10,7 +10,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Unlike Proof-of-Work blockchains that suffer from probabilistic finality and block reorganizations, Hashgraph reaches true asynchronous Byzantine Fault Tolerance (aBFT) in 3-5 seconds with absolute mathematical certainty.
+ * Unlike Proof-of-Work blockchains that suffer from probabilistic finality and block reorganizations, Hashgraph is asynchronous Byzantine Fault Tolerant (aBFT): once a transaction reaches consensus, usually within a few seconds, it is final and cannot be reorganized away.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hedera.com/learning/consensus-algorithms/what-is-asynchronous-byzantine-fault-tolerance-abft

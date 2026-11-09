@@ -55,7 +55,7 @@ class RemoteHSMVault {
    * La llave privada NUNCA sale de esta función.
    */
   async signPayload (payloadBuffer) {
-    console.log('[PROCESO] Bóveda: Firmando carga útil de forma segura dentro del HSM...')
+    console.log('[PROCESO] Bóveda: Firmando la carga útil dentro del HSM simulado (en memoria)...')
     return new Promise((resolve) => {
       setTimeout(() => {
         const signature = this._privateKey.sign(payloadBuffer)

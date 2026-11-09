@@ -9,7 +9,8 @@
  * Con la Creación Perezosa de Cuentas (Lazy Account Creation), simplemente
  * transfieres HBAR a una dirección EVM cruda (un alias de clave pública ECDSA).
  * Hedera intercepta automáticamente la transferencia, crea la cuenta de Hedera
- * tras bambalinas, y deduce la tarifa de creación del monto transferido.
+ * tras bambalinas, y cobra la tarifa de creación a quien paga la transferencia
+ * (el destinatario recibe el monto completo).
  * Esto es vital para integrar usuarios de Ethereum.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
@@ -20,7 +21,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M1 Lab 04: Rotación de Llaves
- * - Siguiente: M1 Lab 06: Staking Nativo (HIP-584)
+ * - Siguiente: M1 Lab 06: Staking Nativo (HIP-406)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -76,9 +77,9 @@ const main = async () => {
     }
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Acabas de incorporar una billetera de Ethereum directamente a Hedera sin')
-    console.log('pagar la tarifa de creación de cuenta por adelantado. La red manejó')
-    console.log('automáticamente la creación de la cuenta durante la transferencia de HBAR.')
+    console.log('Acabas de incorporar una billetera de Ethereum directamente a Hedera sin un')
+    console.log('AccountCreateTransaction aparte: la red creó la cuenta durante la transferencia')
+    console.log('de HBAR, y la tarifa de creación se sumó a lo que pagaste tú, el remitente.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')

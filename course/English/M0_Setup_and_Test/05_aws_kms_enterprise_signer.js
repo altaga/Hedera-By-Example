@@ -15,7 +15,7 @@
  * canonical 64-byte (r || s) format and attached to the Hedera transaction.
  * *
  * [ LEARNABLE MOMENT ]
- * Enterprise institutional grade security forbids storing private keys on disk or in RAM. Simulating a cloud Hardware Security Module (HSM/KMS) ensures that transaction digests are signed inside tamper-proof physical enclaves without key extraction.
+ * Institutional custody keeps private keys off disk and out of application memory: with a cloud HSM/KMS the bytes are signed inside the module and the key never leaves it. The signWith callback is the seam that lets a Hedera transaction be signed that way.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.aws.amazon.com/kms/latest/developerguide/overview.html
@@ -25,7 +25,7 @@
  * - Next:     M0 Lab 06: OpenTelemetry Consensus Telemetry
  *
  * [ SIMULATED ]
- * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real.
+ * The AWS KMS enclave is simulated in memory unless AWS credentials and AWS_KMS_KEY_ARN are set. The transaction it signs is real. In simulated mode the key IS in memory (it is your operator key). For live mode the KMS key must be the key of the paying account.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -92,7 +92,7 @@ const unpackDerToRaw = (derBytes) => {
 
 /**
  * AWS KMS Client Interface & Hardware Enclave Simulator.
- * Conforms 100% to AWS SDK v3 `@aws-sdk/client-kms` SignCommand interface.
+ * Uses the same input and output shape as the AWS SDK v3 `@aws-sdk/client-kms` SignCommand.
  */
 class EnterpriseKmsAdapter {
   constructor (config = {}) {
@@ -165,8 +165,9 @@ const main = async () => {
   const { client, operatorId, operatorKey } = getClient()
   const custodyKey = PrivateKey.fromStringDer(operatorKey)
   const isECDSA = custodyKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')
+  const kmsLive = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_KMS_KEY_ARN)
 
-  console.log('[SECURITY] Custody Mode: Air-Gapped KMS Signer')
+  console.log(`[SECURITY] Custody Mode: ${kmsLive ? 'AWS KMS signer (live)' : 'Simulated KMS signer (key in memory)'}`)
   console.log(`[LOG] Account ID:        ${operatorId.toString()}`)
   console.log(`[LOG] Public Key (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
   console.log(`[LOG] Key Algorithm:     ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
@@ -213,10 +214,15 @@ const main = async () => {
     console.log(`[EXPLORER] View on HashScan: ${getHashscanUrl(txResponse)}`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Zero Key Exposure: The application environment NEVER holds the private key.')
-    console.log('The transaction bytes were sent to an isolated hardware security module (HSM),')
-    console.log('signed in hardware, and verified on Hedera. This is the mandatory architecture')
-    console.log('for enterprise SOC2, ISO27001, and institutional banking compliance.')
+    if (kmsAdapter.isLiveAws) {
+      console.log('Zero Key Exposure: the transaction bytes were signed by AWS KMS and the')
+      console.log('application never held the private key. Hedera accepted the signature.')
+    } else {
+      console.log('The signing went through the same KMS-shaped callback, but the "enclave" was')
+      console.log('simulated in memory with your operator key. With AWS credentials and')
+      console.log('AWS_KMS_KEY_ARN set, the same code asks AWS KMS to sign and the key never')
+      console.log('enters this process.')
+    }
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
