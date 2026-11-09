@@ -4,8 +4,7 @@
  * [CONCEPT] Trade Finance Tokenization, Legal Anchors & ERC-3643 KYC Gates
  * ============================================================================
  * [ KEY CONCEPT ]
- * In global institutional trade finance (pioneered on Hedera by DLA Piper TOKO,
- * abrdn, and institutional consortia), supply chain liquidity is bottlenecked
+ * In global trade finance, supply chain liquidity is bottlenecked
  * by legacy ERP systems (SAP, Oracle, NetSuite) producing PDF/XML invoices that
  * take 60 to 90 days to settle through factoring clearinghouses.
  *
@@ -31,7 +30,7 @@
  * - https://docs.hedera.com/native/tokens/enable-kyc
  *
  * [ LEARNING PATH ]
- * - Previous: M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
+ * - Previous: M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets
  * - Next:     M11 Lab 08: Corporate Actions & Mass Payout (Asset Tokenization Studio Concepts)
  *
  * [ SEQUENCE ]
@@ -338,9 +337,9 @@ const main = async () => {
     console.log('fractional debt with native KYC/AML keys enforced at Layer 1 without EVM gas spikes.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Traditional trade finance factoring takes 3 to 4 weeks and charges 3-5% in manual broker fees.')
+    console.log('Traditional factoring involves weeks of paperwork and several intermediaries.')
     console.log('By converting UBL XML invoices into compliant HTS tranches, enterprise receivables')
-    console.log('settle in 2.5 seconds with zero counterparty risk and institutional auditability.')
+    console.log('settle in seconds, atomically and with a public audit trail.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

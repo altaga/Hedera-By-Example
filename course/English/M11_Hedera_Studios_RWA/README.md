@@ -17,7 +17,7 @@ In this module, we transition from toy digital collectibles to institutional cap
 | **03** | **Stablecoin Roles on HTS** | Separate Cash-In, Freeze, Wipe and KYC keys enforced by the network (Stablecoin Studio concepts, native HTS). |
 | **04** | **Proof-of-Reserve Oracle** | Verifying off-chain collateral and activating automated minting circuit breakers. |
 | **05** | **RWA Invoice Factoring** | SME, investor and debtor accounts settle advance and maturity as atomic delivery-versus-payment. |
-| **06** | **Multi-Asset Pool Tokens** | Bundling Treasury MMFs, Corporate Bonds, and REITs into an Archax-style atomic basket token. |
+| **06** | **Multi-Asset Pool Tokens** | Bundling Treasury MMFs, Corporate Bonds, and REITs into one atomic basket token (demo assets). |
 | **07** | **Institutional ERP Integration Bridge** | Electronic invoice XML parsing, HCS legal timestamp anchoring, and compliant fractional HTS debt minting. |
 | **08** | **Corporate Actions & Mass Payout (ATS Concepts)** | Real HTS share token, Mirror Node cap-table snapshot, pro-rata dividend with withholding in one atomic transfer, HCS audit certificate. |
 

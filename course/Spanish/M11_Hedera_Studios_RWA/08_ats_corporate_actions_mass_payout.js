@@ -295,7 +295,7 @@ const main = async () => {
   updateState('ATS_LAST_CORPORATE_ACTION_DATE', auditPayload.timestamp)
 
   console.log('\n====================================================================')
-  console.log('MOTOR DE PAGOS MASIVOS DE ASSET TOKENIZATION STUDIO: LIQUIDADO Y VERIFICADO')
+  console.log('PAGO MASIVO: LIQUIDADO EN HEDERA Y ANCLADO EN HCS')
   console.log('====================================================================')
 
   client.close()

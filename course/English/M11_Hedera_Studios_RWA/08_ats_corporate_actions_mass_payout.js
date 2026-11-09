@@ -295,7 +295,7 @@ const main = async () => {
   updateState('ATS_LAST_CORPORATE_ACTION_DATE', auditPayload.timestamp)
 
   console.log('\n====================================================================')
-  console.log('ASSET TOKENIZATION STUDIO MASS PAYOUT ENGINE: SETTLED & VERIFIED')
+  console.log('MASS PAYOUT: SETTLED ON HEDERA AND ANCHORED ON HCS')
   console.log('====================================================================')
 
   client.close()

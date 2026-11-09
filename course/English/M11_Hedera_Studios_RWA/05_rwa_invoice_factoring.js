@@ -28,7 +28,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M11 Lab 04: Proof-of-Reserve (PoR) Oracle & Circuit Breakers
- * - Next:     M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets (Archax / ATS)
+ * - Next:     M11 Lab 06: Institutional Multi-Asset Pool Tokens & RWA Baskets
  *
  * [ SEQUENCE ]
  * SME -> Hedera: Anchor invoice hash on HCS, mint invoice token

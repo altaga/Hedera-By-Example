@@ -17,7 +17,7 @@ En este módulo dejamos atrás los coleccionables digitales básicos para entrar
 | **03** | **Roles de Stablecoin en HTS** | Claves separadas de Cash-In, Freeze, Wipe y KYC aplicadas por la red (conceptos de Stablecoin Studio, HTS nativo). |
 | **04** | **Oráculo Proof-of-Reserve** | Verificación de colateral fuera de cadena y activación de disyuntores de emisión automática. |
 | **05** | **Factoraje de Facturas RWA** | Cuentas de PyME, inversor y deudor liquidan anticipo y vencimiento como entrega contra pago atómica. |
-| **06** | **Pool Tokens Multi-Activo** | Agrupación atómica de Fondos Monetarios, Bonos y REITs en una canasta institucional estilo Archax. |
+| **06** | **Pool Tokens Multi-Activo** | Agrupación atómica de Fondos Monetarios, Bonos y REITs en un solo token de canasta atómica (activos de demostración). |
 | **07** | **Puente de Integración ERP Institucional** | Parseo de facturas electrónicas XML, anclaje legal en HCS y emisión de deuda fraccionada en HTS. |
 | **08** | **Acciones Corporativas y Pagos Masivos (Conceptos ATS)** | Token HTS real, instantánea de cap table en Mirror Node, dividendo prorrateado con retención en una transferencia atómica y certificado de auditoría en HCS. |
 

@@ -76,8 +76,8 @@ const main = async () => {
     // 2. Token donde cada poder es una clave distinta
     console.log('\n[PROCESO] Paso 2: Creando la stablecoin con una clave por rol...')
     const { receipt: createReceipt } = await run(new TokenCreateTransaction()
-      .setTokenName('Hedera Digital Dollar')
-      .setTokenSymbol('USDD')
+      .setTokenName('Course Demo Dollar')
+      .setTokenSymbol('HBEUSD')
       .setDecimals(6)
       .setInitialSupply(0)
       .setTokenType(TokenType.FungibleCommon)
@@ -102,13 +102,13 @@ const main = async () => {
       console.log(`[RECHAZADO] ${error.status ?? error.message}`)
     }
 
-    // 4. La clave Cash-In acuña 250,000 USDD
-    console.log('\n[PROCESO] Paso 4: El rol Cash-In acuña 250,000 USDD tras la transferencia bancaria (narrativa)...')
+    // 4. La clave Cash-In acuña 250,000 HBEUSD
+    console.log('\n[PROCESO] Paso 4: El rol Cash-In acuña 250,000 HBEUSD tras la transferencia bancaria (narrativa)...')
     const { res: mintRes, receipt: mintReceipt } = await run(new TokenMintTransaction().setTokenId(tokenId).setAmount(250_000 * 1_000_000), client, roles.cashIn)
     console.log(`[ÉXITO] Suministro total ${mintReceipt.totalSupply} — ${getHashscanUrl(mintRes)}`)
 
     // 5. KYC + transferencia a un tenedor
-    console.log('\n[PROCESO] Paso 5: El rol KYC aprueba a un tenedor; la tesorería envía 1,000 USDD...')
+    console.log('\n[PROCESO] Paso 5: El rol KYC aprueba a un tenedor; la tesorería envía 1,000 HBEUSD...')
     const holder = await createLabAccount(client, { hbar: 0.05 })
     await run(new TokenAssociateTransaction().setAccountId(holder.accountId).setTokenIds([tokenId]), client, holder.privateKey)
     await run(new TokenGrantKycTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.kyc)
@@ -116,7 +116,7 @@ const main = async () => {
       .addTokenTransfer(tokenId, operatorId, -amount)
       .addTokenTransfer(tokenId, holder.accountId, amount), client)
     await send(1_000 * 1_000_000)
-    console.log(`[ÉXITO] El tenedor ${holder.accountId} recibió 1,000 USDD`)
+    console.log(`[ÉXITO] El tenedor ${holder.accountId} recibió 1,000 HBEUSD`)
 
     // 6. Rol Freeze
     console.log('\n[PROCESO] Paso 6: El rol Freeze congela al tenedor señalado; una nueva transferencia debe fallar...')
@@ -134,7 +134,7 @@ const main = async () => {
     // Wipe exige la relación descongelada: primero unfreeze, luego la recuperación
     await run(new TokenUnfreezeTransaction().setTokenId(tokenId).setAccountId(holder.accountId), client, roles.freeze)
     const { res: wipeRes, receipt: wipeReceipt } = await run(new TokenWipeTransaction().setTokenId(tokenId).setAccountId(holder.accountId).setAmount(1_000 * 1_000_000), client, roles.wipe)
-    console.log(`[ÉXITO] Se borraron 1,000 USDD; suministro total ahora ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
+    console.log(`[ÉXITO] Se borraron 1,000 HBEUSD; suministro total ahora ${wipeReceipt.totalSupply} — ${getHashscanUrl(wipeRes)}`)
 
     updateState('STABLECOIN_TOKEN_ID', tokenId.toString())
     updateState('STABLECOIN_MINT_TX_ID', mintRes.transactionId.toString())
