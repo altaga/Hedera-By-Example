@@ -61,7 +61,7 @@ import {
   Hbar,
   Timestamp
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Enterprise Webhook Dispatcher Simulation
@@ -103,7 +103,7 @@ const main = async () => {
     ], 2) // Quorum: 2 signatures required out of 3
 
     // Designate Recipient Account (Community Grantee / Vendor)
-    const recipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
+    const recipientId = requireEnv('ACCOUNT_1_ID')
     const initialRecipientBalance = await getAccountHbarBalance(recipientId)
 
     // Create the DAO Multi-Sig Treasury Account with 0.5 HBAR Initial Liquidity

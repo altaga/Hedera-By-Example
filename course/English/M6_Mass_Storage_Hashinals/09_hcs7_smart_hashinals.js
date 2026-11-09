@@ -25,6 +25,9 @@
  * - Previous: M6 Lab 08: HCS-1 NFT Reconstruction
  * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault (Enterprise Privacy over Public Consensus)
  *
+ * [ SIMULATED ]
+ * The price-feed contract in the EVM config is a placeholder address: no contract is deployed there, so nothing reads a price. The HCS-7 registry and its messages are real.
+ *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
@@ -71,7 +74,7 @@ const main = async () => {
     console.log(`[LOG] Official HOL Topic Memo: "${topicInfo.topicMemo}"`)
 
     // 2. Register an EVM State Reader Config (`t: "evm"`) via `buildHcs7EvmMessageTx`
-    console.log('\n[PROCESS] Step 2: Inscribing EVM State Reader Config (HBAR Volatility Oracle)...')
+    console.log('\n[PROCESS] Step 2: Inscribing an EVM State Reader Config (example price feed, placeholder address)...')
     const evmConfigTx = buildHcs7EvmMessageTx({
       topicId: registryTopicId,
       config: {
@@ -83,7 +86,7 @@ const main = async () => {
           stateMutability: 'view',
           type: 'function'
         },
-        memo: 'Reads live HBAR/USD oracle price to morph Hashinal aura color'
+        memo: 'Example: reads latestAnswer() from a price-feed contract to pick the Hashinal aura (placeholder address)'
       },
       transactionMemo: 'hcs-7:op:0:0'
     })

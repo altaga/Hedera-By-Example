@@ -69,7 +69,7 @@ import {
   TokenGrantKycTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * 1. Simulación de Factura Electrónica UBL 2.1 Canónica de SAP / Oracle
@@ -197,7 +197,7 @@ const main = async () => {
 
     // 3. Verificación de Calificación de Inversor ERC-3643
     console.log('\n[PROCESO] Paso 3: Evaluando Inversor Institucional mediante Filtro ERC-3643...')
-    const investorAccountId = process.env.ACCOUNT_1_ID || '0.0.11226623'
+    const investorAccountId = requireEnv('ACCOUNT_1_ID')
     const investorPrivateKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
     const investorProfile = {

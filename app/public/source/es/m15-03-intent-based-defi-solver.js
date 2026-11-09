@@ -58,7 +58,7 @@ import {
   PrivateKey
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Crea y firma una intención de intercambio fuera de cadena al estilo ERC-7683.
@@ -166,7 +166,7 @@ async function main () {
 
     // Generar contraparte secundaria Bob
     const bobKey = PrivateKey.generateED25519()
-    const bobId = AccountId.fromString(process.env.ACCOUNT_1_ID || '0.0.11226623')
+    const bobId = AccountId.fromString(requireEnv('ACCOUNT_1_ID'))
 
     console.log(`[ EMISOR A (Alice)] Cuenta: ${aliceId} | Desea: HBAR_STABLE_USD a cambio de HBAR`)
     console.log(`[ EMISOR B (Bob)]   Cuenta: ${bobId} | Desea: HBAR a cambio de HBAR_STABLE_USD`)

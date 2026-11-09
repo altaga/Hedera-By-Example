@@ -19,6 +19,16 @@ export const maxTransactionFeeHbar = () => Number(process.env.MAX_TRANSACTION_FE
  * @returns {Client}
  */
 // Accepts DER (302e…/3030…) and raw hex keys.
+/**
+ * Reads a required variable from .env (in the web runner: the wallet and practice accounts).
+ * Throws a clear error instead of falling back to someone else's account.
+ */
+export const requireEnv = (name) => {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing ${name} in .env (on the website, create the practice wallets in the Wallets panel).`)
+  return value
+}
+
 export const parsePrivateKey = (value) => {
   const text = String(value).trim()
   return /^30[0-9a-fA-F]{60,}$/.test(text) ? PrivateKey.fromStringDer(text) : PrivateKey.fromString(text)

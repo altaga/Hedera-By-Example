@@ -56,7 +56,7 @@ import {
   PrivateKey
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Creates and signs an ERC-7683-style off-chain swap intent.
@@ -164,7 +164,7 @@ async function main () {
 
     // Generate secondary counterparty Bob
     const bobKey = PrivateKey.generateED25519()
-    const bobId = AccountId.fromString(process.env.ACCOUNT_1_ID || '0.0.11226623')
+    const bobId = AccountId.fromString(requireEnv('ACCOUNT_1_ID'))
 
     console.log(`[ MAKER A (Alice)] Account: ${aliceId} | Wants: HBAR_STABLE_USD for HBAR`)
     console.log(`[ MAKER B (Bob)]   Account: ${bobId} | Wants: HBAR for HBAR_STABLE_USD`)

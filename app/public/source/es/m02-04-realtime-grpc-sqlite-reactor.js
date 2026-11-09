@@ -44,7 +44,7 @@ import {
   Hbar,
   AccountId
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, sleep, updateState } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, sleep, updateState, requireEnv } from '../M99_Utilities/index.js'
 
 const setupInMemoryDatabase = () => {
   const db = new DatabaseSync(':memory:')
@@ -90,7 +90,7 @@ const main = async () => {
 
     // 2. Lado de Comandos: Generar un Evento de Consenso en Vivo en Hedera Testnet
     console.log('\n[PROCESO] [LADO DE COMANDOS] Generando Evento de Consenso en Vivo en Hedera Testnet...')
-    const dummyRecipient = AccountId.fromString('0.0.8707881')
+    const dummyRecipient = AccountId.fromString(requireEnv('ACCOUNT_2_ID'))
     const microTransferTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.01))
       .addHbarTransfer(dummyRecipient, new Hbar(0.01))

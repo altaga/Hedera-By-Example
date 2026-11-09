@@ -62,7 +62,7 @@ import {
   Hbar,
   Timestamp
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Simulación de Despacho de Webhooks Empresariales
@@ -104,7 +104,7 @@ const main = async () => {
     ], 2) // Quórum: se requieren 2 firmas de 3
 
     // Designar Cuenta Receptora (Proveedor / Subvención)
-    const recipientId = process.env.ACCOUNT_1_ID || '0.0.11226623'
+    const recipientId = requireEnv('ACCOUNT_1_ID')
     const initialRecipientBalance = await getAccountHbarBalance(recipientId)
 
     // Crear la Cuenta de Tesorería Multifirma de la DAO con 0.5 HBAR de Liquidez Inicial

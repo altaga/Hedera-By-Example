@@ -69,7 +69,7 @@ import {
   TokenGrantKycTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep } from '../M99_Utilities/index.js'
+import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, getState, updateState, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * 1. Simulates Canonical SAP / Oracle UBL 2.1 Electronic Invoice XML
@@ -197,7 +197,7 @@ const main = async () => {
 
     // 3. ERC-3643 Investor Qualification Check
     console.log('\n[PROCESS] Step 3: Evaluating Institutional Investor via ERC-3643 Compliance Gate...')
-    const investorAccountId = process.env.ACCOUNT_1_ID || '0.0.11226623'
+    const investorAccountId = requireEnv('ACCOUNT_1_ID')
     const investorPrivateKey = process.env.ACCOUNT_1_PRIVATE_KEY
 
     const investorProfile = {

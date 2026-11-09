@@ -49,7 +49,7 @@ import {
   AccountId
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
-import { getClient, updateState, getHashscanUrl } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Emula un Autenticador Biométrico de Hardware (Apple Secure Enclave / TouchID / FaceID)
@@ -243,7 +243,7 @@ async function main () {
     console.log('\n[5/5] Ejecutando Transferencia en Hedera Autorizada por Biometría...')
     const authorizedTransferTx = await new TransferTransaction()
       .addHbarTransfer(operatorId, new Hbar(-0.01))
-      .addHbarTransfer(AccountId.fromString(process.env.ACCOUNT_1_ID || '0.0.11226623'), new Hbar(0.01))
+      .addHbarTransfer(AccountId.fromString(requireEnv('ACCOUNT_1_ID')), new Hbar(0.01))
       .setTransactionMemo('Biometrically Authorized via Passkey P-256')
       .execute(client)
 

@@ -42,7 +42,7 @@ import {
   HCS20MintMessageSchema,
   HCS20TransferMessageSchema
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, updateState, requireEnv } from '../M99_Utilities/index.js'
 
 /**
  * Builds and validates standard HCS-20 inscription messages using official
@@ -159,7 +159,7 @@ const main = async () => {
     console.log(`[SUCCESS] HCS-20 Point Ledger Created: Topic ID ${topicId}`)
 
     const stateEngine = new HCS20StateEngine()
-    const recipientAgent = '0.0.8707881'
+    const recipientAgent = requireEnv('ACCOUNT_2_ID')
 
     // 2. Inscribe Deploy Action (Validated via HCS20DeployMessageSchema)
     console.log('\n[PROCESS] Inscribing HCS-20 Token Deployment: Ticker [aipnt] (Max: 1,000,000)...')

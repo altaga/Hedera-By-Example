@@ -983,6 +983,11 @@ export async function executeInBrowser (
       loadEnv: () => {},
       createClient,
       parsePrivateKey: parseKey,
+      requireEnv: (name: string) => {
+        const value = mockProcess.env[name]
+        if (!value) throw new Error(options.lang === 'es' ? `Falta ${name}: crea las wallets de práctica en el panel Wallets.` : `Missing ${name}: create the practice wallets in the Wallets panel.`)
+        return value
+      },
       withGasRetry,
       executeWithGas,
       estimateGas,

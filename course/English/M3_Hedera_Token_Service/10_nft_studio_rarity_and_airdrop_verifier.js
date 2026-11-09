@@ -63,7 +63,7 @@ import {
   getHashscanUrl,
   getMirrorNodeBaseUrl,
   updateState,
-  reuseToken
+  reuseToken, requireEnv
 } from '../M99_Utilities/index.js'
 
 /**
@@ -295,8 +295,8 @@ const main = async () => {
   console.log('[3/4]  Running Airdrop Pre-Flight Verifier across Target Accounts...')
   const verifier = new AirdropVerifier(mirrorUrl)
   const targetAccounts = [
-    process.env.ACCOUNT_1_ID || '0.0.11226623',
-    process.env.ACCOUNT_2_ID || '0.0.8707881'
+    requireEnv('ACCOUNT_1_ID'),
+    requireEnv('ACCOUNT_2_ID')
   ]
 
   const verifications = []

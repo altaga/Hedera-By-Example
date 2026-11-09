@@ -41,7 +41,12 @@ const main = async () => {
   console.log('--- SESSION START: On-Chain NFT Resolution ---\n')
 
   // Retrieve the Token ID from the local state system
-  const TOKEN_ID = getState('NFT_TOKEN_ID') || '0.0.8690406'
+  const TOKEN_ID = getState('NFT_TOKEN_ID')
+  if (!TOKEN_ID) {
+    console.error('[FAILED] Missing NFT_TOKEN_ID in state. Run M3 Lab 03 first.')
+    process.exitCode = 1
+    return
+  }
   const SERIAL_NUMBER = 1
 
   const { client } = getClient()

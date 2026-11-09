@@ -42,7 +42,12 @@ const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Metadatos Inmutable ---\n')
 
   // Recuperar el Token ID generado en el laboratorio anterior (o usar uno manual)
-  const TOKEN_ID = getState('NFT_TOKEN_ID') || '0.0.8690406'
+  const TOKEN_ID = getState('NFT_TOKEN_ID')
+  if (!TOKEN_ID) {
+    console.error('[FALLO] Falta NFT_TOKEN_ID en el estado. Ejecuta primero el Lab 03 de M3.')
+    process.exitCode = 1
+    return
+  }
   const SERIAL_NUMBER = 1
 
   const { client } = getClient()
