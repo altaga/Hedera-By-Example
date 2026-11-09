@@ -7,12 +7,12 @@
  * En arquitecturas empresariales (telemetría IoT, trazabilidad logística, auditoría
  * fintech de alta velocidad), enviar miles de transacciones individuales por segundo
  * a cualquier red genera cuellos de botella de procesamiento y costos elevados.
- * El patrón de Ingesta Masiva con Árboles Merkle permite escalabilidad infinita:
+ * El patrón de Ingesta Masiva con Árboles Merkle separa el volumen de eventos del número de transacciones:
  * 1. Ingesta de Eventos Off-Chain: Los microservicios almacenan eventos en memoria.
  * 2. Cálculo de Raíz Merkle: El motor agrupa los eventos en un Árbol Merkle binario
  *    Keccak-256 y calcula una raíz criptográfica compacta de 32 bytes.
  * 3. Anclaje en HCS: El motor asienta ÚNICAMENTE la raíz Merkle en un Tópico de HCS.
- *    Hedera certifica la estampa de tiempo inmutable de red sobre todo el lote por $0.0001.
+ *    Hedera asigna una marca de tiempo de consenso a todo el lote por el costo de un mensaje.
  * 4. Prueba de Inclusión Logarítmica: Un cliente ligero con un solo evento puede verificar
  *    que su registro fue certificado en Hedera mediante una rama Merkle compacta O(log N)
  *    sin descargar el resto del conjunto de datos.
@@ -20,7 +20,7 @@
  * [ MOMENTO DE APRENDIZAJE ]
  * El consenso es el ancla de la verdad criptográfica, no un vertedero de almacenamiento
  * masivo. Mover la verificación de secuencias fuera de cadena mientras se asientan raíces
- * Merkle en HCS permite a empresas procesar más de 100,000 ops/seg a costos sub-centavo.
+ * Merkle en HCS permite anclar cualquier cantidad de registros por lote al precio de un mensaje.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
@@ -166,7 +166,7 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     console.log(`[ÉXITO] ¡Raíz Merkle Anclada en Secuencia de Consenso #${submitReceipt.topicSequenceNumber}!`)
-    console.log('[EFICIENCIA] 1,024 Eventos Certificados en 1 Transacción (~$0.0001 tarifa total)')
+    console.log(`[EFICIENCIA] ${BATCH_SIZE} eventos anclados en UN mensaje (una tarifa de mensaje HCS)`)
 
     // 5. Generar y Verificar Prueba de Inclusión para el Evento Objetivo
     console.log(`\n[PROCESO] Paso 5: Generando Prueba de Inclusión Compacta O(log N) para Evento #${sampleTargetIndex}...`)
@@ -183,13 +183,13 @@ const main = async () => {
     updateState('MERKLE_BATCH_SIZE', BATCH_SIZE.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('El Motor de Ingesta Masiva con Árboles Merkle permite escalabilidad horizontal infinita.')
+    console.log('El Motor de Ingesta Masiva con Árboles Merkle ancla todo un lote con un solo mensaje.')
     console.log('Al asentar una sola raíz Merkle Keccak-256 en HCS, miles de eventos heredan el')
     console.log('sellado de tiempo inmutable y ordenamiento justo del consenso de Hedera.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Los clientes externos solo requieren una rama logarítmica O(log N) (10 hashes para 1,024 eventos)')
-    console.log('para demostrar matemáticamente su inclusión inalterable ante el registro público de consenso.')
+    console.log(`Los clientes externos solo requieren una rama logarítmica O(log N) (${inclusionProof.length} hashes para ${BATCH_SIZE} eventos)`)
+    console.log('para demostrar que su registro forma parte de la raíz anclada en Hedera.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

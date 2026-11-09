@@ -1,17 +1,19 @@
 /**
  * ============================================================================
- * Lab 05: HCS-6 Decentralized Registry
+ * Lab 05: Decentralized App Registry on HCS
  * [CONCEPT] On-Chain Service Discovery
  * ============================================================================
  * [ KEY CONCEPT ]
- * HCS-6 is a community standard for creating decentralized registries on top of
- * the Hedera Consensus Service. Instead of relying on a centralized database
- * (like the Apple App Store or Google Play), developers can publish their dApp's
- * metadata, website, and smart contract addresses to a public HCS topic.
- * Any client can listen to this topic to discover new services dynamically.
+ * A registry on HCS is a topic where each message registers an entry, and anyone
+ * can rebuild the list by reading the topic in order. Instead of relying on a
+ * central app store, developers publish their dApp's name, website and addresses
+ * to a public topic, and clients listen to it to discover services.
+ * The HOL standards define registry formats (HCS-2 for registries, HCS-6 for
+ * dynamic hashinals). This lab uses its own small app-listing schema to show the
+ * pattern; it does not implement HCS-6.
  * *
  * [ LEARNABLE MOMENT ]
- * HCS-6 defines a standardized schema for decentralized registries over consensus. By anchoring key-value configurations to HCS, distributed applications achieve tamper-proof registry lookups without centralized databases.
+ * A registry topic gives every entry a consensus order and timestamp that nobody can rewrite. Agreeing on a shared message schema (such as HCS-2) is what lets other apps read your registry without asking you.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-6/
@@ -39,7 +41,7 @@ import { getClient, exitIfStuck } from '../M99_Utilities/index.js'
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
   exitIfStuck(180_000, 'subscription messages')
-  console.log('--- SESSION START: HCS-6 Registry ---\n')
+  console.log('--- SESSION START: App Registry on HCS ---\n')
 
   const { client } = getClient()
 
@@ -47,29 +49,28 @@ const main = async () => {
     // 1. Create a Topic to act as our decentralized Registry
     console.log('[PROCESS] Creating an HCS Topic for the Registry...')
     let tx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-6 Global App Registry')
+      .setTopicMemo('HBE App Registry (demo)')
       .execute(client)
 
     let receipt = await tx.getReceipt(client)
     const topicId = receipt.topicId
     console.log(`[SUCCESS] Registry Topic created: ${topicId.toString()}`)
 
-    // 2. Define the HCS-6 Compliant Payload
-    // The HCS-6 standard dictates a specific JSON structure to register a service.
+    // 2. Define the registration payload (a simple schema made for this lab)
     const hcs6Payload = {
-      p: 'hcs-6',
+      p: 'hbe-app-registry', // this lab's own schema (not HCS-6)
       op: 'register',
       name: 'Hedera For Dummies dApp',
-      description: 'The premier educational platform for Hedera developers.',
+      description: 'Hands-on Hedera labs (course demo entry).',
       tags: ['education', 'web3', 'hiero'],
-      url: 'https://hedera.com',
+      url: 'https://hbe.expo.app',
       metadata: {
         version: '1.0.0',
         author: 'VAI'
       }
     }
 
-    console.log('\n[PROCESS] Submitting HCS-6 Registration Payload...')
+    console.log('\n[PROCESS] Submitting Registration Payload...')
     console.log(JSON.stringify(hcs6Payload, null, 2))
 
     tx = await new TopicMessageSubmitTransaction()
@@ -95,7 +96,7 @@ const main = async () => {
             const content = Buffer.from(message.contents).toString('utf8')
             try {
               const parsed = JSON.parse(content)
-              if (parsed.p === 'hcs-6' && parsed.op === 'register') {
+              if (parsed.p === 'hbe-app-registry' && parsed.op === 'register') {
                 console.log('\n[DISCOVERED] New dApp Registered!')
                 console.log(`- Name: ${parsed.name}`)
                 console.log(`- Desc: ${parsed.description}`)
@@ -113,9 +114,9 @@ const main = async () => {
     })
 
     console.log('\n KEY CONCEPT:')
-    console.log('HCS-6 allows the ecosystem to build decentralized App Stores where no')
-    console.log('single entity can de-platform a developer. It acts as a global,')
-    console.log('censorship-resistant yellow pages for Web3 services.')
+    console.log('A public registry topic lets anyone list or discover services without a')
+    console.log('single gatekeeper. Because the topic is open, anyone can also post junk,')
+    console.log('so readers must filter entries (for example, by a submit key or signatures).')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

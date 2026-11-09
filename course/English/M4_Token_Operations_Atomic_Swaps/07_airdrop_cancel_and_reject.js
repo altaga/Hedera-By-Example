@@ -155,11 +155,11 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('HIP-904 completes the token distribution circle: Senders can cancel unclaimed')
     console.log('pending drops, and receivers can reject unwanted tokens back to the treasury')
-    console.log('with 100% immunity from predatory custom transfer fees.')
+    console.log('without paying the token\'s custom transfer fees.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Never burn or transfer spam tokens manually—doing so can trigger custom royalty')
-    console.log('hooks. Always use `TokenRejectTransaction` to return them fee-free to the issuer.')
+    console.log('Do not transfer spam tokens away by hand: a normal transfer can charge the token\'s')
+    console.log('custom fees. `TokenRejectTransaction` returns them to the treasury without them.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

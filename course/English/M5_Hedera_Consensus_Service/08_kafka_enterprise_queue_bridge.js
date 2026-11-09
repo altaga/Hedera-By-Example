@@ -17,7 +17,7 @@
  *    or 10 seconds), consumer groups compute a cryptographic state digest
  *    of partition offsets and payload hashes.
  * 3. HCS Consensus Anchor: The bridge anchors the watermark to an immutable HCS
- *    topic for $0.0001. Hedera stamps an unalterable fair consensus timestamp.
+ *    topic for one message fee. Hedera stamps a fair consensus timestamp on it.
  * 4. Tamper-Proof Audit & Recovery: If a partition replica desynchronizes or
  *    faces an audit inquiry, the enterprise replays from the last HCS anchor,
  *    mathematically proving that no logs were modified, reordered, or deleted.
@@ -167,13 +167,13 @@ const main = async () => {
     updateState('KAFKA_STATE_CHECKSUM', clusterStateChecksum)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Hybrid Enterprise Architecture: Kafka handles 100,000+ msgs/sec internally.')
+    console.log('Hybrid Enterprise Architecture: the broker handles the high-volume stream internally.')
     console.log('HCS acts as the cryptographic "court of record."Any auditor can verify that')
     console.log('the state of partition offsets at consensus time matches the external anchor.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('By decoupling high-speed stream processing from consensus anchoring, enterprises')
-    console.log('gain SOC-2, HIPAA, and Basel III compliance at a predictable cost of $0.0001 per anchor.')
+    console.log('get an independent, timestamped audit trail for the price of one HCS message per anchor.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

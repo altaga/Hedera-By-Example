@@ -6,7 +6,8 @@
  * [ KEY CONCEPT ]
  * True Ownership: Once this transaction is successfully processed, the
  * record of ownership is updated in the network's consensus state. Unlike
- * a central database, no administrator can reverse this transfer. While
+ * a central database, no administrator can quietly undo it: only the keys the
+ * token itself defines (such as a wipe key) have any power over it. While
  * fungible tokens move by "Amount", NFTs move by "Serial Number".
  *
  *

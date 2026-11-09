@@ -6,7 +6,8 @@
  * [ KEY CONCEPT ]
  * Listening vs. Polling: Instead of hammering an API for updates, you use a
  * gRPC "Subscription". This is a persistent connection that "pushes" new
- * messages to your application the millisecond they reach consensus.
+ * messages to your application a few seconds after they reach consensus
+ * (the time the Mirror Node needs to receive them).
  * Furthermore, Hedera supports "Chunking" (HIP-10), allowing you to push
  * large payloads (documents, images, large JSON) that the SDK and Mirror
  * Node reassemble automatically.
@@ -121,8 +122,8 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('Listening vs. Polling: Instead of hammering an API for updates, you')
     console.log('use a gRPC "Subscription". This is a persistent connection that')
-    console.log('"pushes" new messages to your application the millisecond they reach')
-    console.log('consensus.')
+    console.log('"pushes" new messages to your application as soon as the Mirror Node')
+    console.log('has them, a few seconds after consensus.')
   } catch (error) {
     console.error('\n[FAILED] HCS Operation Failed:', error.message)
     process.exitCode = 1

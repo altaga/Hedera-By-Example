@@ -21,7 +21,7 @@
  * - https://hips.hedera.com/hip/hip-991
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M5 Lab 05: Registro Descentralizado HCS-6
+ * - Anterior:  M5 Lab 05: Registro Descentralizado de Apps en HCS
  * - Siguiente: M5 Lab 07: Motor de Ingesta Masiva de Lotes con Árboles Merkle y Pruebas de Inclusión en L1
  *
  * [ ANTES DE EJECUTAR ]
@@ -136,12 +136,16 @@ const main = async () => {
     console.log(`[ÉXITO] ¡Mensaje Pagado Aceptado en Secuencia #${paidSubmitReceipt.topicSequenceNumber}!`)
 
     // 5. Verificar el Cobro Automático del Token vía Mirror Node
-    await sleep(3500)
-    const consumerBalAfter = await new MirrorNodeTokenBalanceQuery()
-      .setAccountId(consumerId)
-      .setTokenId(paymentTokenId)
-      .execute(client)
-    console.log(`\n[AUDITORÍA] Balance AICR del Consumidor: ${consumerBalAfter.balance.toString()} AICR (¡25 AICR Recaudados Automáticamente!)`)
+    let consumerBalAfter
+    for (let i = 0; i < 6; i++) { // the Mirror Node lags consensus by a few seconds
+      await sleep(3000)
+      consumerBalAfter = await new MirrorNodeTokenBalanceQuery()
+        .setAccountId(consumerId)
+        .setTokenId(paymentTokenId)
+        .execute(client)
+      if (Number(consumerBalAfter.balance) < 500) break
+    }
+    console.log(`\n[AUDITORÍA] Balance AICR del Consumidor: ${consumerBalAfter.balance.toString()} AICR (${500 - Number(consumerBalAfter.balance)} AICR cobrados por la tarifa del tópico)`)
 
     updateState('HIP991_PAID_TOPIC_ID', topicId.toString())
     updateState('HIP991_PAYMENT_TOKEN_ID', paymentTokenId.toString())

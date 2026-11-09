@@ -7,12 +7,12 @@
  * In enterprise architectures (IoT telemetry, supply chain tracking, high-speed
  * fintech ledgers), sending thousands of individual transactions per second to any
  * network creates cost and processing bottlenecks.
- * The Merkle Batch Ingestion pattern achieves infinite scalability:
+ * The Merkle Batch Ingestion pattern decouples event volume from transaction count:
  * 1. Off-Chain Event Ingestion: Microservices buffer high-frequency events in memory.
  * 2. Merkle Root Computation: The engine groups events into a binary Keccak-256
  *    Merkle Tree and computes a 32-byte cryptographic root.
  * 3. HCS Anchor: The engine commits ONLY the Merkle root to an HCS Topic. Hedera
- *    stamps the immutable network consensus timestamp on the entire batch for $0.0001.
+ *    stamps one consensus timestamp on the entire batch for one message fee.
  * 4. Logarithmic Inclusion Proof: A light client with a single payload verifies that
  *    their record was anchored on Hedera using a compact O(log N) Merkle branch proof
  *    without downloading the rest of the dataset.
@@ -20,7 +20,7 @@
  * [ LEARNABLE MOMENT ]
  * Consensus is the anchor of truth, not a bulk storage dump. Moving sequence
  * verification off-chain while anchoring Merkle roots on HCS allows enterprise
- * pipelines to handle 100,000+ operations/sec at fractional-cent cost.
+ * pipelines to anchor any number of records per batch for the price of one message.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
@@ -166,7 +166,7 @@ const main = async () => {
 
     const submitReceipt = await submitTx.getReceipt(client)
     console.log(`[SUCCESS] Merkle Root Anchored at Consensus Sequence #${submitReceipt.topicSequenceNumber}!`)
-    console.log('[ COST EFFICIENCY] 1,024 Events Anchored in ONE Tx (~$0.0001 total consensus fee)')
+    console.log(`[ COST EFFICIENCY] ${BATCH_SIZE} events anchored in ONE message (one HCS message fee)`)
 
     // 5. Generate and Verify Inclusion Proof for Target Event
     console.log(`\n[PROCESS] Step 5: Generating Compact O(log N) Inclusion Proof for Event #${sampleTargetIndex}...`)
@@ -183,13 +183,13 @@ const main = async () => {
     updateState('MERKLE_BATCH_SIZE', BATCH_SIZE.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('The Merkle Batch Ingestion Engine enables infinite horizontal scaling.')
+    console.log('The Merkle Batch Ingestion Engine anchors a whole batch with one message.')
     console.log('By committing a single Keccak-256 Merkle root to HCS, thousands of events')
     console.log('inherit Hedera\'s immutable network timestamp and fair consensus ordering.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('External clients only need an O(log N) branch proof (10 hashes for 1,024 events)')
-    console.log('to mathematically prove tamper-proof inclusion against the public consensus record.')
+    console.log(`External clients only need an O(log N) branch proof (${inclusionProof.length} hashes for ${BATCH_SIZE} events)`)
+    console.log('to prove their record is part of the root anchored on Hedera.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

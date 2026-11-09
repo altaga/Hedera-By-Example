@@ -21,7 +21,7 @@
  * - https://hips.hedera.com/hip/hip-991
  *
  * [ LEARNING PATH ]
- * - Previous: M5 Lab 05: HCS-6 Decentralized Registry
+ * - Previous: M5 Lab 05: Decentralized App Registry on HCS
  * - Next:     M5 Lab 07: High-Throughput Merkle Batch Ingestion Engine & L1 Inclusion Proofs
  *
  * [ BEFORE YOU RUN ]
@@ -136,12 +136,16 @@ const main = async () => {
     console.log(`[SUCCESS] Paid Message Accepted at Sequence #${paidSubmitReceipt.topicSequenceNumber}!`)
 
     // 5. Verify Automatic HTS Fee Collection via Mirror Node
-    await sleep(3500)
-    const consumerBalAfter = await new MirrorNodeTokenBalanceQuery()
-      .setAccountId(consumerId)
-      .setTokenId(paymentTokenId)
-      .execute(client)
-    console.log(`\n[AUDIT] Consumer Agent AICR Balance: ${consumerBalAfter.balance.toString()} AICR (25 AICR Auto-Collected!)`)
+    let consumerBalAfter
+    for (let i = 0; i < 6; i++) { // the Mirror Node lags consensus by a few seconds
+      await sleep(3000)
+      consumerBalAfter = await new MirrorNodeTokenBalanceQuery()
+        .setAccountId(consumerId)
+        .setTokenId(paymentTokenId)
+        .execute(client)
+      if (Number(consumerBalAfter.balance) < 500) break
+    }
+    console.log(`\n[AUDIT] Consumer Agent AICR Balance: ${consumerBalAfter.balance.toString()} AICR (${500 - Number(consumerBalAfter.balance)} AICR collected by the topic fee)`)
 
     updateState('HIP991_PAID_TOPIC_ID', topicId.toString())
     updateState('HIP991_PAYMENT_TOKEN_ID', paymentTokenId.toString())

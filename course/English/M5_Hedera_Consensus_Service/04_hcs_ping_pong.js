@@ -6,8 +6,8 @@
  * [ KEY CONCEPT ]
  * Consensus Accuracy: Unlike local network pings, an HCS Handshake relies on
  * the network reaching a chronological agreement. The latency you see here
- * is the time it takes for a message to become "Immutable" and globally
- * recognized across all nodes. This script isolates the Submission, Ordering,
+ * is the time from submitting a message until it comes back through the Mirror
+ * Node subscription: consensus plus the Mirror Node's delay. This script isolates the Submission, Ordering,
  * and Propagation phases to prove Hedera's high-performance characteristics.
  *
  *
@@ -19,7 +19,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M5 Lab 03: Automatic Chunking and Subscriptions (gRPC)
- * - Next:     M5 Lab 05: HCS-6 Decentralized Registry
+ * - Next:     M5 Lab 05: Decentralized App Registry on HCS
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -190,8 +190,8 @@ const main = async () => {
     console.log('\n KEY CONCEPT:')
     console.log('Consensus Accuracy: Unlike local network pings, an HCS Ping relies on')
     console.log('the network reaching a chronological agreement. The latency you see')
-    console.log('here is the time it takes for a message to become "Immutable" and')
-    console.log('globally recognized.')
+    console.log('here is the time from submit until the message comes back through the')
+    console.log('Mirror Node subscription (consensus plus the Mirror Node delay).')
   } catch (error) {
     console.error('\n[FAILED] Benchmark Failed:', error.message)
     process.exitCode = 1

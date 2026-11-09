@@ -11,7 +11,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Native HTS fungible token transfers do not require infinite allowance approvals to external smart contracts, eliminating the primary attack vector responsible for billions in DeFi wallet drain exploits.
+ * Native HTS fungible token transfers do not require infinite allowance approvals to external smart contracts, removing one of the most common ways DeFi wallets get drained.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens

@@ -13,7 +13,7 @@
  * activo de forma automática.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Las transferencias nativas de tokens fungibles HTS no requieren aprobaciones de saldo infinito a smart contracts, eliminando el principal vector de ataque responsable de miles de millones en robos de billeteras DeFi.
+ * Las transferencias nativas de tokens fungibles HTS no requieren aprobaciones de saldo infinito a smart contracts, eliminando una de las formas más comunes de vaciar billeteras DeFi.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/transfer-tokens

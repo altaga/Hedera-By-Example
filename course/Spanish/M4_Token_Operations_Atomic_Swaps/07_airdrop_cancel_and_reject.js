@@ -155,11 +155,11 @@ const main = async () => {
     console.log('\n CONCEPTO CLAVE:')
     console.log('La HIP-904 cierra el círculo de distribución de tokens: los emisores pueden cancelar')
     console.log('airdrops no reclamados y los usuarios pueden rechazar tokens no deseados devolviéndolos')
-    console.log('a la tesorería con inmunidad total frente a tarifas personalizadas maliciosas.')
+    console.log('a la tesorería sin pagar las tarifas personalizadas del token.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Jamás quemes ni transfieras tokens spam manualmente, pues podrías activar regalías ocultas.')
-    console.log('Usa siempre `TokenRejectTransaction` para devolverlos sin comisión al emisor.')
+    console.log('No transfieras tokens spam a mano: una transferencia normal puede cobrar las tarifas personalizadas del token.')
+    console.log('`TokenRejectTransaction` los devuelve a la tesorería sin esas tarifas.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
