@@ -11,7 +11,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * On other blockchains, secondary NFT marketplaces can bypass creator royalties. On Hedera, royalties are enforced at Layer 1: transactions that do not fulfill the required royalty percentage fail at the protocol level.
+ * On other blockchains, secondary NFT marketplaces can bypass creator royalties. On Hedera the network itself takes the royalty out of the payment on every resale, and charges the fallback fee to the receiver when nothing is paid. Sales out of the treasury (the primary sale) pay no royalty.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/custom-token-fees#royalty-fee
@@ -21,16 +21,18 @@
  * - Next:     M3 Lab 07: Dynamic NFTs (HIP-657)
  *
  * [ SEQUENCE ]
- * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback
- * Artist -> Hedera: Mint NFT #1
- * Buyer -> Artist: Pay 1 ℏ for NFT #1 (one atomic transfer)
- * Hedera -> Collector: Royalty 0.1 ℏ enforced by the network
- * Note Hedera: No marketplace contract can skip the royalty
+ * Artist -> Hedera: TokenCreate NFT with 10% royalty + 0.01 ℏ fallback (Artist = treasury)
+ * Artist -> Investor: Primary sale for 1 ℏ (from the treasury: no royalty)
+ * Investor -> Buyer: Resale for 1 ℏ
+ * Hedera -> Collector: 10% of the payment, taken by the network
+ * Buyer -> Investor: Gift with no payment
+ * Hedera -> Collector: Fallback fee, charged to the receiver
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Practice wallets: ACCOUNT_1 and ACCOUNT_2 (create them in the web Wallets panel, or set them in .env).
- * - Cost: ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created).
+ * - Practice wallets: ACCOUNT_1 (artist) and ACCOUNT_2 (investor) (create them in the web Wallets panel, or set them in .env).
+ * - It also creates a throwaway buyer account with 1.2 ℏ.
+ * - Cost: ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); ~1.5 ℏ when you run it again (the buyer account and fees).
  *
  * [ HOW TO RUN ]
  * node English/M3_Hedera_Token_Service/06_base_layer_royalties.js
@@ -50,7 +52,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, createClient, ensureFunded, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded, reuseToken, findOwnedSerial, createLabAccount } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- SESSION START: NFT Base Layer Royalties ---\n')
@@ -106,13 +108,17 @@ const main = async () => {
     }, { treasury: account1Id, check: (t) => (t.custom_fees?.royalty_fees || []).length > 0 })
     console.log(`[SUCCESS] Token Created: ${tokenId.toString()}`)
 
-    // 4. Mint NFT #1
-    console.log(`[PROCESS] Minting Serial #1 for Token ${tokenId.toString()}...`)
-    const mintTx = await new TokenMintTransaction()
-      .setTokenId(tokenId)
-      .setMetadata([Buffer.from('Asset #1')])
-      .execute(client)
-    await mintTx.getReceipt(client)
+    // 4. The artist's NFT: reuse one it already holds (the collection caps at 10), or mint one
+    let serial = await findOwnedSerial(tokenId, account1Id)
+    if (serial == null) {
+      console.log(`[PROCESS] Minting an NFT for Token ${tokenId.toString()}...`)
+      const mintReceipt = await (await new TokenMintTransaction()
+        .setTokenId(tokenId)
+        .setMetadata([Buffer.from('Asset #1')])
+        .execute(client)).getReceipt(client)
+      serial = Number(mintReceipt.serials[0])
+    }
+    console.log(`[LOG] Artist holds serial #${serial}`)
 
     // 5. Setup Investor (Account 2)
     console.log(`[PROCESS] Setting up Investor (${account2Id}) via association...`)
@@ -128,31 +134,55 @@ const main = async () => {
     })
     console.log('[INFO] Investor Associated.')
 
-    // --- SCENARIO A: SECONDARY SALE (ROYALTY) ---
-    console.log('\n--- Scenario A: Secondary Sale (10% Royalty Triggered) ---')
-    console.log('[PROCESS] Account 1 (Artist) sells to Account 2 (Investor) for 1 HBAR...')
+    // What the network itself charged, read from the transaction record (not assumed).
+    const assessed = (record) => record.assessedCustomFees
+      .map((f) => `${Number(f.amount) / 1e8} ℏ from ${(f.payerAccountIds || []).join(', ')} to ${f.feeCollectorAccountId}`)
+    const buyer = await createLabAccount(operatorClient, { hbar: 1.2 })
+    console.log(`[LOG] Buyer for the resale: ${buyer.accountId} (throwaway account with 1.2 ℏ)`)
 
-    const saleTx = await new TransferTransaction()
-      .addNftTransfer(tokenId, 1, account1Id, account2Id)
-      .addHbarTransfer(account2Id, new Hbar(-1.0)) // Buyer pays 1.0
-      .addHbarTransfer(account1Id, new Hbar(0.9)) // Seller gets 0.9 (90%)
-      .addHbarTransfer(operatorId, new Hbar(0.1)) // Collector gets 10%
+    // --- SCENARIO A: PRIMARY SALE (OUT OF THE TREASURY) ---
+    console.log('\n--- Scenario A: Primary Sale (Artist -> Investor, 1 HBAR) ---')
+    const primary = await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account1Id, account2Id)
+      .addHbarTransfer(account2Id, new Hbar(-1))
+      .addHbarTransfer(account1Id, new Hbar(1))
       .freezeWith(client)
-      .sign(account2PrivateKey)
+      .sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const primaryFees = assessed(primary)
+    console.log(primaryFees.length
+      ? `[LOG] Fees assessed by the network: ${primaryFees.join('; ')}`
+      : '[SUCCESS] No royalty assessed: the NFT left the treasury (primary sale), which Hedera exempts.')
 
-    await (await saleTx.execute(client)).getReceipt(client)
-    console.log('[SUCCESS] Sale Complete. Protocol enforced: Artist +0.9 | Collector +0.1')
-
-    // --- SCENARIO B: PRIVATE GIFT (FALLBACK FEE) ---
-    console.log('\n--- Scenario B: Private Gift (Fallback Fee Triggered) ---')
-    console.log('[PROCESS] Investor sends NFT back to Artist with 0 HBAR transfer value...')
-
-    const giftTx = await new TransferTransaction()
-      .addNftTransfer(tokenId, 1, account2Id, account1Id)
+    // --- SCENARIO B: RESALE (ROYALTY) ---
+    console.log('\n--- Scenario B: Resale (Investor -> Buyer, 1 HBAR): 10% Royalty ---')
+    console.log('[PROCESS] The transfer pays the full 1 HBAR to the investor; the network takes the royalty from it...')
+    const resale = await (await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account2Id, buyer.accountId)
+      .addHbarTransfer(buyer.accountId, new Hbar(-1))
+      .addHbarTransfer(account2Id, new Hbar(1))
       .freezeWith(client)
-      .sign(account2PrivateKey)
-    await (await giftTx.execute(client)).getReceipt(client)
-    console.log('[SUCCESS] Gift Complete. Fallback Fee of 0.01 HBAR was protocol-assessed.')
+      .sign(account2PrivateKey)).sign(buyer.privateKey)).execute(client)).getRecord(client))
+    const resaleFees = assessed(resale)
+    if (!resaleFees.length) throw new Error('The network assessed no royalty on the resale')
+    console.log(`[SUCCESS] Royalty assessed by the network: ${resaleFees.join('; ')}`)
+
+    // --- SCENARIO C: GIFT (FALLBACK FEE) ---
+    console.log('\n--- Scenario C: Gift with no payment (Buyer -> Investor): Fallback Fee ---')
+    const gift = await (await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, buyer.accountId, account2Id)
+      .freezeWith(client)
+      .sign(buyer.privateKey)).sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const giftFees = assessed(gift)
+    if (!giftFees.length) throw new Error('The network assessed no fallback fee on the gift')
+    console.log(`[SUCCESS] Fallback fee assessed by the network: ${giftFees.join('; ')} (the receiver pays it, since no value was exchanged).`)
+
+    // Return the NFT to the artist so the next run reuses it (the collection caps at 10).
+    const back = await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account2Id, account1Id)
+      .freezeWith(client)
+      .sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const backFees = assessed(back)
+    console.log(`[INFO] NFT #${serial} returned to the artist${backFees.length ? ` (fees assessed: ${backFees.join('; ')})` : ' (no fee: transfers into the treasury are exempt)'}.`)
 
     console.log('\n KEY CONCEPT:')
     console.log('Hedera forces royalties to be part of the atomic swap.')

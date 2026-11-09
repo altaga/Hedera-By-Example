@@ -13,7 +13,7 @@
  * transacción secundaria.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * En otras cadenas, los mercados secundarios pueden evadir las regalías de los creadores. En Hedera, las regalías se aplican en Capa 1: las transacciones que no paguen el porcentaje requerido fallan a nivel de protocolo.
+ * En otras cadenas, los mercados secundarios pueden evadir las regalías de los creadores. En Hedera la propia red descuenta la regalía del pago en cada reventa, y cobra la comisión de respaldo a quien recibe cuando no se paga nada. Las ventas desde la tesorería (la venta primaria) no pagan regalía.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/custom-token-fees#royalty-fee
@@ -23,16 +23,18 @@
  * - Siguiente: M3 Lab 07: NFTs Dinámicos (HIP-657)
  *
  * [ SECUENCIA ]
- * Artista -> Hedera: TokenCreate NFT con regalía 10% + respaldo 0.01 ℏ
- * Artista -> Hedera: Acuñar NFT #1
- * Comprador -> Artista: Pagar 1 ℏ por el NFT #1 (una transferencia atómica)
- * Hedera -> Recolector: Regalía de 0.1 ℏ aplicada por la red
- * Nota Hedera: Ningún contrato de marketplace puede saltarse la regalía
+ * Artista -> Hedera: TokenCreate NFT con regalía 10% + respaldo 0.01 ℏ (Artista = tesorería)
+ * Artista -> Inversor: Venta primaria por 1 ℏ (desde la tesorería: sin regalía)
+ * Inversor -> Comprador: Reventa por 1 ℏ
+ * Hedera -> Recolector: El 10% del pago, descontado por la red
+ * Comprador -> Inversor: Regalo sin pago
+ * Hedera -> Recolector: Comisión de respaldo, cobrada a quien recibe
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Wallets de práctica: ACCOUNT_1 y ACCOUNT_2 (créalas en el panel Wallets de la web, o defínelas en .env).
- * - Costo: ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
+ * - Wallets de práctica: ACCOUNT_1 (artista) y ACCOUNT_2 (inversor) (créalas en el panel Wallets de la web, o defínelas en .env).
+ * - Además crea una cuenta desechable de comprador con 1.2 ℏ.
+ * - Costo: ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); ~1.5 ℏ al volver a ejecutarlo (la cuenta del comprador y comisiones).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M3_Hedera_Token_Service/06_base_layer_royalties.js
@@ -52,7 +54,7 @@ import {
   TokenType,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, createClient, ensureFunded, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, createClient, ensureFunded, reuseToken, findOwnedSerial, createLabAccount } from '../M99_Utilities/index.js'
 
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Auditoría de Regalías Nativas de NFT ---\n')
@@ -109,14 +111,20 @@ const main = async () => {
     }, { treasury: account1Id, check: (t) => (t.custom_fees?.royalty_fees || []).length > 0 })
     console.log(`[ÉXITO] Colección protegida creada: ${tokenId.toString()}`)
 
-    // 3. Mintear y asociar
-    console.log('[PROCESO] Minteando Serial #1 y asociando al inversor...')
-    const mintTx = await new TokenMintTransaction()
-      .setTokenId(tokenId)
-      .setMetadata([Buffer.from('Asset #1')])
-      .execute(client)
-    await mintTx.getReceipt(client)
+    // 3. El NFT del artista: reutiliza uno que ya tenga (la colección tiene un máximo de 10), o acuña uno
+    let serial = await findOwnedSerial(tokenId, account1Id)
+    if (serial == null) {
+      console.log(`[PROCESO] Acuñando un NFT del Token ${tokenId.toString()}...`)
+      const mintReceipt = await (await new TokenMintTransaction()
+        .setTokenId(tokenId)
+        .setMetadata([Buffer.from('Asset #1')])
+        .execute(client)).getReceipt(client)
+      serial = Number(mintReceipt.serials[0])
+    }
+    console.log(`[REGISTRO] El artista tiene el serial #${serial}`)
 
+    // 4. Asociar al inversor
+    console.log(`[PROCESO] Asociando al inversor (${account2Id})...`)
     const associate2Tx = await new TokenAssociateTransaction()
       .setAccountId(account2Id)
       .setTokenIds([tokenId])
@@ -128,31 +136,55 @@ const main = async () => {
       console.log('[INFO] Ya estaba asociada desde una ejecución anterior.')
     })
 
-    // --- ESCENARIO A: VENTA SECUNDARIA CON REGALÍA ---
-    console.log('\n---  [REGISTRO] Escenario A: Venta Secundaria (Intercambio Atómico) ---')
-    console.log('[PROCESO] Artista vende a Inversor por 1 HBAR...')
+    // Lo que la red cobró de verdad, leído del registro de la transacción (no supuesto).
+    const assessed = (record) => record.assessedCustomFees
+      .map((f) => `${Number(f.amount) / 1e8} ℏ de ${(f.payerAccountIds || []).join(', ')} para ${f.feeCollectorAccountId}`)
+    const buyer = await createLabAccount(operatorClient, { hbar: 1.2 })
+    console.log(`[REGISTRO] Comprador de la reventa: ${buyer.accountId} (cuenta desechable con 1.2 ℏ)`)
 
-    const saleTx = await new TransferTransaction()
-      .addNftTransfer(tokenId, 1, account1Id, account2Id)
-      .addHbarTransfer(account2Id, new Hbar(-1.0)) // Comprador paga 1
-      .addHbarTransfer(account1Id, new Hbar(0.9)) // Artista recibe 90%
-      .addHbarTransfer(operatorId, new Hbar(0.1)) // Colector de regalías recibe 10%
+    // --- ESCENARIO A: VENTA PRIMARIA (DESDE LA TESORERÍA) ---
+    console.log('\n--- Escenario A: Venta Primaria (Artista -> Inversor, 1 HBAR) ---')
+    const primary = await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account1Id, account2Id)
+      .addHbarTransfer(account2Id, new Hbar(-1))
+      .addHbarTransfer(account1Id, new Hbar(1))
       .freezeWith(client)
-      .sign(account2PrivateKey)
+      .sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const primaryFees = assessed(primary)
+    console.log(primaryFees.length
+      ? `[REGISTRO] Comisiones cobradas por la red: ${primaryFees.join('; ')}`
+      : '[ÉXITO] Sin regalía: el NFT salió de la tesorería (venta primaria), que Hedera exime.')
 
-    await (await saleTx.execute(client)).getReceipt(client)
-    console.log('[ÉXITO] Distribución atómica: Artista +0.9 | Colector +0.1 | Comprador -1.0')
-
-    // --- ESCENARIO B: REGALO (TARIFA DE RESPALDO) ---
-    console.log('\n---  [REGISTRO] Escenario B: Transferencia sin Valor (Respaldo) ---')
-    console.log('[PROCESO] Inversor devuelve el NFT al Artista (Regalo)...')
-    const giftTx = await new TransferTransaction()
-      .addNftTransfer(tokenId, 1, account2Id, account1Id)
+    // --- ESCENARIO B: REVENTA (REGALÍA) ---
+    console.log('\n--- Escenario B: Reventa (Inversor -> Comprador, 1 HBAR): Regalía del 10% ---')
+    console.log('[PROCESO] La transferencia paga el 1 HBAR completo al inversor; la red le descuenta la regalía...')
+    const resale = await (await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account2Id, buyer.accountId)
+      .addHbarTransfer(buyer.accountId, new Hbar(-1))
+      .addHbarTransfer(account2Id, new Hbar(1))
       .freezeWith(client)
-      .sign(account2PrivateKey)
+      .sign(account2PrivateKey)).sign(buyer.privateKey)).execute(client)).getRecord(client))
+    const resaleFees = assessed(resale)
+    if (!resaleFees.length) throw new Error('La red no cobró ninguna regalía en la reventa')
+    console.log(`[ÉXITO] Regalía cobrada por la red: ${resaleFees.join('; ')}`)
 
-    await (await giftTx.execute(client)).getReceipt(client)
-    console.log('[ÉXITO] Transferencia exitosa. Se aplicó la Tarifa de Respaldo de 0.01 HBAR.')
+    // --- ESCENARIO C: REGALO (COMISIÓN DE RESPALDO) ---
+    console.log('\n--- Escenario C: Regalo sin pago (Comprador -> Inversor): Comisión de Respaldo ---')
+    const gift = await (await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, buyer.accountId, account2Id)
+      .freezeWith(client)
+      .sign(buyer.privateKey)).sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const giftFees = assessed(gift)
+    if (!giftFees.length) throw new Error('La red no cobró comisión de respaldo en el regalo')
+    console.log(`[ÉXITO] Comisión de respaldo cobrada por la red: ${giftFees.join('; ')} (la paga quien recibe, porque no hubo intercambio de valor).`)
+
+    // Devolver el NFT al artista para que la siguiente ejecución lo reutilice (la colección tiene un máximo de 10).
+    const back = await (await (await (await new TransferTransaction()
+      .addNftTransfer(tokenId, serial, account2Id, account1Id)
+      .freezeWith(client)
+      .sign(account2PrivateKey)).execute(client)).getRecord(client))
+    const backFees = assessed(back)
+    console.log(`[INFO] El NFT #${serial} volvió al artista${backFees.length ? ` (comisiones cobradas: ${backFees.join('; ')})` : ' (sin comisión: las transferencias hacia la tesorería están exentas)'}.`)
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('Las regalías de Hedera son ineludibles por diseño. Al estar')
