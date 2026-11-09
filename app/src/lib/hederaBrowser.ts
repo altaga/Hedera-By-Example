@@ -698,12 +698,24 @@ export async function executeInBrowser (
           ? `La simulación revirtió (${est.revert}). Corre sobre el estado del Mirror Node, que puede ir unos segundos atrás, así que la transacción se envía de todos modos con el límite de gas del lab.`
           : `The simulation reverted (${est.revert}). It runs on Mirror Node state, which can be a few seconds behind, so the transaction is sent anyway with the lab's gas limit.`)
       }
-      return withGasRetry(async (gas: number) => {
+      // A simulated limit can be too low for precompiles (0x167-0x16b): the call then reverts instead
+      // of failing with INSUFFICIENT_GAS. Retry once with the lab's own limit before giving up.
+      const send = (limit?: number) => withGasRetry(async (gas: number) => {
         const tx = await build(gas)
         const response = await tx.execute(c)
         await response.getReceipt(c)
         return response
-      }, { ...opts, gas: start })
+      }, { ...opts, gas: limit })
+      try {
+        return await send(start)
+      } catch (error: any) {
+        const labGas = opts.gas
+        if (labGas == null || start == null || start >= labGas || !/CONTRACT_REVERT_EXECUTED/.test(String(error?.status ?? error?.message))) throw error
+        pushLog('info', options.lang === 'es'
+          ? `La llamada revirtió con el límite de gas simulado; se reintenta con el límite del lab (${labGas.toLocaleString('es-MX')} de gas)...`
+          : `The call reverted with the simulated gas limit; retrying with the lab's limit (${labGas.toLocaleString('en-US')} gas)...`)
+        return send(labGas)
+      }
     }
     const waitForMirror = async (check: () => Promise<any>, { timeoutMs = 30_000, intervalMs = 2_000 } = {}) => {
       const deadline = Date.now() + timeoutMs

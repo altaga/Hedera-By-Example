@@ -105,12 +105,22 @@ export const executeWithGas = async (build, client, options = {}) => {
   } else if (est?.revert) {
     console.log(`[INFO] The simulation reverted (${est.revert}). It runs on Mirror Node state, which can be a few seconds behind, so the transaction is sent anyway with the lab's gas limit.`)
   }
-  return withGasRetry(async (gas) => {
+  // A simulated limit can be too low for precompiles (0x167-0x16b): the call then reverts instead
+  // of failing with INSUFFICIENT_GAS. Retry once with the lab's own limit before giving up.
+  const send = (limit) => withGasRetry(async (gas) => {
     const tx = await build(gas)
     const response = await tx.execute(client)
     await response.getReceipt(client)
     return response
-  }, { ...options, gas: start })
+  }, { ...options, gas: limit })
+  try {
+    return await send(start)
+  } catch (error) {
+    const simulated = start !== options.gas && options.gas > start
+    if (!simulated || !/CONTRACT_REVERT_EXECUTED/.test(String(error?.status ?? error?.message))) throw error
+    console.log(`[INFO] The call reverted with the simulated gas limit; retrying with the lab's limit (${options.gas.toLocaleString('en-US')} gas)...`)
+    return send(options.gas)
+  }
 }
 
 /**

@@ -68,7 +68,9 @@ const discoverBlockNodes = async (network = 'testnet') => {
   const { connect } = await import('node:net')
   const ping = (host, port) => new Promise((resolve) => {
     const start = Date.now()
-    const socket = connect({ host, port, timeout: 3000 })
+    // TCP sockets exist only in Node.js: elsewhere (the course website) latency is not measured.
+    let socket
+    try { socket = connect({ host, port, timeout: 3000 }) } catch (_) { return resolve(undefined) }
     socket.once('connect', () => { socket.destroy(); resolve(Date.now() - start) })
     socket.once('timeout', () => { socket.destroy(); resolve(null) })
     socket.once('error', () => resolve(null))
@@ -121,11 +123,11 @@ const main = async () => {
 
     console.log(`[SUCCESS] ${discoveredNodes.length} registered Block Nodes:`)
     for (const node of discoveredNodes) {
-      console.log(`[LOG] ${node.nodeId.padEnd(14)} | ${node.description} | ${node.endpoint} | APIs: ${node.apis.join(',')} | TCP: ${node.latencyMs === null ? 'unreachable' : node.latencyMs + 'ms'}`)
+      console.log(`[LOG] ${node.nodeId.padEnd(14)} | ${node.description} | ${node.endpoint} | APIs: ${node.apis.join(',')} | TCP: ${node.latencyMs === undefined ? 'not measured (needs Node.js)' : node.latencyMs === null ? 'unreachable' : node.latencyMs + 'ms'}`)
     }
 
     // Select the lowest-latency healthy node
-    const reachable = discoveredNodes.filter(n => n.latencyMs !== null)
+    const reachable = discoveredNodes.filter(n => n.latencyMs != null)
     const optimalNode = [...(reachable.length ? reachable : discoveredNodes)].sort((a, b) => (a.latencyMs ?? 1e9) - (b.latencyMs ?? 1e9))[0]
     console.log(`\n[INFO] Selected optimal storage peer: ${optimalNode.nodeId} (${optimalNode.endpoint})`)
 
