@@ -4,14 +4,15 @@
  * [CONCEPTO] Atestación de Colateral en Tiempo Real y Prevención de Desanclaje
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Solvencia Criptográfica: Emitir stablecoins u oro tokenizado sin pruebas en tiempo
- * real del colateral subyacente conduce a crisis de insolvencia. Los oráculos de
- * Proof-of-Reserve (PoR) transmiten los saldos de custodia auditados directamente a
- * Hedera. Si el ratio de reservas cae por debajo del 100%, un disyuntor on-chain se
- * activa automáticamente, pausando la emisión hasta restablecer la capitalización.
- * *
+ * Solvencia Criptográfica: emitir stablecoins u oro tokenizado sin una prueba en tiempo real
+ * del colateral lleva a crisis de insolvencia. Los feeds de Proof-of-Reserve (PoR) publican en
+ * Hedera los saldos auditados del custodio. Si el ratio de reservas cae por debajo del 100%, el
+ * oráculo del emisor activa un circuit breaker: en Hedera es una TokenPauseTransaction nativa, y
+ * desde ese momento la red rechaza toda operación con el token (emitir, quemar, transferir)
+ * hasta que se reanude.
+ *
  * [ MOMENTO DE APRENDIZAJE ]
- * Para evitar pérdidas de paridad catastróficas, oráculos automáticos de Proof-of-Reserve verifican el colateral bancario antes de permitir emisiones, deteniendo el contrato si las reservas caen del 100%.
+ * La pausa la aplica la red, no la app del emisor: con el token pausado, hasta la emisión de la propia tesorería se rechaza con TOKEN_IS_PAUSED. El oráculo solo necesita la llave de pausa del token.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/solutions/tokenization/stablecoin
@@ -21,11 +22,11 @@
  * - Siguiente: M11 Lab 05: Pipeline de Factoraje de Facturas con Activos del Mundo Real (RWA)
  *
  * [ SIMULADO ]
- * Las cifras de reservas del custodio son simuladas. Las reacciones en la red a esas cifras son reales.
+ * Las cifras de reservas y suministro son simuladas (un custodio de demostración, no un banco real). El token, la emisión, la pausa, la emisión rechazada, la reanudación y las atestaciones en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Costo: ~15 ℏ (solo comisiones de red).
+ * - Costo: ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M11_Hedera_Studios_RWA/04_proof_of_reserve_oracle.js
@@ -33,10 +34,16 @@
  */
 
 import {
+  TokenCreateTransaction,
+  TokenMintTransaction,
+  TokenPauseTransaction,
+  TokenSupplyType,
+  TokenType,
+  TokenUnpauseTransaction,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { getClient, getHashscanUrl, parsePrivateKey, reuseToken, reuseTopic, updateState } from '../M99_Utilities/index.js'
 
 class ProofOfReserveOracle {
   constructor (topicId, targetTokenId) {
@@ -54,8 +61,8 @@ class ProofOfReserveOracle {
       return {
         solvent: false,
         ratio: collateralRatio.toFixed(2),
-        circuitBreakerAction: 'DISYUNTOR_ACTIVADO_PAUSA_EMISION',
-        alert: `DÉFICIT CRÍTICO: Reservas al ${collateralRatio.toFixed(2)}%. Emisión detenida.`
+        circuitBreakerAction: 'TRIPPED_EMERGENCY_MINT_PAUSE',
+        alert: `DÉFICIT CRÍTICO: reservas al ${collateralRatio.toFixed(2)}%. Emisión detenida.`
       }
     }
 
@@ -64,110 +71,113 @@ class ProofOfReserveOracle {
       return {
         solvent: true,
         ratio: collateralRatio.toFixed(2),
-        circuitBreakerAction: 'OPERACIÓN_NORMAL_RESTABLECIDA',
-        alert: `RESERVA RESTABLECIDA: Colateral al ${collateralRatio.toFixed(2)}%. Emisión reanudada.`
+        circuitBreakerAction: 'RESTORED_NORMAL_OPERATIONS',
+        alert: `RESERVAS RESTABLECIDAS: colateral al ${collateralRatio.toFixed(2)}%. Emisión reanudada.`
       }
     }
 
     return {
       solvent: isSolvent,
       ratio: collateralRatio.toFixed(2),
-      circuitBreakerAction: 'MANTENER_ESTADO_ACTUAL',
-      alert: 'Solvencia nominal. Reservas saludables.'
+      circuitBreakerAction: 'MAINTAIN_CURRENT_STATE',
+      alert: 'Solvencia normal. Reservas sanas.'
     }
   }
 }
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Oráculo de Atestación Proof-of-Reserve (PoR) ---\n')
-  const { client } = getClient()
+  console.log('--- INICIO DE SESIÓN: Oráculo de Atestación Proof-of-Reserve (PoR) ---\n')
+  const { client, operatorId, operatorKey } = getClient()
+  const key = parsePrivateKey(operatorKey)
+  let tokenId
+  let paused = false
 
   try {
-    // 1. Crear tópico dedicado de HCS para Atestaciones de Reservas
-    console.log('[PROCESO] Inicializando canal de consenso Proof-of-Reserve...')
-    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('por:custodian_attestation_feed')
-      .freezeWith(client)
+    // 1. La stablecoin (llave de pausa = el circuit breaker del oráculo) y el tópico de atestaciones
+    console.log('[PROCESO] Preparando el token respaldado por reservas y el tópico de atestaciones PoR...')
+    tokenId = await reuseToken('REUSE_M11_04_TOKEN', async () => {
+      const receipt = await (await new TokenCreateTransaction()
+        .setTokenName('Reserve-Backed Dollar (course demo)')
+        .setTokenSymbol('tRSV')
+        .setTokenType(TokenType.FungibleCommon)
+        .setDecimals(2)
+        .setInitialSupply(0)
+        .setSupplyType(TokenSupplyType.Infinite)
+        .setTreasuryAccountId(operatorId)
+        .setAdminKey(key)
+        .setSupplyKey(key)
+        .setPauseKey(key)
+        .execute(client)).getReceipt(client)
+      return receipt.tokenId
+    }, { check: (t) => !!t.pause_key })
+    const porTopicId = (await reuseTopic('REUSE_M11_04_TOPIC', async () =>
+      (await (await new TopicCreateTransaction().setTopicMemo('por:custodian_attestation_feed').execute(client)).getReceipt(client)).topicId
+    )).toString()
+    console.log(`[ÉXITO] Token ${tokenId} (llave de pausa en manos del oráculo) | Tópico de atestaciones ${porTopicId}`)
 
-    const topicResponse = await topicTx.execute(client)
-    // Espera el consenso: el recibo dice si la red aceptó la transacción.
-    const topicReceipt = await topicResponse.getReceipt(client)
-    const porTopicId = topicReceipt.topicId.toString()
-    console.log(`[ÉXITO] Tópico de Atestación PoR Creado: ${porTopicId}`)
+    const oracle = new ProofOfReserveOracle(porTopicId, tokenId.toString())
+    const attest = async (payload) => {
+      const receipt = await (await new TopicMessageSubmitTransaction()
+        .setTopicId(porTopicId)
+        .setMessage(JSON.stringify({ ...payload, token: tokenId.toString(), custodian: 'DEMO_CUSTODIAN_BANK', timestamp: Date.now() }))
+        .execute(client)).getReceipt(client)
+      return receipt.topicSequenceNumber.toString()
+    }
+    const mint = async (units) => (await (await new TokenMintTransaction().setTokenId(tokenId).setAmount(units).execute(client)).getReceipt(client))
 
-    const oracle = new ProofOfReserveOracle(porTopicId, '0.0.999123')
-
-    // Escenario A: Sobre-colateralizado (Saludable)
-    console.log('\n--- CICLO DE ATESTACIÓN 1: Operación Bancaria Nominal ---')
-    const supplyA = 1250000 // $1.25M USDD en circulación
-    const custodianA = 1312500 // $1.31M en efectivo en BNY Mellon
+    // Ciclo 1: reservas sanas -> el emisor emite
+    console.log('\n--- CICLO DE ATESTACIÓN 1: Horario Bancario Normal ---')
+    const supplyA = 1250000
+    const custodianA = 1312500
     const resultA = oracle.evaluateSolvency(supplyA, custodianA)
+    console.log(`[REGISTRO] Suministro: $${supplyA.toLocaleString()} | Bóveda del custodio: $${custodianA.toLocaleString()} | Ratio: ${resultA.ratio}%`)
+    const minted = await mint(10000) // 100.00 tRSV
+    console.log(`[ÉXITO] Emisión permitida: se emitieron 100.00 tRSV (suministro total ahora ${(Number(minted.totalSupply) / 100).toFixed(2)})`)
+    console.log(`[ÉXITO] Atestación 1 anclada en HCS (secuencia #${await attest({ cycle: 1, tokenSupply: supplyA, auditedReserve: custodianA, collateralRatio: `${resultA.ratio}%`, mintingStatus: 'ACTIVE' })})`)
 
-    console.log(`[REGISTRO] Suministro On-Chain:  $${supplyA.toLocaleString()} USDD`)
-    console.log(`[REGISTRO] Bóveda del Custodio:  $${custodianA.toLocaleString()} USD`)
-    console.log(`[REGISTRO] Ratio de Colateral:   ${resultA.ratio}%`)
-    console.log(`[REGISTRO] Emisión Permitida:    ${oracle.mintingEnabled ? 'SÍ' : 'NO'}`)
-
-    // Enviar atestación a HCS
-    const attestationMsgA = JSON.stringify({
-      cycle: 1,
-      custodian: 'BNY_MELLON_TRUST',
-      tokenSupply: supplyA,
-      auditedReserve: custodianA,
-      collateralRatio: `${resultA.ratio}%`,
-      mintingStatus: oracle.mintingEnabled ? 'ACTIVE' : 'HALTED',
-      timestamp: Date.now()
-    })
-
-    // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
-    const msgTxA = await new TopicMessageSubmitTransaction()
-      .setTopicId(porTopicId)
-      .setMessage(attestationMsgA)
-      .freezeWith(client)
-    await msgTxA.execute(client)
-    console.log('[ÉXITO] Atestación 1 Anclada al Consenso de Hedera.')
-
-    // Escenario B: Pánico Bancario / Déficit Repentino (Evento de Estrés)
-    console.log('\n--- CICLO DE ATESTACIÓN 2: Caída Repentina de Colateral ---')
+    // Ciclo 2: déficit -> el oráculo pausa el token on-chain
+    console.log('\n--- CICLO DE ATESTACIÓN 2: Caída Repentina del Colateral ---')
     const supplyB = 1250000
-    const custodianB = 1050000 // Solo quedan $1.05M (¡Déficit!)
+    const custodianB = 1050000
     const resultB = oracle.evaluateSolvency(supplyB, custodianB)
+    console.log(`[ALERTA] Ratio ${resultB.ratio}% (< 100%) -> ${resultB.circuitBreakerAction}`)
+    const pauseRes = await new TokenPauseTransaction().setTokenId(tokenId).execute(client)
+    await pauseRes.getReceipt(client)
+    paused = true
+    console.log(`[ÉXITO] Circuit breaker activado on-chain: token ${tokenId} pausado. ${getHashscanUrl(pauseRes)}`)
+    let refused = null
+    try { await mint(10000) } catch (error) { refused = String(error.status ?? error.message) }
+    if (!refused) throw new Error('El token pausado aceptó una emisión')
+    console.log(`[VERIFY] La red ahora rechaza la emisión: ${refused}`)
+    console.log(`[ÉXITO] Alerta de emergencia anclada en HCS (secuencia #${await attest({ cycle: 2, tokenSupply: supplyB, auditedReserve: custodianB, collateralRatio: `${resultB.ratio}%`, mintingStatus: 'HALTED_CIRCUIT_BREAKER' })})`)
 
-    console.log(`[REGISTRO] Suministro On-Chain:  $${supplyB.toLocaleString()} USDD`)
-    console.log(`[REGISTRO] Bóveda del Custodio:  $${custodianB.toLocaleString()} USD`)
-    console.log(`[ALERTA] Ratio de Colateral:     ${resultB.ratio}% (< 100%)`)
-    console.log(`[ALERTA] Disyuntor de Seguridad: ${resultB.circuitBreakerAction}`)
-    console.log(`[ALERTA] Estado de Emisión:      ${oracle.mintingEnabled ? 'ACTIVE' : 'HALTED'}`)
-
-    const attestationMsgB = JSON.stringify({
-      cycle: 2,
-      custodian: 'BNY_MELLON_TRUST',
-      tokenSupply: supplyB,
-      auditedReserve: custodianB,
-      collateralRatio: `${resultB.ratio}%`,
-      mintingStatus: 'HALTED_CIRCUIT_BREAKER',
-      timestamp: Date.now()
-    })
-
-    const msgTxB = await new TopicMessageSubmitTransaction()
-      .setTopicId(porTopicId)
-      .setMessage(attestationMsgB)
-      .freezeWith(client)
-    await msgTxB.execute(client)
-    console.log('[ÉXITO] Alerta de Emergencia Anclada al Consenso de Hedera.')
+    // Ciclo 3: recapitalizado -> el oráculo reanuda
+    console.log('\n--- CICLO DE ATESTACIÓN 3: Reservas Restablecidas ---')
+    const custodianC = 1300000
+    const resultC = oracle.evaluateSolvency(supplyB, custodianC)
+    console.log(`[REGISTRO] Ratio ${resultC.ratio}% -> ${resultC.circuitBreakerAction}`)
+    await (await new TokenUnpauseTransaction().setTokenId(tokenId).execute(client)).getReceipt(client)
+    paused = false
+    console.log(`[ÉXITO] Token ${tokenId} reanudado; se puede volver a emitir.`)
+    console.log(`[ÉXITO] Restablecimiento anclado en HCS (secuencia #${await attest({ cycle: 3, tokenSupply: supplyB, auditedReserve: custodianC, collateralRatio: `${resultC.ratio}%`, mintingStatus: 'ACTIVE' })})`)
 
     updateState('POR_TOPIC_ID', porTopicId)
+    updateState('POR_TOKEN_ID', tokenId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Proof-of-Reserve transforma la transparencia en un sistema de defensa autónomo.')
-    console.log('Al transmitir auditorías continuas a HCS, los emisores eliminan el pánico de')
-    console.log('corridas bancarias y demuestran solvencia matemática en tiempo real.')
+    console.log('Proof-of-Reserve convierte la transparencia en una defensa automática: las atestaciones')
+    console.log('son públicas en HCS, y el circuit breaker es una pausa nativa del token que aplica la red.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en la simulación del oráculo Proof-of-Reserve:', error.message)
-    process.exit(1)
+    console.error('\n[FALLO] Falló el oráculo de Proof-of-Reserve:', error.message)
+    process.exitCode = 1
+  } finally {
+    // Nunca dejar pausado el token de demostración: la siguiente ejecución tendría que crear otro.
+    if (paused) {
+      try { await (await new TokenUnpauseTransaction().setTokenId(tokenId).execute(client)).getReceipt(client) } catch (_) {}
+    }
+    client.close()
   }
 }
 
