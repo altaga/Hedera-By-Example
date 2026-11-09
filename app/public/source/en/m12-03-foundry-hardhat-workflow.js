@@ -38,11 +38,11 @@
  * ============================================================================
  */
 
-import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { ethers } from 'ethers'
+import solc from 'solc'
 import { getClient, getJsonRpcSigner, getJsonRpcUrl, updateState } from '../M99_Utilities/index.js'
 
 const COUNTER_SOL = `// SPDX-License-Identifier: MIT
@@ -103,22 +103,24 @@ const config: HardhatUserConfig = {
 export default config;
 `
 
-const compile = (dir) => {
+const compile = async (dir) => {
+  // Is Foundry here? `forge --version` fails if it is not installed, or where processes cannot run (the browser).
+  let version = null
+  let execFileSync
   try {
-    const version = execFileSync('forge', ['--version'], { encoding: 'utf8' }).split('\n')[0]
+    ({ execFileSync } = await import('node:child_process'))
+    version = execFileSync('forge', ['--version'], { encoding: 'utf8' }).split('\n')[0]
+  } catch (_) {}
+  if (version) {
     execFileSync('forge', ['build', '--root', dir], { stdio: 'pipe' })
     const out = JSON.parse(fs.readFileSync(path.join(dir, 'out', 'Counter.sol', 'Counter.json'), 'utf8'))
     return { tool: version, abi: out.abi, bytecode: out.bytecode.object }
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error
   }
-  // Foundry not installed: compile the same source with solc-js
-  return import('solc').then(({ default: solc }) => {
-    const input = { language: 'Solidity', sources: { 'Counter.sol': { content: COUNTER_SOL } }, settings: { evmVersion: 'shanghai', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } } } }
-    const output = JSON.parse(solc.compile(JSON.stringify(input)))
-    const c = output.contracts['Counter.sol'].Counter
-    return { tool: `solc-js ${solc.version()} (Foundry not found)`, abi: c.abi, bytecode: c.evm.bytecode.object }
-  })
+  // Foundry not available: compile the same source with solc-js
+  const input = { language: 'Solidity', sources: { 'Counter.sol': { content: COUNTER_SOL } }, settings: { evmVersion: 'shanghai', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['abi', 'evm.bytecode.object'] } } } }
+  const output = JSON.parse(solc.compile(JSON.stringify(input)))
+  const c = output.contracts['Counter.sol'].Counter
+  return { tool: `solc-js ${await solc.version()} (Foundry not found)`, abi: c.abi, bytecode: c.evm.bytecode.object }
 }
 
 const main = async () => {

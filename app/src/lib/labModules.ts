@@ -129,6 +129,7 @@ export function createFs (files: Map<string, Uint8Array>, onWrite: (e: LabFileEv
       files.set(baseName(p), bytes)
     },
     mkdirSync: () => undefined,
+    mkdtempSync: (prefix: unknown) => `${String(prefix)}${Math.random().toString(36).slice(2, 8)}`,
     rmSync: (p: unknown) => { files.delete(baseName(p)) },
     unlinkSync: (p: unknown) => { files.delete(baseName(p)) },
     readdirSync: () => [...files.keys()],
@@ -290,6 +291,15 @@ export async function prefetchKeyTypes (accountIds: string[]): Promise<void> {
   }))
 }
 
+let zkPromise: Promise<any> | null = null
+
+/** snarkjs + circomlibjs (~4 MB), loaded only by the labs that import them (M8 Lab 09). */
+export async function loadZkVendor (ctx: ModuleContext): Promise<any> {
+  await loadVendor(ctx) // sets globalThis.__HBE_NODE, which the bundled code may read
+  if (!zkPromise) zkPromise = importUrl('/vendor/hbe-zk.mjs').catch((e) => { zkPromise = null; throw e })
+  return zkPromise
+}
+
 export async function loadVendor (ctx: ModuleContext): Promise<any> {
   vendorCtx = ctx
   if (!vendorPromise) {
@@ -439,9 +449,27 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case 'sqlite':
       return loadSqlite()
     case '@hashgraphonline/standards-sdk':
-    case '@hiero-did-sdk/core': {
+    case '@hiero-did-sdk/core':
+    case '@modelcontextprotocol/sdk/server/mcp.js':
+    case '@modelcontextprotocol/sdk/client/index.js':
+    case '@modelcontextprotocol/sdk/inMemory.js':
+    case 'zod': {
       const v = await loadVendor(ctx)
       return { ...v, default: v }
+    }
+    case 'snarkjs': {
+      const zk = await loadZkVendor(ctx)
+      return { ...zk.snarkjs, default: zk.snarkjs }
+    }
+    case 'circomlibjs': {
+      const zk = await loadZkVendor(ctx)
+      const lib = { buildPoseidon: zk.buildPoseidon, poseidonContract: zk.poseidonContract }
+      return { ...lib, default: lib }
+    }
+    case 'os': {
+      // What labs ask of node:os, answered for a browser tab.
+      const os = { tmpdir: () => '/tmp', homedir: () => '/home/learner', hostname: () => 'browser', platform: () => 'browser', type: () => 'Browser', EOL: '\n', cpus: () => Array.from({ length: navigator.hardwareConcurrency || 1 }, () => ({ model: 'browser' })) }
+      return { ...os, default: os }
     }
     case 'solc': {
       const solc = await loadSolc()

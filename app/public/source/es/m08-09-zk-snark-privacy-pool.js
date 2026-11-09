@@ -45,7 +45,7 @@
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (despliega 3 contratos y crea 2 cuentas desechables).
  * - Costo: ~50-60 ℏ la primera vez (3 despliegues: ~15 ℏ de creación + ~6 ℏ por cada bloque de 4 KB de bytecode, más 2 ℏ a un depositante); ~3 ℏ cuando se reutilizan. Un reintento de gas vuelve a subir el bytecode, por eso el hasher empieza con 3M de gas.
- * - Solo Node: la prueba usa snarkjs y los archivos del circuito en zk/.
+ * - La prueba usa snarkjs y los archivos del circuito en zk/ (unos 4 MB, se descargan una vez en la web).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M8_Smart_Contracts_EVM/09_zk_snark_privacy_pool.js
@@ -207,7 +207,8 @@ const main = async () => {
       pathIndices
     }
     const started = Date.now()
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CIRCUIT_WASM.pathname, CIRCUIT_ZKEY.pathname)
+    // El circuito (.wasm) y la llave de prueba (.zkey) se pasan como bytes, así funciona igual en Node y en el navegador.
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, fs.readFileSync(CIRCUIT_WASM), fs.readFileSync(CIRCUIT_ZKEY))
     const vkey = JSON.parse(fs.readFileSync(VERIFICATION_KEY, 'utf8'))
     const offChainOk = await snarkjs.groth16.verify(vkey, publicSignals, proof)
     console.log(`[ÉXITO] Prueba generada en ${Date.now() - started} ms | verificación off-chain: ${offChainOk}`)

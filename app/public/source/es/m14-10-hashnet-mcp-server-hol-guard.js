@@ -7,8 +7,9 @@
  * El Model Context Protocol (MCP) es el estándar abierto que permite a clientes LLM
  * (Claude, ChatGPT, Cursor...) descubrir e invocar herramientas externas sobre JSON-RPC 2.0.
  * Este lab ejecuta un servidor MCP REAL construido con el SDK oficial
- * `@modelcontextprotocol/sdk`: el script se lanza a sí mismo como servidor stdio y
- * luego se conecta como cliente MCP, igual que lo haría un host de IA.
+ * `@modelcontextprotocol/sdk` y se conecta a él como cliente MCP, igual que lo haría un
+ * host de IA, por el transporte en memoria del SDK (los mismos mensajes JSON-RPC). Con
+ * --server sirve las mismas herramientas por stdio a Claude Desktop o Cursor.
  *
  * El servidor expone tres herramientas de Hedera:
  *   - `hedera_query_account_balance` (lectura en Mirror Node)
@@ -32,7 +33,7 @@
  * - Siguiente: M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
  *
  * [ SECUENCIA ]
- * Cliente -> Servidor: initialize + tools/list sobre stdio
+ * Cliente -> Servidor: initialize + tools/list (JSON-RPC de MCP)
  * Cliente -> Servidor: tools/call saldo, mensaje HCS, transferencia pequeña (permitidas)
  * Servidor -> Hedera: Lecturas y transacciones reales
  * Cliente -> Servidor: tools/call 500 HBAR a cuenta desconocida (bloqueada por el guardián)
@@ -42,7 +43,8 @@
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (crea 1 cuenta receptora desechable).
- * - Costo: ~0.1 ℏ + comisiones. Solo Node (lanza un proceso hijo).
+ * - Costo: ~0.1 ℏ + comisiones.
+ * - Con --server se convierte en un servidor MCP por stdio para un cliente de IA (solo Node).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
@@ -52,9 +54,8 @@
 import crypto from 'node:crypto'
 import { Hbar, TopicCreateTransaction, TopicMessageSubmitTransaction, TransferTransaction } from '@hiero-ledger/sdk'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { z } from 'zod'
 import { createLabAccount, getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
 
@@ -76,15 +77,17 @@ class PolicyGuard {
   }
 }
 
-/** Modo servidor MCP: stdout pertenece al protocolo JSON-RPC, así que solo se escribe en stderr. */
-const runServer = async () => {
-  const { client } = getClient()
-  const guard = new PolicyGuard({ maxHbarPerTransfer: 1, allowedDestinations: (process.env.LAB_ALLOWLIST || '').split(',') })
+/**
+ * El servidor MCP: tres herramientas de Hedera detrás del guardián de políticas. El mismo servidor
+ * corre dentro del proceso en este lab y sobre stdio con --server (así lo lanzan Claude Desktop, Cursor...).
+ */
+const createMcpServer = ({ client, allowlist, log }) => {
+  const guard = new PolicyGuard({ maxHbarPerTransfer: 1, allowedDestinations: allowlist })
   const server = new McpServer({ name: 'hbe-hedera-mcp', version: '1.0.0' })
 
   const guarded = (tool, run) => async (params) => {
     const policy = guard.evaluate(tool, params)
-    console.error(`[GUARD] ${tool} -> ${policy.allowed ? 'ALLOW' : 'BLOCK'} (${policy.reason})`)
+    log(`[GUARD] ${tool} -> ${policy.allowed ? 'ALLOW' : 'BLOCK'} (${policy.reason})`)
     if (!policy.allowed) {
       return { isError: true, content: [{ type: 'text', text: `BLOQUEADO POR EL GUARDIÁN DE POLÍTICAS: ${policy.reason} | auditoría ${policy.digest}` }] }
     }
@@ -121,6 +124,14 @@ const runServer = async () => {
     return `Transferidos ${amountHbar} ℏ a ${recipientId} — tx ${res.transactionId} | ${getHashscanUrl(res)}`
   }))
 
+  return server
+}
+
+/** Modo --server: stdout pertenece al protocolo JSON-RPC, así que solo se escribe en stderr. */
+const runServer = async () => {
+  const { client } = getClient()
+  const server = createMcpServer({ client, allowlist: (process.env.LAB_ALLOWLIST || '').split(','), log: (line) => console.error(line) })
+  const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js')
   await server.connect(new StdioServerTransport())
   console.error('[SERVER] hbe-hedera-mcp escuchando en stdio')
 }
@@ -137,14 +148,12 @@ const main = async () => {
     console.log(`[REGISTRO] Topic ${topicId} | Receptor permitido ${recipient.accountId}`)
 
     // 2. Lanza este archivo como servidor MCP stdio y conéctate como cliente
-    console.log('\n[PROCESO] Paso 2: Lanzando el servidor MCP sobre stdio y conectando un cliente...')
+    console.log('\n[PROCESO] Paso 2: Iniciando el servidor MCP y conectando un cliente (transporte MCP en memoria)...')
+    // Los mismos mensajes JSON-RPC que por stdio, por un par enlazado en memoria en vez de un proceso hijo.
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await createMcpServer({ client, allowlist: [recipient.accountId.toString()], log: (line) => console.log(line) }).connect(serverTransport)
     mcp = new McpClient({ name: 'hbe-lab-client', version: '1.0.0' })
-    await mcp.connect(new StdioClientTransport({
-      command: process.execPath,
-      args: [import.meta.filename, '--server'],
-      env: { ...process.env, LAB_ALLOWLIST: recipient.accountId.toString() },
-      stderr: 'inherit'
-    }))
+    await mcp.connect(clientTransport)
     const { tools } = await mcp.listTools()
     console.log(`[ÉXITO] tools/list devolvió ${tools.length} herramientas: ${tools.map(t => t.name).join(', ')}`)
 
@@ -170,7 +179,7 @@ const main = async () => {
     updateState('MCP_LAB_TOPIC_ID', topicId.toString())
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('El host de IA solo ve herramientas MCP; la clave y la política viven en el proceso del servidor.')
+    console.log('El host de IA solo ve herramientas MCP; la clave y la política viven en el servidor MCP.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

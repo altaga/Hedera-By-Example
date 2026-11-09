@@ -19,7 +19,9 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const COURSE = path.resolve(ROOT, '..', 'course')
 const OUT = path.join(ROOT, 'public', 'vendor')
 
-const LIBS = ['@hashgraphonline/standards-sdk', '@hiero-did-sdk/core']
+const LIBS = ['@hashgraphonline/standards-sdk', '@hiero-did-sdk/core',
+  // M14 Lab 10: a real MCP server and client in the page, over the SDK's in-memory transport.
+  '@modelcontextprotocol/sdk/server/mcp.js', '@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/inMemory.js', 'zod']
 
 
 /** Names each library is imported with, across every lab in both languages. */
@@ -132,6 +134,53 @@ export async function buildVendor () {
   }
 }
 
+/**
+ * Zero-knowledge libraries for M8 Lab 09 (snarkjs Groth16 proofs, circomlibjs Poseidon), kept in
+ * their own file because they are large (~4 MB) and only that lab needs them.
+ * Output: public/vendor/hbe-zk.mjs.
+ */
+export async function buildZkVendor () {
+  const entry = path.join(OUT, '.zk-entry.mjs')
+  fs.writeFileSync(entry, "export * as snarkjs from 'snarkjs'\nexport { buildPoseidon, poseidonContract } from 'circomlibjs'\n")
+  // Node built-ins these libraries import but do not need in the browser; assert gets a tiny stand-in.
+  const zkShims = {
+    name: 'zk-shims',
+    setup (b) {
+      b.onResolve({ filter: /^(node:)?(assert|os|fs|path|crypto|worker_threads|readline|url)$/ }, (a) => ({ path: a.path.replace(/^node:/, ''), namespace: 'zk-shim' }))
+      b.onLoad({ filter: /.*/, namespace: 'zk-shim' }, (a) => ({
+        loader: 'js',
+        contents: a.path === 'assert'
+          ? 'const assert = (c, m) => { if (!c) throw new Error(m || "Assertion failed") }; assert.equal = (a, b, m) => assert(a == b, m); assert.strictEqual = (a, b, m) => assert(a === b, m); module.exports = assert'
+          : 'module.exports = {}'
+      }))
+    }
+  }
+  try {
+    const result = await build({
+      entryPoints: [entry],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      conditions: ['browser'],
+      mainFields: ['browser', 'module', 'main'],
+      nodePaths: [path.join(COURSE, 'node_modules')],
+      outfile: path.join(OUT, 'hbe-zk.mjs'),
+      minify: true,
+      target: 'es2020',
+      define: { 'process.env.NODE_ENV': '"production"', global: 'globalThis' },
+      inject: [path.join(ROOT, 'scripts', 'vendor-globals.mjs')],
+      plugins: [zkShims],
+      logLevel: 'error',
+      metafile: true
+    })
+    return { size: fs.statSync(path.join(OUT, 'hbe-zk.mjs')).size, inputs: Object.keys(result.metafile.inputs).length }
+  } finally {
+    fs.rmSync(entry, { force: true })
+  }
+}
+
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
-  buildVendor().then((r) => console.log(`vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`)).catch((e) => { console.error(e.message); process.exit(1) })
+  buildVendor().then((r) => console.log(`vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`))
+    .then(() => buildZkVendor()).then((r) => console.log(`zk vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`))
+    .catch((e) => { console.error(e.message); process.exit(1) })
 }

@@ -88,9 +88,6 @@ While standard Ethereum transactions burn unpredictable amounts of ETH depending
 
 Every lab runs from the course web page or with `node`. Your testnet account signs and pays fees; some labs also use the practice wallets `ACCOUNT_1` and `ACCOUNT_2` (create them in the web Wallets panel, or set them in `.env`). A lab with an entry under **Run first** reads what that earlier lab saved in `state.json`, so run them in that order.
 
-> [!TIP]
-> Labs that use the JSON-RPC Relay connect to the public Hashio relay (`testnet.hashio.io`). If it is down or rate-limited, set `JSON_RPC_URL` in `.env` to another Hedera JSON-RPC relay (for example one from Validation Cloud or QuickNode, or your own `hedera-json-rpc-relay`).
-
 | Lab | Run first | Practice wallets | Cost |
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | ~30 ℏ the first time (token + contract at ~15 ℏ each on testnet); <1 ℏ when it reuses them |

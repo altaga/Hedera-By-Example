@@ -7,8 +7,9 @@
  * The Model Context Protocol (MCP) is the open standard that lets LLM clients
  * (Claude, ChatGPT, Cursor...) discover and call external tools over JSON-RPC 2.0.
  * This lab runs a REAL MCP server built with the official
- * `@modelcontextprotocol/sdk`: the script spawns itself as a stdio server, then
- * connects to it as an MCP client, exactly like an AI host would.
+ * `@modelcontextprotocol/sdk` and connects to it as an MCP client, exactly like an AI
+ * host would, over the SDK's in-memory transport (same JSON-RPC messages). Run it
+ * with --server to serve the same tools over stdio to Claude Desktop or Cursor.
  *
  * The server exposes three Hedera tools:
  *   - `hedera_query_account_balance` (Mirror Node read)
@@ -32,7 +33,7 @@
  * - Next:     M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
  *
  * [ SEQUENCE ]
- * Client -> Server: initialize + tools/list over stdio
+ * Client -> Server: initialize + tools/list (MCP JSON-RPC)
  * Client -> Server: tools/call balance, HCS message, small transfer (allowed)
  * Server -> Hedera: Real reads and transactions
  * Client -> Server: tools/call 500 HBAR to unknown account (blocked by guard)
@@ -42,7 +43,8 @@
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (creates 1 throwaway recipient account).
- * - Cost: ~0.1 ℏ + fees. Node only (spawns a child process).
+ * - Cost: ~0.1 ℏ + fees.
+ * - With --server it becomes a stdio MCP server for an AI client (Node only).
  *
  * [ HOW TO RUN ]
  * node English/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
@@ -52,9 +54,8 @@
 import crypto from 'node:crypto'
 import { Hbar, TopicCreateTransaction, TopicMessageSubmitTransaction, TransferTransaction } from '@hiero-ledger/sdk'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js'
 import { z } from 'zod'
 import { createLabAccount, getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
 
@@ -76,15 +77,17 @@ class PolicyGuard {
   }
 }
 
-/** MCP server mode: stdout belongs to the JSON-RPC protocol, so only log to stderr. */
-const runServer = async () => {
-  const { client } = getClient()
-  const guard = new PolicyGuard({ maxHbarPerTransfer: 1, allowedDestinations: (process.env.LAB_ALLOWLIST || '').split(',') })
+/**
+ * The MCP server: three Hedera tools behind the policy guard. The same server runs in-process
+ * in this lab and over stdio with --server (how Claude Desktop, Cursor... launch it).
+ */
+const createMcpServer = ({ client, allowlist, log }) => {
+  const guard = new PolicyGuard({ maxHbarPerTransfer: 1, allowedDestinations: allowlist })
   const server = new McpServer({ name: 'hbe-hedera-mcp', version: '1.0.0' })
 
   const guarded = (tool, run) => async (params) => {
     const policy = guard.evaluate(tool, params)
-    console.error(`[GUARD] ${tool} -> ${policy.allowed ? 'ALLOW' : 'BLOCK'} (${policy.reason})`)
+    log(`[GUARD] ${tool} -> ${policy.allowed ? 'ALLOW' : 'BLOCK'} (${policy.reason})`)
     if (!policy.allowed) {
       return { isError: true, content: [{ type: 'text', text: `BLOCKED BY POLICY GUARD: ${policy.reason} | audit ${policy.digest}` }] }
     }
@@ -121,6 +124,14 @@ const runServer = async () => {
     return `Transferred ${amountHbar} ℏ to ${recipientId} — tx ${res.transactionId} | ${getHashscanUrl(res)}`
   }))
 
+  return server
+}
+
+/** --server mode: stdout belongs to the JSON-RPC protocol, so only log to stderr. */
+const runServer = async () => {
+  const { client } = getClient()
+  const server = createMcpServer({ client, allowlist: (process.env.LAB_ALLOWLIST || '').split(','), log: (line) => console.error(line) })
+  const { StdioServerTransport } = await import('@modelcontextprotocol/sdk/server/stdio.js')
   await server.connect(new StdioServerTransport())
   console.error('[SERVER] hbe-hedera-mcp listening on stdio')
 }
@@ -137,14 +148,12 @@ const main = async () => {
     console.log(`[LOG] Topic ${topicId} | Allowlisted recipient ${recipient.accountId}`)
 
     // 2. Spawn this file as a stdio MCP server and connect as a client
-    console.log('\n[PROCESS] Step 2: Spawning the MCP server over stdio and connecting a client...')
+    console.log('\n[PROCESS] Step 2: Starting the MCP server and connecting a client (in-memory MCP transport)...')
+    // Same JSON-RPC messages as stdio, through a linked in-memory pair instead of a child process.
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await createMcpServer({ client, allowlist: [recipient.accountId.toString()], log: (line) => console.log(line) }).connect(serverTransport)
     mcp = new McpClient({ name: 'hbe-lab-client', version: '1.0.0' })
-    await mcp.connect(new StdioClientTransport({
-      command: process.execPath,
-      args: [import.meta.filename, '--server'],
-      env: { ...process.env, LAB_ALLOWLIST: recipient.accountId.toString() },
-      stderr: 'inherit'
-    }))
+    await mcp.connect(clientTransport)
     const { tools } = await mcp.listTools()
     console.log(`[SUCCESS] tools/list returned ${tools.length} tools: ${tools.map(t => t.name).join(', ')}`)
 
@@ -170,7 +179,7 @@ const main = async () => {
     updateState('MCP_LAB_TOPIC_ID', topicId.toString())
 
     console.log('\n KEY CONCEPT:')
-    console.log('The AI host only sees MCP tools; the key and the policy live in the server process.')
+    console.log('The AI host only sees MCP tools; the key and the policy live in the MCP server.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

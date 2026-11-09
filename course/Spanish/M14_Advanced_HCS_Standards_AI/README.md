@@ -21,7 +21,7 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 | **07** | **Enjambre Botánico HCS-15..18** | Sub-cuentas Pétalo (HCS-15), descubrimiento (HCS-18), Floras multi-firma (HCS-16) y State Hash (HCS-17). | Separar charla, transacciones y estado en una Tríada HCS-16 permite escalar enjambres con custodia segura. |
 | **08** | **HashLinks HCS-12 y HCS-21** | Micro-apps interactivas on-chain (HCS-12) respaldadas por adaptadores con huella SHA-256 (HCS-21). | Unir ensamblajes UI on-chain con huellas SHA-256 elimina el phishing visual y el envenenamiento npm. |
 | **09** | **Buzón de Mensajes Privado HIP-1334** | Configuración según la spec (memos, primer mensaje HIP-1334_PUBLIC_KEY firmado), verificación de la prueba y mensajes ECIES en HCS. | El primer mensaje firmado evita el front-running de la clave pública. |
-| **10** | **Servidor MCP de Hedera con Guardián de Políticas** | Servidor MCP stdio real (@modelcontextprotocol/sdk) que expone herramientas de Hedera tras un guardián de políticas propio. | La clave y la política viven en el servidor; la IA solo ve herramientas. |
+| **10** | **Servidor MCP de Hedera con Guardián de Políticas** | Servidor MCP real (@modelcontextprotocol/sdk; en memoria en el lab, stdio con --server) que expone herramientas de Hedera tras un guardián de políticas propio. | La clave y la política viven en el servidor; la IA solo ve herramientas. |
 
 ---
 
@@ -110,7 +110,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **07** | — | — | ~5 ℏ (solo comisiones de red) |
 | **08** | — | — | <1 ℏ (solo comisiones de red) |
 | **09** | — | — | ~1.5 ℏ para el destinatario + comisiones |
-| **10** | — | — | ~0.1 ℏ + comisiones. Solo Node (lanza un proceso hijo) |
+| **10** | — | — | ~0.1 ℏ + comisiones |
 
 ---
 
