@@ -38,7 +38,7 @@ import { getClient, getState, exitIfStuck } from '../M99_Utilities/index.js'
 const main = async () => {
   // Never hang: fail with a clear message if the network never answers.
   exitIfStuck(180_000, 'subscription messages')
-  console.log('--- SESSION START: HCS-2 Registry Discovery (MirroNode Query) ---\n')
+  console.log('--- SESSION START: HCS-2 Registry Discovery (Mirror Node Query) ---\n')
   const { client } = getClient()
 
   // Grab the Registry Topic ID from our local state
@@ -74,17 +74,16 @@ const main = async () => {
           const entry = JSON.parse(payloadString)
 
           // 3. FILTERING: This is how we "Search"
-          if (entry.h === 'hcs-2' && entry.cat === 'ANTI_CHEAT_ORACLE') {
+          if (entry.p === 'hcs-2' && entry.op === 'register' && String(entry.m || '').startsWith('ANTI_CHEAT_ORACLE')) {
             agentsFound++
 
-            console.log(`[LOG] MATCH FOUND: Verified Agent #${agentsFound}`)
-            console.log(`Registry Name:   ${entry.r}`)
-            console.log(`Agent Topic ID:  ${entry.tid} <-- (Linked to Lab 01)`)
-            console.log(`Status:          ${entry.status}`)
-            console.log(`Registered On:   ${new Date(entry.ts).toLocaleString()}`)
+            console.log(`[LOG] MATCH FOUND: Registered Agent #${agentsFound}`)
+            console.log(`Memo:            ${entry.m}`)
+            console.log(`Agent Topic ID:  ${entry.t_id} <-- (Linked to Lab 01)`)
+            console.log(`Registered On:   ${message.consensusTimestamp.toDate().toLocaleString()} (consensus time)`)
             console.log('--------------------------------------------------')
 
-            // In a real application, you would now take `entry.tid` and pass it
+            // In a real application, you would now take `entry.t_id` and pass it
             // into a script to download the actual rules!
           }
         } catch (parseError) {
@@ -95,7 +94,8 @@ const main = async () => {
 
   // For this lab, we wait 5 seconds then exit automatically.
   setTimeout(() => {
-    console.log('\n[SUCCESS] History scan complete.')
+    if (agentsFound) console.log(`\n[SUCCESS] History scan complete: ${agentsFound} matching entr${agentsFound === 1 ? 'y' : 'ies'}.`)
+    else console.log('\n[INFO] No matching HCS-2 entries yet (the Mirror Node may still be catching up, or Lab 02 has not run since this format change).')
     console.log('\n KEY CONCEPT:')
     console.log('This is how decentralized frontend applications work. A Web3 game client')
     console.log('doesn\'t need an API key to find the Anti-Cheat rules. It simply reads')

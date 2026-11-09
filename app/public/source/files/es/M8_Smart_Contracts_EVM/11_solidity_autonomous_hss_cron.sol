@@ -2,35 +2,41 @@
 pragma solidity ^0.8.20;
 
 /**
- * Interfaz de la Precompilación de Hedera Schedule Service (HSS 0x16b)
- * Permite a contratos inteligentes programar ejecuciones futuras autónomas en Capa 1.
+ * Contrato de sistema Hedera Schedule Service (HSS) en 0x16b (HIP-1215).
+ * scheduleCall crea una transacción programada que llama a `to` con `callData`
+ * en `expirySecond`. El contrato que llama paga esa llamada futura.
  */
 interface IHederaScheduleService {
-    function scheduleNative(
-        address targetContract,
-        bytes memory callData,
-        address payerAccount
+    function scheduleCall(
+        address to,
+        uint256 expirySecond,
+        uint256 gasLimit,
+        uint64 value,
+        bytes memory callData
     ) external returns (int64 responseCode, address scheduleAddress);
 }
 
 contract AutonomousCronVault {
     address constant HSS_SYSTEM_CONTRACT = address(0x16b);
+    int64 constant SUCCESS = 22;
 
     address public owner;
     uint256 public heartbeatCounter;
     uint256 public lastExecutionTimestamp;
 
     event HeartbeatExecuted(uint256 counter, uint256 timestamp);
-    event TaskScheduled(address indexed scheduleAddress, uint256 targetCounter);
+    event TaskScheduled(address indexed scheduleAddress, int64 responseCode, uint256 expirySecond);
 
-    constructor() {
+    // Payable: el contrato guarda un poco de HBAR para pagar las llamadas que programa.
+    constructor() payable {
         owner = msg.sender;
-        heartbeatCounter = 0;
         lastExecutionTimestamp = block.timestamp;
     }
 
+    receive() external payable {}
+
     /**
-     * Tarea autónoma ejecutada por el programador
+     * La tarea que ejecuta el programador.
      */
     function performAutonomousHeartbeat() external {
         heartbeatCounter += 1;
@@ -39,28 +45,31 @@ contract AutonomousCronVault {
     }
 
     /**
-     * Programa la siguiente ejecución autónoma del latido utilizando la precompilación HSS 0x16b
+     * Pide a HSS que llame a performAutonomousHeartbeat() dentro de `delaySeconds`.
+     * Devuelve el código de respuesta de HSS (22 = SUCCESS) y la dirección de la programación.
+     * Sin respaldo silencioso: si HSS se niega, quien llama ve el código real (-1 si la llamada falló).
      */
-    function scheduleNextHeartbeat(address payerAccount) external returns (address scheduleAddress) {
+    function scheduleNextHeartbeat(uint256 delaySeconds) external returns (int64 responseCode, address scheduleAddress) {
         require(msg.sender == owner, "ONLY_OWNER");
 
+        uint256 expirySecond = block.timestamp + delaySeconds;
         bytes memory callData = abi.encodeWithSelector(this.performAutonomousHeartbeat.selector);
 
-        // Llamada de bajo nivel a la precompilación HSS 0x16b para compatibilidad entre entornos
-        (bool success, bytes memory result) = HSS_SYSTEM_CONTRACT.call(
-            abi.encodeWithSelector(IHederaScheduleService.scheduleNative.selector, address(this), callData, payerAccount)
+        (bool ok, bytes memory result) = HSS_SYSTEM_CONTRACT.call(
+            abi.encodeWithSelector(
+                IHederaScheduleService.scheduleCall.selector,
+                address(this),
+                expirySecond,
+                uint256(100000),
+                uint64(0),
+                callData
+            )
         );
 
-        if (success && result.length >= 32) {
-            (int64 responseCode, address scheduled) = abi.decode(result, (int64, address));
-            if (responseCode == 22) {
-                emit TaskScheduled(scheduled, heartbeatCounter + 1);
-                return scheduled;
-            }
+        responseCode = -1;
+        if (ok && result.length >= 64) {
+            (responseCode, scheduleAddress) = abi.decode(result, (int64, address));
         }
-
-        // Respaldo para entornos de prueba / simulación
-        emit TaskScheduled(HSS_SYSTEM_CONTRACT, heartbeatCounter + 1);
-        return HSS_SYSTEM_CONTRACT;
+        emit TaskScheduled(scheduleAddress, responseCode, expirySecond);
     }
 }

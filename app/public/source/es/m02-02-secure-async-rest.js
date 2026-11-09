@@ -88,7 +88,7 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('Al utilizar Mirror Nodes, tu aplicación puede escalar')
-    console.log('infinitamente en lecturas de datos sin incurrir en costos')
+    console.log('sus lecturas de datos (con límites de peticiones) sin costos')
     console.log('de transacción de red, reservando HBAR solo para escrituras.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')

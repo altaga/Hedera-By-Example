@@ -4,7 +4,7 @@
  * [CONCEPTO] Compatibilidad EVM y Compilación en Tiempo Real
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Finalidad Inmediata: Hedera es 100% compatible con la Ethereum Virtual
+ * Finalidad Inmediata: Hedera es compatible (con pocas diferencias documentadas) con la Ethereum Virtual
  * Machine (EVM). Esto permite que el mismo código Solidity de Ethereum
  * funcione en Hedera, pero con las ventajas del Hashgraph: finalidad de
  * transacciones en ~3 segundos y costos de gas fijos expresados en USD,
@@ -121,9 +121,9 @@ const main = async () => {
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
 
-    await setTx.getReceipt(client)
+    const setReceipt = await setTx.getReceipt(client)
     console.log(`[REGISTRO] Tx set(42) en HashScan: ${getHashscanUrl(setTx)}`)
-    console.log('[ÉXITO] Estado del contrato actualizado a 42.')
+    console.log(`[ÉXITO] set(42) aceptado: ${setReceipt.status.toString()}`)
 
     // FASE D: Consulta (Lectura de Estado)
     console.log("[PROCESO] Consultando valor actual vía 'get()...'")

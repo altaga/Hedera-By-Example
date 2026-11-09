@@ -16,8 +16,8 @@
  * Los autenticadores WebAuthn no firman mensajes arbitrarios sin contexto. Garantizan una estricta
  * resistencia al phishing vinculando las firmas a un Origen y a un ID de Entidad Reclamante (RP ID),
  * aplicando hash a banderas de `authenticatorData` (Usuario Presente `UP=1`, Usuario Verificado `UV=1`)
- * y a `clientDataJSON`. La verificación de estas aserciones criptográficas elimina el 100% del
- * phishing remoto y del robo de credenciales.
+ * y a `clientDataJSON`. Como la firma queda ligada al origen del sitio y la llave nunca sale
+ * del dispositivo, las passkeys resisten el phishing remoto y el robo de bases de contraseñas.
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)

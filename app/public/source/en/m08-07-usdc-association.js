@@ -4,11 +4,12 @@
  * [CONCEPT] Anti-Spam Intentionality
  * ============================================================================
  * [ KEY CONCEPT ]
- * The Anti-Spam Shield: On Hedera, you cannot "Spam" someone with tokens.
- * An account must explicitly "Opt-In" to a token before it can receive any
- * balance. This is called "Token Association". This is a powerful security
- * feature that ensures your wallet is never cluttered with useless tokens
- * and that your account state is only used for assets you trust and authorize.
+ * The Anti-Spam Shield: An account receives a token only after it is
+ * associated with it ("Opt-In"), either explicitly with TokenAssociate or
+ * through its auto-association slots. An account with no free slots cannot be
+ * sent tokens it never chose; airdrops to it stay pending until it claims them
+ * (HIP-904). Accounts set to unlimited auto-association (as in M0 Lab 03)
+ * accept any token, so that protection is a setting you choose.
  * This lab explicitly associates the Operator with the official Circle USDC.
  *
  *
@@ -60,9 +61,9 @@ const main = async () => {
     console.log('[INFO] Operator is now ready to hold and transfer USDC.')
 
     console.log('\n KEY CONCEPT:')
-    console.log('The Anti-Spam Shield: Association is a powerful security feature. It')
-    console.log('ensures that your wallet is never cluttered with useless tokens and')
-    console.log('that your account state is only used for assets you trust.')
+    console.log('The Anti-Spam Shield: with no free auto-association slots, a wallet only')
+    console.log('holds tokens it associated with on purpose. Unlimited auto-association')
+    console.log('trades that protection for convenience.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

@@ -5,11 +5,11 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * The Sustainable Ledger: Unlike Ethereum, where state storage is "Free but
- * Expensive Upfront", Hedera uses an "Auto-Renewal Rent" model. This keeps the
- * network lean by pruning abandoned contracts. Contracts must maintain an
- * HBAR balance for periodic auto-renewal fees. This script shows how to
- * programmatically extend a contract's lifespan by setting its
- * `autoRenewPeriod`, ensuring it remains active on the ledger.
+ * Expensive Upfront", Hedera defines an "Auto-Renewal Rent" model: once it is
+ * switched on, contracts pay periodic renewal fees from their balance (or an
+ * auto-renew account), and unpaid ones expire. Rent is not charged on Hedera
+ * yet. This script shows how to set a contract's `autoRenewPeriod`, the length
+ * of each renewal cycle.
  *
  *
  * [ LEARNABLE MOMENT ]
@@ -70,9 +70,9 @@ const main = async () => {
   try {
     const receipt = await extendContractLifespan(client, contractId, adminKey)
 
-    console.log(`\n[SUCCESS] Contract Lifespan Extended (Status: ${receipt.status.toString()})`)
+    console.log(`\n[SUCCESS] Auto-Renew Period Updated (Status: ${receipt.status.toString()})`)
     console.log('[LOG] Auto-renewal period is now set to 30 days.')
-    console.log('[INFO] Contract will automatically pull rent from its balance or payer.')
+    console.log('[INFO] Once rent is switched on, renewal fees come from the contract balance or its auto-renew account. Today nothing is charged.')
 
     console.log('\n KEY CONCEPT:')
     console.log('The Sustainable Ledger: By enforcing rent, Hedera ensures that the')

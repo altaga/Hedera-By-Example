@@ -13,7 +13,7 @@
  *
  *
  * [ LEARNABLE MOMENT ]
- * Active cryptographic defense in HCS-10 intercepts replay and forged messages in real time, proving that cryptographic provenance neutralizes man-in-the-middle attacks on public ledgers.
+ * Active cryptographic defense in HCS-10 intercepts replay and forged messages in real time, showing that signatures plus round numbers stop forgery and replay on a public topic.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-10/

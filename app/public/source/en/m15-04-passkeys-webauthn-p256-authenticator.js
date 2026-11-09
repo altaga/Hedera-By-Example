@@ -16,8 +16,8 @@
  * WebAuthn authenticators do not sign raw messages directly. They enforce strict
  * phishing resistance by binding signatures to an explicit Origin and RP ID (Relying Party ID),
  * hashing `authenticatorData` flags (User Present `UP=1`, User Verified `UV=1`) and
- * `clientDataJSON`. Verifying these cryptographic assertions eliminates 100% of remote
- * phishing and credential theft.
+ * `clientDataJSON`. Because the signature is bound to the site's origin and the key never
+ * leaves the device, passkeys resist remote phishing and password-database theft.
  *
  * [ LEARNING PATH ]
  * - Previous: M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683 / CoW Swap Model)

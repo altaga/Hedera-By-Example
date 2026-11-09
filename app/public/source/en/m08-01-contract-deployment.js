@@ -7,7 +7,7 @@
  * Direct Bytecode: Unlike some environments that require the SDK to "bundle"
  * your contract, here we are interacting with the ledger at the byte level.
  * This gives you absolute control over the deployment cost and configuration.
- * Hedera is 100% EVM-compatible, meaning you gain the performance and finality
+ * Hedera is EVM-compatible (with a few documented differences), so you gain the finality
  * of Hashgraph while using industry-standard Solidity code.
  *
  *
@@ -130,9 +130,9 @@ const main = async () => {
       .setContractId(contractId)
       .setGas(gas)
       .setFunction('set', new ContractFunctionParameters().addUint256(42)), client, { gas: 2000000 })
-    await setTx.getReceipt(client)
+    const setReceipt = await setTx.getReceipt(client)
     console.log(`[LOG] set(42) tx on HashScan: ${getHashscanUrl(setTx)}`)
-    console.log('[SUCCESS] State updated to 42.')
+    console.log(`[SUCCESS] set(42) accepted: ${setReceipt.status.toString()}`)
 
     // Step D: Query (Get)
     console.log("\n[PROCESS] Querying 'get()' value from on-chain state...")

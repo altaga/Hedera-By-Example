@@ -15,7 +15,7 @@
  * [ MOMENTO DE APRENDIZAJE ]
  * Esta es la misma técnica criptográfica empleada por los registros Certificate Transparency (CT)
  * de la web y los rollups de conocimiento cero. Se logra el costo económico de las bases
- * de datos off-chain con la finalidad matemática inquebrantable de Hedera Hashgraph.
+ * de datos off-chain con la finalidad de consenso de Hedera Hashgraph.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-27/
@@ -200,7 +200,7 @@ const main = async () => {
     console.log(`[REGISTRO] Hash Hoja Objetivo:  ${targetLeafHash}`)
 
     const isProofValid = verifyMerkleProof(targetLeafHash, proof, merkleTree.root)
-    console.log(`\n[AUDITORÍA] Verificación Criptográfica: ${isProofValid ? 'VERIFICADO (100% INCLUIDO)' : 'FRAUDULENTO'}`)
+    console.log(`\n[AUDITORÍA] Verificación Criptográfica: ${isProofValid ? 'VERIFICADO (la hoja está en la raíz anclada)' : 'FRAUDULENTO'}`)
 
     if (!isProofValid) throw new Error('¡Fallo en la verificación de la prueba Merkle!')
 
@@ -212,12 +212,12 @@ const main = async () => {
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('HCS-27 ofrece lo mejor de dos mundos: Millones de micro-operaciones corren off-chain')
-    console.log('sin saturar la red, mientras un mensaje periódico en HCS establece una verdad')
-    console.log('matemática e inquebrantable en Hedera.')
+    console.log('sin una transacción cada una, mientras un mensaje periódico en HCS ancla una raíz')
+    console.log('contra la que cualquiera puede comprobar una prueba de inclusión.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Agrupar 10,000 operaciones en una sola raíz Merkle reduce los costos de transacción un 99.99%')
-    console.log('manteniendo una auditabilidad jurídica y técnica del 100%.')
+    console.log('Agrupar 10,000 operaciones en una sola raíz Merkle requiere 1 mensaje en lugar de 10,000 (99.99% menos tarifas)')
+    console.log('y cada operación se puede seguir probando con su prueba de inclusión.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {

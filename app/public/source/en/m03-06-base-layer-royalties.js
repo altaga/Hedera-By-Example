@@ -6,8 +6,9 @@
  * [ KEY CONCEPT ]
  * Protocol-Level Enforcement: On most other chains, royalties rely on "Marketplace
  * Honor Systems". Hedera's `CustomRoyaltyFee` is part of the token itself and
- * is enforced by the nodes at the ledger level. This ensures creators are
- * mathematically guaranteed their cut regardless of which marketplace is used.
+ * is enforced by the nodes at the ledger level, whichever marketplace is used:
+ * a royalty when value changes hands in the same transaction, the fallback fee
+ * otherwise. (A sale paid outside the ledger only triggers the fallback fee.)
  *
  *
  * [ LEARNABLE MOMENT ]
@@ -185,8 +186,8 @@ const main = async () => {
     console.log(`[INFO] NFT #${serial} returned to the artist${backFees.length ? ` (fees assessed: ${backFees.join('; ')})` : ' (no fee: transfers into the treasury are exempt)'}.`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Hedera forces royalties to be part of the atomic swap.')
-    console.log('This ensures creators are mathematically guaranteed their cut.')
+    console.log('Hedera charges royalties inside the same atomic transfer, and the')
+    console.log('fallback fee when no value changes hands, on every marketplace.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')

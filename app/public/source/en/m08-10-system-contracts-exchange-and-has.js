@@ -20,7 +20,7 @@
  * [ LEARNABLE MOMENT ]
  * By utilizing Hedera's native 0x168 precompile, decentralized finance protocols
  * (lending markets, algorithmic stablecoins, fee distributors) eliminate external
- * oracle dependencies and eliminate the risk of flash-loan oracle manipulation.
+ * oracle dependencies for the HBAR/USD rate, which no flash loan can move.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://docs.hedera.com/evm/hedera-services/system-contracts
@@ -147,7 +147,7 @@ const main = async () => {
     console.log('[INFO] Price obtained directly from consensus state in 1 call with zero oracle fees.')
 
     // 3. Inspect Hedera Account Service (HAS 0x16a) Architecture
-    console.log('\n[PROCESS] Step 3: Verifying HAS Precompile (0x16a) Capabilities...')
+    console.log('\n[PROCESS] Step 3: About the HAS system contract (0x16a) (described here, not called)...')
     console.log('Precompile Address: 0x000000000000000000000000000000000000016a')
     console.log('HIP Specification:  HIP-632 & HIP-906')
     console.log('Feature: Allows EVM contracts to verify signatures of any Hedera account')
@@ -162,9 +162,9 @@ const main = async () => {
     console.log('verify multi-curve account signatures (0x16a), and execute native token precompiles (0x167).')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Zero Oracle Exploits: Protocols built with 0x168 are mathematically immune to')
-    console.log('manipulation from decentralized exchange spot pool drains, because the exchange rate')
-    console.log('is governed by the weighted median of the Hedera Governing Council consensus nodes.')
+    console.log('Fewer Oracle Exploits: the 0x168 rate cannot be moved by draining a DEX pool,')
+    console.log('because it comes from the network\'s exchange-rate file (maintained by the')
+    console.log('Hedera council), not from on-chain trading. It only covers HBAR/USD.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {

@@ -10,12 +10,14 @@
  * 1. ECDSA VERIFICATION: Proves the message was signed by the holder of the
  * Session Private Key.
  * 2. SEQUENCE VALIDATION: Proves the message is fresh and not a "Replay"
- * of historical data. By layering these checks, you transform a public
- * HCS topic into a secure, tamper-proof command channel.
+ * of historical data. By layering these checks, a public HCS topic becomes
+ * a command channel that rejects forgeries and replays. The session key is
+ * shared by both agents, so a valid signature proves "one of the two agents",
+ * not which one; per-agent keys would tell them apart.
  *
  *
  * [ LEARNABLE MOMENT ]
- * By signing every A2A message with the agent private key and embedding an ephemeral timestamp, autonomous agents verify the cryptographic signature of their peers and reject spoofed messages.
+ * By signing every A2A message with a session key and including a round number, agents reject forged messages (bad signature) and replays (old round).
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-10/
@@ -25,10 +27,10 @@
  * - Next:     M9 Lab 10: Secure A2A Communication with Active Attack
  *
  * [ SEQUENCE ]
- * Agent A -> Agent B Inbox: Payload + hash + signature (session key)
- * Note Agent B: Verifies the signature against Agent A key
- * Agent B -> Agent A Inbox: Signed reply
- * Note Agent A: Verifies before trusting the reply
+ * Agent A -> Agent B Inbox: Payload + signature (shared session key)
+ * Note Agent B: Verifies the signature, then checks the round is new
+ * Agent B -> Agent A Inbox: Reply (not signed in this lab)
+ * Note Agent A: Matches the reply by its round number
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

@@ -6,15 +6,15 @@
  * [ CONCEPTO CLAVE ]
  * El Ledger Sostenible: A diferencia de otras redes donde el almacenamiento
  * de estado es perpetuo tras un solo pago de gas, Hedera aplica un modelo
- * de "Renta de Almacenamiento" (Auto-Renewal). Esto asegura que la red no
- * crezca infinitamente con código "zombie" o abandonado. Cada contrato tiene
- * un periodo de renovación; si al vencimiento no hay fondos para cubrir la
- * renta, el contrato entra en estado de gracia y eventualmente es eliminado.
+ * de "Renta de Almacenamiento" (Auto-Renewal) para que la red no crezca sin
+ * fin con código abandonado. Cada contrato tiene un periodo de renovación;
+ * cuando la renta se active, si al vencimiento no hay fondos el contrato
+ * expira. Hoy Hedera todavía no cobra esta renta.
  * Para aplicaciones en producción, este mecanismo garantiza que los recursos
  * de los nodos se utilicen de forma eficiente y responsable.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Los contratos en la EVM de Hedera están sujetos a renta de almacenamiento y auto-renovación. Mantener fondeada la cuenta de auto-renovación asegura la persistencia del contrato en cada época de actualización.
+ * Los contratos en la EVM de Hedera tienen un periodo de auto-renovación pensado para la renta de almacenamiento. Cuando la renta se active, mantener fondeada la cuenta de auto-renovación evitará que el contrato expire.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://docs.hedera.com/evm/development/rent
@@ -72,9 +72,9 @@ const main = async () => {
   try {
     const receipt = await extendContractLifespan(client, contractId, adminKey)
 
-    console.log(`\n[ÉXITO] Vida útil del contrato extendida con éxito. Estado: ${receipt.status.toString()}`)
+    console.log(`\n[ÉXITO] Periodo de auto-renovación actualizado. Estado: ${receipt.status.toString()}`)
     console.log('[INFO] El periodo de auto-renovación ha sido actualizado a 30 días.')
-    console.log('[INFO] La red deducirá automáticamente la renta del saldo del contrato.')
+    console.log('[INFO] Cuando la renta se active, se cobrará del saldo del contrato o de su cuenta de auto-renovación. Hoy no se cobra nada.')
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('La renta de almacenamiento es la herramienta de Hedera para evitar')
