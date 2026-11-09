@@ -59,7 +59,8 @@ export default function HederaByExample () {
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [logs, setLogs] = useState<TerminalLogLine[]>([])
   const [done, setDone] = useState<string[]>([])
-  const [allowLowBalance, setAllowLowBalance] = useState(false)
+  // "Run anyway" on a low balance applies to one lab + wallet + balance; any change asks again.
+  const [allowLowBalanceFor, setAllowLowBalanceFor] = useState<string | null>(null)
   // Wait until hash prefs hydrate before counting pageviews.
   const [analyticsReady, setAnalyticsReady] = useState(false)
   // Files the learner chose to use instead of the course assets, per lab.
@@ -84,6 +85,9 @@ export default function HederaByExample () {
       }
     }
     const prefs = readPrefs()
+    // The page is a static export: localStorage and the URL hash exist only after hydration, so
+    // these values are read here once instead of in useState initializers (which would mismatch).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLang(prefs.lang || (navigator.language?.toLowerCase().startsWith('es') ? 'es' : 'en'))
     setTheme(prefs.theme || 'dark')
     setDone(loadDone())
@@ -135,9 +139,8 @@ export default function HederaByExample () {
   const body = entry ? getBody(lang, entry.lab.slug) : null
   const pageTitle = documentTitle()
 
-  useEffect(() => {
-    setAllowLowBalance(false)
-  }, [route.view === 'lab' ? route.slug : '', walletStore.activeId, wallet.balanceHbar])
+  const lowBalanceKey = `${route.view === 'lab' ? route.slug : ''}|${walletStore.activeId}|${wallet.balanceHbar}`
+  const allowLowBalance = allowLowBalanceFor === lowBalanceKey
   const prev = entry && entry.idx > 0 ? FLAT_LABS[entry.idx - 1] : null
   const next = entry && entry.idx < FLAT_LABS.length - 1 ? FLAT_LABS[entry.idx + 1] : null
 
@@ -293,7 +296,7 @@ export default function HederaByExample () {
                 logs={logs}
                 onRun={() => { void run() }}
                 allowLowBalance={allowLowBalance}
-                onAllowLowBalance={() => setAllowLowBalance(true)}
+                onAllowLowBalance={() => setAllowLowBalanceFor(lowBalanceKey)}
                 onClearLogs={() => { setLogs([]); setRunStatus('idle') }}
                 wallet={wallet}
                 walletStore={walletStore}

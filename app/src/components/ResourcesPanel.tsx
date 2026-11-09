@@ -88,7 +88,6 @@ function Detail ({ lang, r, onSelectLab, walletLabel }: { lang: Lang; r: Resourc
   const [copied, setCopied] = useState(false)
   useEffect(() => {
     let live = true
-    setDetail(null); setError(false)
     fetchDetail(r).then((d) => { if (live) setDetail(d) }).catch(() => { if (live) setError(true) })
     return () => { live = false }
   }, [r])
@@ -160,25 +159,31 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
   const [walletFilter, setWalletFilter] = useState<string>('all')
   const [kind, setKind] = useState<ResourceKind | 'all'>('all')
   const [query, setQuery] = useState('')
-  const [items, setItems] = useState<Resource[] | null>(null)
-  const [error, setError] = useState(false)
-  const [selected, setSelected] = useState<Resource | null>(null)
+  // Results and the selection belong to one wallet filter + reload: a new filter shows a fresh
+  // loading state without resetting state inside an effect.
+  const [reload, setReload] = useState(0)
+  const loadKey = `${walletFilter}|${accounts.join(',')}|${reload}`
+  const [result, setResult] = useState<{ key: string; items: Resource[]; error: boolean } | null>(null)
+  const [picked, setPicked] = useState<{ key: string; r: Resource } | null>(null)
+  const items = result?.key === loadKey ? result.items : null
+  const error = result?.key === loadKey && result.error
+  const selected = picked?.key === loadKey ? picked.r : null
+  const setSelected = (r: Resource) => setPicked({ key: loadKey, r })
+  const setItems = (update: (cur: Resource[]) => Resource[]) => setResult((cur) => (cur ? { ...cur, items: update(cur.items) } : cur))
 
   const walletLabel = useCallback((id: string) => {
     const w = store.wallets.find((x) => x.accountId === id)
     return w ? `${w.label} · ${id}` : id
   }, [store])
 
-  const load = useCallback(async () => {
-    setItems(null); setError(false); setSelected(null)
+  useEffect(() => {
+    let live = true
     const ids = walletFilter === 'all' ? accounts : [walletFilter]
-    if (!ids.length) { setItems([]); return }
-    try {
-      setItems(await fetchResources(ids))
-    } catch (_) { setError(true); setItems([]) }
-  }, [accounts, walletFilter])
-
-  useEffect(() => { load() }, [load])
+    ;(ids.length ? fetchResources(ids) : Promise.resolve([] as Resource[]))
+      .then((list) => { if (live) setResult({ key: loadKey, items: list, error: false }) })
+      .catch(() => { if (live) setResult({ key: loadKey, items: [], error: true }) })
+    return () => { live = false }
+  }, [loadKey, accounts, walletFilter])
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: items?.length || 0 }
@@ -199,7 +204,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
     const want = shown.slice(0, 40).filter((r) => r.kind === 'token' && !r.label && !labelled.current.has(r.id)).map((r) => r.id)
     if (!want.length) return
     want.forEach((id) => labelled.current.add(id))
-    fetchTokenLabels(want, (id, label) => setItems((cur) => cur && cur.map((r) => (r.id === id ? { ...r, label } : r))))
+    fetchTokenLabels(want, (id, label) => setItems((cur) => cur.map((r) => (r.id === id ? { ...r, label } : r))))
   }, [shown])
 
   return (
@@ -225,7 +230,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
                 {accounts.map((a) => <option key={a} value={a}>{walletLabel(a)}</option>)}
               </select>
               <input type='search' value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.filter} aria-label={t.filter} />
-              <button type='button' className='btn btn-ghost btn-sm' onClick={load}>{t.refresh}</button>
+              <button type='button' className='btn btn-ghost btn-sm' onClick={() => setReload((n) => n + 1)}>{t.refresh}</button>
             </div>
 
             <div className='res-kinds' role='tablist' aria-label={t.title}>
@@ -263,7 +268,7 @@ export function ResourcesPanel ({ lang, store, onOpenWallets, onSelectLab }: Pro
               </div>
               <div className='res-side'>
                 {selected
-                  ? <Detail lang={lang} r={selected} onSelectLab={onSelectLab} walletLabel={walletLabel} />
+                  ? <Detail key={selected.id} lang={lang} r={selected} onSelectLab={onSelectLab} walletLabel={walletLabel} />
                   : <p className='muted res-pick'>{t.pick}</p>}
               </div>
             </div>

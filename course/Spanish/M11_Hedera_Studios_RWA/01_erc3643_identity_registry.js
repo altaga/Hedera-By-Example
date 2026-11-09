@@ -63,7 +63,7 @@ import {
   TopicMessageSubmitTransaction,
   TransferTransaction
 } from '@hiero-ledger/sdk'
-import { createLabAccount, getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
+import { createLabAccount, getClient, getHashscanUrl, reuseTopic, updateState } from '../M99_Utilities/index.js'
 
 class Erc3643ComplianceEngine {
   constructor () {
@@ -199,8 +199,9 @@ const main = async () => {
 
     // 5. Anclar la traza de cumplimiento en HCS
     console.log('\n[PROCESO] Paso 5: Anclando las decisiones de cumplimiento en un topic de auditoría HCS...')
-    const topicReceipt = await (await new TopicCreateTransaction().setTopicMemo('hbe:rwa-compliance-audit').execute(client)).getReceipt(client)
-    const complianceTopicId = topicReceipt.topicId.toString()
+    const complianceTopicId = (await reuseTopic('REUSE_M11_01_AUDIT_TOPIC', async () =>
+      (await (await new TopicCreateTransaction().setTopicMemo('hbe:rwa-compliance-audit').execute(client)).getReceipt(client)).topicId
+    )).toString()
     await (await new TopicMessageSubmitTransaction()
       .setTopicId(complianceTopicId)
       .setMessage(JSON.stringify({ type: 'rwa-compliance-audit', token: tokenId.toString(), decisions, results, timestamp: new Date().toISOString() }))

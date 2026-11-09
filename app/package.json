@@ -55,5 +55,8 @@
     "lint": "expo lint",
     "deploy:web": "node ./scripts/build-content.mjs && npx --yes eas-cli env:exec production 'npx expo export --platform web' --non-interactive && npx --yes eas-cli deploy --prod --environment production --non-interactive"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "ws@^8": "^8.21.0"
+  }
 }

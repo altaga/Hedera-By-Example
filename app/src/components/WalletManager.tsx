@@ -360,8 +360,9 @@ interface Props {
 export function WalletManager ({ lang, store, balances, onChange, onBalances, onClose }: Props) {
   const t = TEXT[lang]
   const ref = useRef<HTMLDivElement | null>(null)
+  // Latest store for async handlers (update() also writes it right away, before the parent re-renders).
   const storeRef = useRef(store)
-  storeRef.current = store
+  useEffect(() => { storeRef.current = store }, [store])
   const [busy, setBusy] = useState<string | null>(null)
   const [msg, setMsg] = useState<{ id: string; text: string; error?: boolean } | null>(null)
   const [panel, setPanel] = useState<'none' | 'new' | 'import'>(store.wallets.length ? 'none' : 'new')

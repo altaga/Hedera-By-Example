@@ -1,9 +1,9 @@
 {
   "name": "hedera-for-dummies",
   "version": "2.0.0",
-  "description": "Hedera for Dummies — The definitive bilingual (EN/ES) master curriculum and engineering reference for Hedera Hashgraph (16 Modules, 131 Interactive Labs, 262 Codebases)",
+  "description": "Hedera for Dummies \u2014 The definitive bilingual (EN/ES) master curriculum and engineering reference for Hedera Hashgraph (16 Modules, 131 Interactive Labs, 262 Codebases)",
   "license": "MIT",
-  "author": "Víctor Altamirano & Hedera Community Builders",
+  "author": "V\u00edctor Altamirano & Hedera Community Builders",
   "keywords": [
     "hedera",
     "hashgraph",
@@ -44,7 +44,12 @@
     "zod": "^4.6.7"
   },
   "overrides": {
-    "elliptic": "6.5.7",
-    "protobufjs": "^8.8.1"
+    "elliptic": "^6.6.1",
+    "protobufjs": "^8.8.1",
+    "@grpc/grpc-js": "^1.13.6",
+    "axios": "^1.15.1",
+    "ws": "^8.21.0",
+    "tmp": "^0.2.6",
+    "underscore": "^1.13.8"
   }
 }

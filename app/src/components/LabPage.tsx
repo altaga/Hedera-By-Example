@@ -188,9 +188,8 @@ function useSource (lang: Lang, slug: string) {
     { key, text: sourceCache.get(key) ?? null, failed: false }
   )
   useEffect(() => {
-    if (sourceCache.has(key)) { setState({ key, text: sourceCache.get(key)!, failed: false }); return }
+    if (sourceCache.has(key)) return
     let cancelled = false
-    setState({ key, text: null, failed: false })
     fetch(sourceUrl(lang, slug))
       .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
       .then((text) => {
@@ -200,7 +199,7 @@ function useSource (lang: Lang, slug: string) {
       .catch(() => { if (!cancelled) setState({ key, text: null, failed: true }) })
     return () => { cancelled = true }
   }, [key, lang, slug])
-  return state.key === key ? state : { key, text: null, failed: false }
+  return state.key === key ? state : { key, text: sourceCache.get(key) ?? null, failed: false }
 }
 
 function CommandBlock ({ label, command, copyLabel, copiedLabel }: { label: string; command: string; copyLabel: string; copiedLabel: string }) {
@@ -256,12 +255,6 @@ export function LabPage (props: Props) {
   const { copied, copy } = useCopy()
   const path = coursePath(lang, entry)
   const fileUrl = githubUrl(lang, entry)
-
-  useEffect(() => {
-    setTab('walkthrough')
-    setActiveFileId('main')
-
-  }, [lab.slug])
 
   // Fetch auxiliary file texts (.sol, .csv, .json, .md)
   useEffect(() => {

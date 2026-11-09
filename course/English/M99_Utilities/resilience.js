@@ -336,7 +336,7 @@ export const reuseTopic = async (stateKey, create, { check = () => true } = {}) 
       .then((res) => (res.ok ? res.json() : null))
       .catch(() => null)
     if (topic && !topic.deleted && check(topic)) {
-      console.log(`[INFO] Reusing topic ${savedId} from an earlier run (a topic with custom fees costs about 2 USD). Set FRESH_TOPICS=1 to create a new one.`)
+      console.log(`[INFO] Reusing topic ${savedId} from an earlier run. Set FRESH_TOPICS=1 to create a new one.`)
       return TopicId.fromString(savedId)
     }
   }

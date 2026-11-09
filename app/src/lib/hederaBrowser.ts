@@ -369,7 +369,7 @@ function trackClients (hedera: any) {
  * so TopicMessageQuery.subscribe() polls the Mirror Node REST API instead
  * and hands the listener the same TopicMessage objects (chunks reassembled).
  */
-function useRestTopicSubscriptions (hedera: any): void {
+function installRestTopicSubscriptions (hedera: any): void {
   const proto = hedera.TopicMessageQuery.prototype
   if (proto.__restPolling) return
   proto.__restPolling = true
@@ -544,7 +544,7 @@ export async function executeInBrowser (
   let stuck: { ms: number, reason: string } | null = null
   try {
     const hedera = await import('@hiero-ledger/sdk')
-    useRestTopicSubscriptions(hedera)
+    installRestTopicSubscriptions(hedera)
     trackClients(hedera)
     trackExecutions(hedera)
     // Same defaults as course/*/M99_Utilities/config.js: a generous fee ceiling
@@ -735,6 +735,23 @@ export async function executeInBrowser (
         .addHbarTransfer(accountId, new hedera.Hbar(topUp))
         .execute(c)
       await tx.getReceipt(c)
+    }
+    /** A throwaway account funded by the operator (M99 createLabAccount). */
+    const createLabAccount = async (c: any, { hbar = 0.1, ecdsa = false, autoAssociations = -1 } = {}) => {
+      const privateKey = ecdsa ? hedera.PrivateKey.generateECDSA() : hedera.PrivateKey.generateED25519()
+      const tx = new hedera.AccountCreateTransaction()
+        .setInitialBalance(new hedera.Hbar(hbar))
+        .setMaxAutomaticTokenAssociations(autoAssociations)
+      if (ecdsa) tx.setECDSAKeyWithAlias(privateKey)
+      else tx.setKeyWithoutAlias(privateKey.publicKey)
+      const receipt = await (await tx.execute(c)).getReceipt(c)
+      return { accountId: receipt.accountId, privateKey }
+    }
+    /** HBAR balance in tinybars from the Mirror Node, always fresh (M99 getMirrorHbarTinybars). */
+    const getMirrorHbarTinybars = async (accountId: string) => {
+      const res = await mirrorFetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${accountId}`, { ttlMs: 0 })
+      if (!res.ok) throw new Error(`Mirror Node returned ${res.status} for ${accountId}`)
+      return Number((await res.json()).balance.balance)
     }
     /** Reuse the token this lab created on an earlier run (token creation is ~1 USD). See M99 reuseToken. */
     /** A reused entity gets its HashScan link right away, since no transaction will print one. */
@@ -960,6 +977,8 @@ export async function executeInBrowser (
       findOwnedSerial,
       reuseContract,
       reuseTopic,
+      createLabAccount,
+      getMirrorHbarTinybars,
       exitIfStuck: (ms: number, reason = 'the expected network events') => { stuck = { ms, reason } },
       maxTransactionFeeHbar: () => 100,
       MAX_GAS,
