@@ -97,7 +97,10 @@ const main = async () => {
     console.log('\n[PROCESS] Step 2: Submitting a real HCS message and keeping its signed bytes...')
     const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:block-stream-lab').execute(client)).getReceipt(client)).topicId
     const tx = await new TopicMessageSubmitTransaction().setTopicId(topicId).setMessage('block-stream lab ping').freezeWith(client).signWithOperator(client)
-    const signedTxBytes = (await import('@hiero-ledger/proto')).proto.TransactionList.decode(tx.toBytes()).transactionList[0].signedTransactionBytes
+    // tx.toBytes() is a TransactionList (HAPI sdk/transaction_list.proto): field 5 of each Transaction
+    // holds its SignedTransaction bytes. Two fields of schema are all protobufjs needs to read them.
+    const { root: listRoot } = protobuf.parse('syntax = "proto3"; message Transaction { bytes signedTransactionBytes = 5; } message TransactionList { repeated Transaction transactionList = 1; }')
+    const signedTxBytes = listRoot.lookupType('TransactionList').decode(tx.toBytes()).transactionList[0].signedTransactionBytes
     const res = await tx.execute(client)
     await res.getReceipt(client)
     const txId = res.transactionId.toString()

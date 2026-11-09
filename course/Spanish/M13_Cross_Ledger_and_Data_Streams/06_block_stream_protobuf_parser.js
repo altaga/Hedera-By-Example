@@ -97,7 +97,10 @@ const main = async () => {
     console.log('\n[PROCESO] Paso 2: Enviando un mensaje HCS real y guardando sus bytes firmados...')
     const topicId = (await (await new TopicCreateTransaction().setTopicMemo('hbe:block-stream-lab').execute(client)).getReceipt(client)).topicId
     const tx = await new TopicMessageSubmitTransaction().setTopicId(topicId).setMessage('block-stream lab ping').freezeWith(client).signWithOperator(client)
-    const signedTxBytes = (await import('@hiero-ledger/proto')).proto.TransactionList.decode(tx.toBytes()).transactionList[0].signedTransactionBytes
+    // tx.toBytes() es un TransactionList (HAPI sdk/transaction_list.proto): el campo 5 de cada Transaction
+    // guarda los bytes de su SignedTransaction. Con esos dos campos de esquema protobufjs puede leerlos.
+    const { root: listRoot } = protobuf.parse('syntax = "proto3"; message Transaction { bytes signedTransactionBytes = 5; } message TransactionList { repeated Transaction transactionList = 1; }')
+    const signedTxBytes = listRoot.lookupType('TransactionList').decode(tx.toBytes()).transactionList[0].signedTransactionBytes
     const res = await tx.execute(client)
     await res.getReceipt(client)
     const txId = res.transactionId.toString()
