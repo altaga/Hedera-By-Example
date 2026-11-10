@@ -29,7 +29,9 @@
  * - Validación de Módulos Criptográficos NIST SP 800-140C (Almacenes Hardware Ed25519)
  *
  * [ SIMULADO ]
- * El marcapasos y su flujo MQTTS son emulados. Las firmas del dispositivo, el lote de Merkle y los mensajes en HCS son reales.
+ * El marcapasos es emulado, y sus frames viajan como paquetes PUBLISH reales de MQTT 3.1.1 (los codifica el dispositivo y
+ * los decodifica el gateway) sin broker ni socket TLS, que un navegador no puede abrir. Las firmas del dispositivo, el lote
+ * Merkle y los mensajes HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -46,6 +48,46 @@ import {
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
 import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
+
+/**
+ * Paquete PUBLISH de MQTT 3.1.1 (especificación OASIS, sección 3.3): cabecera fija 0x30 | QoS << 1,
+ * Remaining Length (entero de longitud variable), tópico (largo de 2 bytes + UTF-8), packet id si QoS > 0, payload.
+ */
+const encodeMqttPublish = (topic, payload, qos = 0, packetId = 1) => {
+  const topicBytes = Buffer.from(topic, 'utf8')
+  const variableHeader = Buffer.concat([Buffer.from([topicBytes.length >> 8, topicBytes.length & 0xff]), topicBytes, qos ? Buffer.from([packetId >> 8, packetId & 0xff]) : Buffer.alloc(0)])
+  const body = Buffer.concat([variableHeader, payload])
+  const remaining = []
+  let length = body.length
+  do {
+    let byte = length % 128
+    length = Math.floor(length / 128)
+    if (length > 0) byte |= 0x80
+    remaining.push(byte)
+  } while (length > 0)
+  return Buffer.concat([Buffer.from([0x30 | (qos << 1)]), Buffer.from(remaining), body])
+}
+
+const decodeMqttPublish = (packet) => {
+  if (packet[0] >> 4 !== 3) throw new Error('No es un paquete PUBLISH de MQTT')
+  const qos = (packet[0] >> 1) & 0x03
+  let multiplier = 1
+  let remaining = 0
+  let i = 1
+  let byte
+  do {
+    byte = packet[i++]
+    remaining += (byte & 0x7f) * multiplier
+    multiplier *= 128
+  } while (byte & 0x80)
+  const topicLength = (packet[i] << 8) | packet[i + 1]
+  const topic = packet.subarray(i + 2, i + 2 + topicLength).toString('utf8')
+  let cursor = i + 2 + topicLength
+  const packetId = qos ? (packet[cursor] << 8) | packet[cursor + 1] : null
+  if (qos) cursor += 2
+  if (packet.length !== i + remaining) throw new Error('El Remaining Length de MQTT no coincide con el paquete')
+  return { qos, topic, packetId, payload: packet.subarray(cursor) }
+}
 
 /**
  * Dispositivo de Hardware Médico Emulado: Marcapasos Cardíaco Implantable (PM-8821)
@@ -148,9 +190,14 @@ async function main () {
     for (let frameIndex = 1; frameIndex <= 8; frameIndex++) {
       // Simular el marco 6 como una arritmia cardíaca crítica
       const isCritical = frameIndex === 6
-      const frame = device.generateTelemetryFrame(isCritical)
+      const deviceFrame = device.generateTelemetryFrame(isCritical)
 
-      // Verificación Zero-Trust de la pasarela de la firma de hardware
+      // El dispositivo publica el frame como un paquete PUBLISH de MQTT real (QoS 1 para alertas, QoS 0 si no)
+      const packet = encodeMqttPublish(`devices/${device.deviceId}/telemetry`, Buffer.from(JSON.stringify(deviceFrame)), isCritical ? 1 : 0, frameIndex)
+      // El gateway decodifica los bytes que recibió y luego verifica la firma del hardware
+      const received = decodeMqttPublish(packet)
+      const frame = JSON.parse(received.payload.toString('utf8'))
+      if (frameIndex === 1) console.log(`[REGISTRO] Paquete MQTT PUBLISH: ${packet.length} bytes, cabecera ${packet.subarray(0, 4).toString('hex')}..., tópico "${received.topic}", QoS ${received.qos}`)
       const payloadBuf = Buffer.from(JSON.stringify(frame.payload))
       const isValid = crypto.verify(
         null,
