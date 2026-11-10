@@ -41,8 +41,8 @@ export async function runCourseCompilerTest() {
   console.log(`  ✓ en.json:    ${enKeys.length} labs`)
   console.log(`  ✓ es.json:    ${esKeys.length} labs`)
 
-  if (enKeys.length !== 131 || esKeys.length !== 131) {
-    throw new Error(`Expected 131 labs in en.json and es.json, got EN=${enKeys.length}, ES=${esKeys.length}`)
+  if (enKeys.length !== 135 || esKeys.length !== 135) {
+    throw new Error(`Expected 135 labs in en.json and es.json, got EN=${enKeys.length}, ES=${esKeys.length}`)
   }
 
   // Validate structural integrity of labs
@@ -53,7 +53,7 @@ export async function runCourseCompilerTest() {
     }
   }
 
-  console.log('✅ TEST 02 PASSED: Course compiler parsed all 131 labs with zero errors!')
+  console.log('✅ TEST 02 PASSED: Course compiler parsed all 135 labs with zero errors!')
   return { passed: true, modulesCount: index.modules.length, labsCount: index.labCount }
 }
 

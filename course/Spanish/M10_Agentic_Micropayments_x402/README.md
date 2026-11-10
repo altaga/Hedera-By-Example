@@ -87,6 +87,8 @@ En este módulo cerramos el eslabón que faltaba entre la inteligencia artificia
 | **06** | **Agente de Mercado Autónomo** | Cotizaciones 402 gratuitas de tres proveedores, un puntaje precio-rendimiento y un solo pago al ganador. | Ciclo de Agente Autónomo |
 | **07** | **Pasarela de Streaming de IA** | Inferencia por Server-Sent Events que solo se abre cuando el pago x402 se liquida en Hedera. | Proxy en Tiempo Real |
 | **08** | **Liquidación entre Dos Partes** | El comercio es su propio facilitador: verifica, firma, paga la comisión y audita en el Mirror Node. | Comercio como Facilitador (2 Actores) |
+| **09** | **Pagos Medidos con x402 upto** | El comprador firma un tope con Permit2 (witness EIP-712), el servidor mide los bytes que entrega y el facilitador liquida el monto real a través de `x402UptoPermit2Proxy`. | Esquema `upto` (EVM) |
+| **10** | **Agente de Comercio con Agent Kit** | Un agente del AI SDK con las herramientas del Agent Kit revisa su saldo, paga una oferta 402 y desbloquea un reporte que el vendedor verifica en el Mirror Node. | Agent Kit + Pagar para Desbloquear |
 
 ---
 
@@ -203,6 +205,8 @@ Un id de transacción de Hedera solo se ejecuta una vez y caduca 120 segundos de
 
 Los Labs 01–03 forman una cadena (cada uno lee lo que el anterior guardó en `state.json`): ejecútalos en orden, y el Lab 03 dentro de los dos minutos siguientes al Lab 02 (si el pago firmado caducó, el agente lo vuelve a firmar). Todos usan tu cuenta de testnet y las wallets de práctica `ACCOUNT_1` (agente) y `ACCOUNT_2` (comercio); en la web del curso corren en el navegador.
 
+El Lab 09 además usa una cuenta compradora desechable con alias EVM (Permit2 recupera la dirección del firmante), que borra al final, y tu cuenta como facilitador. El Lab 10 usa `ACCOUNT_1` como wallet del agente y `ACCOUNT_2` como vendedor.
+
 ---
 
 ## Referencias Oficiales
@@ -211,7 +215,8 @@ Los Labs 01–03 forman una cadena (cada uno lee lo que el anterior guardó en `
 - [Facilitadores x402 en Hedera](https://docs.hedera.com/solutions/ai/x402/facilitators)
 - [Repositorio del protocolo x402](https://github.com/x402-foundation/x402)
 - [Especificación del esquema exact en Hedera](https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md)
-- [Hedera Agent Kit](https://github.com/hedera-dev/hedera-agent-kit)
+- [Hedera Agent Kit (JavaScript)](https://github.com/hashgraph/hedera-agent-kit-js)
+- [Especificación del Esquema upto de x402 (EVM)](https://github.com/coinbase/x402/blob/main/specs/schemes/upto/scheme_upto_evm.md)
 
 ---
 

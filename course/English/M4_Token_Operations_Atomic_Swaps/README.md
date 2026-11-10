@@ -19,6 +19,7 @@
 | **07** | **Airdrop Cancel & Token Reject** | Clawing back unclaimed pending airdrops and rejecting spam tokens fee-free (HIP-904). |
 | **08** | **Triangular L1 Clearing** | In-memory Coincidence of Wants (CoW) matching engine settling 3-way ring trades atomically. |
 | **09** | **Atomic Flash Settlement** | Four real testnet accounts settle borrow, buy, sell and repay (HBAR + an HTS token) in one multi-signed TransferTransaction; an unfunded attempt is rejected as a whole. |
+| **10** | **Atomic Batch Transactions** | Two parties swap HBAR and log the trade on HCS in one HIP-551 batch; a batch whose last step fails leaves no trace (REVERTED_SUCCESS). |
 
 ---
 
@@ -97,6 +98,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
 | **08** | — | — | ~35 ℏ the first time (it creates 2 tokens, about 2 USD); ~6 ℏ when you run it again (it reuses what it created) |
 | **09** | — | — | ~17 ℏ (FLASH token creation ~15 ℏ on testnet) + ~0.6 ℏ to throwaway accounts + fees |
+| **10** | — | Yes | <1 ℏ the first time (topic); about 0.05 ℏ per run after that, spread over the three accounts |
 
 ---
 

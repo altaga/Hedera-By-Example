@@ -18,6 +18,7 @@ In this module, we bridge the gap for Ethereum native developers. You will learn
 | **04** | **Scaffold-HBAR Architecture** | What the create-scaffold-hbar CLI generates (Next.js, Hardhat or Foundry, Hedera config), checked against Hashio. |
 | **05** | **EIP-7702 Account Delegation** | Ethereum Pectra account delegation on Hedera JSON-RPC Relay for zero-cost smart account capabilities. |
 | **06** | **ERC-4337 Paymaster Gasless** | Gas sponsorship architecture, UserOperation signing, and EntryPoint verification for zero-gas dApps. |
+| **07** | **BLS12-381 Precompiles (EIP-2537)** | A contract aggregates a committee's keys, hashes the checkpoint to G2 on-chain and verifies the aggregate signature with one pairing check. |
 
 ---
 
@@ -96,6 +97,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **04** | — | — | <0.1 ℏ (network fees only) |
 | **05** | — | — | <0.1 ℏ (network fees only) |
 | **06** | — | Yes | ~35 ℏ the first time (two contracts, about 2 USD, plus a 5 ℏ paymaster deposit you can withdraw); ~1 ℏ when you run it again (bundler gas, partly refunded from the deposit) |
+| **07** | — | — | ~15 ℏ the first time (contract); about 0.5 ℏ per run after that (two contract calls) |
 
 ---
 

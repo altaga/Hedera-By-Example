@@ -38,9 +38,9 @@ async function main() {
   try {
     // Stage 2
     const t2 = await runCourseCompilerTest()
-    results.push({ name: 'Suite 02: Course-to-App Compiler (131 Labs)', status: 'PASS' })
+    results.push({ name: 'Suite 02: Course-to-App Compiler (135 Labs)', status: 'PASS' })
   } catch (err) {
-    results.push({ name: 'Suite 02: Course-to-App Compiler (131 Labs)', status: 'FAIL', error: err.message })
+    results.push({ name: 'Suite 02: Course-to-App Compiler (135 Labs)', status: 'FAIL', error: err.message })
   }
 
   try {

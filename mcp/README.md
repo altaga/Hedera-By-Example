@@ -1,6 +1,6 @@
 # Hedera by Example — MCP server
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server that gives your AI coding assistant the whole Hedera by Example course: **131 runnable labs in English and Spanish**, guardrails checked against the SDK and testnet, live Mirror Node reads and fee estimates in HBAR.
+A [Model Context Protocol](https://modelcontextprotocol.io) server that gives your AI coding assistant the whole Hedera by Example course: **135 runnable labs in English and Spanish**, guardrails checked against the SDK and testnet, live Mirror Node reads and fee estimates in HBAR.
 
 Ask your assistant things like *"how do I airdrop tokens to accounts that are not associated?"*, *"show me the HIP-991 paid topic lab"*, *"how much HBAR does creating a token and minting 10 NFTs cost today?"* or *"review this code for Hedera mistakes"*, and it answers from the course instead of guessing.
 
@@ -81,7 +81,7 @@ It binds `127.0.0.1`. Use `--host 0.0.0.0` to expose it. Browser origins other t
 | :--- | :--- |
 | `search_labs` | Ranked search over all labs (English or Spanish). It accepts free text, SDK classes (`TokenAirdropTransaction`) and standards (HIP-991, HCS-10). Each result says what to run first, the wallets needed and the HBAR cost. |
 | `get_lab` | One lab in full: concept, learnable moment, *before you run* (wallets, labs to run first, cost), official references, links to run it in the browser and to the source, and the complete code. |
-| `list_labs` | The course map: 16 modules, 131 labs and their slugs. |
+| `list_labs` | The course map: 16 modules, 135 labs and their slugs. |
 | `query_curriculum` | Search and return the best labs with their code in one call. |
 | `anti_hallucination_rules` | 17 verified guardrails: tinybars and Hbar math, weibars on JSON-RPC, USD-fixed fees, realistic gas limits (only used gas is charged since HIP-1249; 15M max), ambiguous raw keys, long-zero vs alias EVM addresses, associations and HIP-904, 100-byte metadata, HCS and HFS size limits, Mirror Node lag and rate limits, receipts vs records, schedules. |
 | `architecture_decision_tree` | When to use HCS, HTS or smart contracts (optionally only one section with `focus`). |
@@ -93,7 +93,7 @@ It binds `127.0.0.1`. Use `--host 0.0.0.0` to expose it. Browser origins other t
 ## Resources and prompts
 
 - **Resources:**
-  - Every lab is a resource in both languages, `hbe://lab/{en|es}/{slug}` (262), also offered as a template.
+  - Every lab is a resource in both languages, `hbe://lab/{en|es}/{slug}` (270), also offered as a template.
   - The course maps `hbe://labs/en` and `hbe://labs/es`.
   - The guides `hbe://guide/guardrails`, `…/architecture`, `…/official-resources` and `…/hackathon`.
 - **Prompts:**

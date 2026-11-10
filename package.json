@@ -2,7 +2,7 @@
   "name": "hedera-by-example",
   "version": "1.0.0",
   "private": true,
-  "description": "Hedera by Example monorepo: interactive web studio, 131-lab course, MCP server and test gateway",
+  "description": "Hedera by Example monorepo: interactive web studio, 135-lab course, MCP server and test gateway",
   "type": "module",
   "license": "Apache-2.0",
   "engines": {

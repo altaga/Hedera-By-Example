@@ -19,6 +19,7 @@
 | **07** | **Cancelación y Rechazo (HIP-904)** | Recuperación de airdrops no reclamados y rechazo de tokens spam sin comisiones. |
 | **08** | **Liquidación Triangular L1** | Motor CoW en memoria liquidando Ring Trades de 3 operadores de forma atómica en Capa 1. |
 | **09** | **Liquidación Atómica Flash** | Cuatro cuentas reales de testnet liquidan préstamo, compra, venta y reembolso (HBAR + token HTS) en una TransferTransaction multifirma; un intento sin fondos se rechaza completo. |
+| **10** | **Lote Atómico (HIP-551)** | Dos partes intercambian HBAR y registran la operación en HCS en un solo lote; un lote cuyo último paso falla no deja rastro (REVERTED_SUCCESS). |
 
 ---
 
@@ -97,6 +98,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **08** | — | — | ~35 ℏ la primera vez (crea 2 tokens, cerca de 2 USD); ~6 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **09** | — | — | ~17 ℏ (crear el token FLASH ~15 ℏ en testnet) + ~0.6 ℏ para cuentas desechables + comisiones |
+| **10** | — | Sí | <1 ℏ la primera vez (topic); unos 0.05 ℏ por ejecución después, repartidos entre las tres cuentas |
 
 ---
 

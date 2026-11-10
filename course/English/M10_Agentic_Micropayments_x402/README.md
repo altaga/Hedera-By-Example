@@ -87,6 +87,8 @@ In this module, we close the missing link between artificial intelligence and de
 | **06** | **Autonomous Market Agent** | Free 402 quotes from three providers, a price-performance score, one payment to the winner. | Autonomous Agent Loop |
 | **07** | **Live AI Streaming Gateway** | Server-Sent Events inference that opens only after the x402 payment settles on Hedera. | Real-Time Proxy |
 | **08** | **Two-Party Settlement** | The merchant is its own facilitator: it verifies, co-signs, pays the fee and audits on the Mirror Node. | Merchant as Facilitator (2 Actors) |
+| **09** | **x402 upto Metered Payments** | The buyer signs a ceiling with Permit2 (EIP-712 witness), the server meters the bytes it serves and the facilitator settles the actual amount through `x402UptoPermit2Proxy`. | `upto` Scheme (EVM) |
+| **10** | **Hedera Agent Kit Commerce Agent** | An AI SDK agent with the Agent Kit's tools checks its balance, pays a 402 offer and unlocks a report the seller verifies on the Mirror Node. | Agent Kit + Pay-to-Unlock |
 
 ---
 
@@ -203,6 +205,8 @@ A Hedera transaction id can execute only once and expires 120 seconds after sign
 
 Labs 01–03 are a chain (each reads what the previous one saved in `state.json`): run them in order, and Lab 03 within two minutes of Lab 02 (if the signed payment expired, the agent signs it again). Every lab uses your testnet account plus the practice wallets `ACCOUNT_1` (agent) and `ACCOUNT_2` (merchant); in the course website they run in the browser.
 
+Lab 09 also uses a throwaway buyer account with an EVM alias (Permit2 recovers the signer's address) that it deletes at the end, and your account as the facilitator. Lab 10 uses `ACCOUNT_1` as the agent's wallet and `ACCOUNT_2` as the seller.
+
 ---
 
 ## Official References
@@ -211,7 +215,8 @@ Labs 01–03 are a chain (each reads what the previous one saved in `state.json`
 - [x402 Facilitators on Hedera](https://docs.hedera.com/solutions/ai/x402/facilitators)
 - [x402 Foundation Protocol Repository](https://github.com/x402-foundation/x402)
 - [Hedera Exact Payment Scheme Specification](https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_hedera.md)
-- [Hedera Agent Kit](https://github.com/hedera-dev/hedera-agent-kit)
+- [Hedera Agent Kit (JavaScript)](https://github.com/hashgraph/hedera-agent-kit-js)
+- [x402 upto Scheme Specification (EVM)](https://github.com/coinbase/x402/blob/main/specs/schemes/upto/scheme_upto_evm.md)
 
 ---
 
