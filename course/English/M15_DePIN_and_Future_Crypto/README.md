@@ -66,7 +66,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | <0.1 ℏ (network fees only) |
 | **02** | — | — | <1 ℏ (network fees only) |
-| **03** | — | Yes | <1 ℏ (network fees only) |
+| **03** | — | Yes | ~15 ℏ the first time (it creates the tUSD token); <1 ℏ after (reuses it), plus 0.5 HBAR sent to ACCOUNT_1 |
 | **04** | — | Yes | <1 ℏ (network fees only) |
 | **05** | — | — | <0.1 ℏ (network fees only) |
 

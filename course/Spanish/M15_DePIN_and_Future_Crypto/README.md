@@ -66,7 +66,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | <0.1 ℏ (solo comisiones de red) |
 | **02** | — | — | <1 ℏ (solo comisiones de red) |
-| **03** | — | Sí | <1 ℏ (solo comisiones de red) |
+| **03** | — | Sí | ~15 ℏ la primera vez (crea el token tUSD); <1 ℏ después (lo reutiliza), más 0.5 HBAR enviados a ACCOUNT_1 |
 | **04** | — | Sí | <1 ℏ (solo comisiones de red) |
 | **05** | — | — | <0.1 ℏ (solo comisiones de red) |
 
