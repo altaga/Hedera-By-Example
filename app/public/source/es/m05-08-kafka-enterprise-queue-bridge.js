@@ -35,7 +35,7 @@
  * - Siguiente: M6 Lab 01: Almacenamiento Nativo en HFS
  *
  * [ SIMULADO ]
- * No se usa ningún broker Kafka ni Redpanda: los eventos de partición se generan en memoria. Los anclajes de marca de agua en HCS son reales.
+ * No se usa ningún broker Kafka ni Redpanda (un navegador no puede correr uno): las particiones viven en memoria, pero las claves se asignan con el particionador por defecto de Kafka (murmur2), así que cada clave cae en la partición que elegiría un broker real. Los anclajes de marca de agua en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -53,6 +53,32 @@ import {
 } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
 
+// Utils.murmur2 de Kafka (org.apache.kafka.common.utils.Utils), con aritmética de enteros de 32 bits.
+// Coincide con los vectores de prueba del UtilsTest de Kafka (ej. "21" -> -973932308).
+const kafkaMurmur2 = (data) => {
+  const m = 0x5bd1e995
+  const length = data.length
+  let h = (0x9747b28c ^ length) | 0
+  for (let i = 0; i < length >> 2; i++) {
+    const i4 = i * 4
+    let k = (data[i4] & 0xff) | ((data[i4 + 1] & 0xff) << 8) | ((data[i4 + 2] & 0xff) << 16) | ((data[i4 + 3] & 0xff) << 24)
+    k = Math.imul(k, m)
+    k ^= k >>> 24
+    k = Math.imul(k, m)
+    h = Math.imul(h, m)
+    h ^= k
+  }
+  const tail = length & ~3
+  const rest = length % 4
+  if (rest === 3) h ^= (data[tail + 2] & 0xff) << 16
+  if (rest >= 2) h ^= (data[tail + 1] & 0xff) << 8
+  if (rest >= 1) { h ^= data[tail] & 0xff; h = Math.imul(h, m) }
+  h ^= h >>> 13
+  h = Math.imul(h, m)
+  h ^= h >>> 15
+  return h | 0
+}
+
 /**
  * Broker de Colas Particionadas en Memoria (Simulación de Kafka / Redpanda)
  */
@@ -63,10 +89,10 @@ class InMemoryKafkaBroker {
     this.partitions = Array.from({ length: numPartitions }, () => [])
   }
 
-  // Asignador determinista de partición basado en Hash
+  // El particionador por defecto de Kafka: toPositive(murmur2(bytesDeLaClave)) % numPartitions, así
+  // un broker real pondría cada clave en la misma partición.
   getPartition (key) {
-    const hash = crypto.createHash('md5').update(String(key)).digest()
-    return hash.readUInt32BE(0) % this.numPartitions
+    return (kafkaMurmur2(Buffer.from(String(key), 'utf8')) & 0x7fffffff) % this.numPartitions
   }
 
   publish (key, payload) {

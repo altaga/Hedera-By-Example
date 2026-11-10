@@ -35,7 +35,7 @@
  * - Next:     M6 Lab 01: Native Hedera File Service (HFS) - Normal Files
  *
  * [ SIMULATED ]
- * No Kafka or Redpanda broker is used: the partition events are generated in memory. The HCS watermark anchors are real.
+ * No Kafka or Redpanda broker is used (a browser cannot run one): the partitions live in memory, but keys are assigned with Kafka's own default partitioner (murmur2), so each key lands in the partition a real broker would choose. The HCS watermark anchors are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -53,6 +53,32 @@ import {
 } from '@hiero-ledger/sdk'
 import { getClient, getHashscanUrl, updateState } from '../M99_Utilities/index.js'
 
+// Kafka's Utils.murmur2 (org.apache.kafka.common.utils.Utils), with 32-bit integer math.
+// Matches the test vectors in Kafka's own UtilsTest (e.g. "21" -> -973932308).
+const kafkaMurmur2 = (data) => {
+  const m = 0x5bd1e995
+  const length = data.length
+  let h = (0x9747b28c ^ length) | 0
+  for (let i = 0; i < length >> 2; i++) {
+    const i4 = i * 4
+    let k = (data[i4] & 0xff) | ((data[i4 + 1] & 0xff) << 8) | ((data[i4 + 2] & 0xff) << 16) | ((data[i4 + 3] & 0xff) << 24)
+    k = Math.imul(k, m)
+    k ^= k >>> 24
+    k = Math.imul(k, m)
+    h = Math.imul(h, m)
+    h ^= k
+  }
+  const tail = length & ~3
+  const rest = length % 4
+  if (rest === 3) h ^= (data[tail + 2] & 0xff) << 16
+  if (rest >= 2) h ^= (data[tail + 1] & 0xff) << 8
+  if (rest >= 1) { h ^= data[tail] & 0xff; h = Math.imul(h, m) }
+  h ^= h >>> 13
+  h = Math.imul(h, m)
+  h ^= h >>> 15
+  return h | 0
+}
+
 /**
  * In-Memory Enterprise Partitioned Queue Broker (Kafka / Redpanda simulation)
  */
@@ -63,10 +89,10 @@ class InMemoryKafkaBroker {
     this.partitions = Array.from({ length: numPartitions }, () => [])
   }
 
-  // Deterministic Murmur2 / Hash-based partition assignor
+  // Kafka's default partitioner: toPositive(murmur2(keyBytes)) % numPartitions, so a real
+  // broker would put each key in the same partition.
   getPartition (key) {
-    const hash = crypto.createHash('md5').update(String(key)).digest()
-    return hash.readUInt32BE(0) % this.numPartitions
+    return (kafkaMurmur2(Buffer.from(String(key), 'utf8')) & 0x7fffffff) % this.numPartitions
   }
 
   publish (key, payload) {
