@@ -46,7 +46,7 @@ import {
   TransferTransaction,
   AccountId
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, executeWithGas, reuseToken, reuseContract } from '../M99_Utilities/index.js'
+import { getClient, updateState, executeWithGas, reuseToken, reuseContract, getJsonRpcUrl } from '../M99_Utilities/index.js'
 
 const compileSolidityContract = (sourcePath) => {
   console.log('[PROCESO] Compilando contrato inteligente Solidity con solc 0.8.20...')
@@ -81,6 +81,19 @@ const compileSolidityContract = (sourcePath) => {
   }
 }
 
+// Lee el bytecode de una dirección desde el relay JSON-RPC, reintentando mientras un token nuevo llega a él.
+const readCode = async (address) => {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const res = await fetch(getJsonRpcUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getCode', params: [address, 'latest'] }) })
+      const { result } = await res.json()
+      if (result && result !== '0x') return result
+    } catch (_) {}
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+  }
+  return null
+}
+
 const main = async () => {
   console.log('--- INICIO DEL LABORATORIO: Fachada Directa HTS como ERC-20 ---\n')
   const { client, operatorId, network } = getClient()
@@ -111,6 +124,14 @@ const main = async () => {
     const tokenEvmAddress = `0x${htsTokenId.toEvmAddress()}`
     console.log(`[ÉXITO] Token Nativo HTS Creado: ${htsTokenId.toString()}`)
     console.log(`[REGISTRO] Dirección EVM Determinista: ${tokenEvmAddress}`)
+
+    // La dirección del token no tiene código Solidity propio. Desde Release 77 (HIP-1341) eth_getCode devuelve
+    // el indicador de delegación 0xef0100 + la dirección del system contract de HTS: las llamadas ERC-20 corren el código de 0x167.
+    const tokenCode = await readCode(tokenEvmAddress)
+    console.log(`[REGISTRO] eth_getCode(token): ${tokenCode || 'todavía no está en el relay'}`)
+    if (tokenCode?.toLowerCase().startsWith('0xef0100')) {
+      console.log(`[INFO] Indicador de delegación 0xef0100 -> 0x${tokenCode.slice(8)} (system contract de HTS 0x167)`)
+    }
 
     // 2. Compilar Contrato Solidity
     const currentDir = path.dirname(import.meta.filename)
