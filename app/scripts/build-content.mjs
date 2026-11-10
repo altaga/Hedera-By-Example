@@ -10,7 +10,7 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
-import { buildVendor, buildZkVendor } from './build-vendor.mjs'
+import { buildVendor, buildZkVendor, buildAgentKitVendor } from './build-vendor.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, '..', 'course'))
@@ -356,4 +356,6 @@ buildVendor()
   .then((r) => console.log(`Bundled Node-only lab libraries for the browser → public/vendor/hbe-vendor.mjs (${(r.size / 1024).toFixed(0)} KB)`))
   .then(() => buildZkVendor())
   .then((r) => console.log(`Bundled zk libraries (snarkjs, circomlibjs) → public/vendor/hbe-zk.mjs (${(r.size / 1024).toFixed(0)} KB)`))
+  .then(() => buildAgentKitVendor())
+  .then((r) => console.log(`Bundled Hedera Agent Kit + AI SDK → public/vendor/hbe-agentkit.mjs (${(r.size / 1024).toFixed(0)} KB)`))
   .catch((e) => { console.error(`vendor bundle failed: ${e.message}`); process.exit(1) })

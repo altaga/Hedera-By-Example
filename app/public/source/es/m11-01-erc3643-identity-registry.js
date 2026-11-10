@@ -30,7 +30,7 @@
  * - https://erc3643.org/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M10 Lab 08: Liquidación entre Dos Partes (el Comercio como Facilitador)
+ * - Anterior:  M10 Lab 10: Agente de Comercio con el Hedera Agent Kit
  * - Siguiente: M11 Lab 02: Bonos por Tramos en HTS y Pago de Cupones (Conceptos ERC-1400)
  *
  * [ SECUENCIA ]

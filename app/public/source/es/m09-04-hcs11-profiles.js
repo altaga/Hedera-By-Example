@@ -61,7 +61,7 @@ const main = async () => {
   const PRIVATE_KEY_DER = PrivateKey.fromString(privateKeyDer)
 
   // La Cuenta 1 paga los tres agentes (2 HBAR c/u + tópicos y perfiles): se recarga si hace falta.
-  await ensureFunded(operatorClient, accountId, 10)
+  await ensureFunded(operatorClient, accountId, 15)
 
   // Configuración de Agentes a crear (Sincronizado con versión inglesa)
   const agentsToCreate = [

@@ -61,7 +61,7 @@ const main = async () => {
   const PRIVATE_KEY_DER = PrivateKey.fromString(privateKeyDer)
 
   // Account 1 pays for the three agents (2 HBAR each + topics and profiles): top it up if needed.
-  await ensureFunded(operatorClient, accountId, 10)
+  await ensureFunded(operatorClient, accountId, 15)
 
   // Agent configuration (Synchronized with the overall curriculum)
   const agentsToCreate = [

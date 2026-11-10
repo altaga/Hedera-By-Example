@@ -30,7 +30,7 @@
  * - https://erc3643.org/
  *
  * [ LEARNING PATH ]
- * - Previous: M10 Lab 08: Two-Party Settlement (Merchant as Facilitator)
+ * - Previous: M10 Lab 10: Commerce Agent with the Hedera Agent Kit
  * - Next:     M11 Lab 02: Tranche Bonds on HTS & Coupon Payouts (ERC-1400 Concepts)
  *
  * [ SEQUENCE ]

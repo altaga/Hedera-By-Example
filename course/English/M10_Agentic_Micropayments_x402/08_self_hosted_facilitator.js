@@ -21,7 +21,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M10 Lab 07: Live AI Streaming Proxy Gateway (SSE + x402 Settlement)
- * - Next:     M11 Lab 01: Permissioned RWA Transfers — Identity Registry + HTS KYC (ERC-3643 Concepts)
+ * - Next:     M10 Lab 09: Metered Payments with the x402 upto Scheme
  *
  * [ SEQUENCE ]
  * Buyer -> Seller: GET /api/v1/quantum-pricing/derivatives-matrix

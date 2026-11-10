@@ -21,7 +21,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M10 Lab 07: Pasarela Proxy de Streaming de IA (SSE + Liquidación x402)
- * - Siguiente: M11 Lab 01: Transferencias RWA con Permisos — Registro de Identidad + KYC de HTS (Conceptos ERC-3643)
+ * - Siguiente: M10 Lab 09: Pagos Medidos con el Esquema upto de x402
  *
  * [ SECUENCIA ]
  * Comprador -> Vendedor: GET /api/v1/quantum-pricing/derivatives-matrix

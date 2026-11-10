@@ -300,6 +300,15 @@ export async function loadZkVendor (ctx: ModuleContext): Promise<any> {
   return zkPromise
 }
 
+let agentKitPromise: Promise<any> | null = null
+
+/** Hedera Agent Kit + Vercel AI SDK (~3 MB), loaded only by the lab that imports them (M10 Lab 10). */
+export async function loadAgentKitVendor (ctx: ModuleContext): Promise<any> {
+  await loadVendor(ctx) // sets globalThis.__HBE_NODE: @hashgraph/sdk resolves to the runner's SDK
+  if (!agentKitPromise) agentKitPromise = importUrl('/vendor/hbe-agentkit.mjs').catch((e) => { agentKitPromise = null; throw e })
+  return agentKitPromise
+}
+
 export async function loadVendor (ctx: ModuleContext): Promise<any> {
   vendorCtx = ctx
   if (!vendorPromise) {
@@ -456,6 +465,12 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case 'zod': {
       const v = await loadVendor(ctx)
       return { ...v, default: v }
+    }
+    case 'hedera-agent-kit':
+    case 'ai':
+    case 'ai/test': {
+      const ak = await loadAgentKitVendor(ctx)
+      return { ...ak, default: ak }
     }
     case 'snarkjs': {
       const zk = await loadZkVendor(ctx)

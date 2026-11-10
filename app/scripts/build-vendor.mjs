@@ -179,8 +179,48 @@ export async function buildZkVendor () {
   }
 }
 
+/**
+ * Hedera Agent Kit + Vercel AI SDK for M10 Lab 10, in their own file: the kit pulls in
+ * LangChain and other large dependencies that no other lab needs. @hashgraph/sdk resolves
+ * to the runner's SDK, so the kit's transactions are the classes the lab's client runs.
+ * Output: public/vendor/hbe-agentkit.mjs.
+ */
+export async function buildAgentKitVendor () {
+  const entry = path.join(OUT, '.agentkit-entry.mjs')
+  fs.writeFileSync(entry, [
+    "export { HederaAIToolkit, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'",
+    "export { generateText, stepCountIs, tool, jsonSchema } from 'ai'",
+    "export { MockLanguageModelV3 } from 'ai/test'"
+  ].join('\n') + '\n')
+  try {
+    const result = await build({
+      entryPoints: [entry],
+      bundle: true,
+      format: 'esm',
+      platform: 'browser',
+      conditions: ['browser'],
+      mainFields: ['browser', 'module', 'main'],
+      nodePaths: [path.join(COURSE, 'node_modules')],
+      outfile: path.join(OUT, 'hbe-agentkit.mjs'),
+      minify: process.env.VENDOR_DEBUG ? false : true,
+      treeShaking: true,
+      target: 'es2020',
+      define: { 'process.env.NODE_ENV': '"production"', global: 'globalThis' },
+      inject: [path.join(ROOT, 'scripts', 'vendor-globals.mjs')],
+      alias: { stream: 'readable-stream' },
+      plugins: [runtimePlugin],
+      logLevel: 'error',
+      metafile: true
+    })
+    return { size: fs.statSync(path.join(OUT, 'hbe-agentkit.mjs')).size, inputs: Object.keys(result.metafile.inputs).length }
+  } finally {
+    fs.rmSync(entry, { force: true })
+  }
+}
+
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   buildVendor().then((r) => console.log(`vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`))
     .then(() => buildZkVendor()).then((r) => console.log(`zk vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`))
+    .then(() => buildAgentKitVendor()).then((r) => console.log(`agent kit vendor: ${(r.size / 1024).toFixed(0)} KB from ${r.inputs} files`))
     .catch((e) => { console.error(e.message); process.exit(1) })
 }
