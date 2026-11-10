@@ -28,13 +28,16 @@
  * [ REFERENCIAS OFICIALES ]
  * - https://eips.ethereum.org/EIPS/eip-7702
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ * - https://hips.hedera.com/hip/hip-1340
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 04: Arquitectura Full-Stack con Scaffold-HBAR (Introducción)
  * - Siguiente: M12 Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
  *
  * [ SIMULADO ]
- * El lote de EIP-7702 se arma y se firma pero no se ejecuta: este lab no envía ninguna transacción Type 4.
+ * Hedera todavía no acepta EIP-7702 (HIP-1340 está aprobado, no liberado): el lab firma una transacción
+ * Type 4 real y la envía al relay JSON-RPC, que responde "Unsupported transaction type". El contrato de
+ * delegación (Multicall3) y el lote son reales, y el lote también corre hoy vía eth_call.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -46,132 +49,101 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { PrivateKey } from '@hiero-ledger/sdk'
+import { getClient, updateState, getJsonRpcUrl, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
-/**
- * Motor de Construcción y Verificación Criptográfica de Autorizaciones EIP-7702
- */
-class Eip7702DelegationEngine {
-  constructor (chainId = 296) { // 296 = Hedera Testnet Chain ID
-    this.chainId = chainId
-    this.MAGIC = '0x05' // Identificador Magic byte de EIP-7702
-  }
-
-  /**
-   * Codifica y calcula el hash de la tupla de autorización EIP-7702:
-   * keccak256(MAGIC || rlp([chain_id, address, nonce]))
-   */
-  computeAuthorizationHash (contractAddress, nonce) {
-    // Codificación RLP de [chain_id, address, nonce]
-    const encodedTuple = ethers.encodeRlp([
-      ethers.toBeHex(this.chainId),
-      contractAddress.toLowerCase(),
-      nonce === 0 ? '0x' : ethers.toBeHex(nonce)
-    ])
-    // Anteponer magic byte EIP-7702 (0x05) y calcular hash
-    const payload = ethers.concat([this.MAGIC, encodedTuple])
-    return ethers.keccak256(payload)
-  }
-
-  /**
-   * Firma la tupla de autorización utilizando la billetera EOA delegante
-   */
-  async signAuthorization (wallet, contractAddress, nonce) {
-    const authHash = this.computeAuthorizationHash(contractAddress, nonce)
-    const signingKey = new ethers.SigningKey(wallet.privateKey)
-    const sig = signingKey.sign(authHash)
-
-    return {
-      chainId: this.chainId,
-      contractAddress: contractAddress.toLowerCase(),
-      nonce,
-      yParity: sig.yParity,
-      r: sig.r,
-      s: sig.s,
-      authHash
-    }
-  }
-
-  /**
-   * Verifica la recuperación criptográfica del firmante de la tupla
-   */
-  verifyAuthorization (auth) {
-    const recoveredAddress = ethers.recoverAddress(auth.authHash, {
-      r: auth.r,
-      s: auth.s,
-      yParity: auth.yParity
-    })
-    return recoveredAddress
-  }
-}
+const CHAIN_ID = 296 // Hedera Testnet
+const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11' // desplegado en Hedera testnet (0.0.7205171)
+const MULTICALL3_ABI = [
+  'function aggregate3((address target, bool allowFailure, bytes callData)[] calls) payable returns ((bool success, bytes returnData)[])',
+  'function getBlockNumber() view returns (uint256)',
+  'function getEthBalance(address) view returns (uint256)'
+]
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Delegación de Cuentas EIP-7702 Pectra (Relay Hedera) ---\n')
-  const { client } = getClient()
+  console.log('--- INICIO DE SESIÓN: Delegación de Cuentas EIP-7702 Pectra (Relay de Hedera) ---\n')
+  const { client, operatorId, operatorKey } = getClient()
 
   try {
-    const delegationEngine = new Eip7702DelegationEngine(296) // Hedera Testnet
+    const provider = new ethers.JsonRpcProvider(getJsonRpcUrl(), CHAIN_ID)
+    const eoa = new ethers.Wallet('0x' + PrivateKey.fromStringDer(operatorKey).toStringRaw(), provider)
+    const multicall = new ethers.Interface(MULTICALL3_ABI)
 
-    // 1. Generar Billetera EOA Delegante y Dirección de Implementación
-    console.log('[PROCESO] Paso 1: Generando EOA Delegante y Dirección de Implementación por Lotes...')
-    const delegatorWallet = ethers.Wallet.createRandom()
-    const batchContractAddress = '0x0000000000000000000000000000000000abacba' // Dirección del ejecutor por lotes
+    // 1. El delegador (tu cuenta ECDSA) y la implementación a la que delega
+    console.log('[PROCESO] Paso 1: EOA delegadora y el contrato de implementación...')
+    const account = await (await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${operatorId}`)).json()
+    console.log(`[REGISTRO] EOA delegadora (tu llave):   ${eoa.address}`)
+    console.log(`[REGISTRO] Dirección EVM de tu cuenta:   ${account.evm_address}${account.evm_address.toLowerCase() === eoa.address.toLowerCase() ? '' : ' (sin alias: las transacciones estilo Ethereum firmadas con tu llave salen de la dirección de la llave de arriba, no de esta cuenta)'}`)
+    console.log(`[REGISTRO] Contrato de delegación:     ${MULTICALL3} (Multicall3, en Hedera testnet)`)
+    console.log(`[REGISTRO] Red:                        Hedera Testnet (Chain ID ${CHAIN_ID})`)
 
-    console.log(`[REGISTRO] Dirección EOA Delegante:    ${delegatorWallet.address}`)
-    console.log(`[REGISTRO] Contrato Destino Delegado:   ${batchContractAddress}`)
-    console.log('[REGISTRO] Red de Destino:              Hedera Testnet (Chain ID 296)')
+    // 2. La autorización EIP-7702: una firma sobre keccak256(0x05 || rlp([chainId, address, nonce]))
+    console.log('\n[PROCESO] Paso 2: Firmando la autorización EIP-7702...')
+    const nonce = await provider.getTransactionCount(eoa.address)
+    // El nonce de la autorización es el nonce de la cuenta después de usar el de esta transacción.
+    const authorization = await eoa.authorize({ address: MULTICALL3, nonce: nonce + 1, chainId: CHAIN_ID })
+    const authHash = ethers.keccak256(ethers.concat(['0x05', ethers.encodeRlp([ethers.toBeHex(CHAIN_ID), MULTICALL3.toLowerCase(), ethers.toBeHex(nonce + 1)])]))
+    const recovered = ethers.recoverAddress(authHash, authorization.signature)
+    if (recovered !== eoa.address) throw new Error(`El firmante de la autorización no coincide: ${recovered}`)
+    console.log(`[ÉXITO] Autorización firmada (nonce ${nonce + 1}); firmante recuperado ${recovered}`)
 
-    // 2. Construir y Firmar la Tupla de Autorización EIP-7702
-    console.log('\n[PROCESO] Paso 2: Construyendo la Tupla de Autorización EIP-7702...')
-    const nonce = 0
-    const authorization = await delegationEngine.signAuthorization(
-      delegatorWallet,
-      batchContractAddress,
-      nonce
-    )
-
-    console.log('[ÉXITO] Autorización EIP-7702 Firmada:')
-    console.log(`Chain ID:    ${authorization.chainId}`)
-    console.log(`Contrato:    ${authorization.contractAddress}`)
-    console.log(`Nonce:       ${authorization.nonce}`)
-    console.log(`yParity:     ${authorization.yParity}`)
-    console.log(`r:           ${authorization.r.substring(0, 18)}...`)
-    console.log(`s:           ${authorization.s.substring(0, 18)}...`)
-    console.log(`Digest Auth: ${authorization.authHash}`)
-
-    // 3. Verificación de Firma Criptográfica
-    console.log('\n[PROCESO] Paso 3: Recuperando al firmante de la autorización (localmente, con ethers)...')
-    const recovered = delegationEngine.verifyAuthorization(authorization)
-
-    if (recovered.toLowerCase() !== delegatorWallet.address.toLowerCase()) {
-      throw new Error(`¡Discrepancia en la firma! Recuperado: ${recovered}, Esperado: ${delegatorWallet.address}`)
-    }
-    console.log(`[ÉXITO] ¡Prueba Criptográfica Validada! EOA Recuperada: ${recovered}`)
-
-    // 4. Simular Ejecución por Lotes Tipo 4 (0x04)
-    console.log('\n[PROCESO] Paso 4: Simulando Ejecución Atómica Multi-Call Tipo 4 (EIP-7702)...')
-    const multiCallBatch = [
-      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0', label: 'Aprobación de token HTS vía fachada (sin gas)' },
-      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0', label: 'Liquidación atómica de liquidez (sin gas)' }
+    // 3. El lote: dos llamadas reales, codificadas para Multicall3.aggregate3
+    const calls = [
+      { target: MULTICALL3, allowFailure: false, callData: multicall.encodeFunctionData('getBlockNumber') },
+      { target: MULTICALL3, allowFailure: false, callData: multicall.encodeFunctionData('getEthBalance', [account.evm_address]) }
     ]
+    const batchData = multicall.encodeFunctionData('aggregate3', [calls])
+    console.log('\n[PROCESO] Paso 3: Lote armado: aggregate3([getBlockNumber(), getEthBalance(tu cuenta)])')
 
-    multiCallBatch.forEach((call, i) => console.log(`[Acción ${i + 1}] ${call.label} -> ${call.target}`))
-    console.log('[INFO] Lote NO ejecutado: este lab no envía transacciones Type 4, así que el lote de arriba solo se arma y se firma (simulado).')
+    // El lote ya funciona hoy como una llamada normal a Multicall3:
+    const [results] = multicall.decodeFunctionResult('aggregate3', await provider.call({ to: MULTICALL3, data: batchData }))
+    const block = multicall.decodeFunctionResult('getBlockNumber', results[0].returnData)[0]
+    const balance = multicall.decodeFunctionResult('getEthBalance', results[1].returnData)[0]
+    console.log(`[VERIFY] Lote vía eth_call a Multicall3: bloque ${block}, saldo de la cuenta ${ethers.formatUnits(balance, 8)} HBAR (dentro de la EVM, los saldos van en tinybars)`)
 
-    updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)
-    updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
+    // 4. La transacción Type 4: enviarla al relay y mostrar la respuesta de la red
+    console.log('\n[PROCESO] Paso 4: Enviando al relay la transacción EIP-7702 (Type 4) firmada...')
+    const feeData = await provider.getFeeData()
+    const signedTx = await eoa.signTransaction({
+      type: 4,
+      chainId: CHAIN_ID,
+      nonce,
+      to: eoa.address, // con 7702, una llamada a ti mismo ejecuta el código delegado
+      data: batchData,
+      gasLimit: 200000,
+      maxFeePerGas: feeData.gasPrice,
+      maxPriorityFeePerGas: 0,
+      authorizationList: [authorization]
+    })
+    console.log(`[REGISTRO] Transacción Type 4 firmada: ${signedTx.slice(0, 18)}... (${(signedTx.length - 2) / 2} bytes)`)
+    let relayAnswer
+    try {
+      const hash = await provider.send('eth_sendRawTransaction', [signedTx])
+      relayAnswer = `aceptada (${hash})`
+      console.log(`[ÉXITO] El relay aceptó la transacción Type 4: ${hash}`)
+    } catch (error) {
+      let body = {}
+      try { body = JSON.parse(error?.info?.responseBody || '{}') } catch (_) {}
+      relayAnswer = body?.error?.message || error?.error?.message || error?.shortMessage || error.message
+      console.log(`[INFO] Respuesta del relay: ${relayAnswer}`)
+      console.log('[INFO] Hedera todavía no soporta EIP-7702 (HIP-1340 está aprobado pero no liberado), así que no se ejecutó ni se cobró nada.')
+    }
+
+    updateState('EIP7702_DELEGATION_CONTRACT', MULTICALL3)
+    updateState('EIP7702_LAST_AUTH_HASH', authHash)
+    updateState('EIP7702_LAST_RELAY_ANSWER', relayAnswer)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Sin proxy por usuario: las cuentas inteligentes tradicionales despliegan un contrato por usuario. Con')
-    console.log('EIP-7702 una EOA apunta a una implementación ya desplegada, así que cada usuario solo firma una autorización.')
+    console.log('Sin proxy por usuario: las smart accounts tradicionales despliegan un contrato por usuario. Con EIP-7702')
+    console.log('una EOA apunta a una implementación ya desplegada, así que cada usuario solo firma una autorización.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
     console.log('La autorización es una firma simple sobre (chainId, contrato, nonce): cualquiera puede verificarla,')
-    console.log('como hizo el paso 3. Ejecutarla requiere una red y un relay que acepten transacciones Type 4.')
+    console.log('como hizo el paso 2. Ejecutarla requiere una red y un relay que acepten transacciones Type 4.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en la Ejecución de EIP-7702:', error.message)
+    console.error('\n[FALLO] Falló la ejecución EIP-7702:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -182,7 +154,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

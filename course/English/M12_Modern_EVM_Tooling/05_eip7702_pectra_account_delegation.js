@@ -28,13 +28,16 @@
  * [ OFFICIAL REFERENCES ]
  * - https://eips.ethereum.org/EIPS/eip-7702
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
+ * - https://hips.hedera.com/hip/hip-1340
  *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  * - Next:     M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
  *
  * [ SIMULATED ]
- * The EIP-7702 batch is built and signed but not executed: this lab sends no Type 4 transaction.
+ * Hedera does not accept EIP-7702 yet (HIP-1340 is approved, not released): the lab signs a real Type 4
+ * transaction and sends it to the JSON-RPC relay, which answers "Unsupported transaction type". The
+ * delegation target (Multicall3) and the batch are real, and the batch also runs today via eth_call.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -46,120 +49,89 @@
  */
 
 import { ethers } from 'ethers'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import { PrivateKey } from '@hiero-ledger/sdk'
+import { getClient, updateState, getJsonRpcUrl, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
-/**
- * EIP-7702 Authorization Builder and Cryptographic Verifier
- */
-class Eip7702DelegationEngine {
-  constructor (chainId = 296) { // 296 = Hedera Testnet Chain ID
-    this.chainId = chainId
-    this.MAGIC = '0x05' // EIP-7702 Magic byte identifier for signing
-  }
-
-  /**
-   * Encodes and hashes the EIP-7702 authorization payload:
-   * keccak256(MAGIC || rlp([chain_id, address, nonce]))
-   */
-  computeAuthorizationHash (contractAddress, nonce) {
-    // RLP encode [chain_id, address, nonce]
-    const encodedTuple = ethers.encodeRlp([
-      ethers.toBeHex(this.chainId),
-      contractAddress.toLowerCase(),
-      nonce === 0 ? '0x' : ethers.toBeHex(nonce)
-    ])
-    // Prepend EIP-7702 magic byte (0x05) and hash
-    const payload = ethers.concat([this.MAGIC, encodedTuple])
-    return ethers.keccak256(payload)
-  }
-
-  /**
-   * Signs the authorization tuple using the delegating EOA wallet
-   */
-  async signAuthorization (wallet, contractAddress, nonce) {
-    const authHash = this.computeAuthorizationHash(contractAddress, nonce)
-    const signingKey = new ethers.SigningKey(wallet.privateKey)
-    const sig = signingKey.sign(authHash)
-
-    return {
-      chainId: this.chainId,
-      contractAddress: contractAddress.toLowerCase(),
-      nonce,
-      yParity: sig.yParity,
-      r: sig.r,
-      s: sig.s,
-      authHash
-    }
-  }
-
-  /**
-   * Verifies the cryptographic signer of the authorization tuple
-   */
-  verifyAuthorization (auth) {
-    const recoveredAddress = ethers.recoverAddress(auth.authHash, {
-      r: auth.r,
-      s: auth.s,
-      yParity: auth.yParity
-    })
-    return recoveredAddress
-  }
-}
+const CHAIN_ID = 296 // Hedera Testnet
+const MULTICALL3 = '0xcA11bde05977b3631167028862bE2a173976CA11' // deployed on Hedera testnet (0.0.7205171)
+const MULTICALL3_ABI = [
+  'function aggregate3((address target, bool allowFailure, bytes callData)[] calls) payable returns ((bool success, bytes returnData)[])',
+  'function getBlockNumber() view returns (uint256)',
+  'function getEthBalance(address) view returns (uint256)'
+]
 
 const main = async () => {
   console.log('--- SESSION START: EIP-7702 Pectra Account Delegation (Hedera Relay) ---\n')
-  const { client } = getClient()
+  const { client, operatorId, operatorKey } = getClient()
 
   try {
-    const delegationEngine = new Eip7702DelegationEngine(296) // Hedera Testnet
+    const provider = new ethers.JsonRpcProvider(getJsonRpcUrl(), CHAIN_ID)
+    const eoa = new ethers.Wallet('0x' + PrivateKey.fromStringDer(operatorKey).toStringRaw(), provider)
+    const multicall = new ethers.Interface(MULTICALL3_ABI)
 
-    // 1. Generate Delegating EOA and Implementation Contract Address
-    console.log('[PROCESS] Step 1: Generating EOA Delegator & Batch Implementation Address...')
-    const delegatorWallet = ethers.Wallet.createRandom()
-    const batchContractAddress = '0x0000000000000000000000000000000000abacba' // Batch executor contract address
+    // 1. The delegator (your ECDSA account) and the implementation it delegates to
+    console.log('[PROCESS] Step 1: Delegator EOA and the implementation contract...')
+    const account = await (await fetch(`${getMirrorNodeBaseUrl()}/api/v1/accounts/${operatorId}`)).json()
+    console.log(`[LOG] Delegator EOA (your key):     ${eoa.address}`)
+    console.log(`[LOG] Your account's EVM address:   ${account.evm_address}${account.evm_address.toLowerCase() === eoa.address.toLowerCase() ? '' : ' (no alias: Ethereum-style transactions signed by your key come from the key address above, not from this account)'}`)
+    console.log(`[LOG] Delegation target:            ${MULTICALL3} (Multicall3, on Hedera testnet)`)
+    console.log(`[LOG] Target Network:               Hedera Testnet (Chain ID ${CHAIN_ID})`)
 
-    console.log(`[LOG] Delegator EOA Address:      ${delegatorWallet.address}`)
-    console.log(`[LOG] Target Delegation Contract: ${batchContractAddress}`)
-    console.log('[LOG] Target Network:             Hedera Testnet (Chain ID 296)')
+    // 2. The EIP-7702 authorization: a signature over keccak256(0x05 || rlp([chainId, address, nonce]))
+    console.log('\n[PROCESS] Step 2: Signing the EIP-7702 authorization...')
+    const nonce = await provider.getTransactionCount(eoa.address)
+    // The authorization nonce is the account nonce after this transaction's own nonce is used.
+    const authorization = await eoa.authorize({ address: MULTICALL3, nonce: nonce + 1, chainId: CHAIN_ID })
+    const authHash = ethers.keccak256(ethers.concat(['0x05', ethers.encodeRlp([ethers.toBeHex(CHAIN_ID), MULTICALL3.toLowerCase(), ethers.toBeHex(nonce + 1)])]))
+    const recovered = ethers.recoverAddress(authHash, authorization.signature)
+    if (recovered !== eoa.address) throw new Error(`Authorization signer mismatch: ${recovered}`)
+    console.log(`[SUCCESS] Authorization signed (nonce ${nonce + 1}); recovered signer ${recovered}`)
 
-    // 2. Construct and Sign EIP-7702 Authorization Payload
-    console.log('\n[PROCESS] Step 2: Constructing EIP-7702 Authorization Tuple...')
-    const nonce = 0
-    const authorization = await delegationEngine.signAuthorization(
-      delegatorWallet,
-      batchContractAddress,
-      nonce
-    )
-
-    console.log('[SUCCESS] EIP-7702 Authorization Signed:')
-    console.log(`Chain ID:    ${authorization.chainId}`)
-    console.log(`Contract:    ${authorization.contractAddress}`)
-    console.log(`Nonce:       ${authorization.nonce}`)
-    console.log(`yParity:     ${authorization.yParity}`)
-    console.log(`r:           ${authorization.r.substring(0, 18)}...`)
-    console.log(`s:           ${authorization.s.substring(0, 18)}...`)
-    console.log(`Auth Digest: ${authorization.authHash}`)
-
-    // 3. Cryptographic Signature Verification
-    console.log('\n[PROCESS] Step 3: Recovering the signer from the authorization (locally, with ethers)...')
-    const recovered = delegationEngine.verifyAuthorization(authorization)
-
-    if (recovered.toLowerCase() !== delegatorWallet.address.toLowerCase()) {
-      throw new Error(`Signature mismatch! Recovered: ${recovered}, Expected: ${delegatorWallet.address}`)
-    }
-    console.log(`[SUCCESS] Cryptographic Proof Validated! Recovered EOA: ${recovered}`)
-
-    // 4. Simulate Type 4 (0x04) Batch Execution
-    console.log('\n[PROCESS] Step 4: Simulating EIP-7702 Type 4 Atomic Multi-Call Batch...')
-    const multiCallBatch = [
-      { target: '0x1670000000000000000000000000000000000001', data: '0x095ea7b3...', value: '0', label: 'HTS Token Approval via Facade (Gasless)' }, // Token approval
-      { target: '0x1670000000000000000000000000000000000002', data: '0xa9059cbb...', value: '0', label: 'Atomic Liquidity Settlement (Gasless)' } // Atomic swap
+    // 3. The batch: two real calls, encoded for Multicall3.aggregate3
+    const calls = [
+      { target: MULTICALL3, allowFailure: false, callData: multicall.encodeFunctionData('getBlockNumber') },
+      { target: MULTICALL3, allowFailure: false, callData: multicall.encodeFunctionData('getEthBalance', [account.evm_address]) }
     ]
+    const batchData = multicall.encodeFunctionData('aggregate3', [calls])
+    console.log('\n[PROCESS] Step 3: Batch built: aggregate3([getBlockNumber(), getEthBalance(your account)])')
 
-    multiCallBatch.forEach((call, i) => console.log(`[Action ${i + 1}] ${call.label} -> ${call.target}`))
-    console.log('[INFO] Batch NOT executed: this lab does not send Type 4 transactions, so the batch above is only built and signed (simulated).')
+    // The batch already works today as a normal call to Multicall3:
+    const [results] = multicall.decodeFunctionResult('aggregate3', await provider.call({ to: MULTICALL3, data: batchData }))
+    const block = multicall.decodeFunctionResult('getBlockNumber', results[0].returnData)[0]
+    const balance = multicall.decodeFunctionResult('getEthBalance', results[1].returnData)[0]
+    console.log(`[VERIFY] Batch via eth_call to Multicall3: block ${block}, account balance ${ethers.formatUnits(balance, 8)} HBAR (inside the EVM, balances are in tinybars)`)
 
-    updateState('EIP7702_DELEGATION_CONTRACT', batchContractAddress)
-    updateState('EIP7702_LAST_AUTH_HASH', authorization.authHash)
+    // 4. The Type 4 transaction: send it to the relay and show the network's answer
+    console.log('\n[PROCESS] Step 4: Sending the signed EIP-7702 (Type 4) transaction to the relay...')
+    const feeData = await provider.getFeeData()
+    const signedTx = await eoa.signTransaction({
+      type: 4,
+      chainId: CHAIN_ID,
+      nonce,
+      to: eoa.address, // under 7702, a call to yourself runs the delegated code
+      data: batchData,
+      gasLimit: 200000,
+      maxFeePerGas: feeData.gasPrice,
+      maxPriorityFeePerGas: 0,
+      authorizationList: [authorization]
+    })
+    console.log(`[LOG] Signed Type 4 transaction: ${signedTx.slice(0, 18)}... (${(signedTx.length - 2) / 2} bytes)`)
+    let relayAnswer
+    try {
+      const hash = await provider.send('eth_sendRawTransaction', [signedTx])
+      relayAnswer = `accepted (${hash})`
+      console.log(`[SUCCESS] Relay accepted the Type 4 transaction: ${hash}`)
+    } catch (error) {
+      let body = {}
+      try { body = JSON.parse(error?.info?.responseBody || '{}') } catch (_) {}
+      relayAnswer = body?.error?.message || error?.error?.message || error?.shortMessage || error.message
+      console.log(`[INFO] Relay answer: ${relayAnswer}`)
+      console.log('[INFO] Hedera does not support EIP-7702 yet (HIP-1340 is approved but not released), so nothing was executed or charged.')
+    }
+
+    updateState('EIP7702_DELEGATION_CONTRACT', MULTICALL3)
+    updateState('EIP7702_LAST_AUTH_HASH', authHash)
+    updateState('EIP7702_LAST_RELAY_ANSWER', relayAnswer)
 
     console.log('\n KEY CONCEPT:')
     console.log('No per-user proxy: traditional smart accounts deploy a contract for every user. With EIP-7702')
@@ -167,7 +139,7 @@ const main = async () => {
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('The authorization is a plain signature over (chainId, contract, nonce): anyone can verify it, as')
-    console.log('step 3 did. Executing it needs a network and relay that accept Type 4 transactions.')
+    console.log('step 2 did. Executing it needs a network and relay that accept Type 4 transactions.')
 
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
