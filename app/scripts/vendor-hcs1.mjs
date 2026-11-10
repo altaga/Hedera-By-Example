@@ -54,7 +54,13 @@ const fromBase64 = (text) => Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0
 export async function hcs1Read (topicId, { attempts = 10, mirrorBase } = {}) {
   const base = mirrorBase || globalThis.__HBE_NODE?.mirrorBase || 'https://testnet.mirrornode.hedera.com'
   await zstd()
-  const topic = await (await fetch(`${base}/api/v1/topics/${topicId}`)).json()
+  // A topic created moments ago may not be on the Mirror Node yet: wait for it (and its memo).
+  let topic = {}
+  for (let i = 0; i < attempts && !topic.memo; i++) {
+    if (i) await new Promise((resolve) => setTimeout(resolve, 2000))
+    const res = await fetch(`${base}/api/v1/topics/${topicId}`)
+    topic = res.ok ? await res.json() : {}
+  }
   const [expectedHash, algo, encoding] = String(topic.memo || '').split(':')
   if (algo !== 'zstd' || encoding !== 'base64' || !/^[0-9a-f]{64}$/.test(expectedHash)) throw new Error(`${topicId} is not an HCS-1 topic (memo "${topic.memo}")`)
   if (topic.admin_key) throw new Error(`${topicId} has an admin key, so it is not a valid HCS-1 topic`)

@@ -38,7 +38,13 @@ export async function inscribeHcs1 (client, bytes, mimeType, { onChunk } = {}) {
  */
 export async function readHcs1 (topicId, { attempts = 10 } = {}) {
   const base = getMirrorNodeBaseUrl()
-  const topic = await (await fetch(`${base}/api/v1/topics/${topicId}`)).json()
+  // Un topic recién creado puede no estar todavía en el Mirror Node: espera a que aparezca (con su memo).
+  let topic = {}
+  for (let i = 0; i < attempts && !topic.memo; i++) {
+    if (i) await new Promise((resolve) => setTimeout(resolve, 2000))
+    const res = await fetch(`${base}/api/v1/topics/${topicId}`)
+    topic = res.ok ? await res.json() : {}
+  }
   const [expectedHash, algo, encoding] = String(topic.memo || '').split(':')
   if (algo !== 'zstd' || encoding !== 'base64' || !/^[0-9a-f]{64}$/.test(expectedHash)) throw new Error(`${topicId} no es un tópico HCS-1 (memo "${topic.memo}")`)
   if (topic.admin_key) throw new Error(`${topicId} tiene admin key, así que no es un tópico HCS-1 válido`)
