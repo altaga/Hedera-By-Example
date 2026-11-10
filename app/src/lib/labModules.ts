@@ -9,6 +9,7 @@
  * else becomes a value that throws a clear "Node.js only" error when used,
  * so importing it is harmless until the lab actually needs it.
  */
+import vendorVersions from '../content/vendor-versions.json'
 import { Buffer } from 'buffer'
 import { mirrorFetch } from './mirror'
 
@@ -251,6 +252,9 @@ const NODE_ONLY_MODULES = new Set(['http', 'https', 'net', 'tls', 'dgram', 'chil
 // Loads a module from /vendor without the app bundler rewriting the import.
 const importUrl = new Function('u', 'return import(u)') as (u: string) => Promise<any>
 
+/** A vendor bundle's URL with its content hash, so a deploy is never served from an older cached copy. */
+const vendorUrl = (file: keyof typeof vendorVersions) => `/vendor/${file}?v=${vendorVersions[file] || 'dev'}`
+
 let vendorCtx: ModuleContext | null = null
 let vendorPromise: Promise<any> | null = null
 
@@ -296,7 +300,7 @@ let zkPromise: Promise<any> | null = null
 /** snarkjs + circomlibjs (~4 MB), loaded only by the labs that import them (M8 Lab 09). */
 export async function loadZkVendor (ctx: ModuleContext): Promise<any> {
   await loadVendor(ctx) // sets globalThis.__HBE_NODE, which the bundled code may read
-  if (!zkPromise) zkPromise = importUrl('/vendor/hbe-zk.mjs').catch((e) => { zkPromise = null; throw e })
+  if (!zkPromise) zkPromise = importUrl(vendorUrl('hbe-zk.mjs')).catch((e) => { zkPromise = null; throw e })
   return zkPromise
 }
 
@@ -305,7 +309,7 @@ let agentKitPromise: Promise<any> | null = null
 /** Hedera Agent Kit + Vercel AI SDK (~3 MB), loaded only by the lab that imports them (M10 Lab 10). */
 export async function loadAgentKitVendor (ctx: ModuleContext): Promise<any> {
   await loadVendor(ctx) // sets globalThis.__HBE_NODE: @hashgraph/sdk resolves to the runner's SDK
-  if (!agentKitPromise) agentKitPromise = importUrl('/vendor/hbe-agentkit.mjs').catch((e) => { agentKitPromise = null; throw e })
+  if (!agentKitPromise) agentKitPromise = importUrl(vendorUrl('hbe-agentkit.mjs')).catch((e) => { agentKitPromise = null; throw e })
   return agentKitPromise
 }
 
@@ -330,7 +334,7 @@ export async function loadVendor (ctx: ModuleContext): Promise<any> {
       empty: () => ({}),
       keyTypes: new Map<string, 'ed25519' | 'ecdsa'>()
     }
-    vendorPromise = importUrl('/vendor/hbe-vendor.mjs').catch((e) => { vendorPromise = null; throw e })
+    vendorPromise = importUrl(vendorUrl('hbe-vendor.mjs')).catch((e) => { vendorPromise = null; throw e })
   }
   return vendorPromise
 }

@@ -13,11 +13,23 @@
  */
 import fs from 'node:fs'
 import path from 'node:path'
+import crypto from 'node:crypto'
 import { build } from 'esbuild'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const COURSE = path.resolve(ROOT, '..', 'course')
 const OUT = path.join(ROOT, 'public', 'vendor')
+const VERSIONS = path.join(ROOT, 'src', 'content', 'vendor-versions.json')
+
+/**
+ * Records a content hash for a bundle. The app loads /vendor/<file>?v=<hash>, so a browser that
+ * cached an older bundle (served with max-age) fetches the new one right after a deploy.
+ */
+function recordVersion (file) {
+  const versions = fs.existsSync(VERSIONS) ? JSON.parse(fs.readFileSync(VERSIONS, 'utf8')) : {}
+  versions[file] = crypto.createHash('sha256').update(fs.readFileSync(path.join(OUT, file))).digest('hex').slice(0, 12)
+  fs.writeFileSync(VERSIONS, JSON.stringify(versions, null, 2) + '\n')
+}
 
 const LIBS = ['@hashgraphonline/standards-sdk', '@hiero-did-sdk/core',
   // M14 Lab 10: a real MCP server and client in the page, over the SDK's in-memory transport.
@@ -124,6 +136,7 @@ export async function buildVendor () {
       logLevel: 'error',
       metafile: true
     })
+    recordVersion('hbe-vendor.mjs')
     const size = fs.statSync(path.join(OUT, 'hbe-vendor.mjs')).size
     // sql.js powers the node:sqlite shim.
     const wasm = path.join(ROOT, 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm')
@@ -175,6 +188,7 @@ export async function buildZkVendor () {
       logLevel: 'error',
       metafile: true
     })
+    recordVersion('hbe-zk.mjs')
     return { size: fs.statSync(path.join(OUT, 'hbe-zk.mjs')).size, inputs: Object.keys(result.metafile.inputs).length }
   } finally {
     fs.rmSync(entry, { force: true })
@@ -214,6 +228,7 @@ export async function buildAgentKitVendor () {
       logLevel: 'error',
       metafile: true
     })
+    recordVersion('hbe-agentkit.mjs')
     return { size: fs.statSync(path.join(OUT, 'hbe-agentkit.mjs')).size, inputs: Object.keys(result.metafile.inputs).length }
   } finally {
     fs.rmSync(entry, { force: true })
