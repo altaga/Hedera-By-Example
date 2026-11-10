@@ -47,7 +47,7 @@ import {
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
 /**
- * Builds an HCS-28 compliant agent audit payload.
+ * Builds this lab's agent audit record (its own layout, modelled on HCS-28 concepts).
  *
  * @param {object} params - Cognitive cycle parameters
  * @returns {object} Audit payload with cryptographic signature
