@@ -36,7 +36,8 @@
  * Verificador -> Hedera: Revisar la firma del notario y el compromiso
  *
  * [ SIMULADO ]
- * La sesión TLS con el banco y el notario son emulados. Las firmas y la prueba en HCS son reales.
+ * La sesión TLS con el banco y el notario son emulados, y la atestación es un JSON propio de este lab firmado con Ed25519,
+ * no el formato binario (BCS) de atestación de TLSNotary. Las firmas, sus verificaciones y la prueba en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).

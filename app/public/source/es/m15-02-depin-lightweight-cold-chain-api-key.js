@@ -30,7 +30,8 @@
  * - Reporte Técnico OMS 961: Monitoreo de Temperatura y Humedad en Cadenas de Frío
  *
  * [ SIMULADO ]
- * El rastreador IoT y sus solicitudes HTTP son emulados. Las verificaciones HMAC y los registros en HCS son reales.
+ * El rastreador IoT es emulado. Sus lecturas viajan como HTTP POST reales (encabezados X-API-Key y X-HMAC-Signature) al
+ * servidor http del gateway, que corre en la página porque un navegador no puede abrir un puerto. Las verificaciones HMAC y los registros en HCS son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -46,6 +47,7 @@ import {
   TopicMessageSubmitTransaction
 } from '@hiero-ledger/sdk'
 import crypto from 'node:crypto'
+import http from 'node:http'
 import { getClient, updateState, getHashscanUrl, show } from '../M99_Utilities/index.js'
 
 /**
@@ -59,7 +61,7 @@ class ColdChainSensorDevice {
   }
 
   /**
-   * Simula un paquete de telemetría HTTP POST con encabezados de autenticación HMAC-SHA256.
+   * Arma una solicitud HTTP POST de telemetría con encabezados de autenticación HMAC-SHA256.
    */
   createTelemetryRequest (temperatureCelsius, humidityPct, locationGeo) {
     const body = {
@@ -144,6 +146,7 @@ async function main () {
   console.log('====================================================================\n')
 
   const { client, operatorId, network } = getClient()
+  let gatewayServer = null
 
   try {
     console.log(`[OPERADOR] Autenticado como ${operatorId} en Hedera ${network.toUpperCase()}`)
@@ -186,13 +189,33 @@ async function main () {
       { temp: 14.8, hum: 78, geo: 'Almacén Local - CORTE ELÉCTRICO EN COMPRESOR (19.2403° N, 73.1305° E)' }
     ]
 
+    // El gateway escucha POSTs HTTP (en el navegador, sobre la capa HTTP en memoria de la página)
+    const gatewayPort = 4310
+    gatewayServer = http.createServer((req, res) => {
+      let raw = ''
+      req.on('data', (chunk) => { raw += chunk })
+      req.on('end', () => {
+        const result = gateway.processPacket({
+          headers: { 'X-Device-Id': req.headers['x-device-id'], 'X-API-Key': req.headers['x-api-key'], 'X-HMAC-Signature': req.headers['x-hmac-signature'] },
+          rawBody: raw,
+          parsedBody: JSON.parse(raw)
+        })
+        res.writeHead(result.status, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify(result))
+      })
+    })
+    await new Promise((resolve) => gatewayServer.listen(gatewayPort, '127.0.0.1', resolve))
+    console.log(`[REGISTRO] Gateway escuchando en http://127.0.0.1:${gatewayPort}/v1/telemetry`)
+
     let slaBreachEvent = null
     const tempSeries = []
 
     for (let i = 0; i < readings.length; i++) {
       const r = readings[i]
       const request = device.createTelemetryRequest(r.temp, r.hum, r.geo)
-      const evaluation = gateway.processPacket(request)
+      // Un POST HTTP real: las cabeceras llevan la API key y el HMAC de los bytes exactos del cuerpo
+      const httpRes = await fetch(`http://127.0.0.1:${gatewayPort}/v1/telemetry`, { method: 'POST', headers: request.headers, body: request.rawBody })
+      const evaluation = await httpRes.json()
       tempSeries.push({ x: i + 1, y: r.temp, ...(evaluation.isSlaBreached ? { status: 'critical', label: `${r.temp} °C` } : {}) })
       show.chart({ id: 'temp', type: 'line', title: 'Temperatura del contenedor de vacunas', unit: '°C', xLabel: 'Reporte', yLabel: '°C', points: tempSeries, threshold: { value: 8, label: 'máximo SLA +8 °C' } })
 
@@ -272,6 +295,7 @@ async function main () {
     console.error('\n[FALLO] Fallo en la Ejecución de DePIN Cadena de Frío:', error.message)
     process.exit(1)
   } finally {
+    if (gatewayServer) gatewayServer.close()
     client.close()
   }
 }
