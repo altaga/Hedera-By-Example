@@ -121,12 +121,12 @@ const main = async () => {
 
       console.log('\n[PROCESS] Step 1: Deploying AutonomousCronVault with 1 ℏ to pay for its scheduled calls...')
       // Deploy the contract: the bytecode goes on-chain and the network returns its contract ID and EVM address.
+      // No admin key on purpose: the contract's own ID is then its key, so it can authorize
+      // (and pay for) the calls it schedules. With an admin key, HSS would need that key to sign.
       const deployTx = await executeWithGas((gas) => new ContractCreateTransaction()
         .setBytecode(Buffer.from(bytecode, 'hex'))
         .setGas(gas)
         .setInitialBalance(new Hbar(1)), client, { gas: 1500000 })
-      // No admin key on purpose: the contract's own ID is then its key, so it can authorize
-      // (and pay for) the calls it schedules. With an admin key, HSS would need that key to sign.
 
       // Wait for consensus: the receipt says whether the network accepted the transaction.
       const deployReceipt = await deployTx.getReceipt(client)

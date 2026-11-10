@@ -29,13 +29,14 @@
  * - https://eips.ethereum.org/EIPS/eip-7702
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  * - https://hips.hedera.com/hip/hip-1340
+ * - https://hips.hedera.com/hip/hip-1341
  *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 04: Scaffold-HBAR Full-Stack Architecture (Intro)
  * - Next:     M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
  *
  * [ SIMULATED ]
- * Hedera does not accept EIP-7702 yet (HIP-1340 is approved, not released): the lab signs a real Type 4
+ * Hedera does not accept EIP-7702 yet (HIP-1340 ships in Release 77 but is not enabled yet): the lab signs a real Type 4
  * transaction and sends it to the JSON-RPC relay, which answers "Unsupported transaction type". The
  * delegation target (Multicall3) and the batch are real, and the batch also runs today via eth_call.
  *
@@ -126,7 +127,7 @@ const main = async () => {
       try { body = JSON.parse(error?.info?.responseBody || '{}') } catch (_) {}
       relayAnswer = body?.error?.message || error?.error?.message || error?.shortMessage || error.message
       console.log(`[INFO] Relay answer: ${relayAnswer}`)
-      console.log('[INFO] Hedera does not support EIP-7702 yet (HIP-1340 is approved but not released), so nothing was executed or charged.')
+      console.log('[INFO] Hedera does not support EIP-7702 yet (HIP-1340 ships in Release 77 but is not enabled yet), so nothing was executed or charged.')
     }
 
     updateState('EIP7702_DELEGATION_CONTRACT', MULTICALL3)

@@ -29,13 +29,14 @@
  * - https://eips.ethereum.org/EIPS/eip-7702
  * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/json-rpc-relay
  * - https://hips.hedera.com/hip/hip-1340
+ * - https://hips.hedera.com/hip/hip-1341
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 04: Arquitectura Full-Stack con Scaffold-HBAR (Introducción)
  * - Siguiente: M12 Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
  *
  * [ SIMULADO ]
- * Hedera todavía no acepta EIP-7702 (HIP-1340 está aprobado, no liberado): el lab firma una transacción
+ * Hedera todavía no acepta EIP-7702 (HIP-1340 viene en Release 77 pero aún no está activado): el lab firma una transacción
  * Type 4 real y la envía al relay JSON-RPC, que responde "Unsupported transaction type". El contrato de
  * delegación (Multicall3) y el lote son reales, y el lote también corre hoy vía eth_call.
  *
@@ -126,7 +127,7 @@ const main = async () => {
       try { body = JSON.parse(error?.info?.responseBody || '{}') } catch (_) {}
       relayAnswer = body?.error?.message || error?.error?.message || error?.shortMessage || error.message
       console.log(`[INFO] Respuesta del relay: ${relayAnswer}`)
-      console.log('[INFO] Hedera todavía no soporta EIP-7702 (HIP-1340 está aprobado pero no liberado), así que no se ejecutó ni se cobró nada.')
+      console.log('[INFO] Hedera todavía no soporta EIP-7702 (HIP-1340 viene en Release 77 pero aún no está activado), así que no se ejecutó ni se cobró nada.')
     }
 
     updateState('EIP7702_DELEGATION_CONTRACT', MULTICALL3)

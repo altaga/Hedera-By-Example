@@ -72,7 +72,7 @@ const paymasterAbi = new ethers.Interface([`function getHash(${USER_OP} userOp) 
 
 const compile = () => {
   const source = fs.readFileSync(new URL('./06_erc4337_contracts.sol', import.meta.url), 'utf8')
-  const input = { language: 'Solidity', sources: { 'Erc4337.sol': { content: source } }, settings: { evmVersion: 'cancun', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['evm.bytecode.object'] } } } } // Hedera's EVM supports up to Cancun
+  const input = { language: 'Solidity', sources: { 'Erc4337.sol': { content: source } }, settings: { evmVersion: 'prague', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['evm.bytecode.object'] } } } } // Pectra (HIP-1341) is live since Release 77: compile solc >= 0.8.31 for prague
   const out = JSON.parse(solc.compile(JSON.stringify(input)))
   const fatal = (out.errors || []).filter((e) => e.severity === 'error')
   if (fatal.length) throw new Error(`Solidity compilation error: ${fatal[0].formattedMessage}`)
