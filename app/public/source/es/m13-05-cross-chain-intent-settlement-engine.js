@@ -33,7 +33,9 @@
  * Relayer -> Hedera: Liquidar la parte de Hedera usando la asignación
  *
  * [ SIMULADO ]
- * La ejecución en Arbitrum y la prueba CLPR son simuladas. La asignación, la intención en HCS y la liquidación en Hedera son reales.
+ * El tramo en Arbitrum es una transacción de Arbitrum Sepolia real y firmada (USDC.transfer al trader) que no se transmite,
+ * porque la wallet del solver no tiene fondos en Arbitrum. La prueba CLPR es simulada: HIP-1535 está aprobado pero aún no está activo.
+ * La asignación, la intención en HCS y la liquidación en Hedera son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -58,7 +60,7 @@ import {
   TransferTransaction,
   Hbar
 } from '@hiero-ledger/sdk'
-import { getClient, sleep, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey } from '../M99_Utilities/index.js'
+import { getClient, sleep, updateState, createClient, ensureFunded, createLabAccount, parsePrivateKey, getMirrorNodeBaseUrl } from '../M99_Utilities/index.js'
 
 /**
  * Consulta el balance numérico de una cuenta en HBAR mediante el Mirror Node.
@@ -127,15 +129,19 @@ const main = async () => {
     console.log(`[ÉXITO] ¡Solver otorgó asignación de ${settlementAllowance.toString()} al Relayer (${relayerAccountId.toString()})!`)
 
     // 3. Definir la Intención Cross-Chain (Firmada por el Trader de 0 HBAR)
+    // La dirección del trader en Arbitrum y un monto justo de USDC por 0.25 HBAR según el tipo de cambio de la red
+    const traderDestWallet = ethers.Wallet.createRandom()
+    const { current_rate: rate } = await (await fetch(`${getMirrorNodeBaseUrl()}/api/v1/network/exchangerate`)).json()
+    const usdcAmount = (0.25 * rate.cent_equivalent / rate.hbar_equivalent / 100).toFixed(6)
     const intentNonce = crypto.randomBytes(12).toString('hex')
     const crossChainIntent = {
       intentId: `intent_0x${intentNonce}`,
       sourceLedger: 'hedera:testnet',
-      destinationLedger: 'eip155:42161', // Arbitrum One
+      destinationLedger: 'eip155:421614', // Arbitrum Sepolia (testnet)
       traderSourceAddress: traderId.toString(),
-      traderDestAddress: '0x8b3017fbca76428d08cb585ebf9fe31e0730b62e',
+      traderDestAddress: traderDestWallet.address, // the trader's own address on Arbitrum
       sourceCommitment: { asset: 'HBAR', amount: '0.25' },
-      targetFill: { asset: 'USDC', amount: '12.50' },
+      targetFill: { asset: 'USDC', amount: usdcAmount }, // 0.25 HBAR al tipo de cambio actual
       expiry: Date.now() + 600000,
       protocol: 'CLPR-INTENT-v1'
     }
@@ -174,8 +180,24 @@ const main = async () => {
 
     // 5. [SIMULACIÓN ARQUITECTÓNICA] El Solver Completa la Orden en Arbitrum y Genera Prueba CLPR (HIP-1535)
     console.log('\n[ EJECUCIÓN DEL SOLVER] [SIMULACIÓN ARQUITECTÓNICA] El solver completa la orden en Arbitrum...')
-    const solverFillTxHash = '0x' + crypto.randomBytes(32).toString('hex')
-    console.log(`[ÉXITO] ¡Orden simulada completada en Arbitrum! TxHash: ${solverFillTxHash}`)
+    // La ejecución es una transacción EIP-1559 de Arbitrum Sepolia real y firmada: USDC.transfer(trader, monto).
+    // No se transmite (la wallet del solver no tiene fondos en Arbitrum); su hash es el que tendría.
+    const USDC_ARB_SEPOLIA = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'
+    const solverEvmWallet = ethers.Wallet.createRandom()
+    const fillTx = await solverEvmWallet.signTransaction({
+      type: 2,
+      chainId: 421614,
+      nonce: 0,
+      to: USDC_ARB_SEPOLIA,
+      data: new ethers.Interface(['function transfer(address to, uint256 amount)']).encodeFunctionData('transfer', [traderDestWallet.address, ethers.parseUnits(usdcAmount, 6)]),
+      gasLimit: 65000,
+      maxFeePerGas: ethers.parseUnits('0.1', 'gwei'),
+      maxPriorityFeePerGas: 0
+    })
+    const solverFillTxHash = ethers.keccak256(fillTx)
+    const parsedFill = ethers.Transaction.from(fillTx)
+    console.log(`[REGISTRO] Ejecución firmada: chainId ${parsedFill.chainId}, a ${parsedFill.to} (USDC), desde ${parsedFill.from}, ${usdcAmount} USDC para ${traderDestWallet.address}`)
+    console.log(`[ÉXITO] Ejecución firmada para Arbitrum Sepolia (no transmitida). TxHash: ${solverFillTxHash}`)
 
     console.log('\n[PROCESO] [SIMULACIÓN ARQUITECTÓNICA] Generando Prueba Criptográfica de Estado CLPR (HIP-1535)...')
     const tssValidators = [
@@ -227,7 +249,7 @@ const main = async () => {
     console.log('\n┌────────────────────────────────────────────────────────────────────────┐')
     console.log('│             AUDITORÍA DE LIQUIDACIÓN DE INTENCIONES CROSS-CHAIN        │')
     console.log('├────────────────────────────────────────────────────────────────────────┤')
-    console.log('│ Estado de la Intención: LIQUIDADA EN HEDERA (tramo Arbitrum simulado)  │')
+    console.log('│ Estado de la Intención: LIQUIDADA EN HEDERA (tramo Arbitrum solo firmado)│')
     console.log('│ Prueba:                 Prueba TSS estilo CLPR (consejo simulado)      │')
     console.log('│ Mecanismo de Tarifas:   Patrocinio Nativo Delegado (HIP-336)          │')
     console.log(`│ Hash de Destino:        ${solverFillTxHash.slice(0, 22)}... (simulado) │`)
