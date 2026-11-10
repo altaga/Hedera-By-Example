@@ -7,7 +7,7 @@
  * En la banca corporativa, exchanges y custodia institucional (Fireblocks,
  * Anchorage, Copper), las claves privadas en bruto NUNCA residen en la
  * memoria de la aplicación ni en archivos de texto (.env). En su lugar, las
- * claves asimétricas (ECC_SECG_P256K1 o ED25519) se generan dentro de
+ * claves asimétricas (ECC_SECG_P256K1, la curva de las cuentas ECDSA de Hedera) se generan dentro de
  * hardware certificado FIPS 140-2 Nivel 3 (AWS KMS / Cloud HSM).
  *
  * La transacción se construye en el cliente, se calcula su hash y se envía a
@@ -38,6 +38,7 @@
  */
 
 import { TransferTransaction, Hbar, PrivateKey } from '@hiero-ledger/sdk'
+import { ethers } from 'ethers'
 import { getClient, getHashscanUrl } from '../M99_Utilities/index.js'
 
 /**
@@ -94,19 +95,22 @@ const unpackDerToRaw = (derBytes) => {
 /**
  * Interfaz de Cliente AWS KMS y Simulador de Enclave de Hardware.
  * Usa la misma forma de entrada y salida que SignCommand de `@aws-sdk/client-kms` (AWS SDK v3).
+ * Hedera ECDSA firma keccak-256(bytes del cuerpo), así que el lab envía ese digest de 32 bytes con
+ * MessageType 'DIGEST' (con 'RAW', KMS calcularía SHA-256 y la red rechazaría la firma).
  */
 class EnterpriseKmsAdapter {
   constructor (config = {}) {
     this.region = config.region || process.env.AWS_REGION || 'us-east-1'
-    this.keyArn = config.keyArn || process.env.AWS_KMS_KEY_ARN || 'arn:aws:kms:us-east-1:112233445566:key/hedera-custody-hsm'
+    // Modo simulado: un ARN de relleno con el formato de AWS (esa llave no existe).
+    this.keyArn = config.keyArn || process.env.AWS_KMS_KEY_ARN || 'arn:aws:kms:us-east-1:000000000000:key/00000000-0000-0000-0000-000000000000'
     this.isLiveAws = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_KMS_KEY_ARN)
     this._isolatedKey = config.isolatedKey
   }
 
   /**
-   * Ejecuta SignCommand coincidiendo con la especificación de AWS SDK v3.
+   * Ejecuta SignCommand según las especificaciones de AWS SDK v3.
    *
-   * @param {Object} command - AWS KMS SignCommandInput
+   * @param {Object} commandInput - AWS KMS SignCommandInput
    * @returns {Promise<Object>} AWS KMS SignCommandOutput
    */
   async sign (commandInput) {
@@ -124,31 +128,22 @@ class EnterpriseKmsAdapter {
       }
     }
 
-    // Simulación de Enclave Seguro en Memoria (Cero configuración Cloud requerida)
+    // Enclave simulado: lo que hace KMS con MessageType DIGEST + ECDSA_SHA_256 sobre una llave
+    // ECC_SECG_P256K1: firma el digest de 32 bytes tal cual y devuelve una firma codificada en DER.
     console.log(`[ ENCLAVE HSM] Simulando Enclave de Hardware AWS KMS para Clave: ${KeyId.substring(0, 36)}...`)
     console.log(`[REGISTRO] Algoritmo: ${SigningAlgorithm} | MessageType: ${MessageType} | Carga: ${Message.length} bytes`)
-
-    let derSig
-    if (this._isolatedKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')) {
-      // ECDSA secp256k1: Hash del mensaje con SHA256 y firma ASN.1 DER
-      const raw = this._isolatedKey.sign(Message)
-      const r = raw.subarray(0, 32)
-      const s = raw.subarray(32, 64)
-
-      // Construcción de la estructura auténtica ASN.1 DER
-      const rPrefixed = (r[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), r]) : r
-      const sPrefixed = (s[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), s]) : s
-      const totalLen = 2 + rPrefixed.length + 2 + sPrefixed.length
-      derSig = Buffer.concat([
-        Buffer.from([0x30, totalLen, 0x02, rPrefixed.length]),
-        rPrefixed,
-        Buffer.from([0x02, sPrefixed.length]),
-        sPrefixed
-      ])
-    } else {
-      // ED25519 firma el mensaje en crudo directamente
-      derSig = this._isolatedKey.sign(Message)
+    if (MessageType !== 'DIGEST' || SigningAlgorithm !== 'ECDSA_SHA_256' || Message.length !== 32) {
+      throw new Error('ValidationException: este enclave firma digests de 32 bytes con ECDSA_SHA_256')
     }
+    const sig = new ethers.SigningKey('0x' + this._isolatedKey.toStringRaw()).sign(Message)
+    const derInt = (hex) => {
+      let bytes = Buffer.from(hex.slice(2), 'hex')
+      while (bytes.length > 1 && bytes[0] === 0 && !(bytes[1] & 0x80)) bytes = bytes.subarray(1)
+      return (bytes[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), bytes]) : bytes
+    }
+    const r = derInt(sig.r)
+    const sv = derInt(sig.s)
+    const derSig = Buffer.concat([Buffer.from([0x30, 4 + r.length + sv.length, 0x02, r.length]), r, Buffer.from([0x02, sv.length]), sv])
 
     return {
       KeyId,
@@ -171,6 +166,11 @@ const main = async () => {
   console.log(`[REGISTRO] ID de Cuenta:        ${operatorId.toString()}`)
   console.log(`[REGISTRO] Llave Pública (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
   console.log(`[REGISTRO] Algoritmo de Llave:   ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
+  if (!isECDSA) {
+    console.error('[FALLO] Este lab firma con una llave ECC_SECG_P256K1 de AWS KMS, así que la cuenta necesita una llave ECDSA (secp256k1).')
+    process.exitCode = 1
+    return
+  }
 
   // Inicializar adaptador AWS KMS (Cero programas externos; soporta AWS KMS real sin fricción)
   const kmsAdapter = new EnterpriseKmsAdapter({ isolatedKey: custodyKey })
@@ -187,22 +187,19 @@ const main = async () => {
 
     // Firmar utilizando el callback asíncrono signWith de Hedera
     await transaction.signWith(custodyKey.publicKey, async (transactionBodyBytes) => {
-      // Invocar SignCommand de AWS KMS
+      // Hedera ECDSA firma keccak-256 de los bytes del cuerpo: se le envía ese digest a KMS.
+      const digest = ethers.getBytes(ethers.keccak256(transactionBodyBytes))
       const kmsResponse = await kmsAdapter.sign({
         KeyId: kmsAdapter.keyArn,
-        Message: transactionBodyBytes,
-        MessageType: 'RAW',
-        SigningAlgorithm: isECDSA ? 'ECDSA_SHA_256' : 'ED25519_SHA_512'
+        Message: digest,
+        MessageType: 'DIGEST',
+        SigningAlgorithm: 'ECDSA_SHA_256'
       })
 
-      // Convertir firma DER al formato esperado por Hedera
-      if (isECDSA) {
-        const rawSignature = unpackDerToRaw(kmsResponse.Signature)
-        console.log(`[ÉXITO] Firma DER decodificada a 64 bytes canónicos: ${rawSignature.toString('hex').substring(0, 24)}...`)
-        return rawSignature
-      }
-
-      return kmsResponse.Signature
+      // KMS devuelve ASN.1 DER (y no normaliza s): convertir a r||s de 64 bytes con low-s, como pide Hedera.
+      const rawSignature = unpackDerToRaw(kmsResponse.Signature)
+      console.log(`[ÉXITO] Firma DER decodificada a 64 bytes canónicos: ${rawSignature.toString('hex').substring(0, 24)}...`)
+      return rawSignature
     })
 
     console.log('\n[PROCESO] Paso 3: Transmitiendo transacción firmada con KMS a los nodos de Hedera...')

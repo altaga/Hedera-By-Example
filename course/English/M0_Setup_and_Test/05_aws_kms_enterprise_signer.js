@@ -7,7 +7,7 @@
  * In enterprise banking, exchanges, and institutional custody (Fireblocks,
  * Anchorage, Copper), raw private keys NEVER reside in application memory
  * or plaintext environment files (.env). Instead, asymmetric keys
- * (ECC_SECG_P256K1 or ED25519) are generated inside FIPS 140-2 Level 3
+ * (ECC_SECG_P256K1, the curve of Hedera ECDSA accounts) are generated inside FIPS 140-2 Level 3
  * certified hardware (AWS KMS / Cloud HSM).
  *
  * The transaction payload is constructed client-side, hashed, and dispatched
@@ -37,6 +37,7 @@
  */
 
 import { TransferTransaction, Hbar, PrivateKey } from '@hiero-ledger/sdk'
+import { ethers } from 'ethers'
 import { getClient, getHashscanUrl } from '../M99_Utilities/index.js'
 
 /**
@@ -93,11 +94,14 @@ const unpackDerToRaw = (derBytes) => {
 /**
  * AWS KMS Client Interface & Hardware Enclave Simulator.
  * Uses the same input and output shape as the AWS SDK v3 `@aws-sdk/client-kms` SignCommand.
+ * Hedera ECDSA signs keccak-256(body bytes), so the lab sends that 32-byte digest with
+ * MessageType 'DIGEST' (with 'RAW', KMS would hash with SHA-256 and the network would reject it).
  */
 class EnterpriseKmsAdapter {
   constructor (config = {}) {
     this.region = config.region || process.env.AWS_REGION || 'us-east-1'
-    this.keyArn = config.keyArn || process.env.AWS_KMS_KEY_ARN || 'arn:aws:kms:us-east-1:112233445566:key/hedera-custody-hsm'
+    // Simulated mode: a placeholder ARN in AWS's format (no such key exists).
+    this.keyArn = config.keyArn || process.env.AWS_KMS_KEY_ARN || 'arn:aws:kms:us-east-1:000000000000:key/00000000-0000-0000-0000-000000000000'
     this.isLiveAws = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_KMS_KEY_ARN)
     this._isolatedKey = config.isolatedKey
   }
@@ -105,7 +109,7 @@ class EnterpriseKmsAdapter {
   /**
    * Executes SignCommand matching AWS SDK v3 specifications.
    *
-   * @param {Object} command - AWS KMS SignCommandInput
+   * @param {Object} commandInput - AWS KMS SignCommandInput
    * @returns {Promise<Object>} AWS KMS SignCommandOutput
    */
   async sign (commandInput) {
@@ -123,32 +127,22 @@ class EnterpriseKmsAdapter {
       }
     }
 
-    // Secure In-Memory Enclave Simulation (Zero Cloud Setup Required)
+    // Simulated enclave: what KMS does for MessageType DIGEST + ECDSA_SHA_256 on an
+    // ECC_SECG_P256K1 key: sign the 32-byte digest as given, return a DER-encoded signature.
     console.log(`[ ENCLAVE HSM] Simulating AWS KMS Hardware Enclave for Key: ${KeyId.substring(0, 36)}...`)
     console.log(`[LOG] Algorithm: ${SigningAlgorithm} | MessageType: ${MessageType} | Payload: ${Message.length} bytes`)
-
-    let derSig
-    if (this._isolatedKey.publicKey.toStringDer().startsWith('302d300706052b8104000a')) {
-      // ECDSA secp256k1: the SDK hashes the message with Keccak-256 and returns a 64-byte r||s signature
-      // Hedera SDK sign returns 64-byte raw; we encode to DER to replicate AWS KMS output
-      const raw = this._isolatedKey.sign(Message)
-      const r = raw.subarray(0, 32)
-      const s = raw.subarray(32, 64)
-
-      // Construct authentic ASN.1 DER structure
-      const rPrefixed = (r[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), r]) : r
-      const sPrefixed = (s[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), s]) : s
-      const totalLen = 2 + rPrefixed.length + 2 + sPrefixed.length
-      derSig = Buffer.concat([
-        Buffer.from([0x30, totalLen, 0x02, rPrefixed.length]),
-        rPrefixed,
-        Buffer.from([0x02, sPrefixed.length]),
-        sPrefixed
-      ])
-    } else {
-      // ED25519 signs raw message directly
-      derSig = this._isolatedKey.sign(Message)
+    if (MessageType !== 'DIGEST' || SigningAlgorithm !== 'ECDSA_SHA_256' || Message.length !== 32) {
+      throw new Error('ValidationException: this enclave signs 32-byte digests with ECDSA_SHA_256')
     }
+    const sig = new ethers.SigningKey('0x' + this._isolatedKey.toStringRaw()).sign(Message)
+    const derInt = (hex) => {
+      let bytes = Buffer.from(hex.slice(2), 'hex')
+      while (bytes.length > 1 && bytes[0] === 0 && !(bytes[1] & 0x80)) bytes = bytes.subarray(1)
+      return (bytes[0] & 0x80) ? Buffer.concat([Buffer.from([0x00]), bytes]) : bytes
+    }
+    const r = derInt(sig.r)
+    const sv = derInt(sig.s)
+    const derSig = Buffer.concat([Buffer.from([0x30, 4 + r.length + sv.length, 0x02, r.length]), r, Buffer.from([0x02, sv.length]), sv])
 
     return {
       KeyId,
@@ -171,6 +165,11 @@ const main = async () => {
   console.log(`[LOG] Account ID:        ${operatorId.toString()}`)
   console.log(`[LOG] Public Key (DER):  ${custodyKey.publicKey.toStringDer().substring(0, 32)}...`)
   console.log(`[LOG] Key Algorithm:     ${isECDSA ? 'ECC_SECG_P256K1 (ECDSA)' : 'ED25519'}`)
+  if (!isECDSA) {
+    console.error('[FAILED] This lab signs with an AWS KMS ECC_SECG_P256K1 key, so the account needs an ECDSA (secp256k1) key.')
+    process.exitCode = 1
+    return
+  }
 
   // Initialize AWS KMS Adapter (Zero external programs needed; supports live AWS KMS seamlessly)
   const kmsAdapter = new EnterpriseKmsAdapter({ isolatedKey: custodyKey })
@@ -187,22 +186,19 @@ const main = async () => {
 
     // Sign using Hedera's asynchronous signWith callback
     await transaction.signWith(custodyKey.publicKey, async (transactionBodyBytes) => {
-      // Call AWS KMS SignCommand
+      // Hedera ECDSA signs keccak-256 of the body bytes: send KMS that digest.
+      const digest = ethers.getBytes(ethers.keccak256(transactionBodyBytes))
       const kmsResponse = await kmsAdapter.sign({
         KeyId: kmsAdapter.keyArn,
-        Message: transactionBodyBytes,
-        MessageType: 'RAW',
-        SigningAlgorithm: isECDSA ? 'ECDSA_SHA_256' : 'ED25519_SHA_512'
+        Message: digest,
+        MessageType: 'DIGEST',
+        SigningAlgorithm: 'ECDSA_SHA_256'
       })
 
-      // Convert DER signature to Hedera's expected format
-      if (isECDSA) {
-        const rawSignature = unpackDerToRaw(kmsResponse.Signature)
-        console.log(`[SUCCESS] DER Signature decoded to canonical 64 bytes: ${rawSignature.toString('hex').substring(0, 24)}...`)
-        return rawSignature
-      }
-
-      return kmsResponse.Signature
+      // KMS returns ASN.1 DER (and does not normalize s): convert to Hedera's 64-byte r||s, low-s.
+      const rawSignature = unpackDerToRaw(kmsResponse.Signature)
+      console.log(`[SUCCESS] DER Signature decoded to canonical 64 bytes: ${rawSignature.toString('hex').substring(0, 24)}...`)
+      return rawSignature
     })
 
     console.log('\n[PROCESS] Step 3: Broadcasting KMS-signed transaction to Hedera consensus nodes...')
