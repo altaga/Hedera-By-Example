@@ -23,7 +23,7 @@ Local stdio: `node mcp/index.js` (Node.js 20+; optional `--http 3001`)
 | --- | --- |
 | search_labs | Find the Hedera by Example labs that teach something (free text in English or Spanish, SDK class names, HIP/HCS numbers). Returns a ranked list with what each lab needs, its cost and a link; use get_lab for the code. |
 | get_lab | Full lab: concept, what to run first, wallets it needs, approximate HBAR cost, official references and the complete runnable code. |
-| list_labs | The course map: 16 modules and 131 labs with their slugs, optionally for one module. |
+| list_labs | The course map: 16 modules and 133 labs with their slugs, optionally for one module. |
 | query_curriculum | Search the labs and return the best matches with their full code (heavier than search_labs + get_lab). |
 | anti_hallucination_rules | Verified rules that prevent the usual mistakes on Hedera: tinybar units, Hbar math, fees and gas, key types, EVM addresses, associations, size limits, Mirror Node lag. |
 | architecture_decision_tree | When to use the Consensus Service, the Token Service or smart contracts, with the full guardrails guide. |
@@ -86,10 +86,10 @@ curl -sS -X POST 'https://hbe.expo.app/api/mcp' \
 - Claim: POST https://hbe.expo.app/api/welcome-drop
 - Portal faucet: https://portal.hedera.com/faucet
 
-## Course map (131 labs, en + es)
+## Course map (133 labs, en + es)
 
 SDK: @hiero-ledger/sdk 2.90.1
-Lab count: 131
+Lab count: 133
 
 ### M00 — Setup and Initial Testing
 - Directory: `course/English/M0_Setup_and_Test/` (and Spanish parity)
@@ -109,7 +109,7 @@ Lab count: 131
 
 ### M04 — Token Operations and Atomic Swaps
 - Directory: `course/English/M4_Token_Operations_Atomic_Swaps/` (and Spanish parity)
-- Labs (9): m04-01-hbar-transfers, m04-02-token-transfers, m04-03-nft-transfers, m04-04-atomic-swaps, m04-05-parallel-transfers, m04-06-native-airdrops, m04-07-airdrop-cancel-and-reject, m04-08-orderbook-triangular-settlement, m04-09-atomic-flash-settlement
+- Labs (10): m04-01-hbar-transfers, m04-02-token-transfers, m04-03-nft-transfers, m04-04-atomic-swaps, m04-05-parallel-transfers, m04-06-native-airdrops, m04-07-airdrop-cancel-and-reject, m04-08-orderbook-triangular-settlement, m04-09-atomic-flash-settlement, m04-10-hip551-atomic-batch
 
 ### M05 — Hedera Consensus Service (HCS)
 - Directory: `course/English/M5_Hedera_Consensus_Service/` (and Spanish parity)
@@ -133,8 +133,7 @@ Lab count: 131
 
 ### M10 — Agentic Micropayments (x402 Protocol)
 - Directory: `course/English/M10_Agentic_Micropayments_x402/` (and Spanish parity)
-- Official x402 v2 `exact` scheme on `hedera:testnet`, built with the Hedera SDK: Labs 01-03 build the 402, the agent-signed transfer (transaction id = facilitator fee payer) and the facilitator settlement by hand; Labs 04-08 reuse them (stablecoin, guardrails, market agent, SSE gateway, merchant as facilitator)
-- Labs (8): m10-01-http-402-server-challenge, m10-02-agent-payment-signature, m10-03-facilitator-settlement, m10-04-usdc-hts-micropayments, m10-05-agent-budget-guardrails, m10-06-autonomous-ai-market-agent, m10-07-live-ai-streaming-gateway, m10-08-self-hosted-facilitator (two-party settlement: merchant as facilitator)
+- Labs (10): m10-01-http-402-server-challenge, m10-02-agent-payment-signature, m10-03-facilitator-settlement, m10-04-usdc-hts-micropayments, m10-05-agent-budget-guardrails, m10-06-autonomous-ai-market-agent, m10-07-live-ai-streaming-gateway, m10-08-self-hosted-facilitator, m10-09-upto-metered-payments, m10-10-hedera-agent-kit-commerce-agent
 
 ### M11 — Hedera Studios & Real-World Assets (RWA)
 - Directory: `course/English/M11_Hedera_Studios_RWA/` (and Spanish parity)
@@ -142,7 +141,7 @@ Lab count: 131
 
 ### M12 — Modern EVM Tooling on Hedera
 - Directory: `course/English/M12_Modern_EVM_Tooling/` (and Spanish parity)
-- Labs (6): m12-01-hts-direct-erc20-facade, m12-02-json-rpc-relay-ethers, m12-03-foundry-hardhat-workflow, m12-04-scaffold-hbar-integration, m12-05-eip7702-pectra-account-delegation, m12-06-erc4337-paymaster-gasless
+- Labs (7): m12-01-hts-direct-erc20-facade, m12-02-json-rpc-relay-ethers, m12-03-foundry-hardhat-workflow, m12-04-scaffold-hbar-integration, m12-05-eip7702-pectra-account-delegation, m12-06-erc4337-paymaster-gasless, m12-07-bls12381-pectra-precompiles
 
 ### M13 — Cross-Ledger Protocol & Data Streams
 - Directory: `course/English/M13_Cross_Ledger_and_Data_Streams/` (and Spanish parity)
@@ -150,11 +149,11 @@ Lab count: 131
 
 ### M14 — Advanced HCS Standards & Autonomous AI
 - Directory: `course/English/M14_Advanced_HCS_Standards_AI/` (and Spanish parity)
-- Labs (10): m14-01-hcs20-auditable-points, m14-02-hcs25-ai-trust-score, m14-03-hcs26-agent-skills-registry, m14-04-hcs27-merkle-transparency-log, m14-05-hcs28-agent-audit-stream, m14-06-encrypted-ai-agent-swarm-chat, m14-07-hcs15-to-18-petal-flora-swarm, m14-08-hcs12-hashlinks-and-hcs21-adapters, m14-09-hip1334-encrypted-message-box, m14-10-hashnet-mcp-server-hol-guard
+- Labs (9): m14-01-hcs20-auditable-points, m14-02-hcs25-ai-trust-score, m14-03-hcs26-agent-skills-registry, m14-04-hcs27-merkle-transparency-log, m14-05-encrypted-ai-agent-swarm-chat, m14-06-hcs15-to-18-petal-flora-swarm, m14-07-hcs12-hashlinks-and-hcs21-adapters, m14-08-hip1334-encrypted-message-box, m14-09-hashnet-mcp-server-hol-guard
 
 ### M15 — DePIN & Frontier Crypto Architectures
 - Directory: `course/English/M15_DePIN_and_Future_Crypto/` (and Spanish parity)
-- Labs (5): m15-01-depin-mqtts-pacemaker-telemetry, m15-02-depin-lightweight-cold-chain-api-key, m15-03-intent-based-defi-solver, m15-04-passkeys-webauthn-p256-authenticator, m15-05-zktls-cryptographic-web-proofs
+- Labs (4): m15-01-depin-mqtts-pacemaker-telemetry, m15-02-depin-lightweight-cold-chain-api-key, m15-03-intent-based-defi-solver, m15-04-passkeys-webauthn-p256-authenticator
 
 ## Source paths
 

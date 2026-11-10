@@ -75,7 +75,7 @@
     {
       "name": "list_labs",
       "title": "List the course",
-      "description": "The course map: 16 modules and 131 labs with their slugs, optionally for one module.",
+      "description": "The course map: 16 modules and 133 labs with their slugs, optionally for one module.",
       "inputSchema": {
         "type": "object",
         "properties": {

@@ -1,5 +1,5 @@
 # Hedera by Example (HBE)
-> Interactive in-browser curriculum and playground for Hedera Hashgraph: 131 runnable labs in English and Spanish, verified guardrails, a testnet Welcome Drop, and a live Model Context Protocol (MCP) server for AI coding assistants.
+> Interactive in-browser curriculum and playground for Hedera Hashgraph: 133 runnable labs in English and Spanish, verified guardrails, a testnet Welcome Drop, and a live Model Context Protocol (MCP) server for AI coding assistants.
 
 Site: https://hbe.expo.app
 Repository: https://github.com/altaga/Hedera-By-Example
@@ -25,7 +25,7 @@ Hosted Streamable HTTP JSON-RPC endpoint (server `hedera-by-example-mcp` v2.0.0)
 
 - `search_labs` — Find labs by free text (en/es), SDK class or HIP/HCS number; ranked with cost and link.
 - `get_lab` — Full lab: concept, prerequisites, wallets, HBAR cost, official refs and runnable code.
-- `list_labs` — Course map: 16 modules and 131 labs with slugs.
+- `list_labs` — Course map: 16 modules and 133 labs with slugs.
 - `query_curriculum` — Search and return best matches with full code in one call.
 - `anti_hallucination_rules` — Verified guardrails (tinybars, fees/gas, keys, EVM addresses, limits, Mirror Node).
 - `architecture_decision_tree` — When to use HCS, HTS or smart contracts (optional `focus`).
@@ -92,7 +92,7 @@ Stdio/HTTP source: `mcp/index.js` in the repository (also serves local Streamabl
 
 ## Curriculum
 
-- 131 labs, bilingual (English + Spanish), 16 modules (M00–M15)
+- 133 labs, bilingual (English + Spanish), 16 modules (M00–M15)
 - Each lab is a complete `@hiero-ledger/sdk` program: annotated walkthrough, exact source, browser runner on testnet
 - Modules: Setup; Fundamentals & Cryptography; State Interrogation & CQRS; Hedera Token Service; Token Operations & Atomic Swaps; Consensus Service; Mass Storage & Hashinals; Governance & Cron; Smart Contracts & EVM; Agentic AI Economy; Agentic Micropayments (x402); Hedera Studios & RWA; Modern EVM Tooling; Cross-Ledger & Data Streams; Advanced HCS Standards & Autonomous AI; DePIN & Frontier Crypto
 - Lab URLs use hash routes: https://hbe.expo.app/#<slug> (example: https://hbe.expo.app/#m03-01-immutable-issuance)

@@ -11,6 +11,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { buildVendor, buildZkVendor, buildAgentKitVendor } from './build-vendor.mjs'
+import { buildLlms } from './build-llms.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const SOURCE = path.resolve(process.argv[2] || path.join(ROOT, '..', 'course'))
@@ -352,6 +353,8 @@ function build () {
 }
 
 build()
+const llms = buildLlms()
+console.log(`llms.txt, llms-full.txt, mcp/tools.json → ${llms.labCount} labs`)
 buildVendor()
   .then((r) => console.log(`Bundled Node-only lab libraries for the browser → public/vendor/hbe-vendor.mjs (${(r.size / 1024).toFixed(0)} KB)`))
   .then(() => buildZkVendor())

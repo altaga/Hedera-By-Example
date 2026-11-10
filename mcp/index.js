@@ -4,7 +4,7 @@
  * Hedera by Example (HBE) — Model Context Protocol (MCP) server
  * ============================================================================
  * Gives AI coding assistants (Claude Code, Claude Desktop, Cursor, VS Code,
- * Windsurf, ...) the 131 runnable labs of the course (English and Spanish),
+ * Windsurf, ...) the 133 runnable labs of the course (English and Spanish),
  * verified Hedera guardrails, live Mirror Node reads and fee estimates.
  *
  * Protocol: MCP over JSON-RPC 2.0, versions 2025-06-18, 2025-03-26 and
@@ -179,8 +179,13 @@ const summaryLine = ({ module: m, lab, body }, lang) => {
 // VERIFIED GUARDRAILS
 // ============================================================================
 
+// Counts come from the compiled course, so adding or removing a lab never leaves them stale.
+const courseIndex = readJson('index')
+const MODULE_COUNT = courseIndex ? courseIndex.modules.length : 16
+const LAB_COUNT = courseIndex ? courseIndex.modules.reduce((n, m) => n + m.labs.length, 0) : 0
+
 const GUARDRAILS = `# Hedera guardrails for coding agents (@hiero-ledger/sdk)
-Each rule was checked against the SDK and testnet while building this course.
+Each rule was checked against the SDK and testnet while building this course; the few that rest only on a Hedera announcement say so.
 
 ## Units and money
 1. **8 decimals.** 1 HBAR = 100,000,000 tinybars (10^8), not 10^18. \`new Hbar(1)\` = 100_000_000 tinybars; \`Hbar.fromTinybars(n)\` goes the other way.
@@ -204,12 +209,29 @@ Each rule was checked against the SDK and testnet while building this course.
 13. **HFS files: ~4 KB per transaction.** Create with the first chunk, then \`FileAppendTransaction\`; storage is billed by size and lifetime.
 
 ## Reading state
-14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` is deprecated in @hiero-ledger/sdk (its consensus-node endpoint \`cryptoGetBalance\` was removed) and \`AccountInfoQuery\` is a paid query; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
+14. **Read from the Mirror Node, not consensus nodes.** \`AccountBalanceQuery\` no longer works: its consensus-node endpoint (\`cryptoGetBalance\`) was removed in Consensus Node v0.77 and \`AccountInfoQuery\` is a paid query; use \`MirrorNodeAccountBalanceQuery\` or the REST API (\`/api/v1/...\`). Reads are free but **a few seconds behind consensus**: poll until a new entity appears.
 15. **Receipts vs records.** \`getReceipt()\` gives status and new IDs (free); \`getRecord()\` adds transfers, fees and contract results (paid query).
 16. **Public Mirror Nodes are rate-limited** per IP: back off on HTTP 429 and avoid bursts.
 
 ## Scheduling and keys
 17. **Scheduled transactions** wait until every required key signs or they expire (HIP-423 allows a custom expiry and \`waitForExpiry\`). A KeyList with a threshold needs M of N signatures.
+
+## EVM after Release 77 (HIP-1341, Pectra)
+18. **Compile for \`prague\`** with solc 0.8.31+. The BLS12-381 precompiles (EIP-2537, 0x0b-0x11) are live: a G1ADD/PAIRING_CHECK call works on testnet (M12 Lab 07). Per the Release 77 announcement, initcode is capped at 49,152 bytes (EIP-3860) and calldata has a gas floor (EIP-7623), so hardcoded gas limits must cover it.
+19. **EIP-7702 is not enabled yet.** HIP-1340 ships in Release 77 but the relay rejects type-4 transactions ("Unsupported transaction type"). An HTS token's address answers \`eth_getCode\` with the delegation indicator \`0xef0100\` + \`0x167\`.
+20. **Inline \`ContractCreateTransaction\` bytecode** does not get constructor arguments appended: ABI-encode them onto the initcode yourself (\`ContractCreateFlow\` does it for you).
+21. **Access control on HTS wrappers.** A contract that holds a supply key or token allowances must not expose \`HederaTokenService\` mint/transfer wrappers publicly: anyone could mint or move its tokens (October 2026 advisory). Make them \`internal\` or owner/role-gated.
+
+## Atomic batches (HIP-551)
+22. **\`BatchTransaction\`**: up to 50 inner transactions and 6 KB in total. Each inner transaction is signed by its own payer and bound with \`batchify(client, batchKey)\` (node account 0.0.0); the outer batch is signed by every batch key. All apply or none: inner steps that ran before a failure show \`REVERTED_SUCCESS\` and **are still charged**. A precheck failure of an inner payer (e.g. INSUFFICIENT_PAYER_BALANCE) rejects the whole batch before consensus.
+23. **Contract calls in batches**: since Consensus Node v0.76.3 at most one \`ContractExecuteTransaction\`, and it must be the last inner transaction; contract calls in batches are deprecated with removal planned for March 2027.
+
+## Payments and agents
+24. **x402 \`upto\` on Hedera's EVM**: canonical Permit2 (\`0x000000000022D473030F116dDEE9F6B43aC78BA3\`) and \`x402UptoPermit2Proxy\` (\`0x4020A4f3b7b90ccA423B9fabCc0CE57C6C240002\`) are deployed on testnet. Permit2 recovers the signer with ecrecover, so the buyer must be an ECDSA account with an EVM alias (M10 Lab 09). For fixed prices use the \`exact\` scheme for Hedera.
+25. **hedera-agent-kit 3.8.2**: \`transfer_hbar_tool\` drops \`transactionMemo\` (\`new TransferTransaction(params)\` ignores it). Do not rely on that memo, or wrap \`HederaBuilder.transferHbar\` and set it on the returned transaction (M10 Lab 10).
+
+## Tooling
+26. **Local Node is deprecated** (no updates after September 2026): use Solo (https://solo.hiero.org) for a local network.
 
 Sources: https://docs.hedera.com \xB7 https://hedera.com/fees \xB7 https://hips.hedera.com \xB7 ${WEB}`;
 const ID_RE = /^(\d+\.\d+\.\d+(-[a-z]{5})?|0x[0-9a-fA-F]{40}|\d+\.\d+\.\d+-\d+-\d+|\d+\.\d+\.\d+@\d+\.\d+)$/;
@@ -424,7 +446,7 @@ const TOOLS = [
   {
     name: "list_labs",
     title: "List the course",
-    description: "The course map: 16 modules and 131 labs with their slugs, optionally for one module.",
+    description: `The course map: ${MODULE_COUNT} modules and ${LAB_COUNT} labs with their slugs, optionally for one module.`,
     inputSchema: { type: "object", properties: { module: { type: "string", description: 'Optional module, e.g. "M8"' }, lang: LANG_PROP } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
@@ -656,7 +678,7 @@ function getPrompt (name, args = {}) {
 // JSON-RPC
 // ============================================================================
 
-const INSTRUCTIONS = `Hedera by Example: 131 runnable Hedera labs (English/Spanish) built on @hiero-ledger/sdk, plus verified guardrails.
+const INSTRUCTIONS = `Hedera by Example: ${LAB_COUNT} runnable Hedera labs (English/Spanish) built on @hiero-ledger/sdk, plus verified guardrails.
 Start with search_labs (or list_labs), read a lab with get_lab, check anti_hallucination_rules before writing Hedera code, price operations with estimate_cost, and read live state with mirror_node_query. Every lab also runs in the browser at ${WEB}.`
 
 const rpcError = (id, code, message) => ({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })
