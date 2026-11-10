@@ -20,35 +20,82 @@
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-7/
  * - https://hol.org/docs/standards/hcs-1/
+ * - https://docs.hedera.com/hedera/core-concepts/smart-contracts/system-smart-contracts
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 08: HCS-1 NFT Reconstruction
  * - Next:     M6 Lab 10: Zero-Trust Encrypted Vault (Enterprise Privacy over Public Consensus)
  *
- * [ SIMULATED ]
- * The price-feed contract in the EVM config is a placeholder address: no contract is deployed there, so nothing reads a price. The HCS-7 registry and its messages are real.
+ * [ SEQUENCE ]
+ * Lab -> Hedera: Deploy HbarUsdFeed (reads the 0x168 exchange rate)
+ * Lab -> Hedera: Inscribe the WASM router and two variants (HCS-1)
+ * Lab -> Hedera: HCS-7 registry: EVM config, WASM config, two register messages
+ * Wallet -> Mirror Node: Read the registry and call latestAnswer()
+ * Wallet -> Wallet: Run the WASM with the price, get the variant topic
+ * Wallet -> Mirror Node: Rebuild that variant (HCS-1) and render it
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
- * - Cost: <1 ℏ (network fees only).
+ * - Cost: ~15 ℏ the first time (it deploys the price-feed contract, about 1 USD); ~1 ℏ when you run it again (it reuses the contract and the inscriptions).
  *
  * [ HOW TO RUN ]
  * node English/M6_Mass_Storage_Hashinals/09_hcs7_smart_hashinals.js
  * ============================================================================
  */
 
-import {
-  PrivateKey,
-  TopicInfoQuery
-} from '@hiero-ledger/sdk'
+import fs from 'node:fs'
+import { ContractCreateTransaction, PrivateKey, TopicInfoQuery } from '@hiero-ledger/sdk'
 import {
   buildHcs7CreateRegistryTx,
   buildHcs7EvmMessageTx,
   buildHcs7WasmMessageTx,
   buildHcs7SubmitMessageTx,
-  hcs7MessageSchema
+  hcs7MessageSchema,
+  EVMBridge,
+  WasmBridge
 } from '@hashgraphonline/standards-sdk'
-import { getClient, updateState } from '../M99_Utilities/index.js'
+import solc from 'solc'
+import { getClient, getState, updateState, getMirrorNodeBaseUrl, executeWithGas, reuseContract, inscribeHcs1, readHcs1, waitForMirror } from '../M99_Utilities/index.js'
+
+const ABI_LATEST_ANSWER = { name: 'latestAnswer', inputs: [], outputs: [{ name: 'price', type: 'int256' }], stateMutability: 'view', type: 'function' }
+
+const compileFeed = () => {
+  const source = fs.readFileSync(new URL('./09_hbar_usd_feed.sol', import.meta.url), 'utf8')
+  const input = { language: 'Solidity', sources: { 'HbarUsdFeed.sol': { content: source } }, settings: { optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['evm.bytecode.object'] } } } }
+  const out = JSON.parse(solc.compile(JSON.stringify(input)))
+  const fatal = (out.errors || []).filter((e) => e.severity === 'error')
+  if (fatal.length) throw new Error(`Solidity compilation error: ${fatal[0].formattedMessage}`)
+  return out.contracts['HbarUsdFeed.sol'].HbarUsdFeed.evm.bytecode.object
+}
+
+// Reuse an HCS-1 inscription from an earlier run when it still reads back correctly.
+const reuseInscription = async (stateKey, make) => {
+  const [saved, owner] = String(getState(stateKey) || '').split('@')
+  if (saved && owner === process.env.OPERATOR_ID) {
+    try { await readHcs1(saved, { attempts: 1 }); return saved } catch (_) {}
+  }
+  const topicId = await make()
+  updateState(stateKey, `${topicId}@${process.env.OPERATOR_ID}`)
+  return topicId
+}
+
+const svg = (fill, label) => `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#111"/><circle cx="100" cy="100" r="70" fill="${fill}"/><text x="100" y="190" font-size="16" text-anchor="middle" fill="#eee">${label}</text></svg>`
+
+// HOL's EVMBridge sends the read with a gas price from account 0.0.800, which the Mirror Node now
+// refuses (INSUFFICIENT_PAYER_BALANCE). This subclass sends the same eth_call without a gas price.
+class MirrorEVMBridge extends EVMBridge {
+  async readFromMirrorNode (command, _from, to) {
+    const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/call`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ block: 'latest', data: command, to: '0x' + String(to.toSolidityAddress?.() ?? to.toEvmAddress()).replace(/^0x/, '') })
+    })
+    if (!res.ok) console.log(`[INFO] Mirror Node contract call answered ${res.status}: ${await res.text()}`)
+    return res.ok ? res.json() : null
+  }
+}
+
+const submit = async (client, submitKey, tx) => (await (await (await tx.freezeWith(client)).sign(submitKey)).execute(client)).getReceipt(client)
 
 const main = async () => {
   console.log('--- SESSION START: HCS-7 Smart Hashinals (EVM + WASM Dynamic Inscriptions) ---\n')
@@ -56,108 +103,82 @@ const main = async () => {
   const submitKey = PrivateKey.fromStringDer(operatorKey)
 
   try {
-    // 1. Deploy an Official HCS-7 Smart Hashinal Registry Topic (`hcs-7:indexed:86400`)
-    console.log('[PROCESS] Step 1: Deploying HCS-7 Smart Hashinal Registry Topic via HOL Standards SDK...')
-    const registryTx = buildHcs7CreateRegistryTx({
-      ttl: 86400,
-      submitKey: submitKey.publicKey,
-      adminKey: submitKey.publicKey
-    }).setAutoRenewAccountId(operatorId.toString())
+    // 1. A real price feed: a contract whose latestAnswer() reads the 0x168 exchange rate
+    console.log('[PROCESS] Step 1: Deploying the HBAR/USD feed contract (reads the 0x168 exchange rate)...')
+    const bytecode = compileFeed()
+    const feedId = await reuseContract('REUSE_M6_09_FEED', bytecode, async () => {
+      const res = await executeWithGas((gas) => new ContractCreateTransaction().setBytecode(Buffer.from(bytecode, 'hex')).setGas(gas), client, { gas: 300000 })
+      return (await res.getReceipt(client)).contractId
+    })
+    const feedAddress = '0x' + feedId.toEvmAddress()
+    console.log(`[SUCCESS] HbarUsdFeed: ${feedId} (${feedAddress})`)
 
-    const signedRegistryTx = await (await registryTx.freezeWith(client)).sign(submitKey)
-    const registryRes = await signedRegistryTx.execute(client)
-    // Wait for consensus: the receipt says whether the network accepted the transaction.
-    const registryTopicId = (await registryRes.getReceipt(client)).topicId.toString()
+    // 2. HCS-1 inscriptions: the WASM router and the two variants (image + HIP-412 metadata each)
+    console.log('\n[PROCESS] Step 2: Inscribing the WASM router and the two variants as HCS-1 files...')
+    const wasmBytes = fs.readFileSync(new URL('./assets/hcs7_aura_router.wasm', import.meta.url))
+    const wasmTopicId = await reuseInscription('M6_09_WASM_TOPIC', () => inscribeHcs1(client, wasmBytes, 'application/wasm'))
+    const variant = async (key, name, fill, rule) => reuseInscription(key, async () => {
+      const imageTopicId = await inscribeHcs1(client, Buffer.from(svg(fill, name)), 'image/svg+xml')
+      const metadata = { name, description: `Dragon aura shown when ${rule}.`, image: `hcs://1/${imageTopicId}`, type: 'image/svg+xml', format: 'HIP412@2.0.0' }
+      return inscribeHcs1(client, Buffer.from(JSON.stringify(metadata)), 'application/json')
+    })
+    const solarTopicId = await variant('M6_09_SOLAR_TOPIC', 'Solar Dragon', '#f5b301', 'HBAR >= $0.10')
+    const obsidianTopicId = await variant('M6_09_OBSIDIAN_TOPIC', 'Obsidian Dragon', '#5b3fd1', 'HBAR < $0.10')
+    console.log(`[SUCCESS] WASM router: hcs://1/${wasmTopicId} (${wasmBytes.length} bytes)`)
+    console.log(`[SUCCESS] Variants: solar hcs://1/${solarTopicId} | obsidian hcs://1/${obsidianTopicId}`)
 
+    // 3. The HCS-7 registry and its four messages
+    console.log('\n[PROCESS] Step 3: Creating the HCS-7 registry topic and its messages...')
+    const registryTx = buildHcs7CreateRegistryTx({ ttl: 86400, submitKey: submitKey.publicKey }).setAutoRenewAccountId(operatorId.toString())
+    const registryTopicId = (await submit(client, submitKey, registryTx)).topicId.toString()
     const topicInfo = await new TopicInfoQuery().setTopicId(registryTopicId).execute(client)
-    console.log(`[SUCCESS] HCS-7 Registry Topic Created: ${registryTopicId}`)
-    console.log(`[LOG] Official HOL Topic Memo: "${topicInfo.topicMemo}"`)
+    console.log(`[SUCCESS] HCS-7 Registry Topic Created: ${registryTopicId} (memo "${topicInfo.topicMemo}")`)
 
-    // 2. Register an EVM State Reader Config (`t: "evm"`) via `buildHcs7EvmMessageTx`
-    console.log('\n[PROCESS] Step 2: Inscribing an EVM State Reader Config (example price feed, placeholder address)...')
-    const evmConfigTx = buildHcs7EvmMessageTx({
-      topicId: registryTopicId,
-      config: {
-        contractAddress: '0x0000000000000000000000000000000000849f9b',
-        abi: {
-          name: 'latestAnswer',
-          inputs: [],
-          outputs: [{ name: 'price', type: 'int256' }],
-          stateMutability: 'view',
-          type: 'function'
-        },
-        memo: 'Example: reads latestAnswer() from a price-feed contract to pick the Hashinal aura (placeholder address)'
-      },
-      transactionMemo: 'hcs-7:op:0:0'
-    })
-
-    const signedEvmTx = await (await evmConfigTx.freezeWith(client)).sign(submitKey)
-    const evmRes = await signedEvmTx.execute(client)
-    const evmReceipt = await evmRes.getReceipt(client)
-    console.log(`[SUCCESS] EVM State Config Inscribed at Sequence #${evmReceipt.topicSequenceNumber}!`)
-
-    // 3. Register a WASM State Router Config (`t: "wasm"`) via `buildHcs7WasmMessageTx`
-    console.log('\n[PROCESS] Step 3: Inscribing WASM Dynamic Renderer Config...')
-    const wasmConfigTx = buildHcs7WasmMessageTx({
-      topicId: registryTopicId,
-      config: {
-        wasmTopicId: registryTopicId,
-        inputType: {
-          stateData: {
-            price: 'int256',
-            holderBalance: 'uint256'
-          }
-        },
-        outputType: {
-          type: 'string',
-          format: 'topic-id'
-        },
-        memo: 'Routes oracle price >= $0.25 to Solar Dragon SVG; < $0.25 to Obsidian Dragon SVG'
-      },
-      transactionMemo: 'hcs-7:op:0:1'
-    })
-
-    const signedWasmTx = await (await wasmConfigTx.freezeWith(client)).sign(submitKey)
-    const wasmRes = await signedWasmTx.execute(client)
-    const wasmReceipt = await wasmRes.getReceipt(client)
-    console.log(`[SUCCESS] WASM Router Config Inscribed at Sequence #${wasmReceipt.topicSequenceNumber}!`)
-
-    // 4. Bind Metadata Variants (Solar vs. Obsidian State Topics) with `buildHcs7SubmitMessageTx`
-    console.log('\n[PROCESS] Step 4: Binding State-Driven Metadata Weight Tags (`op: register`)...')
-    const registerMetadataPayload = {
-      p: 'hcs-7',
-      op: 'register',
-      t: 'hcs-1',
-      t_id: registryTopicId,
-      d: {
-        weight: 100,
-        tags: ['tier:solar-apex', 'trigger:price_gte_25c', 'render:dynamic-svg']
-      },
-      m: 'Solar Apex Form — Activated automatically when EVM Oracle >= $0.25'
+    await submit(client, submitKey, buildHcs7EvmMessageTx({ topicId: registryTopicId, config: { contractAddress: feedAddress, abi: ABI_LATEST_ANSWER, memo: 'HBAR/USD price from HbarUsdFeed.latestAnswer() (8 decimals)' } }))
+    console.log('[SUCCESS] EVM config inscribed (t: evm)')
+    await submit(client, submitKey, buildHcs7WasmMessageTx({ topicId: registryTopicId, config: { wasmTopicId, inputType: { stateData: { latestAnswer: 'int256' } }, outputType: { type: 'string', format: 'topic-id' }, memo: 'HBAR >= $0.10 -> aura:solar, otherwise aura:obsidian' } }))
+    console.log('[SUCCESS] WASM config inscribed (t: wasm)')
+    for (const [tId, tag, m] of [[solarTopicId, 'aura:solar', 'Solar Dragon'], [obsidianTopicId, 'aura:obsidian', 'Obsidian Dragon']]) {
+      const message = { p: 'hcs-7', op: 'register', t_id: tId, d: { weight: 1, tags: [tag] }, m }
+      hcs7MessageSchema.parse(message) // validate against HOL's schema before submitting
+      await submit(client, submitKey, buildHcs7SubmitMessageTx({ topicId: registryTopicId, message }))
+      console.log(`[SUCCESS] Variant registered: ${m} -> ${tId} (${tag})`)
     }
-
-    // Validate against official HOL Zod schema before submitting
-    hcs7MessageSchema.parse(registerMetadataPayload)
-
-    const metaTx = buildHcs7SubmitMessageTx({
-      topicId: registryTopicId,
-      message: registerMetadataPayload,
-      transactionMemo: 'hcs-7:op:1:2'
-    })
-
-    const signedMetaTx = await (await metaTx.freezeWith(client)).sign(submitKey)
-    const metaRes = await signedMetaTx.execute(client)
-    const metaReceipt = await metaRes.getReceipt(client)
-    console.log(`[SUCCESS] Dynamic Metadata Binding Anchored at Sequence #${metaReceipt.topicSequenceNumber}!`)
     console.log(`[POINTER] Smart Hashinal URI: hcs://7/${registryTopicId}`)
+
+    // 4. Resolve it like a wallet, with HOL's own EVMBridge and WasmBridge
+    console.log('\n[PROCESS] Step 4: Resolving hcs://7 like a wallet (HOL EVMBridge + WasmBridge)...')
+    const messages = await waitForMirror(async () => {
+      const res = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/topics/${registryTopicId}/messages?limit=25`)
+      const list = res.ok ? (await res.json()).messages.map((m) => JSON.parse(Buffer.from(m.message, 'base64').toString())) : []
+      return list.length >= 4 ? list : null
+    }, { timeoutMs: 60_000 })
+    if (!messages) throw new Error('The registry messages did not reach the Mirror Node in time')
+    const evmConfig = messages.find((m) => m.t === 'evm')
+    const wasmConfig = messages.find((m) => m.t === 'wasm')
+    const registered = messages.filter((m) => m.op === 'register')
+
+    const evm = new MirrorEVMBridge('testnet')
+    const { stateData } = await evm.executeCommands([evmConfig])
+    const price = Number(stateData.latestAnswer?.values?.[0])
+    if (!Number.isFinite(price) || price <= 0) throw new Error('latestAnswer() returned no price')
+    console.log(`[VERIFY] latestAnswer() via the Mirror Node: ${price} -> 1 HBAR = $${(price / 1e8).toFixed(4)}`)
+
+    const router = new WasmBridge()
+    router.setLogLevel('error')
+    await router.initWasm((await readHcs1(wasmConfig.c.wasmTopicId)).bytes)
+    console.log(`[LOG] WASM get_params(): ${router.getParams()}`)
+    const chosen = router.executeWasm(router.createStateData(wasmConfig, stateData), registered)
+    const chosenMeta = JSON.parse((await readHcs1(chosen)).bytes.toString())
+    console.log(`[SUCCESS] WASM picked ${chosen}: "${chosenMeta.name}" (image ${chosenMeta.image})`)
 
     updateState('HCS7_SMART_HASHINAL_TOPIC_ID', registryTopicId)
     updateState('HCS7_SMART_HASHINAL_URI', `hcs://7/${registryTopicId}`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('HCS-7 Smart Hashinals combine EVM smart contract reads (`t: evm`) with')
-    console.log('WASM deterministic routing (`t: wasm`) on HCS, creating living NFTs that')
-    console.log('evolve with on-chain state without paying gas for metadata updates.')
+    console.log('HCS-7 Smart Hashinals combine an EVM read (`t: evm`) with a WASM router (`t: wasm`).')
+    console.log('Here the router read the live HBAR price and chose the variant; if HBAR crosses')
+    console.log('$0.10, every wallet will render the other one, with no transaction to update the NFT.')
 
     console.log('\n LEARNABLE MOMENT:')
     console.log('Instead of running cron jobs to mutate NFTs via `TokenUpdateNftsTransaction`,')

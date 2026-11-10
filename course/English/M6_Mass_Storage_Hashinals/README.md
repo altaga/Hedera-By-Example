@@ -18,8 +18,8 @@
 | **06** | **Hashinals Ecosystem** | Introduction to low-cost, permanent digital inscriptions and artifacts. |
 | **07** | **HCS-1 Native NFT** | Creating a fully decentralized NFT with metadata and image stored on HCS. |
 | **08** | **HCS-1 NFT Reconstruction** | Retrieving and assembling an NFT entirely from Mirror Node shards. |
-| **09** | **HCS-7 Smart Hashinals** | Dynamic zero-gas NFTs driven by live EVM contract state and WASM rules (`hol.org`). |
-| **10** | **Zero-Trust Encrypted Vault** | Confidential enterprise sharding combining Gzip, AES-256-GCM envelope encryption, and HCS-1 consensus reconstruction. |
+| **09** | **HCS-7 Smart Hashinals** | A dynamic NFT resolved like a wallet: live HBAR price from a contract, a WASM router inscribed with HCS-1, two variants (`hol.org`). |
+| **10** | **Zero-Trust Encrypted Vault** | Gzip + AES-KW + AES-256-GCM envelope encryption, stored and read back as an HCS-1 file. |
 
 ---
 
@@ -103,7 +103,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **06** | M6 Lab 01 | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
 | **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
 | **08** | M3 Lab 03, M6 Lab 07 | — | <0.1 ℏ (network fees only) |
-| **09** | — | — | <1 ℏ (network fees only) |
+| **09** | — | — | ~15 ℏ the first time (deploys the price-feed contract); ~1 ℏ after (reuses it) |
 | **10** | — | — | <1 ℏ (network fees only) |
 
 ---

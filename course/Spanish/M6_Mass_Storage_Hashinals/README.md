@@ -18,8 +18,8 @@
 | **06** | **Ecosistema Hashinals** | Introducción a las inscripciones y activos inmutables de bajo costo. |
 | **07** | **NFT Nativo HCS-1** | Creación de un NFT totalmente descentralizado con metadatos e imagen en HCS. |
 | **08** | **Reconstrucción de NFT** | Recuperación y ensamblado de un NFT completo desde Mirror Node shards. |
-| **09** | **Smart Hashinals HCS-7** | NFTs dinámicos cero-gas gobernados por estado EVM y reglas WASM (`hol.org`). |
-| **10** | **Bóveda Cifrada Zero-Trust** | Fragmentación confidencial de nivel empresarial combinando Gzip, cifrado AES-256-GCM y reconstrucción HCS-1. |
+| **09** | **Smart Hashinals HCS-7** | Un NFT dinámico resuelto como una wallet: precio real del HBAR desde un contrato, un router WASM inscrito con HCS-1, dos variantes (`hol.org`). |
+| **10** | **Bóveda Cifrada Zero-Trust** | Cifrado de sobre Gzip + AES-KW + AES-256-GCM, guardado y leído de vuelta como archivo HCS-1. |
 
 ---
 
@@ -103,7 +103,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **06** | Lab 01 de M6 | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **08** | Lab 03 de M3, Lab 07 de M6 | — | <0.1 ℏ (solo comisiones de red) |
-| **09** | — | — | <1 ℏ (solo comisiones de red) |
+| **09** | — | — | ~15 ℏ la primera vez (despliega el contrato de precio); ~1 ℏ después (lo reutiliza) |
 | **10** | — | — | <1 ℏ (solo comisiones de red) |
 
 ---

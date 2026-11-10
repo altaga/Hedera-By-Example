@@ -1023,6 +1023,12 @@ export async function executeInBrowser (
       helpers.AgentCommunicationHandler = vendor[`AgentCommunicationHandler${suffix}`]
       helpers.HybridEncryption = vendor[`HybridEncryption${suffix}`]
     }
+    // standards-sdk was written for @hashgraph/sdk, which had ContractId.fromSolidityAddress; the
+    // Hiero SDK it runs on here only has fromEvmAddress (HCS-7's EVMBridge needs the old name).
+    const contractIdClass = (hedera as any).ContractId
+    if (contractIdClass && typeof contractIdClass.fromSolidityAddress !== 'function') {
+      contractIdClass.fromSolidityAddress = (address: string) => contractIdClass.fromEvmAddress(0, 0, address)
+    }
     // M99's HCS-1 helpers (M99_Utilities/hcs1.js) use the bundled zstd build in the browser.
     if (/\b(inscribeHcs1|readHcs1)\b/.test(sourceCode)) {
       const vendor = await loadVendor(ctx)

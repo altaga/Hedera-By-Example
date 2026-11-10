@@ -1,0 +1,15 @@
+[package]
+name = "hcs7-aura-wasm"
+version = "1.0.0"
+edition = "2021"
+description = "HCS-7 WASM router for M6 Lab 09: picks the Hashinal variant from the HBAR/USD price"
+license = "Apache-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+strip = true
