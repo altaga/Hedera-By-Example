@@ -95,7 +95,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **03** | — | — | ~5 ℏ (gas del despliegue vía relay; el firmante se recarga hasta 5 ℏ) |
 | **04** | — | — | <0.1 ℏ (solo comisiones de red) |
 | **05** | — | — | <0.1 ℏ (solo comisiones de red) |
-| **06** | — | — | gratis (no se envía ninguna transacción) |
+| **06** | — | Sí | ~35 ℏ la primera vez (dos contratos, cerca de 2 USD, más un depósito de 5 ℏ para el paymaster que puedes retirar); ~1 ℏ al volver a ejecutarlo (gas del bundler, en parte reembolsado del depósito) |
 
 ---
 

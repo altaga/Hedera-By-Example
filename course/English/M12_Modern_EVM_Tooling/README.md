@@ -95,7 +95,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **03** | — | — | ~5 ℏ (relay contract deployment gas; the signer is topped up to 5 ℏ) |
 | **04** | — | — | <0.1 ℏ (network fees only) |
 | **05** | — | — | <0.1 ℏ (network fees only) |
-| **06** | — | — | free (no transactions are sent) |
+| **06** | — | Yes | ~35 ℏ the first time (two contracts, about 2 USD, plus a 5 ℏ paymaster deposit you can withdraw); ~1 ℏ when you run it again (bundler gas, partly refunded from the deposit) |
 
 ---
 

@@ -17,6 +17,7 @@
  * 3. Firma de Paymaster: El Paymaster firma la UserOperation y adjunta su dirección
  *    y datos de autorización en el campo `paymasterAndData`.
  * 4. Incorporación con Cero Gas: El Bundler envía la UserOperation al contrato EntryPoint
+ *    (v0.6, 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789)
  *    en Hedera. El Paymaster asume el costo del gas mientras el usuario disfruta de
  *    una experiencia completamente sin gas.
  *
@@ -34,208 +35,168 @@
  * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra en el Relay JSON-RPC de Hedera
  * - Siguiente: M13 Lab 01: Protocolo Cross-Ledger (CLPR) y Pruebas Criptográficas de Estado (HIP-1535)
  *
- * [ SIMULADO ]
- * No corre ningún bundler y no se envía ni se cobra nada. El lab arma y firma una UserOperation
- * real de ERC-4337 (v0.6), verifica las dos firmas como lo haría un EntryPoint y le pregunta al
- * Mirror Node si existe un contrato EntryPoint en Hedera testnet.
+ * [ SECUENCIA ]
+ * Usuario -> Lab: Firma una UserOperation para su smart account (que tiene 0 HBAR)
+ * Firmante del paymaster -> Lab: Firma el patrocinio (paymasterAndData)
+ * Bundler (tú) -> EntryPoint: handleOps([userOp], beneficiario)
+ * EntryPoint -> Cuenta: validateUserOp (firma del dueño)
+ * EntryPoint -> Paymaster: validatePaymasterUserOp (firma del patrocinador)
+ * EntryPoint -> Cuenta: increment(); el gas se cobra del depósito del paymaster
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: ninguna (solo una lectura del Mirror Node).
- * - Costo: gratis (no se envía ninguna transacción).
+ * - Wallet: tu cuenta de testnet (despliega los contratos, fondea el paymaster y actúa como bundler).
+ * - Wallets de práctica: ACCOUNT_1 (el usuario que firma la UserOperation; no paga nada).
+ * - Costo: ~35 ℏ la primera vez (dos contratos, cerca de 2 USD, más un depósito de 5 ℏ para el paymaster que puedes retirar); ~1 ℏ al volver a ejecutarlo (gas del bundler, en parte reembolsado del depósito).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M12_Modern_EVM_Tooling/06_erc4337_paymaster_gasless.js
  * ============================================================================
  */
 
+import fs from 'node:fs'
 import { ethers } from 'ethers'
-import { getMirrorNodeBaseUrl, updateState } from '../M99_Utilities/index.js'
+import { AccountId, ContractCreateTransaction, ContractExecuteTransaction, ContractId, Hbar, PrivateKey } from '@hiero-ledger/sdk'
+import solc from 'solc'
+import { getClient, updateState, requireEnv, getJsonRpcUrl, executeWithGas, reuseContract, getHashscanUrl, waitForMirror } from '../M99_Utilities/index.js'
 
-/**
- * Motor de Empaquetado y Patrocinio Paymaster ERC-4337
- */
-class Erc4337PaymasterEngine {
-  constructor (entryPointAddress, chainId = 296) {
-    this.entryPoint = entryPointAddress.toLowerCase()
-    this.chainId = chainId
-  }
+const ENTRY_POINT = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789' // EntryPoint v0.6 de ERC-4337, en Hedera testnet
+const USER_OP = 'tuple(address sender,uint256 nonce,bytes initCode,bytes callData,uint256 callGasLimit,uint256 verificationGasLimit,uint256 preVerificationGas,uint256 maxFeePerGas,uint256 maxPriorityFeePerGas,bytes paymasterAndData,bytes signature)'
+const entryPointAbi = new ethers.Interface([
+  `function handleOps(${USER_OP}[] ops, address beneficiary)`,
+  `function getUserOpHash(${USER_OP} userOp) view returns (bytes32)`,
+  'function getNonce(address sender, uint192 key) view returns (uint256)',
+  'function balanceOf(address account) view returns (uint256)',
+  'event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)'
+])
+const accountAbi = new ethers.Interface(['function increment()', 'function counter() view returns (uint256)'])
+const paymasterAbi = new ethers.Interface([`function getHash(${USER_OP} userOp) view returns (bytes32)`])
 
-  /**
-   * Calcula el Hash canónico de la UserOperation según ERC-4337:
-   * keccak256(keccak256(pack(userOp)) || entryPoint || chainId)
-   */
-  getUserOpHash (userOp) {
-    const packed = ethers.AbiCoder.defaultAbiCoder().encode(
-      [
-        'address',
-        'uint256',
-        'bytes32',
-        'bytes32',
-        'uint256',
-        'uint256',
-        'uint256',
-        'uint256',
-        'uint256',
-        'bytes32'
-      ],
-      [
-        userOp.sender,
-        userOp.nonce,
-        ethers.keccak256(userOp.initCode),
-        ethers.keccak256(userOp.callData),
-        userOp.callGasLimit,
-        userOp.verificationGasLimit,
-        userOp.preVerificationGas,
-        userOp.maxFeePerGas,
-        userOp.maxPriorityFeePerGas,
-        ethers.keccak256(userOp.paymasterAndData)
-      ]
-    )
-
-    const userOpDigest = ethers.keccak256(packed)
-    return ethers.keccak256(
-      ethers.AbiCoder.defaultAbiCoder().encode(
-        ['bytes32', 'address', 'uint256'],
-        [userOpDigest, this.entryPoint, this.chainId]
-      )
-    )
-  }
-
-  /**
-   * Firma el patrocinio y arma paymasterAndData (un Paymaster real aplica antes su política)
-   */
-  async sponsorUserOp (paymasterWallet, userOp, validUntil, validAfter) {
-    // Empaquetar datos temporales de validación: [validUntil(6) || validAfter(6)]
-    const timeRange = ethers.solidityPacked(
-      ['uint48', 'uint48'],
-      [validUntil, validAfter]
-    )
-
-    // Digest del Paymaster para firmar: keccak256(userOpHash || validUntil || validAfter)
-    const baseHash = this.getUserOpHash(userOp)
-    const paymasterDigest = ethers.keccak256(
-      ethers.solidityPacked(
-        ['bytes32', 'uint48', 'uint48'],
-        [baseHash, validUntil, validAfter]
-      )
-    )
-
-    // Firmar digest del paymaster
-    const signingKey = new ethers.SigningKey(paymasterWallet.privateKey)
-    const sig = signingKey.sign(paymasterDigest)
-    const compactSig = ethers.concat([sig.r, sig.s, ethers.toBeHex(sig.v, 1)])
-
-    // paymasterAndData = paymasterAddress || validUntil || validAfter || signature
-    const paymasterAndData = ethers.concat([
-      paymasterWallet.address,
-      timeRange,
-      compactSig
-    ])
-
-    return {
-      paymasterAndData,
-      paymasterDigest,
-      validUntil,
-      validAfter
-    }
-  }
+const compile = () => {
+  const source = fs.readFileSync(new URL('./06_erc4337_contracts.sol', import.meta.url), 'utf8')
+  const input = { language: 'Solidity', sources: { 'Erc4337.sol': { content: source } }, settings: { evmVersion: 'cancun', optimizer: { enabled: true, runs: 200 }, outputSelection: { '*': { '*': ['evm.bytecode.object'] } } } } // la EVM de Hedera soporta hasta Cancun
+  const out = JSON.parse(solc.compile(JSON.stringify(input)))
+  const fatal = (out.errors || []).filter((e) => e.severity === 'error')
+  if (fatal.length) throw new Error(`Error de compilación de Solidity: ${fatal[0].formattedMessage}`)
+  return { account: out.contracts['Erc4337.sol'].HbeAccount.evm.bytecode.object, paymaster: out.contracts['Erc4337.sol'].HbePaymaster.evm.bytecode.object }
 }
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Arquitectura Paymaster ERC-4337 Sin Gas ---\n')
+  console.log('--- INICIO DE SESIÓN: Paymaster ERC-4337 y UserOperation sin Gas (EntryPoint v0.6) ---\n')
+  const { client, operatorId, operatorKey } = getClient()
 
   try {
-    const ENTRY_POINT_ADDRESS = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789' // EntryPoint canónico de ERC-4337 v0.6 (coincide con este formato de UserOperation)
-    const engine = new Erc4337PaymasterEngine(ENTRY_POINT_ADDRESS, 296) // Hedera Testnet
+    const provider = new ethers.JsonRpcProvider(getJsonRpcUrl(), 296)
+    const call = async (to, iface, fn, args = []) => iface.decodeFunctionResult(fn, await provider.call({ to, data: iface.encodeFunctionData(fn, args) }))[0]
+    const user = new ethers.Wallet('0x' + PrivateKey.fromStringDer(requireEnv('ACCOUNT_1_PRIVATE_KEY')).toStringRaw())
+    const sponsor = new ethers.Wallet('0x' + PrivateKey.fromStringDer(operatorKey).toStringRaw())
+    const entryPointId = ContractId.fromEvmAddress(0, 0, ENTRY_POINT)
+    console.log(`[REGISTRO] EntryPoint v0.6: ${ENTRY_POINT}`)
+    console.log(`[REGISTRO] Usuario (dueño de la cuenta, llave de ACCOUNT_1): ${user.address}`)
+    console.log(`[REGISTRO] Firmante del paymaster (tu llave):             ${sponsor.address}`)
 
-    // 1. Configurar Cuenta Inteligente del Usuario y Patrocinador Paymaster
-    console.log('[PROCESO] Paso 1: Configurando Smart Account del Usuario y Patrocinador Paymaster...')
-    const userWallet = ethers.Wallet.createRandom()
-    const paymasterWallet = ethers.Wallet.createRandom()
+    // 1. Desplegar (o reutilizar) la smart account y el paymaster
+    console.log('\n[PROCESO] Paso 1: Desplegando la smart account y el paymaster verificador...')
+    const code = compile()
+    // El initcode en línea ya debe terminar con los argumentos del constructor codificados en ABI.
+    const deploy = (stateKey, bytecode, owner) => {
+      const initcode = bytecode + ethers.AbiCoder.defaultAbiCoder().encode(['address', 'address'], [ENTRY_POINT, owner]).slice(2)
+      return reuseContract(stateKey, initcode, async () => {
+        const res = await executeWithGas((gas) => new ContractCreateTransaction().setBytecode(Buffer.from(initcode, 'hex')).setGas(gas), client, { gas: 400000 })
+        return (await res.getReceipt(client)).contractId
+      })
+    }
+    const accountId = await deploy('REUSE_M12_06_ACCOUNT', code.account, user.address)
+    const paymasterId = await deploy('REUSE_M12_06_PAYMASTER', code.paymaster, sponsor.address)
+    const sender = '0x' + accountId.toEvmAddress()
+    const paymaster = '0x' + paymasterId.toEvmAddress()
+    console.log(`[ÉXITO] Smart account ${accountId} (${sender})`)
+    console.log(`[ÉXITO] Paymaster     ${paymasterId} (${paymaster})`)
 
-    console.log(`[REGISTRO] Cuenta de Usuario (Emisor):   ${userWallet.address}`)
-    console.log(`[REGISTRO] Patrocinador Paymaster:      ${paymasterWallet.address}`)
-    console.log(`[REGISTRO] EntryPoint ERC-4337:         ${ENTRY_POINT_ADDRESS}`)
+    // 2. Fondear el depósito del paymaster en el EntryPoint (la cuenta no tiene nada)
+    let deposit = await call(ENTRY_POINT, entryPointAbi, 'balanceOf', [paymaster])
+    if (deposit < 200_000_000n) {
+      console.log('\n[PROCESO] Paso 2: Depositando 5 ℏ para el paymaster en el EntryPoint...')
+      const res = await new ContractExecuteTransaction().setContractId(paymasterId).setGas(120000).setPayableAmount(new Hbar(5)).setFunction('deposit').execute(client)
+      await res.getReceipt(client)
+      // El relay lee el estado del Mirror Node, unos segundos detrás del consenso.
+      deposit = await waitForMirror(async () => {
+        const value = await call(ENTRY_POINT, entryPointAbi, 'balanceOf', [paymaster])
+        return value >= 200_000_000n ? value : null
+      }, { timeoutMs: 30_000 }) ?? await call(ENTRY_POINT, entryPointAbi, 'balanceOf', [paymaster])
+    }
+    const accountBalance = await provider.getBalance(sender)
+    console.log(`[REGISTRO] Depósito del paymaster: ${ethers.formatUnits(deposit, 8)} HBAR | saldo de la smart account: ${ethers.formatEther(accountBalance)} HBAR`)
 
-    // 2. Ensamblar Estructura UserOperation
-    console.log('\n[PROCESO] Paso 2: Ensamblando UserOperation ERC-4337 para Transferencia Sin Gas...')
-    const sampleCallData = ethers.hexlify(ethers.toUtf8Bytes('demo: gasless call'))
-
+    // 3. Armar la UserOperation (v0.6) que llama a increment() en la cuenta
+    console.log('\n[PROCESO] Paso 3: Armando y firmando la UserOperation...')
+    const gasPriceTinybars = (await provider.getFeeData()).gasPrice / 10_000_000_000n // el relay cotiza en weibars; la EVM cuenta en tinybars
     const userOp = {
-      sender: userWallet.address,
-      nonce: 0,
+      sender,
+      nonce: await call(ENTRY_POINT, entryPointAbi, 'getNonce', [sender, 0]),
       initCode: '0x',
-      callData: sampleCallData,
-      callGasLimit: 100000,
-      verificationGasLimit: 150000,
-      preVerificationGas: 50000,
-      maxFeePerGas: ethers.parseUnits('20', 'gwei'),
-      maxPriorityFeePerGas: ethers.parseUnits('1', 'gwei'),
+      callData: accountAbi.encodeFunctionData('increment'),
+      callGasLimit: 100000n,
+      verificationGasLimit: 150000n,
+      preVerificationGas: 50000n,
+      maxFeePerGas: gasPriceTinybars,
+      maxPriorityFeePerGas: gasPriceTinybars,
       paymasterAndData: '0x',
       signature: '0x'
     }
+    // El patrocinador firma la operación (sin paymasterAndData) y luego el usuario firma el userOpHash completo.
+    const sponsorHash = await call(paymaster, paymasterAbi, 'getHash', [userOp])
+    userOp.paymasterAndData = ethers.concat([paymaster, await sponsor.signMessage(ethers.getBytes(sponsorHash))])
+    const userOpHash = await call(ENTRY_POINT, entryPointAbi, 'getUserOpHash', [userOp])
+    userOp.signature = await user.signMessage(ethers.getBytes(userOpHash))
+    console.log(`[REGISTRO] Nonce ${userOp.nonce} | userOpHash (del EntryPoint): ${userOpHash}`)
+    console.log(`[REGISTRO] paymasterAndData: ${paymaster} + firma del patrocinador`)
 
-    // 3. El Paymaster firma su patrocinio
-    console.log('\n[PROCESO] Paso 3: El Paymaster firma su patrocinio (con una ventana de validez)...')
-    const validUntil = Math.floor(Date.now() / 1000) + 3600 // 1 hora de validez
-    const validAfter = Math.floor(Date.now() / 1000)
+    // 4. Bundle: tú envías handleOps al EntryPoint; el depósito del paymaster paga la operación
+    const counterBefore = await call(sender, accountAbi, 'counter')
+    console.log('\n[PROCESO] Paso 4: El bundler envía EntryPoint.handleOps([userOp], beneficiario)...')
+    const beneficiary = '0x' + AccountId.fromString(operatorId.toString()).toEvmAddress()
+    const handleOps = await executeWithGas((gas) => new ContractExecuteTransaction()
+      .setContractId(entryPointId)
+      .setGas(gas)
+      .setFunctionParameters(Buffer.from(entryPointAbi.encodeFunctionData('handleOps', [[userOp], beneficiary]).slice(2), 'hex')), client, { gas: 600000 })
+    const record = await handleOps.getRecord(client)
+    console.log(`[ÉXITO] Estado de handleOps: ${record.receipt.status.toString()}`)
+    console.log(`[EXPLORADOR] ${getHashscanUrl(handleOps)}`)
 
-    const sponsorship = await engine.sponsorUserOp(
-      paymasterWallet,
-      userOp,
-      validUntil,
-      validAfter
-    )
+    // 5. Verificar on-chain: el evento, el contador, quién pagó
+    const topic = entryPointAbi.getEvent('UserOperationEvent').topicHash
+    const log = (record.contractFunctionResult?.logs || []).find((l) => '0x' + Buffer.from(l.topics[0]).toString('hex') === topic)
+    if (!log) throw new Error('No hay UserOperationEvent en el registro de handleOps')
+    const event = entryPointAbi.decodeEventLog('UserOperationEvent', '0x' + Buffer.from(log.data).toString('hex'), log.topics.map((t) => '0x' + Buffer.from(t).toString('hex')))
+    if (!event.success) throw new Error('El EntryPoint ejecutó la UserOperation pero su llamada falló')
+    const counterAfter = await waitForMirror(async () => {
+      const value = await call(sender, accountAbi, 'counter')
+      return value > counterBefore ? value : null
+    }, { timeoutMs: 30_000 }) ?? await call(sender, accountAbi, 'counter')
+    const depositAfter = await call(ENTRY_POINT, entryPointAbi, 'balanceOf', [paymaster])
+    console.log(`[VERIFY] UserOperationEvent: success=${event.success}, paymaster=${event.paymaster}, gas usado ${event.actualGasUsed}`)
+    console.log(`[VERIFY] Contador de la cuenta: ${counterBefore} -> ${counterAfter}`)
+    console.log(`[VERIFY] Depósito del paymaster: ${ethers.formatUnits(deposit, 8)} -> ${ethers.formatUnits(depositAfter, 8)} HBAR (le pagó ${ethers.formatUnits(event.actualGasCost, 8)} HBAR al bundler)`)
+    console.log(`[VERIFY] Saldo de la smart account: ${ethers.formatEther(await provider.getBalance(sender))} HBAR (el usuario no pagó nada)`)
 
-    userOp.paymasterAndData = sponsorship.paymasterAndData
-    console.log('[ÉXITO] El Paymaster firmó el patrocinio (uno real aplicaría antes su propia política: KYC, cuotas...).')
-    console.log(`[REGISTRO] Digest del Paymaster: ${sponsorship.paymasterDigest}`)
-    console.log(`[REGISTRO] Ventana de Patrocinio: ${validAfter} ➔ ${validUntil}`)
-    console.log(`[REGISTRO] Longitud de paymasterAndData: ${ethers.dataLength(userOp.paymasterAndData)} bytes`)
-
-    // 4. El Usuario Firma la UserOperation Patrocinada
-    console.log('\n[PROCESO] Paso 4: El Usuario Firma el Hash Definitivo de la UserOperation...')
-    const finalUserOpHash = engine.getUserOpHash(userOp)
-    const userSigningKey = new ethers.SigningKey(userWallet.privateKey)
-    const userSig = userSigningKey.sign(finalUserOpHash)
-    userOp.signature = ethers.concat([userSig.r, userSig.s, ethers.toBeHex(userSig.v, 1)])
-
-    console.log('[ÉXITO] ¡UserOperation Sellada Criptográficamente!')
-    console.log(`[REGISTRO] Hash Final de UserOp: ${finalUserOpHash}`)
-    console.log(`[REGISTRO] Firma del Usuario:    ${userOp.signature.substring(0, 24)}...`)
-
-    // 5. Verificarla como lo haría el EntryPoint, y decir claramente lo que aquí no se hace
-    console.log('\n[PROCESO] Paso 5: Verificando las dos firmas, como lo haría el EntryPoint...')
-    const signer = ethers.recoverAddress(finalUserOpHash, userOp.signature)
-    if (signer !== userWallet.address) throw new Error('La firma de la UserOperation no coincide con el remitente')
-    console.log(`[VERIFY] La firma del usuario recupera ${signer}: el remitente.`)
-    const paymasterSignature = ethers.dataSlice(userOp.paymasterAndData, 32) // después de dirección (20) + validUntil (6) + validAfter (6)
-    const sponsor = ethers.recoverAddress(sponsorship.paymasterDigest, paymasterSignature)
-    if (sponsor !== paymasterWallet.address) throw new Error('La firma del paymaster no coincide con el paymaster')
-    console.log(`[VERIFY] La firma del paymaster recupera ${sponsor}: el paymaster, válida hasta ${new Date(validUntil * 1000).toISOString()}.`)
-
-    const entryPoint = await fetch(`${getMirrorNodeBaseUrl()}/api/v1/contracts/${ENTRY_POINT_ADDRESS}`)
-    console.log(entryPoint.ok
-      ? `[REGISTRO] Mirror Node: existe un contrato EntryPoint en ${ENTRY_POINT_ADDRESS} en Hedera testnet (${(await entryPoint.json()).contract_id}).`
-      : `[REGISTRO] Mirror Node: no hay contrato en ${ENTRY_POINT_ADDRESS} en Hedera testnet (HTTP ${entryPoint.status}); un bundler necesitaría primero un EntryPoint desplegado.`)
-    console.log('[INFO] En este lab no corre ningún bundler, así que no se envió ni se cobró nada. Un bundler mandaría esta')
-    console.log('UserOperation al EntryPoint (handleOps), que cobra el gas del depósito del Paymaster.')
-    updateState('ERC4337_PAYMASTER_ADDRESS', paymasterWallet.address)
-    updateState('ERC4337_LAST_USEROP_HASH', finalUserOpHash)
+    updateState('ERC4337_ACCOUNT', sender)
+    updateState('ERC4337_PAYMASTER', paymaster)
+    updateState('ERC4337_LAST_USEROP_HASH', userOpHash)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Web3 Universal Sin Gas: Los usuarios nunca tienen que comprar tokens nativos ni pagar')
-    console.log('tarifas de red. Las aplicaciones empresariales, estudios de videojuegos y marcos de agentes')
-    console.log('de IA pueden absorber todos los costos operativos de gas mediante patrocinio Paymaster ERC-4337.')
+    console.log('Incorporación sin gas: el usuario solo firmó. El bundler envió la transacción, el')
+    console.log('EntryPoint comprobó ambas firmas, ejecutó la llamada y cobró del depósito del paymaster.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Las comisiones de Hedera están fijadas en USD, así que un Paymaster puede presupuestar el patrocinio')
-    console.log('con exactitud. Las firmas que acabas de verificar impiden gastar su depósito sin su consentimiento.')
+    console.log('El paymaster firma un hash que excluye su propio campo de firma; el usuario firma el')
+    console.log('userOpHash completo que calcula el EntryPoint. Si falla cualquiera de las dos firmas, la operación se detiene.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] Fallo en Paymaster ERC-4337:', error.message)
-    process.exit(1)
+    console.error('\n[FALLO] Falló ERC-4337:', error.message)
+    process.exitCode = 1
+  } finally {
+    client.close()
   }
 }
 
@@ -243,7 +204,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }
