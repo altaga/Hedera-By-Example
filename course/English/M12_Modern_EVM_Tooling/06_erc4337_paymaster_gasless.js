@@ -32,7 +32,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M12 Lab 05: EIP-7702 Pectra Account Delegation on Hedera JSON-RPC Relay
- * - Next:     M13 Lab 01: Cross-Ledger Protocol (CLPR) & Cryptographic State Proofs (HIP-1535)
+ * - Next:     M12 Lab 07: BLS12-381 Aggregate Signatures with the Pectra Precompiles
  *
  * [ SEQUENCE ]
  * User -> Lab: Signs a UserOperation for their smart account (it holds 0 HBAR)

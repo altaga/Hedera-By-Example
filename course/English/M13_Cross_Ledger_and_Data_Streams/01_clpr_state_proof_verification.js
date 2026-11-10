@@ -22,7 +22,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ LEARNING PATH ]
- * - Previous: M12 Lab 06: ERC-4337 Paymaster Architecture & Gasless UserOperations
+ * - Previous: M12 Lab 07: BLS12-381 Aggregate Signatures with the Pectra Precompiles
  * - Next:     M13 Lab 02: Native Fee Sponsorship & Delegated Allowances (HIP-336)
  *
  * [ SIMULATED ]

@@ -33,7 +33,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M12 Lab 05: Delegación de Cuentas EIP-7702 Pectra en el Relay JSON-RPC de Hedera
- * - Siguiente: M13 Lab 01: Protocolo Cross-Ledger (CLPR) y Pruebas Criptográficas de Estado (HIP-1535)
+ * - Siguiente: M12 Lab 07: Firmas Agregadas BLS12-381 con los Precompilados de Pectra
  *
  * [ SECUENCIA ]
  * Usuario -> Lab: Firma una UserOperation para su smart account (que tiene 0 HBAR)

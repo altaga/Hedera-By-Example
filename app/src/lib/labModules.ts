@@ -462,6 +462,7 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
     case '@modelcontextprotocol/sdk/server/mcp.js':
     case '@modelcontextprotocol/sdk/client/index.js':
     case '@modelcontextprotocol/sdk/inMemory.js':
+    case '@noble/curves/bls12-381.js':
     case 'zod': {
       const v = await loadVendor(ctx)
       return { ...v, default: v }

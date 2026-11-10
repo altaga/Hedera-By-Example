@@ -22,7 +22,7 @@
  * - https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service/submit-a-message
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M12 Lab 06: Arquitectura Paymaster ERC-4337 y Operaciones de Usuario Sin Gas
+ * - Anterior:  M12 Lab 07: Firmas Agregadas BLS12-381 con los Precompilados de Pectra
  * - Siguiente: M13 Lab 02: Patrocinio Nativo de Tarifas y Asignaciones Delegadas (HIP-336)
  *
  * [ SIMULADO ]
