@@ -21,7 +21,11 @@
  * - Next:     M3 Lab 09: Treasury Supply-Key NFT Updates & Post-Distribution Lock (HIP-850)
  *
  * [ SIMULATED ]
- * The IPFS CID is an example: the metadata JSON is not uploaded to IPFS, so the link does not resolve. The collection and the mint are real.
+ * The upload to a pinning service is simulated; the content IDs are real. The lab computes the exact
+ * CIDv1 (raw, sha2-256) IPFS assigns to the image and to the metadata JSON (what
+ * `ipfs add --cid-version=1` returns for a file this small), and the "pin" answers in the same
+ * format as Pinata's pinFileToIPFS. Until someone uploads the same bytes, the ipfs:// links
+ * do not resolve. The collection and the mint are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -41,6 +45,8 @@ import {
   TokenNftInfoQuery,
   PrivateKey
 } from '@hiero-ledger/sdk'
+import { createHash } from 'node:crypto'
+import fs from 'node:fs'
 import { getClient, reuseToken } from '../M99_Utilities/index.js'
 
 /**
@@ -57,10 +63,32 @@ function generateHIP412Metadata (name, image, description, attributes) {
     attributes,
     properties: {
       collection: 'HIP-412 Educational Series',
-      website: 'https://hedera.com'
+      website: 'https://hbe.expo.app'
     }
   }
 }
+
+/**
+ * CIDv1 of a single-block file, as IPFS computes it (https://github.com/multiformats/cid):
+ * <version 0x01><codec raw 0x55><multihash: sha2-256 0x12, length 0x20, digest>, in base32 ("b" prefix).
+ */
+const B32 = 'abcdefghijklmnopqrstuvwxyz234567'
+const cidV1Raw = (bytes) => {
+  const data = Buffer.concat([Buffer.from([0x01, 0x55, 0x12, 0x20]), createHash('sha256').update(bytes).digest()])
+  let bits = 0
+  let value = 0
+  let out = 'b'
+  for (const byte of data) {
+    value = (value << 8) | byte
+    bits += 8
+    while (bits >= 5) { out += B32[(value >>> (bits - 5)) & 31]; bits -= 5 }
+  }
+  if (bits > 0) out += B32[(value << (5 - bits)) & 31]
+  return out
+}
+
+// Same response shape as Pinata's POST /pinning/pinFileToIPFS (simulated: nothing is uploaded).
+const simulatePin = (bytes) => ({ IpfsHash: cidV1Raw(bytes), PinSize: bytes.length, Timestamp: new Date().toISOString(), isDuplicate: false })
 
 const main = async () => {
   console.log('--- SESSION START: HIP-412 Metadata ---')
@@ -69,11 +97,17 @@ const main = async () => {
   const supplyKey = PrivateKey.fromStringDer(operatorKey)
 
   try {
-    // 1. Generate the JSON Metadata
+    // 1. Content-address the image
+    const image = fs.readFileSync(new URL('./assets/logonft.png', import.meta.url))
+    const imagePin = simulatePin(image)
+    console.log(`\n[PROCESS] Image: logonft.png (${image.length} bytes)`)
+    console.log(`[LOG] Pin response (simulated): ${JSON.stringify(imagePin)}`)
+
+    // 2. Generate the JSON Metadata pointing at the image's CID
     console.log('\n[PROCESS] Constructing HIP-412 Compliant JSON...')
     const metadataObj = generateHIP412Metadata(
       'HIP-412 Master Sword',
-      'ipfs://bafkreifh3q3wxgfbsfbs5tqybbg34z62tdcugnsvf7y3c7n66n7pzybyzi', // Example IPFS CID
+      `ipfs://${imagePin.IpfsHash}`,
       'A legendary sword forged in the fires of the Hedera consensus.',
       [
         { trait_type: 'Attack', value: 99 },
@@ -81,22 +115,17 @@ const main = async () => {
         { trait_type: 'Rarity', value: 'Legendary' }
       ]
     )
-
     console.log('[LOG] HIP-412 Payload:')
     console.log(JSON.stringify(metadataObj, null, 2))
 
-    // In a real production app, you would upload `metadataObj` to IPFS here
-    // and use the resulting IPFS CID as the metadata buffer.
-    // For this lab, we will embed the raw JSON directly as the metadata buffer
-    // (Note: Hedera has a 100-byte limit on metadata natively, so usually you
-    // only store the IPFS URI, e.g., Buffer.from('ipfs://...'). But for HCS/Hashinals
-    // or smaller payloads, we illustrate the concept).
-    // Let's assume we uploaded it and got a CID:
-    const mockCid = 'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi/metadata.json'
-    const metadataBuffer = Buffer.from(mockCid)
-    console.log(`[INFO] Metadata pointer: ${mockCid} (example CID: the JSON is not uploaded to IPFS in this lab)`)
+    // 3. Content-address the metadata JSON: the NFT stores only this short URI (100-byte limit)
+    const metadataBytes = Buffer.from(JSON.stringify(metadataObj))
+    const metadataPin = simulatePin(metadataBytes)
+    const metadataUri = `ipfs://${metadataPin.IpfsHash}`
+    console.log(`\n[LOG] Pin response (simulated): ${JSON.stringify(metadataPin)}`)
+    console.log(`[INFO] Metadata URI: ${metadataUri} (${Buffer.byteLength(metadataUri)} bytes, fits the 100-byte NFT metadata limit)`)
 
-    // 2. Create the NFT Collection
+    // 4. Create the NFT Collection
     console.log('\n[PROCESS] Creating NFT Collection...')
     const tokenId = await reuseToken('REUSE_M3_08_TOKEN', async () => {
       const createTx = await new TokenCreateTransaction()
@@ -113,29 +142,30 @@ const main = async () => {
     })
     console.log(`[SUCCESS] Collection created: ${tokenId.toString()}`)
 
-    // 3. Mint the NFT with the HIP-412 URI
+    // 5. Mint the NFT with the HIP-412 URI
     console.log('\n[PROCESS] Minting NFT with HIP-412 Metadata URI...')
     const tx = await new TokenMintTransaction()
       .setTokenId(tokenId)
-      .setMetadata([metadataBuffer])
+      .setMetadata([Buffer.from(metadataUri)])
       .freezeWith(client)
-
-    const signTx = await tx.sign(supplyKey)
-    const submitTx = await signTx.execute(client)
-    const receipt = await submitTx.getReceipt(client)
+    const receipt = await (await (await tx.sign(supplyKey)).execute(client)).getReceipt(client)
     const serialNum = receipt.serials[0].toNumber()
     console.log(`[SUCCESS] Minted Serial #${serialNum}`)
 
-    // 4. Verify
+    // 6. Verify: read the URI back and check it is the CID of exactly these bytes
     const nftInfo = await new TokenNftInfoQuery()
       .setNftId(new NftId(tokenId, serialNum))
       .execute(client)
-
-    console.log(`\n[LOG] On-chain Metadata URI: ${Buffer.from(nftInfo[0].metadata).toString()}`)
+    const onChain = Buffer.from(nftInfo[0].metadata).toString()
+    console.log(`\n[LOG] On-chain Metadata URI: ${onChain}`)
+    if (onChain !== `ipfs://${cidV1Raw(metadataBytes)}`) throw new Error('The on-chain URI is not the CID of the metadata JSON')
+    console.log('[VERIFY] The URI is the content ID of the metadata: any change to the JSON would change it.')
+    console.log('[INFO] To make the links resolve, upload logonft.png and the same JSON bytes with `ipfs add --cid-version=1` (or a pinning service); they get these CIDs.')
 
     console.log('\n KEY CONCEPT:')
     console.log('Without HIP-412, your NFTs will appear as blank squares in wallets.')
-    console.log('Standardization is critical for ecosystem interoperability.')
+    console.log('Standardization is critical for ecosystem interoperability, and a content ID')
+    console.log('makes the metadata tamper-evident: the URI only matches the exact bytes.')
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
