@@ -29,7 +29,7 @@
  * - Siguiente: M2 Lab 06: Bus de Eventos WebSocket en Tiempo Real del Ledger
  *
  * [ SIMULADO ]
- * Las respuestas HTTP 429 se inyectan a propósito para activar el circuit breaker. La consulta de respaldo al Mirror Node es real.
+ * Las respuestas HTTP 429 se inyectan a propósito (inyección de fallas) para activar el circuit breaker: cada una es una Response real con estado 429, cabecera Retry-After y el cuerpo de error del Mirror Node, procesada como una respuesta en vivo. Saturar el Mirror Node público hasta que limite de verdad sería un abuso. Las demás consultas al Mirror Node son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -171,8 +171,11 @@ const main = async () => {
     for (let i = 1; i <= 3; i++) {
       console.log(`[ RÁFAGA DE TRÁFICO] Despachando Petición #${i}...`)
       const burstRes = await breaker.execute(`account:${targetAccount}`, async () => {
-        // Simular intencionalmente un 429 transitorio / sobrecarga
-        throw new Error('HTTP 429: Too Many Requests (Mirror Node Rate Limit)')
+        // Inyección de fallas: la misma Response que devuelve un Mirror Node limitado (429, Retry-After,
+        // cuerpo de error del Mirror Node), procesada por el mismo código que una respuesta real.
+        const res = new Response(JSON.stringify({ _status: { messages: [{ message: 'Too Many Requests' }] } }), { status: 429, headers: { 'Content-Type': 'application/json', 'Retry-After': '2' } })
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${(await res.json())._status.messages[0].message} (Retry-After: ${res.headers.get('Retry-After')} s)`)
+        return res.json()
       })
 
       console.log(`[ RESILIENCIA ACTIVA] Resultado: Saldo entregado desde caché ${(burstRes.data.balance.balance / 1e8).toFixed(4)} ℏ (Desde Caché: ${burstRes.fromCache}, Disyuntor: ${burstRes.breakerState})`)
