@@ -32,7 +32,7 @@
  * - Siguiente: M7 Lab 01: Gobernanza con Multi-firma (KeyList y Thresholds)
  *
  * [ SIMULADO ]
- * El reporte de auditoría son datos de ejemplo inventados (institución, clientes, nombres de políticas e IDs son ficticios), y la llave maestra es un texto fijo de demo en lugar de una llave de KMS. El cifrado, los mensajes HCS y la prueba de manipulación son reales.
+ * El reporte de auditoría son datos de ejemplo inventados (institución, clientes, nombres de políticas e IDs son ficticios), y la llave maestra (KEK) es una llave WebCrypto no extraíble de esta sesión en lugar de una llave de KMS. El envoltorio AES-KW, el cifrado AES-256-GCM, los mensajes HCS y la prueba de manipulación son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -53,33 +53,31 @@ import crypto from 'node:crypto'
 import zlib from 'node:zlib'
 
 /**
- * 1. Motor de Cifrado de Sobre y Fragmentación
+ * 1. Motor de Cifrado de Sobre y Fragmentación (WebCrypto)
+ * La DEK cifra el documento (AES-256-GCM); la KEK envuelve la DEK (AES-KW, RFC 3394).
+ * La KEK es no extraíble: solo esta sesión puede desenvolver la DEK.
  */
-const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
-  // A. Comprimir con Gzip para minimizar el tamaño en consenso
+const encryptAndShardVaultPayload = async (rawBuffer, kek) => {
+  const subtle = globalThis.crypto.subtle
+  // A. Comprimir con Gzip para reducir el tamaño del mensaje on-chain
   const compressed = zlib.gzipSync(rawBuffer)
 
-  // B. Generar Llave de Cifrado de Datos (DEK) efímera y Vector de Inicialización (IV) de 96 bits
-  const dek = crypto.randomBytes(32) // AES-256
-  const iv = crypto.randomBytes(12) // 96 bits recomendados para GCM
+  // B. Llave de cifrado de datos (DEK) nueva y IV de 96 bits para este documento
+  const dek = await subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
+  const iv = crypto.randomBytes(12)
 
-  // C. Cifrado Autenticado con AES-256-GCM
-  const cipher = crypto.createCipheriv('aes-256-gcm', dek, iv)
-  const encryptedPayload = Buffer.concat([cipher.update(compressed), cipher.final()])
-  const authTag = cipher.getAuthTag() // Etiqueta de integridad y autenticidad de 16 bytes (128 bits)
+  // C. Cifrado autenticado: WebCrypto agrega la etiqueta GCM de 16 bytes al texto cifrado
+  const sealed = Buffer.from(await subtle.encrypt({ name: 'AES-GCM', iv, tagLength: 128 }, dek, compressed))
+  const encryptedPayload = sealed.subarray(0, sealed.length - 16)
+  const authTag = sealed.subarray(sealed.length - 16)
 
-  // D. Simular Envoltura de Llave (Envelope Encryption de la DEK con el Secreto Maestro)
-  const keyCipher = crypto.createCipheriv(
-    'aes-256-cbc',
-    crypto.createHash('sha256').update(masterSecret).digest(),
-    iv.subarray(0, 16).length === 16 ? iv.subarray(0, 16) : Buffer.alloc(16, 0)
-  )
-  const encryptedDek = Buffer.concat([keyCipher.update(dek), keyCipher.final()]).toString('base64')
+  // D. Cifrado de sobre: envolver la DEK con la KEK (AES-KW)
+  const wrappedDek = Buffer.from(await subtle.wrapKey('raw', dek, kek, { name: 'AES-KW' }))
 
-  // E. Calcular la Huella Digital SHA-256 del documento original en claro
+  // E. Huella SHA-256 del documento original
   const documentFingerprint = crypto.createHash('sha256').update(rawBuffer).digest('hex')
 
-  // F. Fragmentar el texto cifrado en partes al estilo HCS-1 (ej. 250 caracteres Base64 por fragmento)
+  // F. Fragmentar el texto cifrado en partes al estilo HCS-1 (250 caracteres base64 cada una)
   const cipherBase64 = encryptedPayload.toString('base64')
   const CHUNK_SIZE = 250
   const rawChunks = []
@@ -89,10 +87,11 @@ const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
 
   const shards = rawChunks.map((chunk, index) => ({
     h: 'hcs-1-vault',
-    v: '1.0.0',
+    v: '1.1.0',
     fid: documentFingerprint,
     env: {
-      dek: encryptedDek,
+      alg: 'A256KW+A256GCM',
+      dek: wrappedDek.toString('base64'),
       iv: iv.toString('base64'),
       tag: authTag.toString('base64')
     },
@@ -105,8 +104,6 @@ const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
     documentFingerprint,
     compressedSize: compressed.length,
     encryptedSize: encryptedPayload.length,
-    dek,
-    iv,
     authTag,
     shards
   }
@@ -115,51 +112,31 @@ const encryptAndShardVaultPayload = (rawBuffer, masterSecret) => {
 /**
  * 2. Motor de Ensamblaje y Descifrado sin Confianza en Terceros
  */
-const reassembleAndDecryptVault = (shards, masterSecret) => {
+const reassembleAndDecryptVault = async (shards, kek) => {
+  const subtle = globalThis.crypto.subtle
   if (!shards || shards.length === 0) {
-    throw new Error('No hay fragmentos disponibles para el reensamblaje')
+    throw new Error('No hay fragmentos para reensamblar')
   }
 
-  // Ordenar fragmentos por índice secuencial estricto
   const sorted = [...shards].sort((a, b) => a.i - b.i)
   if (sorted.length !== sorted[0].t) {
-    throw new Error(`Conjunto de fragmentos incompleto: se recibieron ${sorted.length} de ${sorted[0].t}`)
+    throw new Error(`Conjunto de fragmentos incompleto: llegaron ${sorted.length} de ${sorted[0].t}`)
   }
 
   const header = sorted[0]
-  const fullCipherBase64 = sorted.map(s => s.d).join('')
-  const cipherBuffer = Buffer.from(fullCipherBase64, 'base64')
-
-  // Descifrar la Llave de Cifrado de Datos (DEK) desde el sobre
+  const cipherBuffer = Buffer.from(sorted.map(s => s.d).join(''), 'base64')
   const iv = Buffer.from(header.env.iv, 'base64')
   const authTag = Buffer.from(header.env.tag, 'base64')
-  const keyIv = iv.subarray(0, 16).length === 16 ? iv.subarray(0, 16) : Buffer.alloc(16, 0)
 
-  const keyDecipher = crypto.createDecipheriv(
-    'aes-256-cbc',
-    crypto.createHash('sha256').update(masterSecret).digest(),
-    keyIv
-  )
-  const decryptedDek = Buffer.concat([
-    keyDecipher.update(Buffer.from(header.env.dek, 'base64')),
-    keyDecipher.final()
-  ])
+  // Desenvolver la DEK con la KEK, luego descifrar y autenticar (un byte alterado falla aquí)
+  const dek = await subtle.unwrapKey('raw', Buffer.from(header.env.dek, 'base64'), kek, { name: 'AES-KW' }, { name: 'AES-GCM' }, false, ['decrypt'])
+  const decompressed = Buffer.from(await subtle.decrypt({ name: 'AES-GCM', iv, tagLength: 128 }, dek, Buffer.concat([cipherBuffer, authTag])))
 
-  // Descifrado Autenticado con AES-256-GCM
-  const decipher = crypto.createDecipheriv('aes-256-gcm', decryptedDek, iv)
-  decipher.setAuthTag(authTag)
-
-  const decompressed = Buffer.concat([
-    decipher.update(cipherBuffer),
-    decipher.final()
-  ])
-
-  // Descompresión Gzip
   const originalBuffer = zlib.gunzipSync(decompressed)
   const verifiedFingerprint = crypto.createHash('sha256').update(originalBuffer).digest('hex')
 
   if (verifiedFingerprint !== header.fid) {
-    throw new Error('Fallo en la prueba de integridad: la huella del documento reconstruido no coincide')
+    throw new Error('Falló la verificación de integridad: el hash del documento reconstruido no coincide')
   }
 
   return {
@@ -196,8 +173,9 @@ const main = async () => {
     console.log('[PROCESO] Paso 1: Cifrando Documento Empresarial bajo Arquitectura Zero-Trust...')
     console.log(`[REGISTRO] Tamaño en Claro: ${rawBuffer.length} bytes`)
 
-    const enterpriseMasterSecret = 'ENTERPRISE_ROOT_KMS_KEY_SECRET_99420'
-    const vault = encryptAndShardVaultPayload(rawBuffer, enterpriseMasterSecret)
+    // Llave maestra (KEK): llave AES-KW no extraíble guardada por WebCrypto, nunca un texto en el código
+    const kek = await globalThis.crypto.subtle.generateKey({ name: 'AES-KW', length: 256 }, false, ['wrapKey', 'unwrapKey'])
+    const vault = await encryptAndShardVaultPayload(rawBuffer, kek)
 
     console.log(`[REGISTRO] Tamaño Comprimido Gzip: ${vault.compressedSize} bytes (-${Math.round((1 - (vault.compressedSize / rawBuffer.length)) * 100)}% reducción en red)`)
     console.log(`[REGISTRO] Tamaño Cifrado AES-256-GCM: ${vault.encryptedSize} bytes`)
@@ -265,7 +243,7 @@ const main = async () => {
 
     // 5. Descifrar y Verificar Integridad
     console.log('\n[PROCESO] Paso 5: Realizando Verificación Autenticada GMAC y Descifrado...')
-    const reconstruction = reassembleAndDecryptVault(retrievedShards, enterpriseMasterSecret)
+    const reconstruction = await reassembleAndDecryptVault(retrievedShards, kek)
     const reconstructedDocument = JSON.parse(reconstruction.originalBuffer.toString('utf-8'))
 
     console.log(`[ÉXITO] ¡Integridad del Documento Verificada! Huella SHA-256: 0x${reconstruction.verifiedFingerprint}`)
@@ -283,7 +261,7 @@ const main = async () => {
       tamperedBytes[0] = tamperedBytes[0] ^ 0xff // Invertir bits
       tamperedShards[0].d = tamperedBytes.toString('base64')
 
-      reassembleAndDecryptVault(tamperedShards, enterpriseMasterSecret)
+      await reassembleAndDecryptVault(tamperedShards, kek)
       console.error('[FALLO] Violación de seguridad: ¡Se aceptó un texto cifrado alterado!')
       process.exitCode = 1
     } catch (tamperErr) {

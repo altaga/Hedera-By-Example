@@ -13,7 +13,7 @@ This module covers the pillars of the Hedera network: from the Hashgraph algorit
 | :--- | :--- | :--- |
 | **01** | **aBFT Consensus** | Simulation of Gossip-about-Gossip and Virtual Voting. |
 | **02** | **Account Rent** | The economic model of on-chain storage. |
-| **03** | **KMS Cryptography** | Using Key Management Services for enterprise security. |
+| **03** | **KMS Cryptography** | Signing real transactions with a non-extractable WebCrypto key, the same signWith pattern a KMS or HSM uses. |
 | **04** | **Key Rotation** | How to change account security without changing its ID. |
 | **05** | **Lazy Account Creation** | Auto-creating Hedera accounts by transferring HBAR to an EVM alias (HIP-583). |
 | **06** | **Native Staking** | Delegating HBAR stake to consensus nodes for network security and rewards (HIP-406). |
@@ -84,7 +84,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | free (no transactions are sent) |
 | **02** | — | Yes | <0.1 ℏ (network fees only) |
-| **03** | — | — | free (no transactions are sent) |
+| **03** | — | — | <1 ℏ (creates and deletes a temporary vault account) |
 | **04** | — | Yes | <0.1 ℏ (network fees only) |
 | **05** | — | — | ~1 ℏ (network fees only) |
 | **06** | — | — | <0.1 ℏ (network fees only) |

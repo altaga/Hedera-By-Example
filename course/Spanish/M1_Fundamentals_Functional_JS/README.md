@@ -13,7 +13,7 @@ Este módulo cubre los pilares de la red Hedera: desde el algoritmo Hashgraph ha
 | :--- | :--- | :--- |
 | **01** | **Consenso aBFT** | Simulación de Gossip-about-Gossip y Votación Virtual. |
 | **02** | **Renta de Cuentas** | El modelo económico de almacenamiento on-chain. |
-| **03** | **Criptografía KMS** | Uso de Servicios de Gestión de Claves para seguridad. |
+| **03** | **Criptografía KMS** | Firmar transacciones reales con una llave WebCrypto no extraíble, el mismo patrón signWith que usa un KMS o HSM. |
 | **04** | **Rotación de Claves** | Cómo cambiar la seguridad de una cuenta sin cambiar su ID. |
 | **05** | **Creación Perezosa (Lazy)** | Auto-creación de cuentas enviando HBAR a un alias EVM (HIP-583). |
 | **06** | **Staking Nativo** | Delegación de HBAR a nodos de consenso para seguridad y recompensas (HIP-406). |
@@ -84,7 +84,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | gratis (no se envía ninguna transacción) |
 | **02** | — | Sí | <0.1 ℏ (solo comisiones de red) |
-| **03** | — | — | gratis (no se envía ninguna transacción) |
+| **03** | — | — | <1 ℏ (crea y borra una cuenta temporal de la bóveda) |
 | **04** | — | Sí | <0.1 ℏ (solo comisiones de red) |
 | **05** | — | — | ~1 ℏ (solo comisiones de red) |
 | **06** | — | — | <0.1 ℏ (solo comisiones de red) |
