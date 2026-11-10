@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 08: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
+ * Lab 07: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
  * [CONCEPTO] Ensamblajes UI On-Chain Componibles y Adaptadores Verificados
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -28,15 +28,15 @@
  * - https://hol.org/docs/standards/hcs-21/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 07: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
- * - Siguiente: M14 Lab 09: Buzón de Mensajes Privado HIP-1334 en HCS
+ * - Anterior:  M14 Lab 06: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
+ * - Siguiente: M14 Lab 08: Buzón de Mensajes Privado HIP-1334 en HCS
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: <1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node Spanish/M14_Advanced_HCS_Standards_AI/08_hcs12_hashlinks_and_hcs21_adapters.js
+ * node Spanish/M14_Advanced_HCS_Standards_AI/07_hcs12_hashlinks_and_hcs21_adapters.js
  * ============================================================================
  */
 

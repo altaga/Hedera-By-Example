@@ -38,7 +38,7 @@
         "docs": "https://docs.hedera.com/solutions/ai/agent-kit",
         "github": "https://github.com/hashgraph/hedera-agent-kit-js"
       },
-      "antiHallucinationNotes": "Do not build agent memory on EVM storage slots; use HCS topics (HCS-2 registries; HCS-28 is a draft ANS agent transparency registry) and HCS-10 communication topics.",
+      "antiHallucinationNotes": "Do not build agent memory on EVM storage slots; use HCS topics (HCS-2 registries) and HCS-10 communication topics.",
       "searchTriggers": [
         "agent kit",
         "ai studio",

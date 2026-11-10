@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 10: Hedera MCP Server with a Custom Policy Guard
+ * Lab 09: Hedera MCP Server with a Custom Policy Guard
  * [CONCEPT] Safe Autonomous LLM Agent Execution Behind an In-Line Policy Check
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -29,7 +29,7 @@
  * - https://github.com/hashgraph/hedera-agent-kit-js
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 09: HIP-1334 Private Message Box on HCS
+ * - Previous: M14 Lab 08: HIP-1334 Private Message Box on HCS
  * - Next:     M15 Lab 01: DePIN High-Speed MQTTS Telemetry & Hardware Signing (Pacemaker)
  *
  * [ SEQUENCE ]
@@ -47,7 +47,7 @@
  * - With --server it becomes a stdio MCP server for an AI client (Node only).
  *
  * [ HOW TO RUN ]
- * node English/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
+ * node English/M14_Advanced_HCS_Standards_AI/09_hashnet_mcp_server_hol_guard.js
  * ============================================================================
  */
 

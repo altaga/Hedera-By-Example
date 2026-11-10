@@ -20,7 +20,7 @@
  * de banda cuando se violan umbrales críticos de seguridad biológica.
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
+ * - Anterior:  M14 Lab 09: Servidor MCP de Hedera con un Guardián de Políticas Propio
  * - Siguiente: M15 Lab 02: Telemetría DePIN Ligera de Cadena de Frío (API Key + HMAC-SHA256)
  *
  * [ REFERENCIAS OFICIALES ]

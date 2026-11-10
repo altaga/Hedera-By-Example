@@ -248,7 +248,7 @@ export async function runMcpServerTest() {
 
     msgs = await rpc({ jsonrpc: '2.0', id: 8, method: 'resources/list' })
     const resources = byId(msgs, 8)?.result?.resources || []
-    if (resources.length < 270) throw new Error(`Expected every lab as a resource, got ${resources.length}`)
+    if (resources.length < 266) throw new Error(`Expected every lab as a resource, got ${resources.length}`)
     msgs = await rpc({ jsonrpc: '2.0', id: 9, method: 'resources/read', params: { uri: 'hbe://lab/es/m00-01-generate-wallet' } })
     if (!byId(msgs, 9)?.result?.contents?.[0]?.text?.includes('Lab 01')) throw new Error('resources/read failed')
     msgs = await rpc({ jsonrpc: '2.0', id: 10, method: 'prompts/get', params: { name: 'build_on_hedera', arguments: { goal: 'NFT loyalty badges' } } })

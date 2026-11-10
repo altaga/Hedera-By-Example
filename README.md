@@ -1,9 +1,9 @@
 # 🌐 Hedera by Example (HBE)
-### Interactive In-Browser Web3 Playground & 135-Lab Enterprise Reference Curriculum
+### Interactive In-Browser Web3 Playground & 133-Lab Enterprise Reference Curriculum
 
 [![Hedera Testnet](https://img.shields.io/badge/Network-Hedera%20Testnet-00F0FF?style=flat-square&logo=hedera)](https://hashscan.io/testnet)
 [![SDK](https://img.shields.io/badge/%40hiero--ledger%2Fsdk-v2.90.1-10B981?style=flat-square)](https://github.com/hiero-ledger/hiero-sdk-js)
-[![Labs](https://img.shields.io/badge/Curriculum-135%20Production%20Labs-blueviolet?style=flat-square)](https://hbe.expo.app)
+[![Labs](https://img.shields.io/badge/Curriculum-133%20Production%20Labs-blueviolet?style=flat-square)](https://hbe.expo.app)
 [![Architecture](https://img.shields.io/badge/Architecture-100%25%20In--Browser%20V8-FF5500?style=flat-square)](https://hbe.expo.app)
 [![License](https://img.shields.io/badge/License-Apache--2.0-yellow?style=flat-square)](LICENSE)
 
@@ -14,12 +14,12 @@
 
 ## 🏛️ 1. Project Mission & Identity
 
-**Hedera by Example (HBE)** is the premier, end-to-end interactive developer platform and reference architecture for the Hedera network. It pairs a **100% pure client-side in-browser Web3 studio** with a **135-lab comprehensive curriculum** spanning functional cryptographic primitives, consensus messaging, tokenization, EVM interoperability, and frontier paradigms:
+**Hedera by Example (HBE)** is the premier, end-to-end interactive developer platform and reference architecture for the Hedera network. It pairs a **100% pure client-side in-browser Web3 studio** with a **133-lab comprehensive curriculum** spanning functional cryptographic primitives, consensus messaging, tokenization, EVM interoperability, and frontier paradigms:
 
 - **1-Click Hacker Browser Wallet:** Generates real Ed25519 or ECDSA keypairs inside browser memory (`localStorage`), eliminating setup friction.
 - **1-Click Testnet Faucet:** Directly funds newly generated browser keys with 5.0 ℏ on Hedera Testnet via atomic consensus transactions.
 - **Zero-Backend V8 Execution:** Every single lab runs directly inside the developer's browser using native `@hiero-ledger/sdk` gRPC-Web consensus channels.
-- **Dual-Mode Parity:** All 135 labs run both **standalone in Node.js** and **live in the interactive web playground**.
+- **Dual-Mode Parity:** All 133 labs run both **standalone in Node.js** and **live in the interactive web playground**.
 - **Complete Bilingual Support:** 100% architectural parity across English and Spanish.
 
 ---
@@ -33,12 +33,12 @@ Hedera-By-Example/
 │   ├── src/components/           # Top bar, contents sidebar, lab page, course index, account dialog
 │   ├── src/lib/hederaBrowser.ts  # Browser runner: SDK scope, Node API shims, testnet account helpers
 │   ├── scripts/build-content.mjs # Single-Source-of-Truth Compiler: course/ -> app/src/content/ + app/public/source/
-│   ├── src/content/en.json       # Compiled English lab annotations (135 labs)
-│   ├── src/content/es.json       # Compiled Spanish lab annotations (135 labs)
+│   ├── src/content/en.json       # Compiled English lab annotations (133 labs)
+│   ├── src/content/es.json       # Compiled Spanish lab annotations (133 labs)
 │   └── public/source/            # Exact lab files served for the Source tab, copy and download
 │
 ├── course/                       # Standalone Runnable Node.js Curriculum
-│   ├── English/                  # 16 Modules (M00 to M15) containing all 135 labs
+│   ├── English/                  # 16 Modules (M00 to M15) containing all 133 labs
 │   ├── Spanish/                  # 16 Modules (M00 to M15) with 100% parity
 │   └── */M99_Utilities/          # Shared SDK client, state persistence & HashScan resolvers (per language)
 │
@@ -57,7 +57,7 @@ Hedera-By-Example/
 │
 └── tests/                        # Master Quality Gateway & Test Suite
     ├── 01_course_standalone.test.mjs  # Verifies course parity, structure & syntax
-    ├── 02_course_compiler.test.mjs    # Validates compilation pipeline of all 135 labs
+    ├── 02_course_compiler.test.mjs    # Validates compilation pipeline of all 133 labs
     ├── 03_browser_sandbox.test.mjs    # Audits in-browser V8 execution scope & polyfills
     ├── 04_e2e_live_browser.test.mjs   # Headless Chrome automation against live platform
     ├── 05_mcp_server.test.mjs         # Universal MCP server verification (stdio & HTTP)
@@ -115,7 +115,7 @@ npm run test:ci
 
 # Run individual test suites:
 node tests/01_course_standalone.test.mjs  # Suite 01: Standalone Course Parity & Syntax
-node tests/02_course_compiler.test.mjs    # Suite 02: Course-to-App 135-Lab Compiler
+node tests/02_course_compiler.test.mjs    # Suite 02: Course-to-App 133-Lab Compiler
 node tests/03_browser_sandbox.test.mjs    # Suite 03: In-Browser V8 Execution Scope
 node tests/04_e2e_live_browser.test.mjs   # Suite 04: Live Production Chrome Browser Test
 node tests/05_mcp_server.test.mjs         # Suite 05: Universal MCP Server (stdio & HTTP)
@@ -129,7 +129,7 @@ Suite 04 needs a local Chrome or Chromium. It looks in the usual install locatio
 
 ## 🤖 6. Universal Model Context Protocol (MCP) Server
 
-Hedera by Example exposes its entire 135-lab curriculum, architecture decision trees, and mirror node queries directly to AI agents (Cursor IDE, Claude Desktop, Antigravity, Windsurf, Trae):
+Hedera by Example exposes its entire 133-lab curriculum, architecture decision trees, and mirror node queries directly to AI agents (Cursor IDE, Claude Desktop, Antigravity, Windsurf, Trae):
 
 - **Zero External Dependencies:** Built with pure Node.js (`node:readline`, `node:http`).
 - **Standard Compliant:** Adheres strictly to the Model Context Protocol (MCP) specification `2024-11-05`.
@@ -139,7 +139,7 @@ Hedera by Example exposes its entire 135-lab curriculum, architecture decision t
   - `https://hbe.expo.app/mcp/tools.json`
 
 ### Registered Tools
-1. `query_curriculum`: Query 135 Hedera labs by keyword, module, or topic in EN/ES.
+1. `query_curriculum`: Query 133 Hedera labs by keyword, module, or topic in EN/ES.
 2. `query_knowledge`: Access the Master Knowledge Graph with official docs, SDK methods, and security caveats.
 3. `anti_hallucination_rules`: Strict engineering guardrails (8 decimals, BigInt, 100B metadata limit, Ed25519 vs ECDSA).
 4. `architecture_decision_tree`: Guidance on when to use HCS vs HTS vs HSCS.
@@ -168,7 +168,7 @@ Navigate to `http://localhost:8081` in your browser.
 
 ---
 
-## 📜 8. Master Syllabus Overview (135 Labs)
+## 📜 8. Master Syllabus Overview (133 Labs)
 
 | Module | Title | Focus Area |
 | :---: | :--- | :--- |
@@ -187,7 +187,7 @@ Navigate to `http://localhost:8081` in your browser.
 | **M12** | Advanced EVM Interop & Account Abstraction | JSON-RPC Relay, Foundry/Hardhat workflows, EIP-7702, ERC-4337 paymasters, BLS12-381 precompiles (EIP-2537) |
 | **M13** | Block Streams & State Proofs | Cryptographic state proofs (CLPR), TSS threshold signatures, protobuf parsers |
 | **M14** | Frontier AI Agents, MCP & Protocols | HCS-20 points, HCS-25 trust scores, HCS-26 skill registries, Model Context Protocol |
-| **M15** | Frontier Showcase: DePIN, Passkeys & zkTLS | Pacemaker MQTTS telemetry, vaccine cold-chain SLAs, ERC-7683 intent solver, WebAuthn |
+| **M15** | Frontier Showcase: DePIN, Passkeys & Intents | Pacemaker MQTTS telemetry, vaccine cold-chain SLAs, ERC-7683 intent solver, WebAuthn |
 
 ---
 

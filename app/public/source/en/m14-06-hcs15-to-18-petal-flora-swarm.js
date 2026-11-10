@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 07: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
+ * Lab 06: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
  * [CONCEPT] Multi-Account Key Isolation & Threshold Swarm Coordination (AppNets)
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -30,15 +30,15 @@
  * - https://hol.org/docs/standards/hcs-18/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 06: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
- * - Next:     M14 Lab 08: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
+ * - Previous: M14 Lab 05: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
+ * - Next:     M14 Lab 07: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: ~5 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node English/M14_Advanced_HCS_Standards_AI/07_hcs15_to_18_petal_flora_swarm.js
+ * node English/M14_Advanced_HCS_Standards_AI/06_hcs15_to_18_petal_flora_swarm.js
  * ============================================================================
  */
 

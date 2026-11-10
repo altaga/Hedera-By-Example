@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
+ * Lab 09: Servidor MCP de Hedera con un Guardián de Políticas Propio
  * [CONCEPTO] Ejecución Segura de Agentes LLM Autónomos tras una Verificación de Políticas
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -29,7 +29,7 @@
  * - https://github.com/hashgraph/hedera-agent-kit-js
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 09: Buzón de Mensajes Privado HIP-1334 en HCS
+ * - Anterior:  M14 Lab 08: Buzón de Mensajes Privado HIP-1334 en HCS
  * - Siguiente: M15 Lab 01: Telemetría DePIN MQTTS de Alta Velocidad y Firma Hardware (Marcapasos)
  *
  * [ SECUENCIA ]
@@ -47,7 +47,7 @@
  * - Con --server se convierte en un servidor MCP por stdio para un cliente de IA (solo Node).
  *
  * [ CÓMO EJECUTAR ]
- * node Spanish/M14_Advanced_HCS_Standards_AI/10_hashnet_mcp_server_hol_guard.js
+ * node Spanish/M14_Advanced_HCS_Standards_AI/09_hashnet_mcp_server_hol_guard.js
  * ============================================================================
  */
 

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 07: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
+ * Lab 06: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
  * [CONCEPTO] Aislamiento de Sub-Cuentas y Coordinación Multi-Firma de Enjambres (AppNets)
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -30,15 +30,15 @@
  * - https://hol.org/docs/standards/hcs-18/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 06: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
- * - Siguiente: M14 Lab 08: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
+ * - Anterior:  M14 Lab 05: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
+ * - Siguiente: M14 Lab 07: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
  * - Costo: ~5 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node Spanish/M14_Advanced_HCS_Standards_AI/07_hcs15_to_18_petal_flora_swarm.js
+ * node Spanish/M14_Advanced_HCS_Standards_AI/06_hcs15_to_18_petal_flora_swarm.js
  * ============================================================================
  */
 

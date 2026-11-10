@@ -1,48 +1,48 @@
 /**
  * ============================================================================
- * Lab 09: Buzón de Mensajes Privado HIP-1334 en HCS
- * [CONCEPTO] Mensajes Cifrados a Cualquier Cuenta, Descubiertos por su Memo de Cuenta
+ * Lab 08: HIP-1334 Private Message Box on HCS
+ * [CONCEPT] Encrypted Messages to Any Account, Discovered via Its Account Memo
  * ============================================================================
- * [ CONCEPTO CLAVE ]
- * HIP-1334 (Activo, estándar de Aplicación) permite que cualquier cuenta reciba mensajes
- * cifrados de extremo a extremo en un topic HCS. Este lab sigue la especificación paso a paso:
- * 1. Configuración (destinatario): crea un topic con la clave del destinatario como admin key y
- *    memo `[HIP-1334:<account-id>]`; publica un PRIMER mensaje
+ * [ KEY CONCEPT ]
+ * HIP-1334 (Active, Application standard) lets any account receive end-to-end
+ * encrypted messages on an HCS topic. This lab follows the spec step by step:
+ * 1. Setup (recipient): create a topic with the recipient's key as admin key and
+ *    memo `[HIP-1334:<account-id>]`; publish a FIRST message
  *    `{ payload: { type: "HIP-1334_PUBLIC_KEY", encryptionType: "ECIES", publicKey }, proof }`
- *    donde `proof.signature` firma "\x19Hedera Signed Message:\n" + len + canonicalJSON(payload);
- *    luego fija el memo de la cuenta en `[HIP-1334:<topic-id>]` con AccountUpdateTransaction.
- * 2. Envío (remitente): lee el memo del Mirror Node, obtiene el mensaje #1, VERIFICA la
- *    prueba contra la clave de la cuenta en el Mirror Node, cifra con ECIES
- *    (ECDH secp256k1 -> SHA-256 -> AES-256-GCM) y envía un sobre
- *    `HIP-1334_ENCRYPTED_MESSAGE`.
- * 3. Recepción (destinatario): lee el topic desde el Mirror Node y descifra.
+ *    where `proof.signature` signs "\x19Hedera Signed Message:\n" + len + canonicalJSON(payload);
+ *    then set the account memo to `[HIP-1334:<topic-id>]` with AccountUpdateTransaction.
+ * 2. Send (sender): read the memo from the Mirror Node, fetch message #1, VERIFY the
+ *    proof against the account key on the Mirror Node, encrypt with ECIES
+ *    (secp256k1 ECDH -> SHA-256 -> AES-256-GCM) and submit a
+ *    `HIP-1334_ENCRYPTED_MESSAGE` envelope.
+ * 3. Receive (recipient): read the topic from the Mirror Node and decrypt.
  *
- * [ MOMENTO DE APRENDIZAJE ]
- * El primer mensaje firmado evita el front-running: cualquiera puede publicar en el topic,
- * pero solo el dueño de la cuenta puede producir una prueba que coincida con su clave on-chain.
- * ECIES requiere una cuenta secp256k1 (ECDSA); las cuentas ED25519 deben usar RSA.
+ * [ LEARNABLE MOMENT ]
+ * The signed first message stops front-running: anyone can post to the topic, but
+ * only the account owner can produce a proof that matches its on-chain key.
+ * ECIES needs a secp256k1 (ECDSA) account; ED25519 accounts must use RSA instead.
  *
- * [ REFERENCIAS OFICIALES ]
+ * [ OFFICIAL REFERENCES ]
  * - https://github.com/hiero-ledger/hiero-improvement-proposals/blob/main/HIP/hip-1334.md
  * - https://github.com/InternetOfPeers/hiero-message-box
  *
- * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 08: HashLinks HCS-12 (Micro-Apps Interactivas) y Registro de Adaptadores HCS-21
- * - Siguiente: M14 Lab 10: Servidor MCP de Hedera con un Guardián de Políticas Propio
+ * [ LEARNING PATH ]
+ * - Previous: M14 Lab 07: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
+ * - Next:     M14 Lab 09: Hedera MCP Server with a Custom Policy Guard
  *
- * [ SECUENCIA ]
- * Destinatario -> Hedera: Topic (admin key, memo [HIP-1334:cuenta]) + HIP-1334_PUBLIC_KEY firmado
- * Destinatario -> Hedera: Memo de cuenta [HIP-1334:topic]
- * Remitente -> Mirror Node: Descubre el topic y verifica la prueba
- * Remitente -> Hedera: HIP-1334_ENCRYPTED_MESSAGE (ECIES)
- * Destinatario -> Mirror Node: Lee y descifra
+ * [ SEQUENCE ]
+ * Recipient -> Hedera: Topic (admin key, [HIP-1334:account] memo) + signed HIP-1334_PUBLIC_KEY
+ * Recipient -> Hedera: Account memo [HIP-1334:topic]
+ * Sender -> Mirror Node: Discover topic, verify proof
+ * Sender -> Hedera: HIP-1334_ENCRYPTED_MESSAGE (ECIES)
+ * Recipient -> Mirror Node: Read and decrypt
  *
- * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet es el remitente; crea 1 destinatario ECDSA desechable.
- * - Costo: ~1.5 ℏ para el destinatario + comisiones.
+ * [ BEFORE YOU RUN ]
+ * - Wallet: your testnet account is the sender; it creates 1 throwaway ECDSA recipient.
+ * - Cost: ~1.5 ℏ funded to the recipient + fees.
  *
- * [ CÓMO EJECUTAR ]
- * node Spanish/M14_Advanced_HCS_Standards_AI/09_hip1334_encrypted_message_box.js
+ * [ HOW TO RUN ]
+ * node English/M14_Advanced_HCS_Standards_AI/08_hip1334_encrypted_message_box.js
  * ============================================================================
  */
 
@@ -50,7 +50,7 @@ import crypto from 'node:crypto'
 import { AccountUpdateTransaction, PublicKey, TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
 import { createClient, createLabAccount, getClient, getHashscanUrl, getMirrorNodeBaseUrl, updateState, waitForMirror } from '../M99_Utilities/index.js'
 
-// --- Utilidades HIP-1334 (spec "Deterministic Signature Serialization") ---
+// --- HIP-1334 helpers (spec "Deterministic Signature Serialization") ---
 const canonicalJSON = (obj) => {
   if (obj === null || typeof obj !== 'object') return JSON.stringify(obj)
   if (Array.isArray(obj)) return '[' + obj.map(canonicalJSON).join(',') + ']'
@@ -61,7 +61,7 @@ const signedBytes = (payload) => {
   return Buffer.from('\x19Hedera Signed Message:\n' + Buffer.byteLength(json, 'utf8') + json, 'utf8')
 }
 
-// --- ECIES secp256k1 según la spec: ECDH -> SHA-256 -> AES-256-GCM ---
+// --- ECIES secp256k1 per spec: ECDH -> SHA-256 -> AES-256-GCM ---
 const eciesEncrypt = (recipientPubHex, plaintext) => {
   const eph = crypto.createECDH('secp256k1')
   eph.generateKeys()
@@ -95,19 +95,19 @@ const mirror = async (path) => {
 const decodeMsg = (m) => JSON.parse(Buffer.from(m.message, 'base64').toString('utf8'))
 
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Buzón de Mensajes Privado HIP-1334 ---\n')
+  console.log('--- SESSION START: HIP-1334 Private Message Box ---\n')
   const { client } = getClient()
 
   try {
-    // 1. El destinatario configura su buzón
-    console.log('[PROCESO] Paso 1: Creando el destinatario (cuenta ECDSA secp256k1)...')
+    // 1. Recipient sets up its message box
+    console.log('[PROCESS] Step 1: Creating the recipient (ECDSA secp256k1 account)...')
     const recipient = await createLabAccount(client, { hbar: 1.5, ecdsa: true })
     const recipientId = recipient.accountId.toString()
     const rClient = createClient(recipientId, recipient.privateKey)
     const pubHex = recipient.privateKey.publicKey.toStringRaw()
-    console.log(`[REGISTRO] Destinatario ${recipientId}`)
+    console.log(`[LOG] Recipient ${recipientId}`)
 
-    console.log('\n[PROCESO] Paso 2: Topic con admin key + memo [HIP-1334:<cuenta>], luego el primer mensaje firmado...')
+    console.log('\n[PROCESS] Step 2: Topic with admin key + memo [HIP-1334:<account>], then the signed first message...')
     const topicId = (await (await new TopicCreateTransaction()
       .setAdminKey(recipient.privateKey.publicKey)
       .setTopicMemo(`[HIP-1334:${recipientId}] listens here for HIP-1334 encrypted messages.`)
@@ -130,53 +130,53 @@ const main = async () => {
     const memoRes = await new AccountUpdateTransaction().setAccountId(recipient.accountId)
       .setAccountMemo(`[HIP-1334:${topicId}] is my message box.`).execute(rClient)
     await memoRes.getReceipt(rClient)
-    console.log(`[ÉXITO] Buzón ${topicId} anunciado en el memo de la cuenta — ${getHashscanUrl(memoRes)}`)
+    console.log(`[SUCCESS] Message box ${topicId} advertised in the account memo — ${getHashscanUrl(memoRes)}`)
 
-    // 2. El remitente descubre, verifica y cifra
-    console.log('\n[PROCESO] Paso 3: El remitente descubre el buzón vía Mirror Node y verifica la prueba...')
+    // 2. Sender discovers, verifies and encrypts
+    console.log('\n[PROCESS] Step 3: Sender discovers the box via the Mirror Node and verifies the proof...')
     const account = await waitForMirror(async () => {
       const a = await mirror(`/accounts/${recipientId}`)
       return a && /\[HIP-1334:(\d+\.\d+\.\d+)\]/.test(a.memo) ? a : null
     }, { timeoutMs: 60_000 })
-    if (!account) throw new Error('No se encontró memo HIP-1334 en el Mirror Node')
+    if (!account) throw new Error('No HIP-1334 memo found on the Mirror Node')
     const boxId = account.memo.match(/\[HIP-1334:(\d+\.\d+\.\d+)\]/)[1]
     const first = await waitForMirror(async () => (await mirror(`/topics/${boxId}/messages?sequencenumber=1`))?.messages?.[0], { timeoutMs: 60_000 })
     const fm = decodeMsg(first)
-    if (fm.payload?.type !== 'HIP-1334_PUBLIC_KEY') throw new Error('El primer mensaje no es HIP-1334_PUBLIC_KEY')
-    if (fm.proof.accountId !== recipientId) throw new Error('El accountId de la prueba no coincide con el destinatario')
-    if (fm.proof.signerPublicKey !== account.key.key) throw new Error('La clave de la prueba no coincide con la clave de la cuenta en el Mirror Node')
+    if (fm.payload?.type !== 'HIP-1334_PUBLIC_KEY') throw new Error('First message is not HIP-1334_PUBLIC_KEY')
+    if (fm.proof.accountId !== recipientId) throw new Error('Proof accountId does not match the recipient')
+    if (fm.proof.signerPublicKey !== account.key.key) throw new Error('Proof key does not match the account key on the Mirror Node')
     const ok = PublicKey.fromStringECDSA(account.key.key).verify(signedBytes(fm.payload), Buffer.from(fm.proof.signature, 'hex'))
-    if (!ok) throw new Error('Prueba HIP-1334 inválida — se rechaza el envío')
-    console.log(`[VERIFICACIÓN] Buzón ${boxId}: firma de la prueba válida para ${recipientId} (tipo de clave ${account.key._type})`)
+    if (!ok) throw new Error('Invalid HIP-1334 proof — refusing to send')
+    console.log(`[VERIFY] Box ${boxId}: proof signature valid for ${recipientId} (key type ${account.key._type})`)
 
     const forged = { ...fm.payload, publicKey: { ...fm.payload.publicKey, key: '02' + 'ab'.repeat(32) } }
-    console.log(`[VERIFICACIÓN] Un payload falsificado por un front-runner falla la verificación: ${!PublicKey.fromStringECDSA(account.key.key).verify(signedBytes(forged), Buffer.from(fm.proof.signature, 'hex'))}`)
+    console.log(`[VERIFY] A front-runner's forged payload fails verification: ${!PublicKey.fromStringECDSA(account.key.key).verify(signedBytes(forged), Buffer.from(fm.proof.signature, 'hex'))}`)
 
-    console.log('\n[PROCESO] Paso 4: El remitente envía un HIP-1334_ENCRYPTED_MESSAGE con ECIES...')
-    const secret = 'Ventana de liquidación movida a las 14:00 UTC. Ref #A-7731.'
+    console.log('\n[PROCESS] Step 4: Sender submits an ECIES HIP-1334_ENCRYPTED_MESSAGE...')
+    const secret = 'Settlement window moved to 14:00 UTC. Ref #A-7731.'
     const envelope = { type: 'HIP-1334_ENCRYPTED_MESSAGE', format: 'json', data: eciesEncrypt(fm.payload.publicKey.key, secret) }
     const sendRes = await new TopicMessageSubmitTransaction().setTopicId(boxId).setMessage(JSON.stringify(envelope)).execute(client)
     await sendRes.getReceipt(client)
-    console.log(`[ÉXITO] Mensaje cifrado enviado — ${sendRes.transactionId} | ${getHashscanUrl(sendRes)}`)
+    console.log(`[SUCCESS] Encrypted message sent — ${sendRes.transactionId} | ${getHashscanUrl(sendRes)}`)
 
-    // 3. El destinatario lee y descifra
-    console.log('\n[PROCESO] Paso 5: El destinatario lee el buzón desde el Mirror Node y descifra...')
+    // 3. Recipient reads and decrypts
+    console.log('\n[PROCESS] Step 5: Recipient reads the box from the Mirror Node and decrypts...')
     const msg = await waitForMirror(async () => (await mirror(`/topics/${boxId}/messages?sequencenumber=gt:1`))?.messages?.[0], { timeoutMs: 60_000 })
     const env = decodeMsg(msg)
-    console.log(`[REGISTRO] Texto cifrado on-chain: ${env.data.encryptedData.slice(0, 40)}...`)
+    console.log(`[LOG] On-chain ciphertext: ${env.data.encryptedData.slice(0, 40)}...`)
     const plain = eciesDecrypt(Buffer.from(recipient.privateKey.toBytesRaw()), env.data)
-    console.log(`[ÉXITO] Descifrado: "${plain}" | coincide: ${plain === secret}`)
+    console.log(`[SUCCESS] Decrypted: "${plain}" | matches: ${plain === secret}`)
     rClient.close()
 
     updateState('HIP1334_BOX_TOPIC_ID', boxId)
 
-    console.log('\n CONCEPTO CLAVE:')
-    console.log('Descubrimiento (memo), autenticidad (primer mensaje firmado) y privacidad (ECIES) usan')
-    console.log('HCS, memos de cuenta y el Mirror Node — sin cambios de protocolo.')
+    console.log('\n KEY CONCEPT:')
+    console.log('Discovery (memo), authenticity (signed first message) and privacy (ECIES) all use')
+    console.log('plain HCS, account memos and the Mirror Node — no protocol changes required.')
 
-    console.log('\n--- SESIÓN COMPLETADA ---')
+    console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[FALLO] Falló el flujo HIP-1334:', error.message)
+    console.error('\n[FAILED] HIP-1334 flow failed:', error.message)
     process.exit(1)
   } finally {
     client.close()
@@ -187,7 +187,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
     })
 }

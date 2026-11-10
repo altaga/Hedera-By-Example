@@ -7,7 +7,7 @@
 
 ## 1. Repository Identity & Mission
 
-This repository (**Hedera for Dummies**) is an enterprise-grade, pedagogically standardized JavaScript curriculum covering the entire Hedera Hashgraph ecosystem across **16 modules** and **135 distinct production labs** (270 files total across mirrored English and Spanish trees).
+This repository (**Hedera for Dummies**) is an enterprise-grade, pedagogically standardized JavaScript curriculum covering the entire Hedera Hashgraph ecosystem across **16 modules** and **133 distinct production labs** (266 files total across mirrored English and Spanish trees).
 
 ### Core Architectural Axioms
 1. **Pure Node.js (ESM):** Zero external Docker daemons, Python scripts, or compiled C++ binaries. Everything runs natively on `node:crypto`, `node:tls`, `node:https`, and `@hiero-ledger/sdk`.
@@ -54,7 +54,7 @@ npm test
 
 # Or run individual verification stages:
 npm run test:parity      # Stage 1: Verifies 100% 1:1 EN/ES file mirroring
-npm run test:syntax      # Stage 2: Runs node --check across all 270+ JS files
+npm run test:syntax      # Stage 2: Runs node --check across all 266+ JS files
 npm run test:standards   # Stage 3: Verifies Key Concepts, Learnable Moments & References
 npm run test:linter      # Stage 4: Verifies 0 errors under JavaScript Standard Style
 npm run lint:fix         # Auto-formats JavaScript files to StandardJS rules
@@ -154,8 +154,8 @@ When designing or debugging modules, always recognize the dual operational patte
 | **M08 / M12: EVM-HTS** | System Contract Precompile `0x167` vs Direct ERC-20 Facade on HTS Address | `M8 Lab 04` vs `M12 Lab 01` |
 | **M10: x402 Micropayments** | Sponsored Facilitator (Buyer + Seller + Facilitator) vs Merchant as Facilitator (Buyer + Seller); `exact` vs metered `upto` (Permit2) | `M10 Labs 01-07` vs `M10 Lab 08`; `M10 Lab 09` |
 | **M11: Asset Studios** | Regulated Security Tokens (`ERC-3643`/`ERC-1400`) + ATS Mass Dividend Payout | `M11 Labs 01, 02, 08` |
-| **M14: AI Consensus** | HCS-20 to HCS-28 (Inscriptions, Trust Scores, Skills) + Model Context Protocol (MCP) | `M14 Labs 01-10` |
-| **M15: DePIN & Frontier** | High-Speed MQTTS (Ed25519 + Merkle) vs Low-Power REST (HMAC-SHA256 + SLA Slash) | `M15 Labs 01-05` |
+| **M14: AI Consensus** | HCS-20 to HCS-27 (Inscriptions, Trust Scores, Skills, Merkle Logs) + Model Context Protocol (MCP) | `M14 Labs 01-09` |
+| **M15: DePIN & Frontier** | High-Speed MQTTS (Ed25519 + Merkle) vs Low-Power REST (HMAC-SHA256 + SLA Slash) | `M15 Labs 01-04` |
 
 ---
 

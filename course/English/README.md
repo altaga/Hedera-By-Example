@@ -49,7 +49,7 @@ npm install
 | **12** | [MODERN EVM](M12_Modern_EVM_Tooling) | Full-Stack Tooling | Stop writing bespoke precompiles; standard Ethereum tooling works. |
 | **13** | [CROSS-LEDGER & STREAMS](M13_Cross_Ledger_and_Data_Streams) | Bridgeless CLPR & Lakes | The biggest hacks were bridge honeypots; CLPR replaces trust with math. |
 | **14** | [ADVANCED HCS & AI](M14_Advanced_HCS_Standards_AI) | Agent Standards (HCS-20/28) | Consensus gives fair ordering; client cryptography gives military privacy. |
-| **15** | [DePIN & FRONTIER CRYPTO](M15_DePIN_and_Future_Crypto) | Hardware IoT & Passkeys | Decentralized infrastructure, WebAuthn biometrics & zk-TLS proofs. |
+| **15** | [DePIN & FRONTIER CRYPTO](M15_DePIN_and_Future_Crypto) | Hardware IoT & Passkeys | Decentralized infrastructure, WebAuthn biometrics & ERC-7683 intents. |
 
 ---
 

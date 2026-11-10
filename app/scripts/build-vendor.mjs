@@ -32,7 +32,7 @@ function recordVersion (file) {
 }
 
 const LIBS = ['@hashgraphonline/standards-sdk', '@hiero-did-sdk/core',
-  // M14 Lab 10: a real MCP server and client in the page, over the SDK's in-memory transport.
+  // M14 Lab 09: a real MCP server and client in the page, over the SDK's in-memory transport.
   '@modelcontextprotocol/sdk/server/mcp.js', '@modelcontextprotocol/sdk/client/index.js', '@modelcontextprotocol/sdk/inMemory.js', 'zod',
   // M12 Lab 07: BLS12-381 keys, signatures and hash-to-curve.
   '@noble/curves/bls12-381.js']

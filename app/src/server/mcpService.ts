@@ -374,7 +374,7 @@ export const TOOLS = [
   {
     name: 'list_labs',
     title: 'List the course',
-    description: 'The course map: 16 modules and 135 labs with their slugs, optionally for one module.',
+    description: 'The course map: 16 modules and 133 labs with their slugs, optionally for one module.',
     inputSchema: { type: 'object', properties: { module: { type: 'string', description: 'Optional module, e.g. "M8"' }, lang: LANG_PROP } },
     annotations: { readOnlyHint: true, openWorldHint: false }
   },
@@ -623,7 +623,7 @@ function getPrompt (name: string, args: any = {}) {
   return null
 }
 
-const INSTRUCTIONS = `Hedera by Example: 135 runnable Hedera labs (English/Spanish) built on @hiero-ledger/sdk, plus verified guardrails.
+const INSTRUCTIONS = `Hedera by Example: 133 runnable Hedera labs (English/Spanish) built on @hiero-ledger/sdk, plus verified guardrails.
 Start with search_labs (or list_labs), read a lab with get_lab, check anti_hallucination_rules before writing Hedera code, price operations with estimate_cost, and read live state with mirror_node_query. Every lab also runs in the browser at ${WEB}.`
 
 const rpcError = (id: any, code: number, message: string) => ({ jsonrpc: '2.0', id: id ?? null, error: { code, message } })

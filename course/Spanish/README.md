@@ -49,7 +49,7 @@ npm install
 | **12** | [TOOLING EVM](M12_Modern_EVM_Tooling) | Stack Full-Stack | Deja de escribir precompilados; el tooling estándar de Ethereum funciona. |
 | **13** | [CROSS-LEDGER Y FLUJOS](M13_Cross_Ledger_and_Data_Streams) | CLPR Sin Puentes y Lagos | Los mayores robos fueron puentes; CLPR sustituye la confianza por matemáticas. |
 | **14** | [HCS AVANZADO E IA](M14_Advanced_HCS_Standards_AI) | Estándares de Agentes (HCS-20/28) | El consenso brinda orden justo; la criptografía en cliente brinda privacidad militar. |
-| **15** | [DePIN Y CRIPTO DE FRONTERA](M15_DePIN_and_Future_Crypto) | IoT en Hardware y Passkeys | Infraestructura descentralizada, biometría WebAuthn y pruebas zk-TLS. |
+| **15** | [DePIN Y CRIPTO DE FRONTERA](M15_DePIN_and_Future_Crypto) | IoT en Hardware y Passkeys | Infraestructura descentralizada, biometría WebAuthn e intenciones ERC-7683. |
 
 ---
 

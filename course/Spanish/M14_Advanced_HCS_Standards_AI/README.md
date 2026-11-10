@@ -2,7 +2,7 @@
 ## Inscripciones, Puntuación de Confianza, Habilidades, Registros Merkle y Enjambres Encriptados
 
 > [!IMPORTANT]
-> **OBJETIVO:** Dominar los estándares abiertos avanzados surgidos de Hashgraph Online y el ecosistema de IA de Hedera: Inscribir puntos auditables de alto rendimiento (HCS-20), calcular puntuaciones de confianza descentralizadas y portables (HCS-25), descubrir capacidades de agentes sin intermediarios (HCS-26), anclar puntos de control de transparencia Merkle escalables (HCS-27), garantizar la trazabilidad cognitiva (HCS-28) y ejecutar negociaciones confidenciales de enjambres de agentes encriptadas de extremo a extremo sobre consenso público.
+> **OBJETIVO:** Dominar los estándares abiertos avanzados surgidos de Hashgraph Online y el ecosistema de IA de Hedera: Inscribir puntos auditables de alto rendimiento (HCS-20), calcular puntuaciones de confianza descentralizadas y portables (HCS-25), descubrir capacidades de agentes sin intermediarios (HCS-26), anclar puntos de control de transparencia Merkle escalables (HCS-27) y ejecutar negociaciones confidenciales de enjambres de agentes encriptadas de extremo a extremo sobre consenso público.
 
 ---
 
@@ -16,12 +16,11 @@ En este módulo, transformamos a Hedera Consensus Service de una cola de mensaje
 | **02** | **Confianza de IA HCS-25** | Vectores de reputación multidimensionales (uptime, exactitud en consenso, feedback). | La reputación en Web2 es opaca; en Hedera, la fiabilidad de un agente es un hecho matemático. |
 | **03** | **Habilidades HCS-26** | Manifiestos de herramientas MCP y descubrimiento semántico de capacidades de IA. | Eliminar tiendas de plugins propietarias previene la censura y despublicación arbitraria. |
 | **04** | **Transparencia Merkle HCS-27** | Compromiso de puntos de control de árboles Merkle off-chain con pruebas de inclusión. | Agrupar 10,000 operaciones en una sola raíz Merkle en HCS reduce costos de gas un 99.99%. |
-| **05** | **Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)** | Directorio HCS-2 + topic de cambios por agente con registros firmados (formato propio del lab; HCS-28 es borrador). | Cuando la IA gestiona capital real, la trazabilidad inmutable separa el dolo del cumplimiento. |
-| **06** | **Chat Encriptado de Enjambre** | Negociación confidencial OTC entre agentes mediante ECDH y AES-256-GCM sobre HCS. | El consenso brinda ordenamiento justo; la criptografía en cliente brinda privacidad de grado militar. |
-| **07** | **Enjambre Botánico HCS-15..18** | Sub-cuentas Pétalo (HCS-15), descubrimiento (HCS-18), Floras multi-firma (HCS-16) y State Hash (HCS-17). | Separar charla, transacciones y estado en una Tríada HCS-16 permite escalar enjambres con custodia segura. |
-| **08** | **HashLinks HCS-12 y HCS-21** | Micro-apps interactivas on-chain (HCS-12) respaldadas por adaptadores con huella SHA-256 (HCS-21). | Unir ensamblajes UI on-chain con huellas SHA-256 elimina el phishing visual y el envenenamiento npm. |
-| **09** | **Buzón de Mensajes Privado HIP-1334** | Configuración según la spec (memos, primer mensaje HIP-1334_PUBLIC_KEY firmado), verificación de la prueba y mensajes ECIES en HCS. | El primer mensaje firmado evita el front-running de la clave pública. |
-| **10** | **Servidor MCP de Hedera con Guardián de Políticas** | Servidor MCP real (@modelcontextprotocol/sdk; en memoria en el lab, stdio con --server) que expone herramientas de Hedera tras un guardián de políticas propio. | La clave y la política viven en el servidor; la IA solo ve herramientas. |
+| **05** | **Chat Encriptado de Enjambre** | Negociación confidencial OTC entre agentes mediante ECDH y AES-256-GCM sobre HCS. | El consenso brinda ordenamiento justo; la criptografía en cliente brinda privacidad de grado militar. |
+| **06** | **Enjambre Botánico HCS-15..18** | Sub-cuentas Pétalo (HCS-15), descubrimiento (HCS-18), Floras multi-firma (HCS-16) y State Hash (HCS-17). | Separar charla, transacciones y estado en una Tríada HCS-16 permite escalar enjambres con custodia segura. |
+| **07** | **HashLinks HCS-12 y HCS-21** | Micro-apps interactivas on-chain (HCS-12) respaldadas por adaptadores con huella SHA-256 (HCS-21). | Unir ensamblajes UI on-chain con huellas SHA-256 elimina el phishing visual y el envenenamiento npm. |
+| **08** | **Buzón de Mensajes Privado HIP-1334** | Configuración según la spec (memos, primer mensaje HIP-1334_PUBLIC_KEY firmado), verificación de la prueba y mensajes ECIES en HCS. | El primer mensaje firmado evita el front-running de la clave pública. |
+| **09** | **Servidor MCP de Hedera con Guardián de Políticas** | Servidor MCP real (@modelcontextprotocol/sdk; en memoria en el lab, stdio con --server) que expone herramientas de Hedera tras un guardián de políticas propio. | La clave y la política viven en el servidor; la IA solo ve herramientas. |
 
 ---
 
@@ -67,8 +66,6 @@ sequenceDiagram
     HCS-->>AgentB: Entrega Contra-Oferta
     Note over AgentB: Descifra Texto Plano y Acepta el Acuerdo
 
-    Note over AgentA,AgentB: 3. Trazabilidad de Cumplimiento HCS-28 Anclada
-    AgentA->>HCS: Registra Hash de Auditoría Cognitiva Firmado HCS-28
 ```
 
 ---
@@ -87,10 +84,7 @@ Los directorios cerrados de plugins de IA generan cuellos de botella y riesgos d
 ### 4. Puntos de Control Merkle Escalables (HCS-27)
 Los sistemas automatizados de alta frecuencia (como bots de trading algorítmico o telemetría IoT) generan millones de operaciones. Transmitir cada una individualmente es costoso. **HCS-27** agrupa las operaciones en un árbol Merkle off-chain y asienta únicamente la raíz periódica en HCS. Cualquier participante puede validar una operación puntual mediante una prueba de inclusión logarítmica compacta.
 
-### 5. Grabadora de Vuelo Cognitiva Verificable (HCS-28)
-Cuando los modelos de IA interactúan con dinero real, surge la cuestión de la responsabilidad jurídica. **HCS-28** ancla todo el rastro de razonamiento del agente—incluyendo hashes del prompt, cadenas de pensamiento, parámetros de herramientas y verificaciones de seguridad—firmado con la clave privada del agente. Esto impide que desarrolladores o modelos modifiquen el pasado tras un incidente.
-
-### 6. Enjambres Confidenciales de Agentes (ECDH + AES-256-GCM)
+### 5. Enjambres Confidenciales de Agentes (ECDH + AES-256-GCM)
 Los ledgers públicos proveen transparencia y orden, pero exponen estrategias comerciales confidenciales. Al ejecutar un intercambio de claves **Diffie-Hellman en Curvas Elípticas (ECDH)** directamente a través de un tópico abierto de HCS, dos agentes establecen un secreto simétrico y se comunican utilizando cifrado autenticado **AES-256-GCM**. La capa de consenso garantiza el orden y la resistencia a la manipulación, mientras que los observadores en el Mirror Node solo observan texto cifrado matemáticamente indescifrable.
 
 ---
@@ -105,12 +99,11 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **02** | — | — | <0.1 ℏ (solo comisiones de red) |
 | **03** | — | — | <1 ℏ (solo comisiones de red) |
 | **04** | — | — | <1 ℏ (solo comisiones de red) |
-| **05** | — | — | <1 ℏ (solo comisiones de red) |
-| **06** | — | — | <0.1 ℏ (solo comisiones de red) |
-| **07** | — | — | ~5 ℏ (solo comisiones de red) |
-| **08** | — | — | <1 ℏ (solo comisiones de red) |
-| **09** | — | — | ~1.5 ℏ para el destinatario + comisiones |
-| **10** | — | — | ~0.1 ℏ + comisiones |
+| **05** | — | — | <0.1 ℏ (solo comisiones de red) |
+| **06** | — | — | ~5 ℏ (solo comisiones de red) |
+| **07** | — | — | <1 ℏ (solo comisiones de red) |
+| **08** | — | — | ~1.5 ℏ para el destinatario + comisiones |
+| **09** | — | — | ~0.1 ℏ + comisiones |
 
 ---
 
@@ -120,7 +113,6 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 - [Especificación HCS-25: Metodología de Puntuación de Confianza de IA](https://docs.hashgraphonline.com/hcs-25)
 - [Especificación HCS-26: Registro Descentralizado de Habilidades](https://docs.hashgraphonline.com/hcs-26)
 - [Especificación HCS-27: Puntos de Control de Transparencia](https://docs.hashgraphonline.com/hcs-27)
-- [Especificación HCS-28: Flujo de Auditoría de Agentes](https://hol.org/standards)
 - [Guía para Desarrolladores de Hedera Consensus Service](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service)
 
 ---

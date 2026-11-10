@@ -21,7 +21,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M15 Lab 03: Intent-Based DeFi Settlement Solver (ERC-7683 / CoW Swap Model)
- * - Next:     M15 Lab 05: zk-TLS & Cryptographic Web Proofs (TLSNotary / Reclaim Model)
+ * - Next:     (end of the course)
  *
  * [ OFFICIAL REFERENCES ]
  * - W3C Web Authentication (WebAuthn) Level 3: https://www.w3.org/TR/webauthn-3/

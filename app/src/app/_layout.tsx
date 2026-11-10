@@ -13,7 +13,7 @@ export default function RootLayout () {
         <title>{SITE_TITLE}</title>
         <meta
           name='description'
-          content='Learn Hedera by reading and running 135 small, complete @hiero-ledger/sdk programs: annotated walkthroughs, exact source files and a browser runner for testnet. MCP server at https://hbe.expo.app/api/mcp.'
+          content='Learn Hedera by reading and running 133 small, complete @hiero-ledger/sdk programs: annotated walkthroughs, exact source files and a browser runner for testnet. MCP server at https://hbe.expo.app/api/mcp.'
         />
         <meta name='mcp' content='https://hbe.expo.app/api/mcp' />
         <link rel='alternate' type='text/plain' title='llms.txt' href='/llms.txt' />

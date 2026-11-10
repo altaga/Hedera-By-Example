@@ -2,7 +2,7 @@
 ## Inscriptions, Trust Scores, Agent Skills, Merkle Logs, and Encrypted Swarms
 
 > [!IMPORTANT]
-> **OBJECTIVE:** Master the advanced open standards emerging from Hashgraph Online and the Hedera AI ecosystem: Inscribe high-throughput auditable points (HCS-20), calculate decentralized portable AI trust scores (HCS-25), discover machine capabilities permissionlessly (HCS-26), anchor scalable Merkle transparency checkpoints (HCS-27), enforce cognitive provenance (HCS-28), and conduct confidential, end-to-end encrypted agent swarm negotiations over public consensus.
+> **OBJECTIVE:** Master the advanced open standards emerging from Hashgraph Online and the Hedera AI ecosystem: Inscribe high-throughput auditable points (HCS-20), calculate decentralized portable AI trust scores (HCS-25), discover machine capabilities permissionlessly (HCS-26), anchor scalable Merkle transparency checkpoints (HCS-27), and conduct confidential, end-to-end encrypted agent swarm negotiations over public consensus.
 
 ---
 
@@ -16,12 +16,11 @@ In this module, we transition Hedera Consensus Service from a simple message que
 | **02** | **HCS-25 AI Trust Score** | Multi-dimensional reputation vectors (uptime, consensus proofs, feedback). | Web2 AI reputation is opaque; on Hedera, an agent's creditworthiness is a mathematical fact. |
 | **03** | **HCS-26 Agent Skills Registry** | Decentralized MCP tool manifests and semantic agent capability discovery. | Eliminating proprietary plugin app stores prevents platform deplatforming and censorship. |
 | **04** | **HCS-27 Merkle Transparency** | Committing off-chain Merkle tree checkpoints with inclusion proofs. | Batching 10,000 operations into a single HCS Merkle root cuts gas costs by 99.99%. |
-| **05** | **Agent Audit Trail on HCS (HCS-28 Concepts)** | HCS-2 agent directory + per-agent change topic with signed decision records (record layout is the lab's own; HCS-28 is a draft). | When AI models manage real capital, immutable provenance separates liability from compliance. |
-| **06** | **Encrypted Swarm Chat** | Confidential P2P OTC agent negotiations using ECDH and AES-256-GCM over HCS. | Consensus gives you fair ordering; client-side cryptography gives you military-grade confidentiality. |
-| **07** | **HCS-15..18 Botanical Swarm** | Petal sub-accounts (HCS-15), peer discovery (HCS-18), multi-sig Floras (HCS-16) & state hashes (HCS-17). | Separating communication, transaction scheduling, and state checkpoints lets swarms scale securely. |
-| **08** | **HCS-12 HashLinks & HCS-21** | Actionable on-chain UI micro-apps (HCS-12) backed by SHA-256 verified adapters (HCS-21). | Combining on-chain UI assemblies with package digests prevents both phishing and supply-chain attacks. |
-| **09** | **HIP-1334 Private Message Box** | Spec-compliant setup (memos, signed HIP-1334_PUBLIC_KEY first message), proof verification and ECIES messages on HCS. | The signed first message stops front-running of the public key. |
-| **10** | **Hedera MCP Server with a Policy Guard** | Real MCP server (@modelcontextprotocol/sdk; in-memory in the lab, stdio with --server) exposing Hedera tools behind a custom policy guard. | Keys and policy live in the server; the AI only sees tools. |
+| **05** | **Encrypted Swarm Chat** | Confidential P2P OTC agent negotiations using ECDH and AES-256-GCM over HCS. | Consensus gives you fair ordering; client-side cryptography gives you military-grade confidentiality. |
+| **06** | **HCS-15..18 Botanical Swarm** | Petal sub-accounts (HCS-15), peer discovery (HCS-18), multi-sig Floras (HCS-16) & state hashes (HCS-17). | Separating communication, transaction scheduling, and state checkpoints lets swarms scale securely. |
+| **07** | **HCS-12 HashLinks & HCS-21** | Actionable on-chain UI micro-apps (HCS-12) backed by SHA-256 verified adapters (HCS-21). | Combining on-chain UI assemblies with package digests prevents both phishing and supply-chain attacks. |
+| **08** | **HIP-1334 Private Message Box** | Spec-compliant setup (memos, signed HIP-1334_PUBLIC_KEY first message), proof verification and ECIES messages on HCS. | The signed first message stops front-running of the public key. |
+| **09** | **Hedera MCP Server with a Policy Guard** | Real MCP server (@modelcontextprotocol/sdk; in-memory in the lab, stdio with --server) exposing Hedera tools behind a custom policy guard. | Keys and policy live in the server; the AI only sees tools. |
 
 ---
 
@@ -67,8 +66,6 @@ sequenceDiagram
     HCS-->>AgentB: Delivers Counter-Offer
     Note over AgentB: Decrypts Plaintext & Accepts Agreement
 
-    Note over AgentA,AgentB: 3. HCS-28 Compliance Audit Trail Anchored
-    AgentA->>HCS: Commit HCS-28 Signed Cognitive Audit Hash
 ```
 
 ---
@@ -87,10 +84,7 @@ Walled-garden AI plugin directories (such as proprietary app stores) create cens
 ### 4. Scalable Merkle Checkpoints (HCS-27)
 High-frequency automated systems (such as high-frequency trading bots or IoT telemetry sensors) generate millions of operations. Submitting each one individually is cost-prohibitive. **HCS-27** groups operations into an off-chain Merkle tree and commits only the periodic Merkle root to HCS. Any participant can verify an individual operation using a compact logarithmic Merkle inclusion proof.
 
-### 5. Verifiable Cognitive Flight Recorder (HCS-28)
-When AI models interact with real capital, questions of liability arise. **HCS-28** anchors an agent's complete reasoning trace—including prompt hashes, chain-of-thought summaries, tool invocation parameters, and guardrail clearances—signed by the agent's private key. This prevents developers or agents from altering history after a failure.
-
-### 6. Confidential Agent Swarms (ECDH + AES-256-GCM)
+### 5. Confidential Agent Swarms (ECDH + AES-256-GCM)
 Public ledgers provide transparency and ordering, but leak confidential business strategies. By executing an **Elliptic Curve Diffie-Hellman (ECDH)** key exchange directly through an open HCS topic, two agents establish a shared symmetric secret and communicate using **AES-256-GCM** authenticated encryption. The public consensus layer guarantees sequencing and tamper-resistance, while observers on the Mirror Node see only cryptographically undecipherable ciphertext.
 
 ---
@@ -105,12 +99,11 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **02** | — | — | <0.1 ℏ (network fees only) |
 | **03** | — | — | <1 ℏ (network fees only) |
 | **04** | — | — | <1 ℏ (network fees only) |
-| **05** | — | — | <1 ℏ (network fees only) |
-| **06** | — | — | <0.1 ℏ (network fees only) |
-| **07** | — | — | ~5 ℏ (network fees only) |
-| **08** | — | — | <1 ℏ (network fees only) |
-| **09** | — | — | ~1.5 ℏ funded to the recipient + fees |
-| **10** | — | — | ~0.1 ℏ + fees |
+| **05** | — | — | <0.1 ℏ (network fees only) |
+| **06** | — | — | ~5 ℏ (network fees only) |
+| **07** | — | — | <1 ℏ (network fees only) |
+| **08** | — | — | ~1.5 ℏ funded to the recipient + fees |
+| **09** | — | — | ~0.1 ℏ + fees |
 
 ---
 
@@ -120,7 +113,6 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 - [HCS-25 Specification: AI Trust Score Methodology](https://docs.hashgraphonline.com/hcs-25)
 - [HCS-26 Specification: Decentralized Agent Skills Registry](https://docs.hashgraphonline.com/hcs-26)
 - [HCS-27 Specification: Transparency Log Checkpoints](https://docs.hashgraphonline.com/hcs-27)
-- [HCS-28 (Draft): ANS Agent Transparency Registry](https://hol.org/standards)
 - [Hedera Consensus Service Developer Guide](https://docs.hedera.com/hedera/sdks-and-apis/sdks/consensus-service)
 
 ---

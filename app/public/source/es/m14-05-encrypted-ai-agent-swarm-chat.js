@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 06: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
+ * Lab 05: Chat Encriptado de Enjambre de Agentes de IA (ECDH + AES-256-GCM en HCS)
  * [CONCEPTO] Negociación Confidencial Peer-to-Peer de Agentes sobre Consenso Público
  * ============================================================================
  * [ CONCEPTO CLAVE ]
@@ -25,8 +25,8 @@
  * - https://hol.org/docs/standards/hcs-15/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M14 Lab 05: Rastro de Auditoría de Agentes en HCS (Conceptos HCS-28)
- * - Siguiente: M14 Lab 07: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
+ * - Anterior:  M14 Lab 04: Puntos de Control de Transparencia Merkle HCS-27 y Pruebas Criptográficas
+ * - Siguiente: M14 Lab 06: Enjambres Botánicos de Agentes (HCS-15 Pétalos, HCS-18 Descubrimiento, HCS-16 Flora y HCS-17 State Hash)
  *
  * [ SECUENCIA ]
  * Alpha -> Hedera: Publicar llave pública ECDH (handshake)
@@ -44,7 +44,7 @@
  * - Costo: <0.1 ℏ (solo comisiones de red).
  *
  * [ CÓMO EJECUTAR ]
- * node Spanish/M14_Advanced_HCS_Standards_AI/06_encrypted_ai_agent_swarm_chat.js
+ * node Spanish/M14_Advanced_HCS_Standards_AI/05_encrypted_ai_agent_swarm_chat.js
  * ============================================================================
  */
 

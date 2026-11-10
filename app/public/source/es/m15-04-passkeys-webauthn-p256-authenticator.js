@@ -21,7 +21,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M15 Lab 03: Solver de Liquidación DeFi Basado en Intenciones (ERC-7683 / CoW Swap)
- * - Siguiente: M15 Lab 05: zk-TLS y Pruebas Criptográficas Web (Modelo TLSNotary / Reclaim)
+ * - Siguiente: (fin del curso)
  *
  * [ REFERENCIAS OFICIALES ]
  * - Autenticación Web W3C (WebAuthn) Nivel 3: https://www.w3.org/TR/webauthn-3/

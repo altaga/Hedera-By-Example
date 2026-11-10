@@ -124,7 +124,7 @@ export async function runBrowserSandboxTest() {
     throw new Error(`In-browser sandbox audit failed: EN=${enFailures.length}, ES=${esFailures.length}`)
   }
 
-  console.log('✅ TEST 03 PASSED: All 135 labs in EN & ES compile 100% in browser sandbox scope!')
+  console.log('✅ TEST 03 PASSED: All 133 labs in EN & ES compile 100% in browser sandbox scope!')
   return { passed: true, totalTested: Object.keys(en).length + Object.keys(es).length }
 }
 

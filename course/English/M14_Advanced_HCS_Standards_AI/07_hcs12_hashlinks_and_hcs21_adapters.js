@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 08: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
+ * Lab 07: HCS-12 HashLinks (Actionable Micro-Apps) & HCS-21 Verified Adapter Registry
  * [CONCEPT] Composable On-Chain UI Assemblies & Supply-Chain Verified Adapters
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -27,15 +27,15 @@
  * - https://hol.org/docs/standards/hcs-21/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 07: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
- * - Next:     M14 Lab 09: HIP-1334 Private Message Box on HCS
+ * - Previous: M14 Lab 06: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
+ * - Next:     M14 Lab 08: HIP-1334 Private Message Box on HCS
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
  * - Cost: <1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node English/M14_Advanced_HCS_Standards_AI/08_hcs12_hashlinks_and_hcs21_adapters.js
+ * node English/M14_Advanced_HCS_Standards_AI/07_hcs12_hashlinks_and_hcs21_adapters.js
  * ============================================================================
  */
 

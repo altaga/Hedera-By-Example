@@ -99,13 +99,12 @@ Hedera is offering **$15,000 USD** in bounties at ETHGlobal Mumbai across two co
   2. Extra points awarded for:
      - Mirror Node REST API integration for state queries and balance checks.
      - Hedera Agent Kit integration for autonomous AI tool calling.
-     - Multi-leg atomic settlement or zero-knowledge cryptographic web proofs (zk-TLS).
-* **Reference Implementations in this Repo:**
-  - [`src/01_depin_mqtts_pacemaker.js`](src/01_depin_mqtts_pacemaker.js): DePIN Ed25519 hardware telemetry + edge Merkle aggregation on HCS.
-  - [`src/02_depin_cold_chain_api_key.js`](src/02_depin_cold_chain_api_key.js): Deep-sleep vaccine IoT + HMAC-SHA256 signatures + automated SLA slashing on HCS.
-  - [`src/03_intent_solver_cow.js`](src/03_intent_solver_cow.js): ERC-7683 off-chain signed intents + atomic multi-leg net-zero settlement.
-  - [`src/04_passkeys_webauthn_p256.js`](src/04_passkeys_webauthn_p256.js): NIST P-256 (`secp256r1`) FaceID/TouchID biometric passkey authorization.
-  - [`src/05_zktls_web_proofs.js`](src/05_zktls_web_proofs.js): TLSNotary-style verifiable web proofs + blinded commitment anchoring to HCS.
+     - Multi-leg atomic settlement or zero-knowledge cryptographic proofs.
+* **Reference Implementations in this Repo (Module 15):**
+  - [`course/English/M15_DePIN_and_Future_Crypto/01_depin_mqtts_pacemaker_telemetry.js`](../course/English/M15_DePIN_and_Future_Crypto/01_depin_mqtts_pacemaker_telemetry.js): DePIN Ed25519 hardware telemetry + edge Merkle aggregation on HCS.
+  - [`course/English/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js`](../course/English/M15_DePIN_and_Future_Crypto/02_depin_lightweight_cold_chain_api_key.js): Deep-sleep vaccine IoT + HMAC-SHA256 signatures + automated SLA slashing on HCS.
+  - [`course/English/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js`](../course/English/M15_DePIN_and_Future_Crypto/03_intent_based_defi_solver.js): ERC-7683 off-chain signed intents + atomic multi-leg net-zero settlement.
+  - [`course/English/M15_DePIN_and_Future_Crypto/04_passkeys_webauthn_p256_authenticator.js`](../course/English/M15_DePIN_and_Future_Crypto/04_passkeys_webauthn_p256_authenticator.js): NIST P-256 (`secp256r1`) FaceID/TouchID biometric passkey authorization.
 
 ---
 

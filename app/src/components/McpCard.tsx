@@ -53,7 +53,7 @@ const TEXT = {
   en: {
     tag: 'MCP Server 2.0',
     title: 'Use the course from your AI assistant',
-    lead: 'Hedera by Example exposes a live Model Context Protocol server. Connect it to Cursor, Claude Desktop, Windsurf, Claude Code or VS Code, and your assistant answers directly from these 135 runnable labs and verified guardrails.',
+    lead: 'Hedera by Example exposes a live Model Context Protocol server. Connect it to Cursor, Claude Desktop, Windsurf, Claude Code or VS Code, and your assistant answers directly from these 133 runnable labs and verified guardrails.',
     features: [
       ['Search every lab', 'in English or Spanish, by idea, SDK class or standard (HIP-991, HCS-10), with what each lab needs and costs.'],
       ['Read the full lab', 'concept, labs to run first, official references and the complete runnable code.'],
@@ -83,7 +83,7 @@ const TEXT = {
   es: {
     tag: 'Servidor MCP 2.0',
     title: 'Usa el curso desde tu asistente de IA',
-    lead: 'Hedera by Example expone un servidor Model Context Protocol en vivo. Conéctalo a Cursor, Claude Desktop, Windsurf, Claude Code o VS Code, y tu asistente responde directamente con estos 135 labs ejecutables y guardrails verificados.',
+    lead: 'Hedera by Example expone un servidor Model Context Protocol en vivo. Conéctalo a Cursor, Claude Desktop, Windsurf, Claude Code o VS Code, y tu asistente responde directamente con estos 133 labs ejecutables y guardrails verificados.',
     features: [
       ['Busca en todos los labs', 'en inglés o español, por idea, clase del SDK o estándar (HIP-991, HCS-10), con lo que cada lab necesita y cuesta.'],
       ['Lee el lab completo', 'concepto, labs previos, referencias oficiales y el código ejecutable completo.'],

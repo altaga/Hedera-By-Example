@@ -23,7 +23,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M14 Lab 03: HCS-26 Decentralized Agent Skills & Tool Manifest Registry
- * - Next:     M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
+ * - Next:     M14 Lab 05: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
  *
  * [ SIMULATED ]
  * The 64 inference logs are synthetic. The Merkle tree, the proof and the HCS checkpoint are real.

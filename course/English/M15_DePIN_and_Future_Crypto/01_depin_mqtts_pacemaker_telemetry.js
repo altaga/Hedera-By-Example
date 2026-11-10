@@ -20,7 +20,7 @@
  * anomaly thresholds are breached.
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 10: Hedera MCP Server with a Custom Policy Guard
+ * - Previous: M14 Lab 09: Hedera MCP Server with a Custom Policy Guard
  * - Next:     M15 Lab 02: DePIN Lightweight Cold-Chain Telemetry (API Key + HMAC-SHA256)
  *
  * [ OFFICIAL REFERENCES ]

@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * Lab 06: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
+ * Lab 05: Encrypted Autonomous Agent Swarm Chat (ECDH + AES-256-GCM over HCS)
  * [CONCEPT] Confidential Peer-to-Peer Agent Negotiation over Public Consensus
  * ============================================================================
  * [ KEY CONCEPT ]
@@ -25,8 +25,8 @@
  * - https://hol.org/docs/standards/hcs-15/
  *
  * [ LEARNING PATH ]
- * - Previous: M14 Lab 05: Agent Audit Trail on HCS (HCS-28 Concepts)
- * - Next:     M14 Lab 07: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
+ * - Previous: M14 Lab 04: HCS-27 Transparency Log Checkpoints & Cryptographic Merkle Proofs
+ * - Next:     M14 Lab 06: Botanical Agent Swarms (HCS-15 Petals, HCS-18 Discovery, HCS-16 Flora & HCS-17 State Hash)
  *
  * [ SEQUENCE ]
  * Alpha -> Hedera: Publish ECDH public key (handshake)
@@ -44,7 +44,7 @@
  * - Cost: <0.1 ℏ (network fees only).
  *
  * [ HOW TO RUN ]
- * node English/M14_Advanced_HCS_Standards_AI/06_encrypted_ai_agent_swarm_chat.js
+ * node English/M14_Advanced_HCS_Standards_AI/05_encrypted_ai_agent_swarm_chat.js
  * ============================================================================
  */
 
