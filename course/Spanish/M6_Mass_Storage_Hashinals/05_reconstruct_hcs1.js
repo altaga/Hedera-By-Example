@@ -4,16 +4,13 @@
  * [CONCEPTO] Verificación Criptográfica de Integridad y Reensamblaje
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Verificación Sin Confianza: La reconstrucción de datos HCS-1 es el proceso
- * inverso de la fragmentación. Al consultar el Mirror Node, recuperamos
- * todos los fragmentos, validamos su esquema y los ordenamos por secuencia.
- * El resultado es un activo criptográficamente idéntico al original porque
- * cada fragmento está vinculado al SHA-256 del archivo completo. Aquí no
- * confías en el servidor que entrega los datos; confías en las matemáticas
- * en el orden inmutable del ledger, y lo compruebas recalculando el SHA-256.
+ * Verificación Sin Confianza: el lector trae todos los fragmentos del Mirror
+ * Node, los ordena por "o", quita el prefijo del data URI, descomprime con zstd
+ * y calcula el hash. Si el SHA-256 coincide con el memo del tópico, la imagen
+ * es byte por byte la que se inscribió, sin ningún servidor central.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Reconstruir activos inscritos exige ordenar los fragmentos de HCS por número de secuencia y verificar el hash SHA-256 acumulado antes de ensamblar las imágenes o documentos en base64.
+ * Reconstruir un archivo HCS-1 significa ordenar los fragmentos por su campo de orden, descomprimir y comprobar el SHA-256 contra el memo del tópico antes de confiar en los bytes.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -23,22 +20,21 @@
  * - Siguiente: M6 Lab 06: El Ecosistema Hashinals
  *
  * [ ANTES DE EJECUTAR ]
- * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
- * - Ejecuta antes: Lab 01 de M5 (este lab lee lo que guardó).
- * - Costo: <0.1 ℏ (solo comisiones de red).
+ * - Wallet: no hace falta (solo lee el Mirror Node).
+ * - Ejecuta antes: Lab 04 de M6 (este lab lee lo que guardó).
+ * - Costo: gratis (solo lecturas del Mirror Node).
  *
  * [ CÓMO EJECUTAR ]
  * node Spanish/M6_Mass_Storage_Hashinals/05_reconstruct_hcs1.js
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
-import crypto from 'crypto'
+import { getState, readHcs1, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Auditoría de Reconstrucción de Activos (HCS-1) ---\n')
+  console.log('--- INICIO DE SESIÓN: Reconstrucción de Datos HCS-1 ---\n')
 
   const topicId = getState('HCS1_TOPIC_ID')
 
@@ -49,118 +45,32 @@ const main = async () => {
   }
 
   try {
-    console.log(`[INFO] Consultando Mirror Node para Topic: ${topicId}`)
+    console.log(`[PROCESO] Leyendo el archivo HCS-1 hcs://1/${topicId} desde el Mirror Node...`)
+    console.log('[INFO] Pasos: traer todos los fragmentos {o, c} -> ordenar por o -> quitar el data URI -> descomprimir zstd -> SHA-256')
 
-    /**
-     * Recuperación de fragmentos vía Mirror Node REST API.
-     * Avanzamos por la paginación para asegurar que capturamos todo el activo.
-     */
-    const fetchAllMessages = async () => {
-      let nextLink = `/api/v1/topics/${topicId}/messages`
-      const messages = []
-      while (nextLink) {
-        const response = await fetch(`${getMirrorNodeBaseUrl()}${nextLink}`)
-        if (!response.ok) {
-          throw new Error(`La API del Mirror Node falló: ${response.statusText}`)
-        }
-        const data = await response.json()
-        messages.push(...data.messages)
-        nextLink = data.links?.next || null
-      }
-      return messages
-    }
+    // readHcs1 solo devuelve el archivo si el SHA-256 de los bytes descomprimidos coincide con el memo.
+    const file = await readHcs1(topicId)
+    show.shards({ id: 'hcs1-stitch', title: 'Fragmentos HCS-1 reensamblados', total: file.chunks, done: file.chunks })
+    console.log(`[REGISTRO] Fragmentos: ${file.chunks} | Tipo MIME: ${file.mimeType}`)
+    console.log(`[VERIFY] El SHA-256 del archivo reconstruido coincide con el memo del tópico: ${file.hash}`)
 
-    // Cada fragmento HCS-1 indica el total (t). El Mirror Node muestra los mensajes unos
-    // segundos después del consenso; esperamos a que estén todos los del archivo más reciente.
-    const hasAllShards = (messages) => {
-      const parsed = messages
-        .map((m) => { try { return JSON.parse(Buffer.from(m.message, 'base64').toString()) } catch (_) { return null } })
-        .filter((sh) => sh && sh.h === 'hcs-1')
-      if (!parsed.length) return false
-      const latest = parsed[parsed.length - 1]
-      return parsed.filter((sh) => sh.fid === latest.fid).length >= latest.t
-    }
-
-    console.log('[PROCESO] Descargando fragmentos del ledger descentralizado...')
-    const allMessages = (await waitForMirror(async () => {
-      const messages = await fetchAllMessages()
-      return hasAllShards(messages) ? messages : null
-    }, { timeoutMs: 60_000 })) || await fetchAllMessages()
-
-    if (allMessages.length === 0) {
-      console.error('[FALLO] No hay mensajes en este tema. Ejecuta el Lab 04 primero.')
-      process.exitCode = 1
-      return
-    }
-
-    console.log(`[REGISTRO] Se localizaron ${allMessages.length} mensajes en el Mirror Node.`)
-
-    // 1. Decodificar y Filtrar Fragmentos HCS-1
-    const shards = allMessages
-      .map(m => {
-        try {
-          const decoded = Buffer.from(m.message, 'base64').toString()
-          return JSON.parse(decoded)
-        } catch (e) {
-          return null
-        }
-      })
-      .filter(sh => sh && sh.h === 'hcs-1')
-
-    if (shards.length === 0) {
-      throw new Error('No se encontraron fragmentos al estilo HCS-1 en este tópico.')
-    }
-
-    // 2. Identificar el activo más reciente (FID)
-    const latestFid = shards[shards.length - 1].fid
-    const filteredShards = shards.filter(sh => sh.fid === latestFid)
-
-    console.log(`[ÉXITO] Identidad del Activo (FID): ${latestFid}`)
-    console.log(`[INFO] Reensamblando a partir de ${filteredShards.length} shards.`)
-
-    // 3. Ordenar por índice para restaurar integridad estructural
-    filteredShards.sort((a, b) => a.i - b.i)
-
-    // 4. Validar integridad de la descarga
-    const totalExpected = filteredShards[0].t
-    if (filteredShards.length < totalExpected) {
-      throw new Error(`Datos corruptos: ${filteredShards.length}/${totalExpected} fragmentos hallados.`)
-    }
-
-    // 5. Unir la cadena Base64
-    let fullBase64 = ''
-    filteredShards.forEach(sh => {
-      show.shards({ id: 'hcs1-stitch', title: 'Fragmentos reensamblados', total: totalExpected, done: sh.i + 1 })
-      fullBase64 += sh.d
-      console.log(`└─ [LECTURA] Fragmento ${sh.i + 1}/${totalExpected} procesado.`)
-    })
-
-    // 6. Persistir resultado reconstruido como binario
-    const resultBuffer = Buffer.from(fullBase64, 'base64')
-    // Recompute the hash: the FID every shard carries is the SHA-256 of the original file.
-    const digest = crypto.createHash('sha256').update(resultBuffer).digest('hex')
-    if (digest !== latestFid) throw new Error('Falló la verificación: el SHA-256 del archivo reconstruido no coincide con el FID.')
-    console.log(`[VERIFY] El SHA-256 del archivo reconstruido coincide con el FID: ${digest}`)
     const dateStr = new Date().toISOString().split('T')[0]
     const outputPath = path.resolve(import.meta.dirname, `./output/reconstructed_${dateStr}.png`)
     fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-    fs.writeFileSync(outputPath, resultBuffer)
+    fs.writeFileSync(outputPath, file.bytes)
 
-    console.log('\n---  [ÉXITO] ACTIVO RECONSTRUIDO CON ÉXITO ---')
-    console.log(`[REGISTRO] Identidad Digital: ${latestFid}`)
-    console.log(`[REGISTRO] Tamaño Final:    ${resultBuffer.length} bytes`)
-    console.log(`[REGISTRO] Ubicación:       ${outputPath}`)
-    console.log('---------------------------------------------------------')
+    console.log('\n[ÉXITO] ¡Reconstrucción completada!')
+    console.log(`[REGISTRO] Tamaño final de la imagen: ${file.bytes.length} bytes`)
+    console.log(`[INFO] Guardada en: ${outputPath}`)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('La soberanía de los datos radica en poder reconstruirlos sin')
-    console.log('permisos de terceros. Mientras un Mirror Node de Hedera exista,')
-    console.log('tus activos digitales estarán seguros y disponibles para ser')
-    console.log('reensamblados con fidelidad matemática.')
+    console.log('Reconstrucción sin confianza: los fragmentos volvieron en orden y el SHA-256 del')
+    console.log('archivo descomprimido coincidió con el memo del tópico, así que la imagen')
+    console.log('reconstruida es byte por byte la que se inscribió.')
 
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] La reconstrucción de datos falló:', error.message)
+    console.error('\n[FALLO] Falló la reconstrucción:', error.message)
     process.exitCode = 1
   }
 }
@@ -169,7 +79,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

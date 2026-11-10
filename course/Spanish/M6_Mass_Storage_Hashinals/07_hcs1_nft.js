@@ -5,19 +5,17 @@
  * ============================================================================
  * [ CONCEPTO CLAVE ]
  * Más allá de IPFS: Aunque IPFS es común, sigue dependiendo de disponibilidad
- * externa. Al almacenar TANTO los metadatos como la imagen en shards de HCS,
- * tu activo se vuelve "Nativo del Ledger": cualquier Mirror Node que conserve el
- * historial del tópico puede servirlo, sin pagar un servicio de pinning.
- * Nota de formato: este lab usa un fragmento simplificado al estilo HCS-1 ({ h, fid, i, t, d },
- * sin compresión) para que puedas leer cada mensaje. El HCS-1 real comprime con zstd, pone
- * el hash en el memo del tópico y envía mensajes { o, c }, así que las herramientas HCS-1
- * no leerán estos tópicos.
+ * externa. Aquí TANTO la imagen como los metadatos HIP-412 son archivos HCS-1, y
+ * la metadata del NFT es el HRL "hcs://1/<tópico de metadatos>": esto es un
+ * Hashinal (HCS-5). Cualquier Mirror Node que conserve el historial del tópico,
+ * o la CDN de Kiloscribe, puede servirlo, sin pagar un servicio de pinning.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
- * Vincular un topic de inscripción HCS-1 directamente a un NFT en HTS crea un activo digital totalmente on-chain sin depender de servicios externos de fijación en IPFS.
+ * Vincular un tópico de inscripción HCS-1 directamente a un NFT en HTS crea un activo digital totalmente on-chain sin depender de servicios externos de fijación en IPFS.
  *
  * [ REFERENCIAS OFICIALES ]
  * - https://hol.org/docs/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-5/
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 06: El Ecosistema Hashinals
@@ -33,8 +31,6 @@
  */
 
 import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
   TokenCreateTransaction,
   TokenMintTransaction,
   TokenType,
@@ -42,39 +38,13 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, getHashscanUrl, show, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show, reuseToken, inscribeHcs1 } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-/**
- * Pipeline HCS-1: Divide un buffer en mensajes JSON estándar
- */
-const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
-  // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
-  const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-  const base64Str = fileBuffer.toString('base64')
-
-  const MAX_CHUNK_SIZE = 700
-  const chunks = []
-
-  for (let i = 0; i < base64Str.length; i += MAX_CHUNK_SIZE) {
-    chunks.push(base64Str.slice(i, i + MAX_CHUNK_SIZE))
-  }
-
-  return chunks.map((chunk, index) => ({
-    h: 'hcs-1',
-    fid: fileHashHex,
-    s: topicIdStr,
-    i: index,
-    t: chunks.length,
-    d: chunk
-  }))
-}
-
 const main = async () => {
-  console.log('--- INICIO DE SESIÓN: Minado de NFT Nativo HCS-1 ---\n')
-
+  console.log('--- INICIO DE SESIÓN: Acuñación de NFT Nativo HCS-1 (Hashinal, HCS-5) ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const adminKey = PrivateKey.fromString(operatorKey)
 
@@ -82,80 +52,39 @@ const main = async () => {
     const __dirname = path.dirname(import.meta.filename)
     const filePath = path.resolve(__dirname, './assets/largeFile.png')
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Activo no encontrado en ${filePath}`)
+      throw new Error(`No se encontró el archivo en ${filePath}`)
     }
-
     const fileBuffer = fs.readFileSync(filePath)
-    const imageHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
+    console.log(`[INFO] Archivo: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
+    console.log(`[REGISTRO] SHA-256 de la imagen: ${crypto.createHash('sha256').update(fileBuffer).digest('hex')}`)
 
-    console.log(`[INFO] Activo: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
-    console.log(`[REGISTRO] FID del Activo: ${imageHash}`)
+    // 1. Inscribir la imagen como archivo HCS-1
+    console.log('\n[PROCESO] Inscribiendo la imagen como HCS-1...')
+    const imageTopicId = await inscribeHcs1(client, fileBuffer, 'image/png', {
+      onChunk: (done, total) => show.shards({ id: 'hcs1-image', title: 'Fragmentos de la imagen enviados', total, done })
+    })
+    console.log(`[ÉXITO] Imagen inscrita: hcs://1/${imageTopicId}`)
 
-    // 1. Crear el Topic de Almacenamiento HCS
-    console.log('\n[PROCESO] Creando Topic de Almacenamiento HCS...')
-    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('Ancla de Activos HCS-1')
-      .freezeWith(client)
-
-    const topicRes = await topicTx.execute(client)
-    // Espera el consenso: el recibo dice si la red aceptó la transacción.
-    const topicReceipt = await topicRes.getReceipt(client)
-    const topicId = topicReceipt.topicId
-    const topicIdStr = topicId.toString()
-
-    console.log(`[ÉXITO] Topic HCS Creado: ${topicIdStr}`)
-
-    // 2. Enviar Shards de la Imagen
-    const imagePayloads = constructHcs1Payloads(fileBuffer, topicIdStr)
-    console.log(`[INFO] Enviando ${imagePayloads.length} shards de imagen a HCS...`)
-
-    for (const payload of imagePayloads) {
-      show.shards({ id: 'hcs1-image', title: 'Fragmentos de imagen enviados', total: payload.t, done: payload.i + 1 })
-      process.stdout.write(` └─ [] Shard ${payload.i + 1}/${payload.t}\r`)
-      // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
-      const submitTx = await new TopicMessageSubmitTransaction()
-        .setTopicId(topicId)
-        .setMessage(JSON.stringify(payload))
-        .execute(client)
-      await submitTx.getReceipt(client)
-    }
-    process.stdout.write('\n[ÉXITO] Shards de Imagen Anclados.\n')
-
-    // 3. Construir y Enviar Metadatos JSON (HIP-412)
+    // 2. Inscribir los metadatos HIP-412 (que apuntan a la imagen) como un segundo archivo HCS-1
     const metadataJSON = {
-      name: 'NFT Económico HCS-1 #1',
-      creator: 'Desarrollador Hedera',
-      description: 'Un NFT totalmente descentralizado con imagen y metadatos en HCS.',
-      image: `hcs://${topicIdStr}?fid=${imageHash}`,
+      name: 'Economic HCS-1 NFT #1',
+      creator: 'Hedera Developer',
+      description: 'Un Hashinal: la imagen y los metadatos son archivos HCS-1 en Hedera.',
+      image: `hcs://1/${imageTopicId}`,
       type: 'image/png',
       format: 'HIP412@2.0.0',
-      properties: {
-        protocolo: 'hcs-1',
-        almacenamiento: 'Hedera Consensus Service'
-      }
+      properties: { standard: 'hcs-5', storage: 'hcs-1' }
     }
+    console.log('\n[PROCESO] Inscribiendo los metadatos HIP-412 como HCS-1...')
+    const metadataTopicId = await inscribeHcs1(client, Buffer.from(JSON.stringify(metadataJSON)), 'application/json')
+    console.log(`[ÉXITO] Metadatos inscritos: hcs://1/${metadataTopicId}`)
 
-    const metaBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const metaHash = crypto.createHash('sha256').update(metaBuffer).digest('hex')
-    const metaPayloads = constructHcs1Payloads(metaBuffer, topicIdStr)
-
-    console.log(`\n[INFO] Enviando manifiesto de Metadatos (${metaPayloads.length} shard)...`)
-    for (const payload of metaPayloads) {
-      const submitTx = await new TopicMessageSubmitTransaction()
-        .setTopicId(topicId)
-        .setMessage(JSON.stringify(payload))
-        .execute(client)
-      await submitTx.getReceipt(client)
-    }
-    console.log('[ÉXITO] Shard de Metadatos Anclado.')
-
-    // 4. Crear la Colección NFT
-    console.log('\n[PROCESO] Creando Colección NFT...')
+    // 3. La colección NFT (se reutiliza en ejecuciones posteriores)
+    console.log('\n[PROCESO] Creando la colección NFT...')
     const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
-      // Crea el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
+      // Crear el token: sus llaves (admin, supply, KYC, freeze...) deciden quién puede cambiarlo después.
       const tokenTx = await new TokenCreateTransaction()
-        .setTokenName('Artefacto Económico HCS-1')
+        .setTokenName('HCS-1 Economic Artifact')
         .setTokenSymbol('HCSNFT')
         .setTokenType(TokenType.NonFungibleUnique)
         .setTreasuryAccountId(AccountId.fromString(operatorId))
@@ -163,50 +92,43 @@ const main = async () => {
         .setMaxSupply(100)
         .setSupplyKey(adminKey)
         .freezeWith(client)
-
       const tokenRes = await tokenTx.execute(client)
-      const tokenReceipt = await tokenRes.getReceipt(client)
-      return tokenReceipt.tokenId
+      return (await tokenRes.getReceipt(client)).tokenId
     })
+    console.log(`[ÉXITO] ID de la colección: ${tokenId.toString()}`)
 
-    console.log(`[ÉXITO] ID de Colección: ${tokenId.toString()}`)
-
-    // 5. Minar Serial #1 apuntando a Metadatos HCS
-    const hcsPointer = `hcs://${topicIdStr}?fid=${metaHash}`
-    console.log(`\n[PROCESO] Minando Serial #1 con Puntero: ${hcsPointer}`)
-
-    // Acuña: solo la supply key puede crear nuevas unidades o seriales NFT.
-    const mintTx = await new TokenMintTransaction()
+    // 4. Acuñar: la metadata del NFT es el HRL del archivo de metadatos (HCS-5)
+    const hrl = `hcs://1/${metadataTopicId}`
+    console.log(`\n[PROCESO] Acuñando un serial con metadata ${hrl}...`)
+    // Acuñar: solo la supply key puede crear nuevas unidades o seriales.
+    const mintRes = await (await new TokenMintTransaction()
       .setTokenId(tokenId)
-      .addMetadata(Buffer.from(hcsPointer))
-      .freezeWith(client)
-
-    const mintRes = await mintTx.execute(client)
-    await mintRes.getReceipt(client)
-
-    console.log('\n[ÉXITO] ¡NFT Nativo HCS-1 Minado!')
-    console.log(`[REGISTRO] Ver NFT en Hashscan: ${getHashscanUrl(mintRes)}`)
+      .addMetadata(Buffer.from(hrl))
+      .freezeWith(client)).execute(client)
+    const serial = (await mintRes.getReceipt(client)).serials[0].toString()
+    console.log(`\n[ÉXITO] Hashinal acuñado: ${tokenId} serial #${serial}`)
+    console.log(`[REGISTRO] Ver el NFT en HashScan: ${getHashscanUrl(mintRes)}`)
+    console.log(`[REGISTRO] Imagen vía la CDN de HCS-1: https://kiloscribe.com/api/inscription-cdn/${imageTopicId}?network=testnet`)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('Inscripción Autónoma de Confianza Cero: Los metadatos y la imagen se almacenan')
-    console.log('directamente en shards de HCS, eliminando dependencias de servidores IPFS.')
+    console.log('Inscripción Nativa del Ledger: los metadatos y la imagen son archivos HCS-1, así que')
+    console.log('el NFT no depende de ningún pin de IPFS ni servidor web, solo de Hedera y sus Mirror Nodes.')
 
     console.log('\n MOMENTO DE APRENDIZAJE:')
-    console.log('Lógica de Resolución Frontend:')
-    console.log(`1. Leer metadatos del NFT: "${hcsPointer}"`)
-    console.log(`2. Consultar Mirror Node: /api/v1/topics/${topicIdStr}/messages`)
-    console.log(`3. Filtrar mensajes donde JSON.fid === "${metaHash}"`)
-    console.log('4. Reconstruir JSON -> extraer imagen: "hcs://..."')
-    console.log(`5. Filtrar mensajes donde JSON.fid === "${imageHash}"`)
-    console.log('6. Reconstruir Base64 de Imagen -> Renderizar.')
+    console.log('Lógica de resolución en el frontend (HCS-5):')
+    console.log(`1. Leer la metadata del NFT: "${hrl}"`)
+    console.log(`2. Reconstruir el archivo HCS-1 ${metadataTopicId} (ordenar fragmentos {o,c}, descomprimir zstd, comprobar el SHA-256 del memo)`)
+    console.log(`3. Leer "image" del JSON: "hcs://1/${imageTopicId}"`)
+    console.log(`4. Reconstruir el archivo HCS-1 ${imageTopicId} igual -> mostrar.`)
 
     updateState('HCS_NFT_TOKEN_ID', tokenId.toString())
-    updateState('HCS_NFT_TOPIC_ID', topicIdStr)
+    updateState('HCS_NFT_SERIAL', serial)
+    updateState('HCS_NFT_TOPIC_ID', metadataTopicId)
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] La operación falló:', error.message)
+    console.error('\n[FALLO] Falló la operación:', error.message)
     process.exitCode = 1
     if (client) client.close()
   }
@@ -214,9 +136,9 @@ const main = async () => {
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
-    .then(() => { if (process.exitCode) process.exit() })
+    .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

@@ -15,6 +15,9 @@ const provided = new Set([...block.matchAll(/^\s+([A-Za-z_$][\w$]*)\s*[,:]/gm)].
 const x402 = fs.readFileSync(path.join(root, 'course/English/M99_Utilities/x402.js'), 'utf8')
 for (const m of x402.matchAll(/export (?:const|function|async function) (\w+)/g)) provided.add(m[1])
 provided.add('AgentCommunicationHandler')
+// HCS-1 helpers (M99_Utilities/hcs1.js) are attached from the vendor build when a lab uses them.
+const hcs1 = fs.readFileSync(path.join(root, 'course/English/M99_Utilities/hcs1.js'), 'utf8')
+for (const m of hcs1.matchAll(/export (?:const|function|async function) (\w+)/g)) provided.add(m[1])
 
 const missing = new Map()
 for (const lang of ['English', 'Spanish']) {

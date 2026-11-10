@@ -4,19 +4,13 @@
  * [CONCEPTO] Fragmentación (Sharding) y Ordenamiento Cronológico como Datos
  * ============================================================================
  * [ CONCEPTO CLAVE ]
- * Eficiencia Extrema: Mientras que el HFS ofrece disponibilidad garantizada
- * por los nodos, el HCS ofrece "Ordenamiento Justo", que es intrínsecamente
- * más económico. El estándar HCS-1 aprovecha este ordenamiento para simular
- * almacenamiento a gran escala: divide el archivo en fragmentos Base64,
- * los vincula a un hash SHA-256 único y los ancla al consensus en un solo
- * Topic. Esto permite registrar datasets masivos en el ledger por una
- * fracción del costo, ideal para datos de larga duración y alta
- * disponibilidad descentralizada.
- *
- * Nota de formato: este lab usa un fragmento simplificado al estilo HCS-1 ({ h, fid, i, t, d },
- * sin compresión) para que puedas leer cada mensaje. El HCS-1 real comprime con zstd, pone
- * el hash en el memo del tópico y envía mensajes { o, c }, así que las herramientas HCS-1
- * no leerán estos tópicos.
+ * Eficiencia Extrema: Mientras que el HFS ofrece almacenamiento persistente en
+ * los nodos, el HCS es mucho más económico. HCS-1 es un estándar de la comunidad
+ * para guardar un archivo en un tópico: se comprime con zstd, se codifica en
+ * base64 detrás de un data URI y se divide en mensajes ordenados {"o", "c"}. El
+ * tópico tiene submit key, no tiene admin key y su memo es
+ * "<sha256 del archivo>:zstd:base64", así que cualquier lector (por ejemplo la
+ * CDN de Kiloscribe) puede reconstruir el archivo y comprobarlo.
  * *
  * [ MOMENTO DE APRENDIZAJE ]
  * El estándar HCS-1 permite inscripciones on-chain altamente económicas: fragmentar archivos en mensajes ordenados de consenso en vez de almacenamiento en smart contracts cuesta solo una tarifa de mensaje por fragmento, muy por debajo del almacenamiento en contratos.
@@ -37,104 +31,54 @@
  * ============================================================================
  */
 
-import { TopicCreateTransaction, TopicMessageSubmitTransaction } from '@hiero-ledger/sdk'
+import { getClient, updateState, show, inscribeHcs1 } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
-import { getClient, getHashscanUrl, updateState, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
 
-/**
- * Pipeline HCS-1: Fragmenta un buffer en mensajes JSON estandarizados.
- */
-const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
-  // Calcula el hash: cualquiera puede recalcularlo para verificar los datos.
-  const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-  const base64Str = fileBuffer.toString('base64')
-
-  // Límite conservador para asegurar que el JSON completo quepa en el límite de HCS (~1KB sugerido para optimización)
-  const MAX_CHUNK_SIZE = 700
-  const chunks = []
-
-  for (let i = 0; i < base64Str.length; i += MAX_CHUNK_SIZE) {
-    chunks.push(base64Str.slice(i, i + MAX_CHUNK_SIZE))
-  }
-
-  return chunks.map((chunk, index) => ({
-    h: 'hcs-1', // Identificador del protocolo
-    fid: fileHashHex, // Hash de identidad del archivo original
-    s: topicIdStr, // Puntero al Topic de consenso
-    i: index, // Índice de secuencia del fragmento
-    t: chunks.length, // Total de fragmentos para reensamblaje
-    d: chunk // Carga útil codificada en Base64
-  }))
-}
-
 const main = async () => {
-  console.log('--- INICIO DEL LABORATORIO: Auditoría de Almacenamiento HCS-1 (Hashinals) ---\n')
+  console.log('--- INICIO DE SESIÓN: Fragmentación Económica de Datos con HCS-1 ---\n')
 
   const { client } = getClient()
 
   try {
     const __dirname = path.dirname(import.meta.filename)
     const filePath = path.resolve(__dirname, './assets/largeFile.png')
-
     if (!fs.existsSync(filePath)) {
-      throw new Error(`Recurso masivo no encontrado en ${filePath}`)
+      throw new Error(`No se encontró el archivo en ${filePath}`)
     }
 
     const fileBuffer = fs.readFileSync(filePath)
-    console.log(`[INFO] Procesando archivo binario: ${fileBuffer.length} bytes.`)
+    console.log(`[INFO] Leyendo datos binarios de: ${path.basename(filePath)}`)
+    console.log(`[REGISTRO] Tamaño del archivo: ${fileBuffer.length} bytes`)
+    console.log(`[REGISTRO] Identidad del archivo (SHA-256): ${crypto.createHash('sha256').update(fileBuffer).digest('hex')}`)
 
-    // 1. Crear el Topic ancla para HCS-1
-    console.log('[PROCESO] Creando Tema de Consenso (Topic) dedicado para HCS-1...')
-    // Crea el tópico: un registro de mensajes ordenado y con timestamp; una submit key restringiría quién escribe.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-1 Asset Anchor')
-      .freezeWith(client)
+    // HCS-1: zstd -> data URI en base64 -> fragmentos {o, c} en un tópico con submit key y sin admin key.
+    console.log('\n[PROCESO] Inscribiendo el archivo como HCS-1 (zstd + base64, memo "<sha256>:zstd:base64")...')
+    const topicId = await inscribeHcs1(client, fileBuffer, 'image/png', {
+      onChunk: (done, total) => {
+        show.shards({ id: 'hcs1-upload', title: 'Fragmentos HCS-1 enviados', total, done })
+        console.log(`[PROCESO] Fragmento ${done}/${total} enviado`)
+      }
+    })
 
-    const topicRes = await topicTx.execute(client)
-    // Espera el consenso: el recibo dice si la red aceptó la transacción.
-    const topicReceipt = await topicRes.getReceipt(client)
-    const topicId = topicReceipt.topicId
+    console.log(`\n[ÉXITO] Archivo HCS-1 inscrito en el tópico ${topicId}`)
+    console.log(`[REGISTRO] HRL: hcs://1/${topicId}`)
+    console.log(`[EXPLORADOR] https://hashscan.io/testnet/topic/${topicId}`)
+    console.log(`[REGISTRO] CDN de HCS-1 (Kiloscribe): https://kiloscribe.com/api/inscription-cdn/${topicId}?network=testnet`)
 
-    console.log(`[ÉXITO] Canal de almacenamiento HCS-1 activado: ${topicId.toString()}`)
-    console.log(`[REGISTRO] Ver en HashScan: ${getHashscanUrl(topicRes)}`)
-
-    const fileHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-    console.log(`[REGISTRO] Huella Digital (SHA-256): ${fileHash}`)
-
-    const payloads = constructHcs1Payloads(fileBuffer, topicId.toString())
-    console.log(`[INFO] Archivo fragmentado en ${payloads.length} mensajes al estilo HCS-1 (formato simplificado).\n`)
-
-    // 2. Enviar fragmentos (Shards)
-    console.log('[PROCESO] Anclando fragmentos al ledger de consenso...')
-    for (const payload of payloads) {
-      show.shards({ id: 'hcs1-upload', title: 'Fragmentos HCS-1 enviados', total: payload.t, done: payload.i + 1 })
-      // Publica: el consenso le da al mensaje un número de secuencia y un timestamp en el que todos coinciden.
-      const submitTx = await new TopicMessageSubmitTransaction()
-        .setTopicId(topicId)
-        .setMessage(JSON.stringify(payload))
-        .execute(client)
-
-      await submitTx.getReceipt(client)
-      console.log(`└─ Fragmento (Shard) ${payload.i + 1}/${payload.t} confirmado.`)
-    }
-
-    console.log('\n[ÉXITO] Ciclo de vida de almacenamiento HCS-1 completado.')
-
-    // Persistir el Topic ID para el laboratorio de reconstrucción
-    updateState('HCS1_TOPIC_ID', topicId.toString())
+    // Guardar el ID del tópico para la reconstrucción del Lab 05
+    updateState('HCS1_TOPIC_ID', topicId)
 
     console.log('\n CONCEPTO CLAVE:')
-    console.log('HCS-1 es el estándar detrás de los "Hashinals". Al usar el')
-    console.log('consenso para el ordenamiento, garantizas la integridad de')
-    console.log('los datos por una fracción del costo de almacenamiento directo,')
-    console.log('permitiendo registrar archivos de gigabytes en el ledger.')
+    console.log('El Costo del Consenso: al usar HCS como almacenamiento pagas una tarifa de')
+    console.log('mensaje por fragmento. zstd reduce antes el archivo, y el hash del memo le permite')
+    console.log('a cualquier lector HCS-1 confirmar que reconstruyó exactamente este archivo.')
 
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] El flujo de almacenamiento HCS-1 falló:', error.message)
+    console.error('\n[FALLO] Falló la operación HCS-1:', error.message)
     process.exitCode = 1
   }
 }
@@ -143,7 +87,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

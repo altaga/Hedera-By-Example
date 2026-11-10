@@ -15,7 +15,7 @@
  * learner is told so. The agent, its topics and its profile are all created.
  */
 import { HCS10Client as BaseHCS10Client, HCS11Client } from '@hashgraphonline/standards-sdk'
-import { compress, init } from '@bokuweb/zstd-wasm'
+import { compress, decompress, init } from '@bokuweb/zstd-wasm'
 
 const CHUNK = 900 // keeps each JSON message under the 1024-byte HCS limit
 
@@ -30,7 +30,7 @@ const toBase64 = (bytes) => {
 }
 
 /** Write bytes to a new HCS-1 topic and return its ID. */
-export async function hcs1Upload (client, bytes, mimeType) {
+export async function hcs1Upload (client, bytes, mimeType, { onChunk } = {}) {
   const hedera = globalThis.__HBE_NODE.hedera
   await zstd()
   const hash = toHex(await crypto.subtle.digest('SHA-256', bytes))
@@ -43,8 +43,43 @@ export async function hcs1Upload (client, bytes, mimeType) {
   for (let o = 0, i = 0; i < payload.length; o++, i += CHUNK) {
     const message = JSON.stringify({ o, c: payload.slice(i, i + CHUNK) })
     await (await new hedera.TopicMessageSubmitTransaction().setTopicId(topicId).setMessage(message).execute(client)).getReceipt(client)
+    onChunk?.(o + 1, Math.ceil(payload.length / CHUNK))
   }
   return topicId.toString()
+}
+
+const fromBase64 = (text) => Uint8Array.from(atob(text), (ch) => ch.charCodeAt(0))
+
+/** Read an HCS-1 file from the Mirror Node, checking the SHA-256 against the topic memo. */
+export async function hcs1Read (topicId, { attempts = 10, mirrorBase } = {}) {
+  const base = mirrorBase || globalThis.__HBE_NODE?.mirrorBase || 'https://testnet.mirrornode.hedera.com'
+  await zstd()
+  const topic = await (await fetch(`${base}/api/v1/topics/${topicId}`)).json()
+  const [expectedHash, algo, encoding] = String(topic.memo || '').split(':')
+  if (algo !== 'zstd' || encoding !== 'base64' || !/^[0-9a-f]{64}$/.test(expectedHash)) throw new Error(`${topicId} is not an HCS-1 topic (memo "${topic.memo}")`)
+  if (topic.admin_key) throw new Error(`${topicId} has an admin key, so it is not a valid HCS-1 topic`)
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const chunks = []
+    let url = `${base}/api/v1/topics/${topicId}/messages?limit=100&order=asc`
+    while (url) {
+      const page = await (await fetch(url)).json()
+      for (const m of page.messages || []) {
+        try { chunks.push(JSON.parse(new TextDecoder().decode(fromBase64(m.message)))) } catch (_) {}
+      }
+      url = page.links?.next ? `${base}${page.links.next}` : null
+    }
+    const joined = chunks.filter((c) => Number.isInteger(c.o) && typeof c.c === 'string').sort((a, b) => a.o - b.o).map((c) => c.c).join('')
+    const match = joined.match(/^data:([^;]+);base64,/)
+    if (match) {
+      try {
+        const bytes = decompress(fromBase64(joined.slice(match[0].length)))
+        const hash = toHex(await crypto.subtle.digest('SHA-256', bytes))
+        if (hash === expectedHash) return { bytes: globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes, mimeType: match[1], hash, chunks: chunks.length }
+      } catch (_) {}
+    }
+    if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 3000))
+  }
+  throw new Error(`HCS-1 file ${topicId} is incomplete or does not match its memo hash`)
 }
 
 HCS11Client.prototype.inscribeProfile = async function (profile) {

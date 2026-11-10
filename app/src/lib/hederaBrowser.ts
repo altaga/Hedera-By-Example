@@ -1023,6 +1023,15 @@ export async function executeInBrowser (
       helpers.AgentCommunicationHandler = vendor[`AgentCommunicationHandler${suffix}`]
       helpers.HybridEncryption = vendor[`HybridEncryption${suffix}`]
     }
+    // M99's HCS-1 helpers (M99_Utilities/hcs1.js) use the bundled zstd build in the browser.
+    if (/\b(inscribeHcs1|readHcs1)\b/.test(sourceCode)) {
+      const vendor = await loadVendor(ctx)
+      helpers.inscribeHcs1 = (client: any, bytes: any, mimeType: string, opts?: any) => vendor.hcs1Upload(client, bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes), mimeType, opts)
+      helpers.readHcs1 = async (topicId: string, opts?: any) => {
+        const file = await vendor.hcs1Read(String(topicId), { mirrorBase: getMirrorNodeBaseUrl(), ...opts })
+        return { ...file, bytes: Buffer.from(file.bytes) }
+      }
+    }
     // M10's x402 helpers (M99_Utilities/x402.js) are bundled from the course source.
     if (/\b(encodeHeader|decodeHeader|signExactPayment|settleExactPayment|verifyExactPayment|createPaymentRequired|getTransactionRecord|X402_NETWORK)\b/.test(sourceCode)) {
       const vendor = await loadVendor(ctx)

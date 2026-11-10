@@ -5,19 +5,17 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * Beyond IPFS: While IPFS is common, it still relies on external availability.
- * By storing BOTH the NFT metadata and the actual image data in HCS shards,
- * your asset becomes "Ledger-Native": any Mirror Node that keeps topic history
- * can serve it, with no pinning service to pay.
- * Format note: this lab uses a simplified HCS-1-style shard ({ h, fid, i, t, d }, no
- * compression) so you can read every message. Real HCS-1 compresses with zstd, puts
- * the hash in the topic memo and sends { o, c } messages, so HCS-1 tools will not
- * read these topics.
+ * Here BOTH the image and the HIP-412 metadata are HCS-1 files, and the NFT's
+ * metadata is the HRL "hcs://1/<metadata topic>": this is a Hashinal (HCS-5).
+ * Any Mirror Node that keeps topic history, or the Kiloscribe CDN, can serve
+ * it, with no pinning service to pay.
  * *
  * [ LEARNABLE MOMENT ]
  * Binding an HCS-1 inscription topic directly to an HTS non-fungible token creates a fully on-chain digital asset with no reliance on external IPFS pinning services.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-1/
+ * - https://hol.org/docs/standards/hcs-5/
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 06: Digital Asset Evolution (Hashinals)
@@ -33,8 +31,6 @@
  */
 
 import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
   TokenCreateTransaction,
   TokenMintTransaction,
   TokenType,
@@ -42,39 +38,13 @@ import {
   AccountId,
   PrivateKey
 } from '@hiero-ledger/sdk'
-import { getClient, updateState, getHashscanUrl, show, reuseToken } from '../M99_Utilities/index.js'
+import { getClient, updateState, getHashscanUrl, show, reuseToken, inscribeHcs1 } from '../M99_Utilities/index.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-/**
- * HCS-1 Pipeline: Chunks a buffer into standard JSON messages
- */
-const constructHcs1Payloads = (fileBuffer, topicIdStr) => {
-  // Hash the content: anyone can recompute this digest to verify the data.
-  const fileHashHex = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-  const base64Str = fileBuffer.toString('base64')
-
-  const MAX_CHUNK_SIZE = 700 // Safe limit to ensure the JSON object fits in 1024 bytes
-  const chunks = []
-
-  for (let i = 0; i < base64Str.length; i += MAX_CHUNK_SIZE) {
-    chunks.push(base64Str.slice(i, i + MAX_CHUNK_SIZE))
-  }
-
-  return chunks.map((chunk, index) => ({
-    h: 'hcs-1',
-    fid: fileHashHex, // Tie chunk to original identity
-    s: topicIdStr, // Sibling Topic
-    i: index, // Current chunk index
-    t: chunks.length, // Total chunks expected
-    d: chunk // Base64 payload
-  }))
-}
-
 const main = async () => {
-  console.log('--- SESSION START: HCS-1 Native NFT Minting ---\n')
-
+  console.log('--- SESSION START: HCS-1 Native NFT Minting (Hashinal, HCS-5) ---\n')
   const { client, operatorId, operatorKey } = getClient()
   const adminKey = PrivateKey.fromString(operatorKey)
 
@@ -84,73 +54,32 @@ const main = async () => {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Asset not found at ${filePath}`)
     }
-
     const fileBuffer = fs.readFileSync(filePath)
-    const imageHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
-
     console.log(`[INFO] Asset: ${path.basename(filePath)} (${fileBuffer.length} bytes)`)
-    console.log(`[LOG] Asset FID: ${imageHash}`)
+    console.log(`[LOG] Image SHA-256: ${crypto.createHash('sha256').update(fileBuffer).digest('hex')}`)
 
-    // 1. Create the HCS Storage Topic
-    console.log('\n[PROCESS] Creating HCS Storage Topic...')
-    // Create the topic: an ordered, timestamped message log; a submit key would restrict who can write.
-    const topicTx = await new TopicCreateTransaction()
-      .setTopicMemo('HCS-1 Asset Anchor')
-      .freezeWith(client)
+    // 1. Inscribe the image as an HCS-1 file
+    console.log('\n[PROCESS] Inscribing the image as HCS-1...')
+    const imageTopicId = await inscribeHcs1(client, fileBuffer, 'image/png', {
+      onChunk: (done, total) => show.shards({ id: 'hcs1-image', title: 'Image chunks submitted', total, done })
+    })
+    console.log(`[SUCCESS] Image inscribed: hcs://1/${imageTopicId}`)
 
-    const topicRes = await topicTx.execute(client)
-    // Wait for consensus: the receipt says whether the network accepted the transaction.
-    const topicReceipt = await topicRes.getReceipt(client)
-    const topicId = topicReceipt.topicId
-    const topicIdStr = topicId.toString()
-
-    console.log(`[SUCCESS] HCS Topic Created: ${topicIdStr}`)
-
-    // 2. Submit Image Shards
-    const imagePayloads = constructHcs1Payloads(fileBuffer, topicIdStr)
-    console.log(`[INFO] Submitting ${imagePayloads.length} image shards to HCS...`)
-
-    for (const payload of imagePayloads) {
-      show.shards({ id: 'hcs1-image', title: 'Image shards submitted', total: payload.t, done: payload.i + 1 })
-      process.stdout.write(` └─ [] Shard ${payload.i + 1}/${payload.t}\r`)
-      // Publish: consensus gives the message a sequence number and a timestamp everyone agrees on.
-      const submitTx = await new TopicMessageSubmitTransaction()
-        .setTopicId(topicId)
-        .setMessage(JSON.stringify(payload))
-        .execute(client)
-      await submitTx.getReceipt(client)
-    }
-    process.stdout.write('\n[SUCCESS] Image Shards Anchored.\n')
-
-    // 3. Construct and Submit Metadata JSON (HIP-412)
+    // 2. Inscribe the HIP-412 metadata (pointing at the image) as a second HCS-1 file
     const metadataJSON = {
       name: 'Economic HCS-1 NFT #1',
       creator: 'Hedera Developer',
-      description: 'A fully decentralized NFT with image and metadata stored in HCS shards.',
-      image: `hcs://${topicIdStr}?fid=${imageHash}`,
+      description: 'A Hashinal: image and metadata are both HCS-1 files on Hedera.',
+      image: `hcs://1/${imageTopicId}`,
       type: 'image/png',
       format: 'HIP412@2.0.0',
-      properties: {
-        protocol: 'hcs-1',
-        storage: 'Hedera Consensus Service'
-      }
+      properties: { standard: 'hcs-5', storage: 'hcs-1' }
     }
+    console.log('\n[PROCESS] Inscribing the HIP-412 metadata as HCS-1...')
+    const metadataTopicId = await inscribeHcs1(client, Buffer.from(JSON.stringify(metadataJSON)), 'application/json')
+    console.log(`[SUCCESS] Metadata inscribed: hcs://1/${metadataTopicId}`)
 
-    const metaBuffer = Buffer.from(JSON.stringify(metadataJSON))
-    const metaHash = crypto.createHash('sha256').update(metaBuffer).digest('hex')
-    const metaPayloads = constructHcs1Payloads(metaBuffer, topicIdStr)
-
-    console.log(`\n[INFO] Submitting Metadata manifest (${metaPayloads.length} shard)...`)
-    for (const payload of metaPayloads) {
-      const submitTx = await new TopicMessageSubmitTransaction()
-        .setTopicId(topicId)
-        .setMessage(JSON.stringify(payload))
-        .execute(client)
-      await submitTx.getReceipt(client)
-    }
-    console.log('[SUCCESS] Metadata Shard Anchored.')
-
-    // 4. Create the NFT Collection
+    // 3. The NFT collection (reused on later runs)
     console.log('\n[PROCESS] Creating NFT Collection...')
     const tokenId = await reuseToken('REUSE_M6_07_TOKEN', async () => {
       // Create the token: its keys (admin, supply, KYC, freeze...) decide who can change it later.
@@ -163,47 +92,38 @@ const main = async () => {
         .setMaxSupply(100)
         .setSupplyKey(adminKey)
         .freezeWith(client)
-
       const tokenRes = await tokenTx.execute(client)
-      const tokenReceipt = await tokenRes.getReceipt(client)
-      return tokenReceipt.tokenId
+      return (await tokenRes.getReceipt(client)).tokenId
     })
-
     console.log(`[SUCCESS] Collection ID: ${tokenId.toString()}`)
 
-    // 5. Mint Serial #1 pointing to HCS Metadata
-    // The pointer format: hcs://<TOPIC_ID>?fid=<METADATA_FID>
-    const hcsPointer = `hcs://${topicIdStr}?fid=${metaHash}`
-    console.log(`\n[PROCESS] Minting Serial #1 with Pointer: ${hcsPointer}`)
-
+    // 4. Mint: the NFT's metadata is the HRL of the metadata file (HCS-5)
+    const hrl = `hcs://1/${metadataTopicId}`
+    console.log(`\n[PROCESS] Minting a serial with metadata ${hrl}...`)
     // Mint: only the supply key can create new units or NFT serials.
-    const mintTx = await new TokenMintTransaction()
+    const mintRes = await (await new TokenMintTransaction()
       .setTokenId(tokenId)
-      .addMetadata(Buffer.from(hcsPointer))
-      .freezeWith(client)
-
-    const mintRes = await mintTx.execute(client)
-    await mintRes.getReceipt(client)
-
-    console.log('\n[SUCCESS] HCS-1 Native NFT Minted!')
+      .addMetadata(Buffer.from(hrl))
+      .freezeWith(client)).execute(client)
+    const serial = (await mintRes.getReceipt(client)).serials[0].toString()
+    console.log(`\n[SUCCESS] Hashinal minted: ${tokenId} serial #${serial}`)
     console.log(`[LOG] View NFT on Hashscan: ${getHashscanUrl(mintRes)}`)
+    console.log(`[LOG] Image via the HCS-1 CDN: https://kiloscribe.com/api/inscription-cdn/${imageTopicId}?network=testnet`)
 
     console.log('\n KEY CONCEPT:')
-    console.log('Zero-Trust Autonomous Inscription: The metadata and image are stored')
-    console.log('directly within HCS shards, completely eliminating IPFS pinning dependencies.')
+    console.log('Ledger-Native Inscription: the metadata and the image are HCS-1 files, so the')
+    console.log('NFT depends on no IPFS pin or web server, only on Hedera and its Mirror Nodes.')
 
     console.log('\n LEARNABLE MOMENT:')
-    console.log('Frontend Resolution Logic:')
-    console.log(`1. Read NFT metadata: "${hcsPointer}"`)
-    console.log(`2. Query Mirror Node: /api/v1/topics/${topicIdStr}/messages`)
-    console.log(`3. Filter messages where JSON.fid === "${metaHash}"`)
-    console.log('4. Reconstruct Metadata JSON -> extract image: "hcs://..."')
-    console.log(`5. Filter messages where JSON.fid === "${imageHash}"`)
-    console.log('6. Reconstruct Image Base64 -> Render.')
+    console.log('Frontend Resolution Logic (HCS-5):')
+    console.log(`1. Read the NFT metadata: "${hrl}"`)
+    console.log(`2. Rebuild HCS-1 file ${metadataTopicId} (sort {o,c} chunks, zstd decompress, check the memo SHA-256)`)
+    console.log(`3. Read "image" from the JSON: "hcs://1/${imageTopicId}"`)
+    console.log(`4. Rebuild HCS-1 file ${imageTopicId} the same way -> render.`)
 
-    // Update state for later use
     updateState('HCS_NFT_TOKEN_ID', tokenId.toString())
-    updateState('HCS_NFT_TOPIC_ID', topicIdStr)
+    updateState('HCS_NFT_SERIAL', serial)
+    updateState('HCS_NFT_TOPIC_ID', metadataTopicId)
 
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
@@ -216,7 +136,7 @@ const main = async () => {
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
-    .then(() => { if (process.exitCode) process.exit() })
+    .then(() => process.exit())
     .catch((error) => {
       console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)

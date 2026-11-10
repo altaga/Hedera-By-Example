@@ -99,7 +99,7 @@ export async function buildVendor () {
     lines.push(`export * as X402Helpers${lang === 'English' ? 'En' : 'Es'} from '${helpers}'`)
   }
   // Browser patches (HCS-1 profile storage) apply when the bundle loads.
-  lines.push(`export { HCS10Client } from '${path.join(ROOT, 'scripts', 'vendor-hcs1.mjs').replace(/\\/g, '/')}'`)
+  lines.push(`export { HCS10Client, hcs1Upload, hcs1Read } from '${path.join(ROOT, 'scripts', 'vendor-hcs1.mjs').replace(/\\/g, '/')}'`)
   const entry = path.join(OUT, '.vendor-entry.mjs')
   fs.writeFileSync(entry, lines.join('\n') + '\n')
   try {

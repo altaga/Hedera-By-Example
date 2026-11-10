@@ -5,12 +5,12 @@
  * ============================================================================
  * [ KEY CONCEPT ]
  * Zero-Trust Assets: This script demonstrates how to resolve a "Ledger-Native"
- * NFT without relying on IPFS or central servers. By starting with a Token ID,
- * we find the HCS pointer and recursively reconstruct both the metadata and
- * the high-res binary image directly from Mirror Node shards.
+ * NFT without relying on IPFS or central servers. Starting from the token and
+ * serial, we read its HRL (hcs://1/<topic>), rebuild the HCS-1 metadata file,
+ * then follow its "image" HRL and rebuild the image, checking each SHA-256.
  * *
  * [ LEARNABLE MOMENT ]
- * Client-side verification of HCS-1-style NFT inscriptions: wallets can query the Mirror Node, reassemble the chunks in memory, recompute the SHA-256 and render the artwork without a server.
+ * Client-side resolution of a Hashinal (HCS-5): wallets query the Mirror Node, rebuild each HCS-1 file in memory, check its SHA-256 against the topic memo and render the artwork without a server.
  *
  * [ OFFICIAL REFERENCES ]
  * - https://hol.org/docs/standards/hcs-1/
@@ -20,127 +20,73 @@
  * - Next:     M6 Lab 09: HCS-7 Smart Hashinals (EVM State + WASM Dynamic Inscriptions)
  *
  * [ BEFORE YOU RUN ]
- * - Wallet: your testnet account (it signs and pays the fees).
- * - Run first: M3 Lab 03, M6 Lab 07 (this lab reads what it saved).
- * - Cost: <0.1 ℏ (network fees only).
+ * - Wallet: none needed (it only reads the Mirror Node).
+ * - Run first: M6 Lab 07 (this lab reads what it saved).
+ * - Cost: free (Mirror Node reads only).
  *
  * [ HOW TO RUN ]
  * node English/M6_Mass_Storage_Hashinals/08_reconstruct_hcs1_nft.js
  * ============================================================================
  */
 
-import { getMirrorNodeBaseUrl, getState, waitForMirror, show } from '../M99_Utilities/index.js'
-import crypto from 'crypto'
+import { getMirrorNodeBaseUrl, getState, waitForMirror, readHcs1, show } from '../M99_Utilities/index.js'
 import fs from 'fs'
 import path from 'path'
+
+const parseHrl = (value) => {
+  const match = String(value).match(/^hcs:\/\/1\/(\d+\.\d+\.\d+)$/)
+  if (!match) throw new Error(`"${value}" is not an HCS-1 HRL (hcs://1/<topicId>)`)
+  return match[1]
+}
 
 const main = async () => {
   console.log('--- SESSION START: HCS-1 NFT Reconstruction ---\n')
 
-  const tokenId = getState('HCS_NFT_TOKEN_ID') || getState('NFT_TOKEN_ID')
+  const tokenId = getState('HCS_NFT_TOKEN_ID')
+  const serial = getState('HCS_NFT_SERIAL')
   const mirrorNodeUrl = getMirrorNodeBaseUrl()
 
-  if (!tokenId) {
-    console.error('[FAILED] Missing Token ID in state. Run Lab 07 first.')
+  if (!tokenId || !serial) {
+    console.error('[FAILED] Missing the Hashinal in state. Run Lab 07 first.')
     process.exitCode = 1
     return
   }
 
   try {
-    // 1. Get NFT Metadata Pointer (Serial #1)
-    console.log(`[PROCESS] Fetching NFT Metadata Pointer for ${tokenId} Serial 1...`)
+    // 1. The NFT's metadata is an HRL pointing at an HCS-1 file
+    console.log(`[PROCESS] Fetching the metadata of ${tokenId} serial #${serial}...`)
     // A freshly minted NFT shows up on the Mirror Node a few seconds after consensus.
     const nftResponse = await waitForMirror(async () => {
-      const res = await fetch(`${mirrorNodeUrl}/api/v1/tokens/${tokenId}/nfts/1`)
+      const res = await fetch(`${mirrorNodeUrl}/api/v1/tokens/${tokenId}/nfts/${serial}`)
       return res.ok ? res : null
     })
-    if (!nftResponse) throw new Error(`Token not found or Mirror Node error: ${tokenId}/nfts/1`)
+    if (!nftResponse) throw new Error(`Token not found or Mirror Node error: ${tokenId}/nfts/${serial}`)
+    const rawMetadata = Buffer.from((await nftResponse.json()).metadata, 'base64').toString()
+    console.log(`[SUCCESS] NFT metadata: "${rawMetadata}"`)
+    const metadataTopicId = parseHrl(rawMetadata)
 
-    const nftData = await nftResponse.json()
-    const rawMetadata = Buffer.from(nftData.metadata, 'base64').toString()
-    console.log(`[SUCCESS] Pointer Found: "${rawMetadata}"`)
-
-    if (!rawMetadata.startsWith('hcs://')) {
-      throw new Error('This NFT does not appear to be an HCS-1 Native NFT.')
-    }
-
-    // Parse hcs://<topicId>?fid=<fid>
-    const [topicPart, queryPart] = rawMetadata.replace('hcs://', '').split('?')
-    const topicId = topicPart
-    const query = new URLSearchParams(queryPart || '')
-    const metaFid = query.get('fid')
-
-    console.log(`[LOG] Target Topic: ${topicId}`)
-    console.log(`[LOG] Metadata FID: ${metaFid}`)
-
-    // 2. Fetch all messages from the HCS Topic
-    console.log(`\n[PROCESS] Fetching HCS messages from Topic ${topicId}...`)
-    let nextLink = `/api/v1/topics/${topicId}/messages`
-    const allMessages = []
-
-    while (nextLink) {
-      const response = await fetch(`${mirrorNodeUrl}${nextLink}`)
-      const data = await response.json()
-      allMessages.push(...data.messages)
-      nextLink = data.links?.next || null
-    }
-    console.log(`[SUCCESS] Retrieved ${allMessages.length} total HCS messages.`)
-
-    // Helper to reconstruct file from shards
-    const reconstructFile = (messages, targetFid) => {
-      const shards = messages
-        .map(m => {
-          try {
-            const decoded = Buffer.from(m.message, 'base64').toString()
-            return JSON.parse(decoded)
-          } catch (e) { return null }
-        })
-        .filter(sh => sh && sh.h === 'hcs-1' && sh.fid === targetFid)
-
-      if (shards.length === 0) throw new Error(`No shards found for FID: ${targetFid}`)
-
-      shards.sort((a, b) => a.i - b.i)
-      const totalExpected = shards[0].t
-      if (shards.length < totalExpected) throw new Error(`Incomplete data: ${shards.length}/${totalExpected} shards found.`)
-
-      let fullBase64 = ''
-      for (const shard of shards) fullBase64 += shard.d
-      show.shards({ id: 'hcs1-stitch', title: 'Shards stitched back together', total: totalExpected, done: shards.length })
-      const buffer = Buffer.from(fullBase64, 'base64')
-      // The FID in the pointer is the SHA-256 of the original file: recompute it.
-      if (crypto.createHash('sha256').update(buffer).digest('hex') !== targetFid) throw new Error(`Integrity check failed for FID ${targetFid}: SHA-256 mismatch.`)
-      console.log(`[VERIFY] SHA-256 matches FID ${targetFid.slice(0, 16)}...`)
-      return buffer
-    }
-
-    // 3. Reconstruct Metadata JSON
-    console.log('\n[PROCESS] Reconstructing Metadata JSON...')
-    const metaBuffer = reconstructFile(allMessages, metaFid)
-    const metadata = JSON.parse(metaBuffer.toString())
+    // 2. Rebuild the metadata JSON (readHcs1 checks the SHA-256 against the topic memo)
+    console.log(`\n[PROCESS] Rebuilding HCS-1 metadata file ${metadataTopicId}...`)
+    const metaFile = await readHcs1(metadataTopicId)
+    console.log(`[VERIFY] Metadata SHA-256 matches the topic memo: ${metaFile.hash.slice(0, 16)}...`)
+    const metadata = JSON.parse(metaFile.bytes.toString())
     console.log('[SUCCESS] Metadata Reconstructed:')
     console.log(JSON.stringify(metadata, null, 2))
 
-    // 4. Extract and Reconstruct Image
-    const imagePointer = metadata.image
-    if (!imagePointer.startsWith('hcs://')) {
-      throw new Error('Metadata image pointer is not an hcs:// link.')
-    }
+    // 3. Follow the "image" HRL and rebuild the image
+    const imageTopicId = parseHrl(metadata.image)
+    console.log(`\n[PROCESS] Rebuilding HCS-1 image file ${imageTopicId}...`)
+    const imageFile = await readHcs1(imageTopicId)
+    show.shards({ id: 'hcs1-stitch', title: 'Image chunks reassembled', total: imageFile.chunks, done: imageFile.chunks })
+    console.log(`[VERIFY] Image SHA-256 matches the topic memo: ${imageFile.hash.slice(0, 16)}... (${imageFile.mimeType}, ${imageFile.bytes.length} bytes)`)
 
-    const [, imageQueryPart] = imagePointer.replace('hcs://', '').split('?')
-    const imageQuery = new URLSearchParams(imageQueryPart || '')
-    const imageFid = imageQuery.get('fid')
-
-    console.log(`\n[PROCESS] Reconstructing Image (FID: ${imageFid})...`)
-    const imageBuffer = reconstructFile(allMessages, imageFid)
-
-    // 5. Save to Disk
+    // 4. Save to Disk
     const __dirname = path.dirname(import.meta.filename)
     const outputPath = path.resolve(__dirname, './output/reconstructed_nft.png')
-
     if (!fs.existsSync(path.dirname(outputPath))) {
       fs.mkdirSync(path.dirname(outputPath), { recursive: true })
     }
-    fs.writeFileSync(outputPath, imageBuffer)
+    fs.writeFileSync(outputPath, imageFile.bytes)
 
     console.log('\n[SUCCESS] NFT Asset Fully Reconstructed!')
     console.log(`[INFO] Saved to: ${outputPath}`)
@@ -159,7 +105,7 @@ const main = async () => {
 
 if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
-    .then(() => { if (process.exitCode) process.exit() })
+    .then(() => process.exit())
     .catch((error) => {
       console.error('[FAILED] Execution Error:', error.message)
       process.exit(1)
