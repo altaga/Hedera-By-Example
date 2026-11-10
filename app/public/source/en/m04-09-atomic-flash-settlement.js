@@ -25,7 +25,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M4 Lab 08: In-Memory Orderbook & Triangular L1 Atomic Settlement (Ring Trade)
- * - Next:     M5 Lab 01: Immutable HCS Primitives
+ * - Next:     M4 Lab 10: Atomic Batch Transactions (HIP-551)
  *
  * [ SEQUENCE ]
  * Vault, Arbitrageur, Alpha, Beta -> Hedera: One transaction: borrow + buy + sell + repay

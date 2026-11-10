@@ -20,7 +20,7 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M4 Lab 09: Préstamos Flash Sin Capital y Liquidación Atómica en Capa 1
+ * - Anterior:  M4 Lab 10: Transacciones en Lote Atómico (HIP-551)
  * - Siguiente: M5 Lab 02: Estándares de Datos HCS-2
  *
  * [ ANTES DE EJECUTAR ]

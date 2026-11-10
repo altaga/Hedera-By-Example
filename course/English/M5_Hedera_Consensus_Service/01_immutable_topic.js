@@ -17,7 +17,7 @@
  * - https://docs.hedera.com/native/consensus
  *
  * [ LEARNING PATH ]
- * - Previous: M4 Lab 09: Zero-Capital Flash Loans & Atomic Layer 1 Settlement
+ * - Previous: M4 Lab 10: Atomic Batch Transactions (HIP-551)
  * - Next:     M5 Lab 02: Core Data Standards (HCS-2)
  *
  * [ BEFORE YOU RUN ]

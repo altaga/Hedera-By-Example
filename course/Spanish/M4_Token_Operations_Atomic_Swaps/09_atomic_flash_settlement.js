@@ -26,7 +26,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M4 Lab 08: Orderbook en Memoria y Liquidación Triangular Atómica en L1 (Ring Trade)
- * - Siguiente: M5 Lab 01: Creación de Topic HCS Inmutable
+ * - Siguiente: M4 Lab 10: Transacciones en Lote Atómico (HIP-551)
  *
  * [ SECUENCIA ]
  * Vault, Arbitrajista, Alpha, Beta -> Hedera: Una transacción: préstamo + compra + venta + reembolso
