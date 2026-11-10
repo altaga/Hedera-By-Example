@@ -50,7 +50,7 @@
 import http from 'node:http'
 import crypto from 'node:crypto'
 import { Client, PrivateKey } from '@hashgraph/sdk'
-import { HederaAIToolkit, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'
+import { HederaAIToolkit, HederaBuilder, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'
 import { generateText, stepCountIs, tool, jsonSchema } from 'ai'
 import { MockLanguageModelV3 } from 'ai/test'
 import { getClient, ensureFunded, waitForMirror, getMirrorNodeBaseUrl, getHashscanUrl, updateState, show } from '../M99_Utilities/index.js'
@@ -59,6 +59,19 @@ import { getClient, ensureFunded, waitForMirror, getMirrorNodeBaseUrl, getHashsc
 const asObject = (value) => {
   if (typeof value !== 'string') return value
   try { return JSON.parse(value) } catch (_) { return { humanMessage: value } }
+}
+
+// Agent Kit 3.8.2 builds transfer_hbar_tool's transaction with new TransferTransaction(params), and that
+// constructor ignores transactionMemo, so the memo never reaches the network. Until the kit fixes it, wrap
+// the builder the tool calls and set the memo on the transaction it returns (scheduled transfers untouched).
+if (!HederaBuilder.transferHbar.memoFix) {
+  const buildTransferHbar = HederaBuilder.transferHbar
+  HederaBuilder.transferHbar = (params) => {
+    const tx = buildTransferHbar(params)
+    if (params.transactionMemo && !params.schedulingParams?.isScheduled) tx.setTransactionMemo(params.transactionMemo)
+    return tx
+  }
+  HederaBuilder.transferHbar.memoFix = true
 }
 
 const PORT = 4320
@@ -249,7 +262,7 @@ const main = async () => {
     console.log('[SUCCESS] Seller verified the payment on the Mirror Node and unlocked the report:')
     show.json(unlocked.body.report)
     // Agent Kit 3.8.2's transfer_hbar_tool builds new TransferTransaction(params), whose constructor
-    // ignores transactionMemo, so the memo can be lost. The seller does not depend on it.
+    // ignores transactionMemo, so the memo was lost; the patch above restores it. The seller does not depend on it either way.
     console.log(`[INFO] Order memo on the payment: ${unlocked.body.memoMatches ? 'present' : 'missing (the Agent Kit did not set it)'}`)
     console.log(`[LOG] Agent: ${run.text}`)
 

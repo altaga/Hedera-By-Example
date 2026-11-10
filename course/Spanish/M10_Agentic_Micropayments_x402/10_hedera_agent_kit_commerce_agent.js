@@ -51,7 +51,7 @@
 import http from 'node:http'
 import crypto from 'node:crypto'
 import { Client, PrivateKey } from '@hashgraph/sdk'
-import { HederaAIToolkit, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'
+import { HederaAIToolkit, HederaBuilder, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'
 import { generateText, stepCountIs, tool, jsonSchema } from 'ai'
 import { MockLanguageModelV3 } from 'ai/test'
 import { getClient, ensureFunded, waitForMirror, getMirrorNodeBaseUrl, getHashscanUrl, updateState, show } from '../M99_Utilities/index.js'
@@ -60,6 +60,20 @@ import { getClient, ensureFunded, waitForMirror, getMirrorNodeBaseUrl, getHashsc
 const asObject = (value) => {
   if (typeof value !== 'string') return value
   try { return JSON.parse(value) } catch (_) { return { humanMessage: value } }
+}
+
+// El Agent Kit 3.8.2 arma la transacción de transfer_hbar_tool con new TransferTransaction(params), y ese
+// constructor ignora transactionMemo, así que el memo nunca llega a la red. Mientras el kit no lo corrija,
+// envolvemos el builder que usa la herramienta y ponemos el memo en la transacción que devuelve (las
+// transferencias programadas no se tocan).
+if (!HederaBuilder.transferHbar.memoFix) {
+  const buildTransferHbar = HederaBuilder.transferHbar
+  HederaBuilder.transferHbar = (params) => {
+    const tx = buildTransferHbar(params)
+    if (params.transactionMemo && !params.schedulingParams?.isScheduled) tx.setTransactionMemo(params.transactionMemo)
+    return tx
+  }
+  HederaBuilder.transferHbar.memoFix = true
 }
 
 const PORT = 4320
@@ -250,7 +264,7 @@ const main = async () => {
     console.log('[ÉXITO] El vendedor verificó el pago en el Mirror Node y desbloqueó el reporte:')
     show.json(unlocked.body.report)
     // transfer_hbar_tool del Agent Kit 3.8.2 arma new TransferTransaction(params), cuyo constructor
-    // ignora transactionMemo, así que el memo se puede perder. El vendedor no depende de él.
+    // ignora transactionMemo, así que el memo se perdía; el parche de arriba lo restaura. El vendedor no depende de él en ningún caso.
     console.log(`[INFO] Memo de la orden en el pago: ${unlocked.body.memoMatches ? 'presente' : 'ausente (el Agent Kit no lo puso)'}`)
     console.log(`[REGISTRO] Agente: ${run.text}`)
 

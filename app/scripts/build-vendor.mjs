@@ -204,7 +204,7 @@ export async function buildZkVendor () {
 export async function buildAgentKitVendor () {
   const entry = path.join(OUT, '.agentkit-entry.mjs')
   fs.writeFileSync(entry, [
-    "export { HederaAIToolkit, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'",
+    "export { HederaAIToolkit, HederaBuilder, AgentMode, coreAccountPlugin, coreAccountQueryPlugin } from 'hedera-agent-kit'",
     "export { generateText, stepCountIs, tool, jsonSchema } from 'ai'",
     "export { MockLanguageModelV3 } from 'ai/test'"
   ].join('\n') + '\n')
