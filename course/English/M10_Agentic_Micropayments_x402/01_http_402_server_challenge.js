@@ -23,12 +23,9 @@
  * - Next:     M10 Lab 02: Autonomous Agent Payment Signature
  *
  * [ SEQUENCE ]
- * Agent -> Server: GET /api/v1/alpha-intelligence/market-depth
+ * Agent -> Server: GET https://hbe.expo.app/api/x402/market-depth
  * Note Server: No API key, token or cookie
  * Server -> Agent: 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
- *
- * [ SIMULATED ]
- * The HTTP request and server run in the same process; no web server is started.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account is the facilitator (it pays the network fee in Lab 03).
@@ -40,36 +37,11 @@
  * ============================================================================
  */
 
-import { getClient, updateState, encodeHeader, decodeHeader, show, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
+import { getClient, updateState, decodeHeader, show, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
 
-const create402Challenge = (resourcePath, priceTinybars, payTo, feePayer) => {
-  // x402 v2 "PaymentRequired": the resource, and the list of payment options the server accepts.
-  const paymentRequired = {
-    x402Version: 2,
-    error: 'Payment required',
-    resource: {
-      url: resourcePath,
-      description: 'Alpha intelligence market-depth feed',
-      mimeType: 'application/json'
-    },
-    accepts: [{
-      scheme: 'exact', // pay this exact amount
-      network: X402_NETWORK, // hedera:testnet
-      amount: String(priceTinybars), // integer, smallest unit of the asset
-      asset: HBAR_ASSET, // "0.0.0" = HBAR, otherwise an HTS token id
-      payTo, // the merchant's account
-      maxTimeoutSeconds: 120, // a Hedera transaction is valid for 120 s
-      extra: { feePayer } // the facilitator account that pays the network fee
-    }]
-  }
-
-  // HTTP 402: the same terms travel Base64-encoded in the PAYMENT-REQUIRED header.
-  return {
-    status: 402,
-    headers: { 'PAYMENT-REQUIRED': encodeHeader(paymentRequired) },
-    body: paymentRequired
-  }
-}
+// A real x402 resource server, hosted with the course website. It answers 402 with the
+// PAYMENT-REQUIRED header; it holds no keys and never submits a transaction.
+const SERVER = 'https://hbe.expo.app/api/x402/market-depth'
 
 const main = async () => {
   console.log('--- SESSION START: x402 Server Challenge Generator ---\n')
@@ -83,31 +55,36 @@ const main = async () => {
   }
 
   try {
-    const resourcePath = '/api/v1/alpha-intelligence/market-depth'
-    const priceTinybars = 1_000_000 // 0.01 HBAR per request
-
-    console.log(`[PROCESS] Simulating unauthenticated request to: ${resourcePath}`)
+    // The course server takes the merchant (payTo) and facilitator (feePayer) from the query,
+    // so the payment in Labs 02-03 lands in your own accounts.
+    const url = `${SERVER}?payTo=${merchantId}&feePayer=${operatorId}`
+    console.log(`[PROCESS] Sending an unauthenticated request: GET ${SERVER}`)
     console.log('[INFO] No API Key, OAuth Bearer token, or Session Cookie present.')
 
     // 1. The server answers a protected request with payment terms instead of the data.
-    console.log('\n[PROCESS] Server interceptor triggering HTTP 402 challenge...')
-    const challenge = create402Challenge(resourcePath, priceTinybars, merchantId, operatorId.toString())
-    const accept = challenge.body.accepts[0]
+    const response = await fetch(url)
+    const header = response.headers.get('PAYMENT-REQUIRED')
+    if (response.status !== 402 || !header) throw new Error(`Expected HTTP 402 with PAYMENT-REQUIRED, got ${response.status}`)
+    const paymentRequired = decodeHeader(header)
+    const accept = paymentRequired.accepts[0]
+    if (accept.network !== X402_NETWORK || accept.asset !== HBAR_ASSET || accept.payTo !== merchantId || accept.extra?.feePayer !== operatorId.toString()) {
+      throw new Error('The challenge does not match what this lab asked for')
+    }
 
-    console.log('\n[SUCCESS] HTTP 402 Payment Required Challenge Generated:')
-    console.log(`[LOG] HTTP Status:       ${challenge.status} Payment Required`)
-    console.log(`[LOG] Target Resource:   ${challenge.body.resource.url}`)
-    console.log(`[LOG] x402 Version:      ${challenge.body.x402Version}`)
+    console.log('\n[SUCCESS] HTTP 402 Payment Required Challenge Received:')
+    console.log(`[LOG] HTTP Status:       ${response.status} Payment Required`)
+    console.log(`[LOG] Target Resource:   ${paymentRequired.resource.url}`)
+    console.log(`[LOG] x402 Version:      ${paymentRequired.x402Version}`)
     console.log(`[LOG] Scheme / Network:  ${accept.scheme} / ${accept.network}`)
-    console.log(`[LOG] Price:             ${accept.amount} tinybars (${priceTinybars / 1e8} HBAR, asset ${accept.asset})`)
+    console.log(`[LOG] Price:             ${accept.amount} tinybars (${Number(accept.amount) / 1e8} HBAR, asset ${accept.asset})`)
     console.log(`[LOG] Pay To (merchant): ${accept.payTo}`)
     console.log(`[LOG] Fee Payer:         ${accept.extra.feePayer} (the facilitator)`)
-    console.log(`[LOG] PAYMENT-REQUIRED:  ${challenge.headers['PAYMENT-REQUIRED'].substring(0, 48)}...`)
+    console.log(`[LOG] PAYMENT-REQUIRED:  ${header.substring(0, 48)}...`)
     console.log('\n[LOG] The same header, decoded (this is what the agent reads):')
-    show.json(decodeHeader(challenge.headers['PAYMENT-REQUIRED']))
+    show.json(paymentRequired)
 
     // 2. Persist the header for Lab 02, as an agent would receive it.
-    updateState('X402_PAYMENT_REQUIRED', challenge.headers['PAYMENT-REQUIRED'])
+    updateState('X402_PAYMENT_REQUIRED', header)
 
     console.log('\n KEY CONCEPT:')
     console.log('The HTTP 402 response is completely self-describing. Any compliant machine')
@@ -117,7 +94,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESSION COMPLETE ---')
   } catch (error) {
-    console.error('\n[FAILED] Failed to generate 402 challenge:', error.message)
+    console.error('\n[FAILED] Failed to get the 402 challenge:', error.message)
     process.exitCode = 1
   }
 }

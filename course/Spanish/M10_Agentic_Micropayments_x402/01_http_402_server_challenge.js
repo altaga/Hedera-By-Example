@@ -23,12 +23,9 @@
  * - Siguiente: M10 Lab 02: Firma de Pago del Agente Autónomo
  *
  * [ SECUENCIA ]
- * Agente -> Servidor: GET /api/v1/alpha-intelligence/market-depth
+ * Agente -> Servidor: GET https://hbe.expo.app/api/x402/market-depth
  * Nota Servidor: Sin API key, token ni cookie
  * Servidor -> Agente: 402 + PAYMENT-REQUIRED (monto, activo, payTo, feePayer)
- *
- * [ SIMULADO ]
- * La petición HTTP y el servidor corren en el mismo proceso; no se levanta ningún servidor web.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet es el facilitador (paga la comisión de red en el Lab 03).
@@ -40,36 +37,11 @@
  * ============================================================================
  */
 
-import { getClient, updateState, encodeHeader, decodeHeader, show, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
+import { getClient, updateState, decodeHeader, show, X402_NETWORK, HBAR_ASSET } from '../M99_Utilities/index.js'
 
-const create402Challenge = (resourcePath, priceTinybars, payTo, feePayer) => {
-  // "PaymentRequired" de x402 v2: el recurso y la lista de formas de pago que acepta el servidor.
-  const paymentRequired = {
-    x402Version: 2,
-    error: 'Payment required',
-    resource: {
-      url: resourcePath,
-      description: 'Feed de profundidad de mercado (alpha intelligence)',
-      mimeType: 'application/json'
-    },
-    accepts: [{
-      scheme: 'exact', // pagar exactamente este monto
-      network: X402_NETWORK, // hedera:testnet
-      amount: String(priceTinybars), // entero, unidad más pequeña del activo
-      asset: HBAR_ASSET, // "0.0.0" = HBAR; si no, el id de un token HTS
-      payTo, // la cuenta del comercio
-      maxTimeoutSeconds: 120, // una transacción de Hedera es válida 120 s
-      extra: { feePayer } // la cuenta del facilitador que paga la comisión de red
-    }]
-  }
-
-  // HTTP 402: las mismas condiciones viajan en Base64 en la cabecera PAYMENT-REQUIRED.
-  return {
-    status: 402,
-    headers: { 'PAYMENT-REQUIRED': encodeHeader(paymentRequired) },
-    body: paymentRequired
-  }
-}
+// Un servidor de recursos x402 real, alojado junto a la web del curso. Responde 402 con la
+// cabecera PAYMENT-REQUIRED; no guarda llaves y nunca envía transacciones.
+const SERVER = 'https://hbe.expo.app/api/x402/market-depth'
 
 const main = async () => {
   console.log('--- INICIO DE SESIÓN: Generador de Desafíos x402 del Servidor ---\n')
@@ -83,31 +55,36 @@ const main = async () => {
   }
 
   try {
-    const resourcePath = '/api/v1/alpha-intelligence/market-depth'
-    const priceTinybars = 1_000_000 // 0.01 HBAR por petición
-
-    console.log(`[PROCESO] Simulando una petición sin autenticar a: ${resourcePath}`)
+    // El servidor del curso toma el comercio (payTo) y el facilitador (feePayer) de la consulta,
+    // así el pago de los Labs 02-03 llega a tus propias cuentas.
+    const url = `${SERVER}?payTo=${merchantId}&feePayer=${operatorId}`
+    console.log(`[PROCESO] Enviando una petición sin autenticar: GET ${SERVER}`)
     console.log('[INFO] No hay API Key, token OAuth Bearer ni cookie de sesión.')
 
-    // 1. El servidor responde a una petición protegida con condiciones de pago en vez de los datos.
-    console.log('\n[PROCESO] El interceptor del servidor dispara el desafío HTTP 402...')
-    const challenge = create402Challenge(resourcePath, priceTinybars, merchantId, operatorId.toString())
-    const accept = challenge.body.accepts[0]
+    // 1. El servidor responde una petición protegida con condiciones de pago en vez de los datos.
+    const response = await fetch(url)
+    const header = response.headers.get('PAYMENT-REQUIRED')
+    if (response.status !== 402 || !header) throw new Error(`Se esperaba HTTP 402 con PAYMENT-REQUIRED, llegó ${response.status}`)
+    const paymentRequired = decodeHeader(header)
+    const accept = paymentRequired.accepts[0]
+    if (accept.network !== X402_NETWORK || accept.asset !== HBAR_ASSET || accept.payTo !== merchantId || accept.extra?.feePayer !== operatorId.toString()) {
+      throw new Error('El desafío no coincide con lo que pidió este lab')
+    }
 
-    console.log('\n[ÉXITO] Desafío HTTP 402 Payment Required generado:')
-    console.log(`[REGISTRO] Estado HTTP:          ${challenge.status} Payment Required`)
-    console.log(`[REGISTRO] Recurso:              ${challenge.body.resource.url}`)
-    console.log(`[REGISTRO] Versión x402:         ${challenge.body.x402Version}`)
+    console.log('\n[ÉXITO] Desafío HTTP 402 Payment Required recibido:')
+    console.log(`[REGISTRO] Estado HTTP:          ${response.status} Payment Required`)
+    console.log(`[REGISTRO] Recurso:              ${paymentRequired.resource.url}`)
+    console.log(`[REGISTRO] Versión x402:         ${paymentRequired.x402Version}`)
     console.log(`[REGISTRO] Esquema / Red:        ${accept.scheme} / ${accept.network}`)
-    console.log(`[REGISTRO] Precio:               ${accept.amount} tinybars (${priceTinybars / 1e8} HBAR, activo ${accept.asset})`)
+    console.log(`[REGISTRO] Precio:               ${accept.amount} tinybars (${Number(accept.amount) / 1e8} HBAR, activo ${accept.asset})`)
     console.log(`[REGISTRO] Pagar a (comercio):   ${accept.payTo}`)
     console.log(`[REGISTRO] Paga la comisión:     ${accept.extra.feePayer} (el facilitador)`)
-    console.log(`[REGISTRO] PAYMENT-REQUIRED:     ${challenge.headers['PAYMENT-REQUIRED'].substring(0, 48)}...`)
+    console.log(`[REGISTRO] PAYMENT-REQUIRED:     ${header.substring(0, 48)}...`)
     console.log('\n[REGISTRO] La misma cabecera, decodificada (esto es lo que lee el agente):')
-    show.json(decodeHeader(challenge.headers['PAYMENT-REQUIRED']))
+    show.json(paymentRequired)
 
     // 2. Guardar la cabecera para el Lab 02, tal como la recibiría un agente.
-    updateState('X402_PAYMENT_REQUIRED', challenge.headers['PAYMENT-REQUIRED'])
+    updateState('X402_PAYMENT_REQUIRED', header)
 
     console.log('\n CONCEPTO CLAVE:')
     console.log('La respuesta HTTP 402 se describe a sí misma. Cualquier agente compatible')
@@ -117,7 +94,7 @@ const main = async () => {
     client.close()
     console.log('\n--- SESIÓN COMPLETADA ---')
   } catch (error) {
-    console.error('\n[FALLO] No se pudo generar el desafío 402:', error.message)
+    console.error('\n[FALLO] No se pudo obtener el desafío 402:', error.message)
     process.exitCode = 1
   }
 }
@@ -126,7 +103,7 @@ if (process.argv[1] && import.meta.filename === process.argv[1]) {
   main()
     .then(() => process.exit())
     .catch((error) => {
-      console.error('[FALLO] Error de ejecución:', error.message)
+      console.error('[FALLO] Error de Ejecución:', error.message)
       process.exit(1)
     })
 }

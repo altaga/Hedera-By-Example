@@ -10,7 +10,7 @@
 
 Think of a vending machine:
 
-1. **You ask for something.** The agent calls an API, for example `GET /api/v1/alpha-intelligence/market-depth`.
+1. **You ask for something.** The agent calls an API, for example `GET https://hbe.expo.app/api/x402/market-depth`.
 2. **The machine shows the price.** Instead of the data, the server answers **HTTP 402 Payment Required** with a header that says how much it costs, in which currency, and which account to pay.
 3. **You hand over a signed cheque.** The agent builds a Hedera transfer for that amount and **signs it, but does not submit it**. It sends it in the `PAYMENT-SIGNATURE` header when it repeats the request.
 4. **The cashier cashes the cheque.** A third party, the **facilitator**, checks the cheque, adds its own signature and submits it to Hedera. It pays the network fee, so the agent needs no HBAR for gas.
@@ -36,7 +36,7 @@ All three headers are Base64-encoded JSON. This is, slightly trimmed, what the L
 ```json
 {
   "x402Version": 2,
-  "resource": { "url": "/api/v1/alpha-intelligence/market-depth" },
+  "resource": { "url": "/api/x402/market-depth" },
   "accepts": [{
     "scheme": "exact",
     "network": "hedera:testnet",
@@ -124,10 +124,10 @@ sequenceDiagram
     participant Facilitator as x402 Facilitator
     participant Hedera as ℏ Hedera Hashgraph
 
-    Agent->>Server: GET /api/v1/alpha-intelligence (No Auth)
+    Agent->>Server: GET /api/x402/market-depth (No Auth)
     Server-->>Agent: HTTP 402 + PAYMENT-REQUIRED (amount, asset, payTo, feePayer)
     Note over Agent: Checks its budget policy<br/>Signs a TransferTransaction (tx id = feePayer)<br/>Does not submit it
-    Agent->>Server: GET /api/v1/alpha-intelligence + PAYMENT-SIGNATURE
+    Agent->>Server: GET /api/x402/market-depth + PAYMENT-SIGNATURE
     Server->>Facilitator: Verify and settle
     Note over Facilitator: Fee payer, expiry, amount, payee, agent signature
     Facilitator->>Hedera: Co-signs as fee payer and submits

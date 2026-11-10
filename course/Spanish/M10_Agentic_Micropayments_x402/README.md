@@ -10,7 +10,7 @@
 
 Piensa en una máquina expendedora:
 
-1. **Pides algo.** El agente llama a una API, por ejemplo `GET /api/v1/alpha-intelligence/market-depth`.
+1. **Pides algo.** El agente llama a una API, por ejemplo `GET https://hbe.expo.app/api/x402/market-depth`.
 2. **La máquina te dice el precio.** En vez de los datos, el servidor responde **HTTP 402 Payment Required** con una cabecera que dice cuánto cuesta, en qué moneda y a qué cuenta pagar.
 3. **Entregas un cheque firmado.** El agente arma una transferencia de Hedera por ese monto y **la firma, pero no la envía**. La manda en la cabecera `PAYMENT-SIGNATURE` al repetir la petición.
 4. **El cajero cobra el cheque.** Un tercero, el **facilitador**, revisa el cheque, le agrega su firma y lo envía a Hedera. Él paga la comisión de red, así que el agente no necesita HBAR para gas.
@@ -36,7 +36,7 @@ Las tres cabeceras son JSON codificado en Base64. Esto es, un poco recortado, lo
 ```json
 {
   "x402Version": 2,
-  "resource": { "url": "/api/v1/alpha-intelligence/market-depth" },
+  "resource": { "url": "/api/x402/market-depth" },
   "accepts": [{
     "scheme": "exact",
     "network": "hedera:testnet",
@@ -124,10 +124,10 @@ sequenceDiagram
     participant Facilitador as Facilitador x402
     participant Hedera as ℏ Hedera Hashgraph
 
-    Agente->>Servidor: GET /api/v1/alpha-intelligence (sin autenticación)
+    Agente->>Servidor: GET /api/x402/market-depth (sin autenticación)
     Servidor-->>Agente: HTTP 402 + PAYMENT-REQUIRED (monto, activo, payTo, feePayer)
     Note over Agente: Revisa su política de gasto<br/>Firma una TransferTransaction (id = feePayer)<br/>No la envía
-    Agente->>Servidor: GET /api/v1/alpha-intelligence + PAYMENT-SIGNATURE
+    Agente->>Servidor: GET /api/x402/market-depth + PAYMENT-SIGNATURE
     Servidor->>Facilitador: Verificar y liquidar
     Note over Facilitador: Pagador de la comisión, caducidad, monto, receptor, firma
     Facilitador->>Hedera: Firma como pagador de la comisión y envía
