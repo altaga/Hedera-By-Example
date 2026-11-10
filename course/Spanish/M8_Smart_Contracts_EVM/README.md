@@ -92,7 +92,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **08** | — | — | ~30 ℏ la primera vez (crea un token y un contrato, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **09** | — | — | ~50-60 ℏ la primera vez (3 despliegues: ~15 ℏ de creación + ~6 ℏ por cada bloque de 4 KB de bytecode, más 2 ℏ a un depositante); ~3 ℏ cuando se reutilizan. Un reintento de gas vuelve a subir el bytecode, por eso el hasher empieza con 3M de gas |
 | **10** | — | — | ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
-| **11** | — | — | ~15 ℏ la primera vez (crea un contrato, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **11** | — | — | ~16 ℏ la primera vez (crea un contrato, cerca de 1 USD, y le carga 1 ℏ para sus llamadas programadas); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 
 ---
 

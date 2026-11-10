@@ -17,7 +17,7 @@
  *
  * [ RUTA DE APRENDIZAJE ]
  * - Anterior:  M6 Lab 04: Almacenamiento Económico con HCS-1 (Hashinals)
- * - Siguiente: M6 Lab 06: El Ecosistema Hashinals
+ * - Siguiente: M6 Lab 06: Evolución de Activos Digitales (Hashinals Dinámicos, HCS-6)
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: no hace falta (solo lee el Mirror Node).

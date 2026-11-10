@@ -84,7 +84,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | gratis (no se envía ninguna transacción) |
 | **02** | — | Sí | <0.1 ℏ (solo comisiones de red) |
-| **03** | — | — | <1 ℏ (crea y borra una cuenta temporal de la bóveda) |
+| **03** | — | — | <1 ℏ (creación de la cuenta y comisiones; el depósito de 0.2 ℏ regresa) |
 | **04** | — | Sí | <0.1 ℏ (solo comisiones de red) |
 | **05** | — | — | ~1 ℏ (solo comisiones de red) |
 | **06** | — | — | <0.1 ℏ (solo comisiones de red) |

@@ -18,7 +18,7 @@
  *
  * [ LEARNING PATH ]
  * - Previous: M6 Lab 04: The Economic HCS-1 Standard (JSON Sharding)
- * - Next:     M6 Lab 06: Digital Asset Evolution (Hashinals)
+ * - Next:     M6 Lab 06: Digital Asset Evolution (Dynamic Hashinals, HCS-6)
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: none needed (it only reads the Mirror Node).

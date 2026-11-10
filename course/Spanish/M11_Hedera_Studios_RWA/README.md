@@ -101,7 +101,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **01** | — | — | ~16 ℏ (crear el token ~15 ℏ en testnet) + ~0.3 ℏ para cuentas desechables + comisiones |
 | **02** | — | — | ~18 ℏ (crear el token ~15 ℏ en testnet) + ~0.3 ℏ para cuentas desechables + comisiones |
 | **03** | — | — | ~17 ℏ (crear el token ~15 ℏ en testnet) + 0.05 ℏ para el titular + comisiones |
-| **04** | — | — | ~15 ℏ (solo comisiones de red) |
+| **04** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **05** | — | — | ~18 ℏ (el operador paga la creación del token, ~15 ℏ) + ~0.7 ℏ para cuentas desechables + comisiones |
 | **06** | — | — | ~60 ℏ la primera vez (4 tokens a ~15 ℏ cada uno en testnet); ~3 ℏ cuando los reutiliza |
 | **07** | — | Sí | ~15 ℏ en cada ejecución (crea un token, cerca de 1 USD) |

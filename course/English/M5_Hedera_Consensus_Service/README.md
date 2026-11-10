@@ -14,7 +14,7 @@
 | **02** | **Data Standards** | Structuring messages in JSON for interoperability. |
 | **03** | **Chunking** | Sending large messages split into automatic segments. |
 | **04** | **HCS Ping-Pong** | Simulating bidirectional communication between agents. |
-| **05** | **App Registry on HCS** | Publishing and discovering dApps through a public HCS registry topic (own schema). |
+| **05** | **App Registry on HCS** | Publishing and discovering dApps with a standard HCS-2 registry whose entries point at HCS-1 manifests. |
 | **06** | **Paid Topics (HIP-991)** | Monetizing HCS topics with custom fixed fees in HBAR or HTS tokens. |
 | **07** | **Merkle Batch Ingestion** | High-throughput in-memory event batcher committing Keccak-256 Merkle roots with O(log N) proofs. |
 | **08** | **Kafka Streaming Bridge** | High-throughput enterprise event stream bridge anchoring partition watermarks to HCS. |

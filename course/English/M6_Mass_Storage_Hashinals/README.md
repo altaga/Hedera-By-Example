@@ -15,7 +15,7 @@
 | **03** | **Batch Uploading** | Optimizing the upload of multiple assets in a single bundle. |
 | **04** | **Economic HCS-1** | Atomic data storage using HCS Topics for low-cost persistence. |
 | **05** | **HCS-1 Reconstruction** | Retrieving and assembling fragmented data from Mirror Nodes. |
-| **06** | **Hashinals Ecosystem** | Introduction to low-cost, permanent digital inscriptions and artifacts. |
+| **06** | **Dynamic Hashinals (HCS-6)** | An NFT that evolves: its metadata points at an HCS-6 registry whose latest entry is the current version. |
 | **07** | **HCS-1 Native NFT** | Creating a fully decentralized NFT with metadata and image stored on HCS. |
 | **08** | **HCS-1 NFT Reconstruction** | Retrieving and assembling an NFT entirely from Mirror Node shards. |
 | **09** | **HCS-7 Smart Hashinals** | A dynamic NFT resolved like a wallet: live HBAR price from a contract, a WASM router inscribed with HCS-1, two variants (`hol.org`). |
@@ -99,11 +99,11 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **02** | — | — | ~15 ℏ each run (it uploads a file, about 1.2 USD) |
 | **03** | M6 Lab 01 | — | ~9 ℏ each run (it uploads a file, about 0.5 USD) |
 | **04** | — | — | <1 ℏ (network fees only) |
-| **05** | M5 Lab 01 | — | <0.1 ℏ (network fees only) |
-| **06** | M6 Lab 01 | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **05** | M6 Lab 04 | — | free (Mirror Node reads only) |
+| **06** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
 | **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); ~3 ℏ when you run it again (it reuses what it created) |
-| **08** | M3 Lab 03, M6 Lab 07 | — | <0.1 ℏ (network fees only) |
-| **09** | — | — | ~15 ℏ the first time (deploys the price-feed contract); ~1 ℏ after (reuses it) |
+| **08** | M6 Lab 07 | — | free (Mirror Node reads only) |
+| **09** | — | — | ~15 ℏ the first time (it deploys the price-feed contract, about 1 USD); ~1 ℏ when you run it again (it reuses the contract and the inscriptions) |
 | **10** | — | — | <1 ℏ (network fees only) |
 
 ---

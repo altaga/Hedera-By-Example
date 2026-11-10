@@ -14,7 +14,7 @@
 | **02** | **Estándares de Datos** | Estructuración de mensajes en JSON para interoperabilidad. |
 | **03** | **Fragmentación (Chunking)**| Envío de mensajes grandes divididos en partes automáticas. |
 | **04** | **Ping-Pong HCS** | Simulación de comunicación bidireccional entre agentes. |
-| **05** | **Registro de Apps en HCS** | Publicación y descubrimiento de dApps mediante un tópico de registro público en HCS (esquema propio). |
+| **05** | **Registro de Apps en HCS** | Publicación y descubrimiento de dApps con un registro HCS-2 estándar cuyas entradas apuntan a manifiestos HCS-1. |
 | **06** | **Tópicos Monetizados (HIP-991)** | Monetización de tópicos HCS con tarifas fijas en HBAR o tokens HTS. |
 | **07** | **Ingesta Masiva Merkle** | Motor de ingesta masiva en memoria anclando raíces Merkle Keccak-256 con pruebas O(log N). |
 | **08** | **Puente de Streaming Kafka** | Puente de transmisión masiva empresarial anclando marcas de agua de particiones en HCS. |

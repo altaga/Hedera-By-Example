@@ -86,7 +86,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **03** | — | — | ~25 ℏ the first time (it creates a token and uploads a file, about 1.4 USD); ~9 ℏ when you run it again (it reuses what it created) |
 | **04** | M3 Lab 03 | — | <0.1 ℏ (network fees only) |
 | **05** | — | Yes | ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <1 ℏ when you run it again (it reuses what it created) |
-| **06** | — | Yes | ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created) |
+| **06** | — | Yes | ~30 ℏ the first time (it creates a token with custom fees, about 2 USD); ~1.5 ℏ when you run it again (the buyer account and fees) |
 | **07** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
 | **08** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
 | **09** | — | — | ~15 ℏ each run (it creates a token, about 1 USD) |

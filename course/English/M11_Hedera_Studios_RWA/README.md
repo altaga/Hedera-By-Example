@@ -101,7 +101,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **01** | — | — | ~16 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ funded to throwaway accounts + fees |
 | **02** | — | — | ~18 ℏ (token creation ~15 ℏ on testnet) + ~0.3 ℏ to throwaway accounts + fees |
 | **03** | — | — | ~17 ℏ (token creation ~15 ℏ on testnet) + 0.05 ℏ for the holder + fees |
-| **04** | — | — | ~15 ℏ (network fees only) |
+| **04** | — | — | ~15 ℏ the first time (it creates a token, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created) |
 | **05** | — | — | ~18 ℏ (the operator pays the ~15 ℏ token creation) + ~0.7 ℏ to throwaway accounts + fees |
 | **06** | — | — | ~60 ℏ the first time (4 tokens at ~15 ℏ each on testnet); ~3 ℏ when it reuses them |
 | **07** | — | Yes | ~15 ℏ each run (it creates a token, about 1 USD) |

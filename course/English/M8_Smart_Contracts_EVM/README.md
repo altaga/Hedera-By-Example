@@ -92,7 +92,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **08** | — | — | ~30 ℏ the first time (it creates a token and a contract, about 2 USD); <0.1 ℏ when you run it again (it reuses what it created) |
 | **09** | — | — | ~50-60 ℏ the first time (3 contract deployments: ~15 ℏ create + ~6 ℏ per 4 KB bytecode append each, plus 2 ℏ to a depositor); ~3 ℏ when contracts are reused. A gas retry re-uploads the bytecode, so the hasher starts at 3M gas |
 | **10** | — | — | ~15 ℏ the first time (it creates a contract, about 1 USD); <0.1 ℏ when you run it again (it reuses what it created) |
-| **11** | — | — | ~15 ℏ the first time (it creates a contract, about 1 USD); <1 ℏ when you run it again (it reuses what it created) |
+| **11** | — | — | ~16 ℏ the first time (it creates a contract, about 1 USD, and funds it with 1 ℏ for its scheduled calls); <1 ℏ when you run it again (it reuses what it created) |
 
 ---
 

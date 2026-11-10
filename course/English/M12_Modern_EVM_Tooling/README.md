@@ -95,7 +95,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | **03** | — | — | ~5 ℏ (relay contract deployment gas; the signer is topped up to 5 ℏ) |
 | **04** | — | — | <0.1 ℏ (network fees only) |
 | **05** | — | — | <0.1 ℏ (network fees only) |
-| **06** | — | — | <1 ℏ (network fees only) |
+| **06** | — | — | free (no transactions are sent) |
 
 ---
 

@@ -84,7 +84,7 @@ Every lab runs from the course web page or with `node`. Your testnet account sig
 | :--- | :--- | :--- | :--- |
 | **01** | — | — | free (no transactions are sent) |
 | **02** | — | Yes | <0.1 ℏ (network fees only) |
-| **03** | — | — | <1 ℏ (creates and deletes a temporary vault account) |
+| **03** | — | — | <1 ℏ (account creation and network fees; the 0.2 ℏ deposit comes back) |
 | **04** | — | Yes | <0.1 ℏ (network fees only) |
 | **05** | — | — | ~1 ℏ (network fees only) |
 | **06** | — | — | <0.1 ℏ (network fees only) |

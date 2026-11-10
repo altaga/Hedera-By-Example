@@ -18,7 +18,7 @@
  * - https://hol.org/docs/standards/hcs-5/
  *
  * [ LEARNING PATH ]
- * - Previous: M6 Lab 06: Digital Asset Evolution (Hashinals)
+ * - Previous: M6 Lab 06: Digital Asset Evolution (Dynamic Hashinals, HCS-6)
  * - Next:     M6 Lab 08: HCS-1 NFT Reconstruction
  *
  * [ BEFORE YOU RUN ]

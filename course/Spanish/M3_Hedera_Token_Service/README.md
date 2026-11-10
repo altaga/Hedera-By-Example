@@ -86,7 +86,7 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **03** | — | — | ~25 ℏ la primera vez (crea un token y sube un archivo, cerca de 1.4 USD); ~9 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **04** | Lab 03 de M3 | — | <0.1 ℏ (solo comisiones de red) |
 | **05** | — | Sí | ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
-| **06** | — | Sí | ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); <0.1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **06** | — | Sí | ~30 ℏ la primera vez (crea un token con comisiones personalizadas, cerca de 2 USD); ~1.5 ℏ al volver a ejecutarlo (la cuenta del comprador y comisiones) |
 | **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **08** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **09** | — | — | ~15 ℏ en cada ejecución (crea un token, cerca de 1 USD) |

@@ -18,7 +18,7 @@
  * - https://hol.org/docs/standards/hcs-5/
  *
  * [ RUTA DE APRENDIZAJE ]
- * - Anterior:  M6 Lab 06: El Ecosistema Hashinals
+ * - Anterior:  M6 Lab 06: Evolución de Activos Digitales (Hashinals Dinámicos, HCS-6)
  * - Siguiente: M6 Lab 08: Reconstrucción de NFT HCS-1
  *
  * [ ANTES DE EJECUTAR ]

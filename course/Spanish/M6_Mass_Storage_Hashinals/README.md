@@ -15,7 +15,7 @@
 | **03** | **Carga en Lote (Batch)** | Optimización de la subida de múltiples archivos. |
 | **04** | **Estándar HCS-1** | Almacenamiento atómico de datos mediante el uso de Topics de HCS. |
 | **05** | **Reconstrucción HCS-1** | Recuperación y ensamblado de datos fragmentados desde Mirror Nodes. |
-| **06** | **Ecosistema Hashinals** | Introducción a las inscripciones y activos inmutables de bajo costo. |
+| **06** | **Hashinals Dinámicos (HCS-6)** | Un NFT que evoluciona: su metadata apunta a un registro HCS-6 cuya última entrada es la versión vigente. |
 | **07** | **NFT Nativo HCS-1** | Creación de un NFT totalmente descentralizado con metadatos e imagen en HCS. |
 | **08** | **Reconstrucción de NFT** | Recuperación y ensamblado de un NFT completo desde Mirror Node shards. |
 | **09** | **Smart Hashinals HCS-7** | Un NFT dinámico resuelto como una wallet: precio real del HBAR desde un contrato, un router WASM inscrito con HCS-1, dos variantes (`hol.org`). |
@@ -99,11 +99,11 @@ Cada lab corre desde la web del curso o con `node`. Tu cuenta de testnet firma y
 | **02** | — | — | ~15 ℏ en cada ejecución (sube un archivo, cerca de 1.2 USD) |
 | **03** | Lab 01 de M6 | — | ~9 ℏ en cada ejecución (sube un archivo, cerca de 0.5 USD) |
 | **04** | — | — | <1 ℏ (solo comisiones de red) |
-| **05** | Lab 01 de M5 | — | <0.1 ℏ (solo comisiones de red) |
-| **06** | Lab 01 de M6 | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
+| **05** | Lab 04 de M6 | — | gratis (solo lecturas del Mirror Node) |
+| **06** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); <1 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
 | **07** | — | — | ~15 ℏ la primera vez (crea un token, cerca de 1 USD); ~3 ℏ al volver a ejecutarlo (reutiliza lo que creó) |
-| **08** | Lab 03 de M3, Lab 07 de M6 | — | <0.1 ℏ (solo comisiones de red) |
-| **09** | — | — | ~15 ℏ la primera vez (despliega el contrato de precio); ~1 ℏ después (lo reutiliza) |
+| **08** | Lab 07 de M6 | — | gratis (solo lecturas del Mirror Node) |
+| **09** | — | — | ~15 ℏ la primera vez (despliega el contrato de precio, cerca de 1 USD); ~1 ℏ al volver a ejecutarlo (reutiliza el contrato y las inscripciones) |
 | **10** | — | — | <1 ℏ (solo comisiones de red) |
 
 ---
