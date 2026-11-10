@@ -32,7 +32,7 @@
  * Pasarela -> Cliente: 200 + PAYMENT-RESPONSE, luego tokens text/event-stream
  *
  * [ SIMULADO ]
- * Los tokens de IA vienen de un generador sintético, no de un modelo real. La pasarela corre en el mismo proceso. El pago es real.
+ * El texto viene de un guion fijo en lugar de un modelo, pero se transmite con los mismos Server-Sent Events que la API Messages de Anthropic (message_start, content_block_delta, message_stop), así que un modelo real puede reemplazarlo sin tocar el cliente. La pasarela corre en la página con la API http de Node (un navegador no puede abrir un puerto). El pago es real.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet es el facilitador de la pasarela (paga la comisión de red).
@@ -123,18 +123,24 @@ const main = async () => {
         'Cache-Control': 'no-cache',
         'PAYMENT-RESPONSE': encodeHeader(settlement)
       })
-      // D. Transmitir los tokens de inferencia en tiempo real
+      // D. Transmitir los tokens con los mismos Server-Sent Events que la API Messages de Anthropic
+      //    (message_start, content_block_delta con text_delta, ..., message_stop).
+      const send = (type, data) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`)
+      send('message_start', { message: { id: `msg_${Date.now().toString(36)}`, type: 'message', role: 'assistant', model: 'scripted-demo', content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 12, output_tokens: 0 } } })
+      send('content_block_start', { index: 0, content_block: { type: 'text', text: '' } })
       let tokenIndex = 0
       const streamInterval = setInterval(() => {
         if (tokenIndex < INFERENCE_TOKENS.length) {
-          res.write(`data: ${JSON.stringify({ chunk: tokenIndex + 1, totalChunks: INFERENCE_TOKENS.length, token: INFERENCE_TOKENS[tokenIndex] })}\n\n`)
+          send('content_block_delta', { index: 0, delta: { type: 'text_delta', text: INFERENCE_TOKENS[tokenIndex] } })
           tokenIndex++
         } else {
           clearInterval(streamInterval)
-          res.write(`data: ${JSON.stringify({ event: 'STREAM_COMPLETED', totalDelivered: INFERENCE_TOKENS.length })}\n\n`)
+          send('content_block_stop', { index: 0 })
+          send('message_delta', { delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: INFERENCE_TOKENS.length } })
+          send('message_stop', {})
           res.end()
         }
-      }, 80) // 80 ms por token, como un modelo generando texto
+      }, 80) // 80 ms per token, like a model generating text
     })
     await new Promise((resolve) => server.listen(serverPort, '127.0.0.1', resolve))
     console.log(`[ÉXITO] Pasarela de streaming de IA escuchando en http://127.0.0.1:${serverPort}`)
@@ -168,6 +174,7 @@ const main = async () => {
     let buffer = ''
     let fullText = ''
     let deliveredTokens = 0
+    let stopReason = null
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -175,14 +182,15 @@ const main = async () => {
       const events = buffer.split('\n\n')
       buffer = events.pop()
       for (const event of events) {
-        const data = JSON.parse(event.replace(/^data: /, ''))
-        if (data.token) {
-          fullText += data.token
+        const data = JSON.parse(event.split('\n').find((line) => line.startsWith('data: ')).slice(6))
+        if (data.type === 'content_block_delta' && data.delta.type === 'text_delta') {
+          fullText += data.delta.text
           deliveredTokens++
         }
+        if (data.type === 'message_delta') stopReason = data.delta.stop_reason
       }
     }
-    console.log(`[ÉXITO] ¡Stream completado! Tokens entregados: ${deliveredTokens}`)
+    console.log(`[ÉXITO] ¡Flujo completado! Fragmentos de texto entregados: ${deliveredTokens} (stop_reason: ${stopReason})`)
     console.log(`[REGISTRO] SALIDA DEL STREAM DE IA: "${fullText}"`)
 
     // 5. Defensa contra repeticiones: la misma PAYMENT-SIGNATURE no debe abrir un segundo stream

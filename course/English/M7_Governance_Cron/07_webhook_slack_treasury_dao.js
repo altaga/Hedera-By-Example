@@ -38,7 +38,7 @@
  * Hedera -> Treasury: Threshold met: payout executes automatically
  *
  * [ SIMULATED ]
- * The Slack/Discord webhook is printed locally, not sent. The multisig treasury, the scheduled payout, the signatures and the Mirror Node polling are real.
+ * The Slack webhook is really sent if you set SLACK_WEBHOOK_URL; otherwise the lab prints the exact request (a JSON POST with text and Block Kit blocks) without sending it. The multisig treasury, the scheduled payout, the signatures and the Mirror Node polling are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).
@@ -64,12 +64,38 @@ import {
 import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
- * Enterprise Webhook Dispatcher Simulation
- * (e.g. Dispatches structured events to Slack, Discord, or an internal ERP)
+ * Slack Incoming Webhook (https://api.slack.com/messaging/webhooks): POST a JSON body with
+ * "text" (fallback) and "blocks" (Block Kit). With SLACK_WEBHOOK_URL set it is really sent;
+ * otherwise the lab prints the exact request and the answer Slack gives to a valid one.
  */
-const dispatchGovernanceWebhook = (channel, eventPayload) => {
-  console.log(`\n[ WEBHOOK DISPATCHED -> ${channel}]`)
-  console.log(JSON.stringify(eventPayload, null, 2))
+const dispatchGovernanceWebhook = async (channel, event) => {
+  const text = `Treasury proposal ${event.scheduleId} needs ${event.signersNeeded - event.signersCollected} more signature(s)`
+  const body = {
+    text,
+    blocks: [
+      { type: 'header', text: { type: 'plain_text', text: 'Treasury proposal awaiting quorum' } },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Schedule:*\n${event.scheduleId}` },
+          { type: 'mrkdwn', text: `*Signatures:*\n${event.signersCollected}/${event.signersNeeded}` },
+          { type: 'mrkdwn', text: `*Transfer:*\n${event.amount} to ${event.to}` },
+          { type: 'mrkdwn', text: `*Rule:*\n${event.rule}` }
+        ]
+      },
+      { type: 'context', elements: [{ type: 'mrkdwn', text: `<${event.auditScan}|View on HashScan> · ${channel}` }] }
+    ]
+  }
+  const url = process.env.SLACK_WEBHOOK_URL
+  console.log(`\n[ WEBHOOK -> ${channel}] POST ${url ? url.replace(/[^/]+$/, '***') : 'https://hooks.slack.com/services/<TEAM_ID>/<CHANNEL_ID>/<TOKEN>'}`)
+  console.log('Content-Type: application/json')
+  console.log(JSON.stringify(body, null, 2))
+  if (url) {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    console.log(`[SUCCESS] Slack answered ${res.status}: ${await res.text()}`)
+  } else {
+    console.log('[INFO] Simulated: no SLACK_WEBHOOK_URL is set, so nothing was sent. Slack answers a valid request with 200 "ok".')
+  }
 }
 
 /**
@@ -163,20 +189,13 @@ const main = async () => {
     console.log(`[LOG] Execution Status: ${isExecuted ? 'EXECUTED' : 'PENDING_APPROVAL'}`)
 
     // Dispatch webhook to corporate channels (Slack / ERP)
-    dispatchGovernanceWebhook('#dao-treasury-alerts', {
-      event: 'TREASURY_PROPOSAL_AWAITING_QUORUM',
-      timestamp: new Date().toISOString(),
-      scheduleId,
-      treasury: treasuryAccountId,
-      governanceRule: '2-of-3 Threshold',
+    await dispatchGovernanceWebhook('#dao-treasury-alerts', {
+      scheduleId: scheduleId.toString(),
       signersCollected: collectedSignatures,
       signersNeeded: 2,
-      proposedTransfer: {
-        from: treasuryAccountId,
-        to: recipientId,
-        amount: '0.1 HBAR',
-        purpose: 'Community Dev Grant Payout'
-      },
+      rule: '2-of-3',
+      amount: '0.1 HBAR',
+      to: recipientId.toString(),
       auditScan: `https://hashscan.io/testnet/schedule/${scheduleId}`
     })
 

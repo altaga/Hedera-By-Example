@@ -31,7 +31,7 @@
  * Gateway -> Client: 200 + PAYMENT-RESPONSE, then text/event-stream tokens
  *
  * [ SIMULATED ]
- * The AI tokens come from a synthetic generator, not a real model. The gateway runs in the same process. The payment is real.
+ * The text comes from a fixed script instead of a model, but it is streamed with the same Server-Sent Events as the Anthropic Messages API (message_start, content_block_delta, message_stop), so a real model can replace it without touching the client. The gateway runs in the page with the Node http API (a browser cannot open a port). The payment is real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account is the gateway's facilitator (it pays the network fee).
@@ -122,15 +122,21 @@ const main = async () => {
         'Cache-Control': 'no-cache',
         'PAYMENT-RESPONSE': encodeHeader(settlement)
       })
-      // D. Stream inference tokens in real time
+      // D. Stream the tokens with the same Server-Sent Events as the Anthropic Messages API
+      //    (message_start, content_block_delta with text_delta, ..., message_stop).
+      const send = (type, data) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`)
+      send('message_start', { message: { id: `msg_${Date.now().toString(36)}`, type: 'message', role: 'assistant', model: 'scripted-demo', content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 12, output_tokens: 0 } } })
+      send('content_block_start', { index: 0, content_block: { type: 'text', text: '' } })
       let tokenIndex = 0
       const streamInterval = setInterval(() => {
         if (tokenIndex < INFERENCE_TOKENS.length) {
-          res.write(`data: ${JSON.stringify({ chunk: tokenIndex + 1, totalChunks: INFERENCE_TOKENS.length, token: INFERENCE_TOKENS[tokenIndex] })}\n\n`)
+          send('content_block_delta', { index: 0, delta: { type: 'text_delta', text: INFERENCE_TOKENS[tokenIndex] } })
           tokenIndex++
         } else {
           clearInterval(streamInterval)
-          res.write(`data: ${JSON.stringify({ event: 'STREAM_COMPLETED', totalDelivered: INFERENCE_TOKENS.length })}\n\n`)
+          send('content_block_stop', { index: 0 })
+          send('message_delta', { delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: INFERENCE_TOKENS.length } })
+          send('message_stop', {})
           res.end()
         }
       }, 80) // 80 ms per token, like a model generating text
@@ -161,12 +167,13 @@ const main = async () => {
     console.log(`[LOG] Settlement Tx ID: ${settlement.transaction}`)
     console.log(`[EXPLORER] HashScan: ${getHashscanUrl(settlement.transaction)}`)
 
-    // Read the Server-Sent Events: each "data: {...}" block ends with a blank line
+    // Read the Server-Sent Events: each "event: ...\n data: {...}" block ends with a blank line
     const reader = sseResponse.body.getReader()
     const decoder = new TextDecoder('utf-8')
     let buffer = ''
     let fullText = ''
     let deliveredTokens = 0
+    let stopReason = null
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
@@ -174,14 +181,15 @@ const main = async () => {
       const events = buffer.split('\n\n')
       buffer = events.pop()
       for (const event of events) {
-        const data = JSON.parse(event.replace(/^data: /, ''))
-        if (data.token) {
-          fullText += data.token
+        const data = JSON.parse(event.split('\n').find((line) => line.startsWith('data: ')).slice(6))
+        if (data.type === 'content_block_delta' && data.delta.type === 'text_delta') {
+          fullText += data.delta.text
           deliveredTokens++
         }
+        if (data.type === 'message_delta') stopReason = data.delta.stop_reason
       }
     }
-    console.log(`[SUCCESS] Stream completed! Total tokens delivered: ${deliveredTokens}`)
+    console.log(`[SUCCESS] Stream completed! Text deltas delivered: ${deliveredTokens} (stop_reason: ${stopReason})`)
     console.log(`[LOG] AI STREAM OUTPUT: "${fullText}"`)
 
     // 5. Replay defense: the same PAYMENT-SIGNATURE must not open a second stream

@@ -39,7 +39,7 @@
  * Hedera -> Tesorería: Umbral cumplido: el pago se ejecuta solo
  *
  * [ SIMULADO ]
- * El webhook de Slack/Discord se imprime localmente, no se envía. La tesorería multifirma, el pago programado, las firmas y la consulta al Mirror Node son reales.
+ * El webhook de Slack se envía de verdad si defines SLACK_WEBHOOK_URL; si no, el lab imprime la petición exacta (POST JSON con text y blocks de Block Kit) sin enviarla. La tesorería multifirma, el pago programado, las firmas y la consulta al Mirror Node son reales.
  *
  * [ ANTES DE EJECUTAR ]
  * - Wallet: tu cuenta de testnet (firma y paga las comisiones).
@@ -65,12 +65,38 @@ import {
 import { getClient, getMirrorNodeBaseUrl, getHashscanUrl, sleep, requireEnv } from '../M99_Utilities/index.js'
 
 /**
- * Simulación de Despacho de Webhooks Empresariales
- * (ej. Despacha eventos estructurados a Slack, Discord o un ERP corporativo)
+ * Incoming Webhook de Slack (https://api.slack.com/messaging/webhooks): un POST con un JSON con
+ * "text" (respaldo) y "blocks" (Block Kit). Con SLACK_WEBHOOK_URL definido se envía de verdad;
+ * si no, el lab imprime la petición exacta y la respuesta que Slack da a una petición válida.
  */
-const dispatchGovernanceWebhook = (channel, eventPayload) => {
-  console.log(`\n[ WEBHOOK DESPACHADO -> ${channel}]`)
-  console.log(JSON.stringify(eventPayload, null, 2))
+const dispatchGovernanceWebhook = async (channel, event) => {
+  const text = `La propuesta de tesorería ${event.scheduleId} necesita ${event.signersNeeded - event.signersCollected} firma(s) más`
+  const body = {
+    text,
+    blocks: [
+      { type: 'header', text: { type: 'plain_text', text: 'Propuesta de tesorería esperando quórum' } },
+      {
+        type: 'section',
+        fields: [
+          { type: 'mrkdwn', text: `*Programación:*\n${event.scheduleId}` },
+          { type: 'mrkdwn', text: `*Firmas:*\n${event.signersCollected}/${event.signersNeeded}` },
+          { type: 'mrkdwn', text: `*Transferencia:*\n${event.amount} a ${event.to}` },
+          { type: 'mrkdwn', text: `*Regla:*\n${event.rule}` }
+        ]
+      },
+      { type: 'context', elements: [{ type: 'mrkdwn', text: `<${event.auditScan}|Ver en HashScan> · ${channel}` }] }
+    ]
+  }
+  const url = process.env.SLACK_WEBHOOK_URL
+  console.log(`\n[ WEBHOOK -> ${channel}] POST ${url ? url.replace(/[^/]+$/, '***') : 'https://hooks.slack.com/services/<TEAM_ID>/<CHANNEL_ID>/<TOKEN>'}`)
+  console.log('Content-Type: application/json')
+  console.log(JSON.stringify(body, null, 2))
+  if (url) {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    console.log(`[ÉXITO] Slack respondió ${res.status}: ${await res.text()}`)
+  } else {
+    console.log('[INFO] Simulado: no hay SLACK_WEBHOOK_URL definido, así que no se envió nada. Slack responde a una petición válida con 200 "ok".')
+  }
 }
 
 /**
@@ -164,21 +190,14 @@ const main = async () => {
     console.log(`[REGISTRO] Estado de Ejecución: ${isExecuted ? 'EJECUTADA' : 'PENDIENTE_DE_APROBACION'}`)
 
     // Despachar webhook a los canales corporativos (Slack / ERP)
-    dispatchGovernanceWebhook('#dao-alertas-tesoreria', {
-      evento: 'PROPUESTA_TESORERIA_ESPERANDO_QUORUM',
-      timestamp: new Date().toISOString(),
-      scheduleId,
-      tesoreria: treasuryAccountId,
-      reglaGobernanza: 'Umbral 2 de 3',
-      firmasRecolectadas: collectedSignatures,
-      firmasRequeridas: 2,
-      transferenciaPropuesta: {
-        origen: treasuryAccountId,
-        destino: recipientId,
-        monto: '0.1 HBAR',
-        proposito: 'Pago de Subvencion a Desarrolladores'
-      },
-      enlaceHashscan: `https://hashscan.io/testnet/schedule/${scheduleId}`
+    await dispatchGovernanceWebhook('#dao-alertas-tesoreria', {
+      scheduleId: scheduleId.toString(),
+      signersCollected: collectedSignatures,
+      signersNeeded: 2,
+      rule: '2-de-3',
+      amount: '0.1 HBAR',
+      to: recipientId.toString(),
+      auditScan: `https://hashscan.io/testnet/schedule/${scheduleId}`
     })
 
     // 4. Custodio 2 Evalúa y Envía la Segunda Firma
