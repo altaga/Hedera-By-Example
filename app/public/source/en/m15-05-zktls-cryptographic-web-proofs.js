@@ -35,7 +35,8 @@
  * Verifier -> Hedera: Check the notary signature and commitment
  *
  * [ SIMULATED ]
- * The TLS session with the bank and the notary are emulated. The signatures and the HCS proof are real.
+ * The TLS session with the bank and the notary are emulated, and the attestation is this lab's own JSON signed with Ed25519,
+ * not TLSNotary's binary (BCS) attestation format. The signatures, their checks and the HCS proof are real.
  *
  * [ BEFORE YOU RUN ]
  * - Wallet: your testnet account (it signs and pays the fees).

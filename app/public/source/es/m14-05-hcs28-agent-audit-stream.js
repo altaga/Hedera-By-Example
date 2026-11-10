@@ -47,7 +47,7 @@ import {
 import { getClient, updateState } from '../M99_Utilities/index.js'
 
 /**
- * Construye un registro de auditoría cognitivo según la especificación HCS-28.
+ * Construye el registro de auditoría de este lab (formato propio, basado en los conceptos de HCS-28).
  *
  * @param {object} params - Parámetros del ciclo de razonamiento
  * @returns {object} Registro de auditoría firmado criptográficamente
