@@ -35,13 +35,16 @@ await t('session id round-trips client name and version, visible ASCII only', as
   assert.equal(parseSessionId('hbe1.not-base64!'), null)
 })
 
-await t('initialize issues a session and records hbe_mcp_session_started', async () => {
+await t('initialize issues a session and records mcp_session_started (schema v1)', async () => {
   events.length = 0
   const ctx: McpContext = { ip: '1.1.1.1', userAgent: 'node' }
   const id = await init(ctx, { name: 'cursor', version: '1.5' })
   assert.ok(id)
-  assert.equal(events[0].event, 'hbe_mcp_session_started')
+  assert.equal(events[0].event, 'mcp_session_started')
   assert.equal(events[0].properties.client_name, 'cursor')
+  assert.equal(events[0].properties.protocol_version, '2025-06-18')
+  assert.equal(events[0].properties.schema_version, 1)
+  assert.equal(events[0].properties.service, 'mcp')
   assert.equal(events[0].properties.id_source, 'session')
   assert.equal(events[0].distinct_id, `mcp:${parseSessionId(id)!.session}`)
 })
@@ -50,11 +53,14 @@ await t('tool calls with the session header keep the same identity and client', 
   const id = await init({ userAgent: 'node' }, { name: 'claude-code', version: '2.1.0' })
   const a = await callTool({ sessionId: id, userAgent: 'node' })
   const b = await callTool({ sessionId: id, userAgent: 'node' })
-  assert.equal(a.event, 'hbe_mcp_tool_called')
+  assert.equal(a.event, 'tool_called')
+  assert.equal(a.properties.tool_name, 'list_labs')
   assert.equal(a.distinct_id, b.distinct_id)
   assert.equal(a.properties.client_name, 'claude-code')
   assert.equal(a.properties.client_version, '2.1.0')
-  assert.equal(a.properties.client, 'claude-code')
+  // Removed in v1: `client` duplicated client_name; the user agent is not sent.
+  assert.equal(a.properties.client, undefined)
+  assert.equal(a.properties.user_agent, undefined)
 })
 
 await t('two connections from the same client program are two distinct callers', async () => {
@@ -72,6 +78,17 @@ await t('clients without a session fall back to a daily hash that never contains
   assert.notEqual(a.distinct_id, c.distinct_id)
   assert.equal(a.properties.id_source, 'daily_hash')
   assert.ok(!JSON.stringify(a).includes('203.0.113.7'))
+})
+
+await t('a failing tool call records tool_call_failed with an error_code', async () => {
+  events.length = 0
+  await dispatchMcpRpc({ jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'get_lab', arguments: { slug: 'm99-99-missing' } } }, { userAgent: 'node' })
+  await settle()
+  const e = events.at(-1)
+  assert.equal(e.event, 'tool_call_failed')
+  assert.equal(e.properties.tool_name, 'get_lab')
+  assert.equal(e.properties.error_code, 'INVALID_INPUT')
+  assert.equal(e.properties.is_error, undefined)
 })
 
 await t('a forged session header is ignored (falls back to the daily hash)', async () => {

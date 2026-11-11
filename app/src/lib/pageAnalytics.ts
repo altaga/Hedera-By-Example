@@ -1,14 +1,14 @@
 /**
- * Client-side PostHog pageviews for Hedera by Example (web only).
- * Never blocks rendering: scheduled idle/timeout, fire-and-forget, silent failures.
- * Uses EXPO_PUBLIC_HOG_API_KEY only. Never the personal key.
+ * Page views for Hedera by Example (web only), Hedera analytics schema v1.
+ * The browser never talks to PostHog and holds no PostHog key: it posts `page_viewed` to HBE's
+ * own /api/analytics, which builds the envelope and sends it server-side.
+ * Never blocks rendering: scheduled when idle, keepalive request, every failure silent.
  */
 
-export const HBE_EVENT_PAGE_VIEWED = 'hbe_page_viewed'
-export const HBE_APP_TAG = 'hedera-by-example'
-
-const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/'
-const DISTINCT_KEY = 'hbe_anon_id_v1'
+const ANALYTICS_URL = '/api/analytics'
+/** The visitor's anonymous UUID (v4), the same one HBE has always kept for page views. */
+const DEVICE_ID_KEY = 'hbe_anon_id_v1'
+const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 // Dedupe identical captures from double effects (same path/view within 750ms).
 let lastSentKey = ''
@@ -25,78 +25,58 @@ function isWeb (): boolean {
   return typeof window !== 'undefined' && typeof document !== 'undefined'
 }
 
-function publicApiKey (): string | null {
-  try {
-    // Must be the literal `process.env.EXPO_PUBLIC_*` form so Expo inlines it at build time.
-    const key = process.env.EXPO_PUBLIC_HOG_API_KEY || ''
-    return key && key.startsWith('phc_') ? key : null
-  } catch (_) {
-    return null
-  }
+function newUuidV4 (): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  const b = crypto.getRandomValues(new Uint8Array(16))
+  b[6] = (b[6] & 0x0f) | 0x40
+  b[8] = (b[8] & 0x3f) | 0x80
+  const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('')
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
 
-function anonDistinctId (): string {
+function deviceId (): string | null {
   try {
-    const existing = window.localStorage.getItem(DISTINCT_KEY)
-    if (existing && existing.length >= 8) return existing
-  } catch (_) { /* silent */ }
-  let id = ''
+    const existing = window.localStorage.getItem(DEVICE_ID_KEY)
+    if (existing && UUID_V4.test(existing)) return existing
+  } catch { /* storage blocked: fall through */ }
   try {
-    id = (typeof crypto !== 'undefined' && crypto.randomUUID)
-      ? crypto.randomUUID()
-      : `hbe-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
-  } catch (_) {
-    id = `hbe-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+    const id = newUuidV4()
+    try { window.localStorage.setItem(DEVICE_ID_KEY, id) } catch { /* silent */ }
+    return id
+  } catch {
+    return null
   }
-  try { window.localStorage.setItem(DISTINCT_KEY, id) } catch (_) { /* silent */ }
-  return id
 }
 
 function schedule (fn: () => void): void {
   try {
     const ric = (window as any).requestIdleCallback as undefined | ((cb: () => void, opts?: { timeout: number }) => number)
     if (typeof ric === 'function') {
-      ric(() => { try { fn() } catch (_) { /* silent */ } }, { timeout: 2000 })
+      ric(() => { try { fn() } catch { /* silent */ } }, { timeout: 2000 })
       return
     }
-  } catch (_) { /* fall through */ }
+  } catch { /* fall through */ }
   try {
-    setTimeout(() => { try { fn() } catch (_) { /* silent */ } }, 0)
-  } catch (_) { /* silent */ }
+    setTimeout(() => { try { fn() } catch { /* silent */ } }, 0)
+  } catch { /* silent */ }
 }
 
-function sendPayload (payload: object): void {
-  const body = JSON.stringify(payload)
+/** Origin of the referring page only, never the full URL. */
+function referrerOrigin (): string | null {
   try {
-    if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
-      const blob = new Blob([body], { type: 'application/json' })
-      if (navigator.sendBeacon(POSTHOG_CAPTURE_URL, blob)) return
-    }
-  } catch (_) { /* fall through */ }
-  try {
-    void fetch(POSTHOG_CAPTURE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body,
-      keepalive: true,
-      mode: 'cors',
-      credentials: 'omit'
-    }).catch(() => undefined)
-  } catch (_) { /* silent */ }
+    return document.referrer ? new URL(document.referrer).origin : null
+  } catch {
+    return null
+  }
 }
 
 export function recordPageView (input: PageViewInput): void {
   try {
     if (!isWeb()) return
-    if (typeof process !== 'undefined' && process.env?.POSTHOG_DISABLED === 'true') return
-    const apiKey = publicApiKey()
-    if (!apiKey) return
 
     const path = String(input.path || '/')
-    const lang = input.lang || (typeof document !== 'undefined' ? document.documentElement.lang : undefined) || undefined
+    const lang = input.lang || document.documentElement.lang || null
     const labSlug = input.labSlug || null
-    const screenW = typeof window.screen !== 'undefined' ? window.screen.width : undefined
-    const screenH = typeof window.screen !== 'undefined' ? window.screen.height : undefined
     const view = input.view || null
 
     const dedupeKey = `${path}|${lang || ''}|${labSlug || ''}|${view || ''}`
@@ -105,27 +85,32 @@ export function recordPageView (input: PageViewInput): void {
     lastSentKey = dedupeKey
     lastSentAt = now
 
-    const payload = {
-      api_key: apiKey,
-      event: HBE_EVENT_PAGE_VIEWED,
-      distinct_id: anonDistinctId(),
+    const body = JSON.stringify({
+      event: 'page_viewed',
+      device_id: deviceId(),
       properties: {
-        app: HBE_APP_TAG,
-        service: 'web',
         path,
-        referrer: typeof document !== 'undefined' ? (document.referrer || null) : null,
-        lang: lang || null,
-        lab_slug: labSlug,
         view,
-        screen_width: screenW ?? null,
-        screen_height: screenH ?? null,
-        timestamp: new Date().toISOString(),
-        $process_person_profile: false
+        lab_slug: labSlug,
+        referrer: referrerOrigin(),
+        screen_width: typeof window.screen !== 'undefined' ? window.screen.width : null,
+        screen_height: typeof window.screen !== 'undefined' ? window.screen.height : null,
+        lang
       }
-    }
+    })
 
-    schedule(() => sendPayload(payload))
-  } catch (_) {
+    schedule(() => {
+      try {
+        void fetch(ANALYTICS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          keepalive: true,
+          credentials: 'omit'
+        }).catch(() => undefined)
+      } catch { /* silent */ }
+    })
+  } catch {
     /* never block, never throw */
   }
 }

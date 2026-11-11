@@ -248,6 +248,7 @@ export async function disburseHbar({
         return {
           success: false,
           error: 'Account is already funded on Hedera Testnet.',
+          cooldown: true,
           logs: traceLogs,
         };
       }
@@ -257,6 +258,7 @@ export async function disburseHbar({
         return {
           success: false,
           error: 'Faucet request is already in progress for this address.',
+          cooldown: true,
           logs: traceLogs,
         };
       }
@@ -270,6 +272,7 @@ export async function disburseHbar({
           success: false,
           error: 'Faucet payment already in progress for this wallet.',
           code: 'FAUCET_IN_FLIGHT',
+          cooldown: true,
           logs: traceLogs,
         };
       }

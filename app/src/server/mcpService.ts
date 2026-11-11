@@ -12,8 +12,9 @@ import indexData from '../content/index.json'
 import enData from '../content/en.json'
 import esData from '../content/es.json'
 import catalogData from './data/hedera_master_catalog.json'
-import { recordMcpSessionStarted, recordMcpToolCall, runAnalyticsSilently } from './posthogAnalytics'
-import { createSessionId, identifyCaller } from './mcpIdentity'
+import { deferAnalytics, trackHbeEvent } from './analytics'
+import { normalizeErrorCode } from '../lib/analyticsSchema'
+import { createSessionId, identifyCaller, type McpCaller } from './mcpIdentity'
 import { ARCHITECTURE_DOC, HACKATHON_DOC, RESOURCES_DOC } from './mcpDocsData'
 
 export const VERSION = '2.0.0'
@@ -654,7 +655,16 @@ const rpcResult = (id: any, result: any) => ({ jsonrpc: '2.0', id, result })
  * Per-request context from the HTTP route. sessionId / ip / userAgent identify the caller for
  * analytics; newSessionId is set by `initialize` so the route returns it as Mcp-Session-Id.
  */
-export type McpContext = { sessionId?: string | null, ip?: string | null, userAgent?: string | null, newSessionId?: string }
+export type McpContext = { sessionId?: string | null, ip?: string | null, userAgent?: string | null, newSessionId?: string, request?: Request | null }
+
+/** Analytics options for one MCP caller: pseudonymous id (session or daily hash), no network. */
+const mcpTrackOptions = (caller: McpCaller, ctx: McpContext) => ({
+  service: 'mcp' as const,
+  origin: 'server' as const,
+  identity: { pseudonymousId: caller.distinctId, pseudonymousSource: caller.idSource },
+  request: ctx.request ?? null,
+  network: null
+})
 
 export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
   if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0') return rpcError(msg?.id, -32600, 'Invalid Request')
@@ -671,7 +681,14 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         // clients send it back on every request (MCP Streamable HTTP transport).
         const sessionId = createSessionId(params.clientInfo || {})
         ctx.newSessionId = sessionId
-        runAnalyticsSilently(async () => recordMcpSessionStarted(await identifyCaller({ ...ctx, sessionId }), protocolVersion))
+        deferAnalytics(async () => {
+          const caller = await identifyCaller({ ...ctx, sessionId })
+          await trackHbeEvent('mcp_session_started', {
+            client_name: caller.clientName,
+            client_version: caller.clientVersion || null,
+            protocol_version: protocolVersion
+          }, mcpTrackOptions(caller, ctx))
+        })
         return rpcResult(id, {
           protocolVersion,
           capabilities: { tools: { listChanged: false }, resources: { listChanged: false, subscribe: false }, prompts: { listChanged: false } },
@@ -686,24 +703,34 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
         if (!TOOLS.some((t) => t.name === name)) return rpcError(id, -32602, `Unknown tool: ${name}`)
         const args = params.arguments || {}
         const started = Date.now()
-        // Fire-and-forget: analytics never delays or fails a tool call.
-        const track = (isError: boolean) => {
+        // Scheduled after the response (deferTask): analytics never delays or fails a tool call.
+        // Never the query text, only its length.
+        const track = (error?: unknown) => {
           const durationMs = Date.now() - started
-          runAnalyticsSilently(async () => recordMcpToolCall({
-            caller: await identifyCaller(ctx),
-            tool: name,
-            isError,
-            durationMs,
-            labSlug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : undefined,
-            queryLength: typeof args.query === 'string' ? args.query.length : undefined
-          }))
+          deferAnalytics(async () => {
+            const caller = await identifyCaller(ctx)
+            const properties: Record<string, unknown> = {
+              tool_name: name,
+              client_name: caller.clientName,
+              client_version: caller.clientVersion || null,
+              duration_ms: durationMs,
+              query_length: typeof args.query === 'string' ? args.query.length : null,
+              lab_slug: typeof args.slug === 'string' ? args.slug.slice(0, 80) : null
+            }
+            if (error === undefined) {
+              await trackHbeEvent('tool_called', properties, mcpTrackOptions(caller, ctx))
+            } else {
+              const code = error instanceof InvalidParams ? 'INVALID_INPUT' : error instanceof UpstreamError ? 'UPSTREAM_ERROR' : error
+              await trackHbeEvent('tool_call_failed', { ...properties, error_code: normalizeErrorCode(code) }, mcpTrackOptions(caller, ctx))
+            }
+          })
         }
         try {
           const text = await callTool(name, args)
-          void track(false)
+          track()
           return rpcResult(id, { content: [{ type: 'text', text: String(text) }] })
         } catch (err: any) {
-          void track(true)
+          track(err)
           return rpcResult(id, { isError: true, content: [{ type: 'text', text: err instanceof InvalidParams ? `Invalid arguments: ${err.message}` : err instanceof UpstreamError ? err.message : `Tool error: ${err.message}` }] })
         }
       }

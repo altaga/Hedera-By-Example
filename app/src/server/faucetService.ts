@@ -15,7 +15,9 @@ import fs from 'fs'
 import path from 'path'
 import { ethers } from 'ethers';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { recordFaucetClaim, runAnalyticsSilently, getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
+import { getFaucetUniqueUsersCount, HBE_APP_TAG, HBE_EVENT_FAUCET_CLAIM } from './posthogAnalytics';
+import { deferHbeEvent } from './analytics';
+import { normalizeErrorCode } from '../lib/analyticsSchema';
 
 /** Load local secrets into process.env if Expo CLI did not inject them yet. */
 function loadLocalFaucetEnv (): void {
@@ -201,6 +203,8 @@ export interface DisburseParams {
   accountId?: string;
   amount?: number;
   skipCooldown?: boolean;
+  /** The browser's request, for analytics only (bot check, geo, env). */
+  request?: Request | null;
 }
 
 export interface DisburseResult {
@@ -217,12 +221,30 @@ export async function disburseHbar({
   accountId,
   amount = 25,
   skipCooldown = false,
+  request = null,
 }: DisburseParams): Promise<DisburseResult> {
   const startMs = Date.now();
   const traceLogs: string[] = [];
   const log = (msg: string) => traceLogs.push(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
 
+  // Analytics (schema v1), scheduled after the response: never awaited, never fails the claim.
+  const finalAmount = Math.min(Math.max(Number(amount) || 25, 0.1), 50);
+  const analytics = {
+    service: 'faucet' as const,
+    origin: 'server' as const,
+    identity: { evmAddress, accountId },
+    request,
+    network: (NETWORK === 'mainnet' ? 'mainnet' : 'testnet') as 'mainnet' | 'testnet',
+    fromBrowser: Boolean(request),
+  };
+  const trackFailure = (error: unknown) => deferHbeEvent('faucet_claim_failed', {
+    asset: 'HBAR',
+    amount: finalAmount,
+    error_code: normalizeErrorCode(error),
+  }, analytics);
+
   if (!evmAddress || !ethers.isAddress(evmAddress)) {
+    trackFailure('INVALID_INPUT');
     return {
       success: false,
       error: `Invalid EVM Address: ${evmAddress}`,
@@ -257,7 +279,6 @@ export async function disburseHbar({
     }
 
     const rpcSequence = buildFaucetRpcSequence();
-    const finalAmount = Math.min(Math.max(Number(amount) || 25, 0.1), 50);
     const valueWei = ethers.parseEther(String(finalAmount));
 
     const startIndex = Math.floor(Math.random() * POOL_SIZE);
@@ -294,18 +315,13 @@ export async function disburseHbar({
           log(`Transaction broadcast confirmed: ${tx.hash}. ${finalAmount} HBAR delivered.`);
           const durationMs = Date.now() - startMs;
 
-          // Track metric in PostHog on the side: never awaited, never blocks or fails the claim.
-          try {
-            runAnalyticsSilently(() => recordFaucetClaim({
-              evmAddress,
-              accountId,
-              amount: finalAmount,
-              txHash: tx.hash,
-              network: NETWORK,
-            }));
-          } catch (_) {
-            /* analytics must stay silent */
-          }
+          deferHbeEvent('faucet_claimed', {
+            asset: 'HBAR',
+            amount: finalAmount,
+            tx_hash: tx.hash,
+            evm_address: evmAddress.toLowerCase(),
+            account_id: accountId || null,
+          }, analytics);
 
           return {
             success: true,
@@ -327,6 +343,7 @@ export async function disburseHbar({
     if (hasClaim) {
       await releaseFaucetClaim(addressKey);
     }
+    trackFailure(error);
     return {
       success: false,
       error: error?.message || 'Unknown disbursement error',

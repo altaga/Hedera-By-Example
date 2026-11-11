@@ -8,11 +8,12 @@
 import http from 'http';
 import { disburseHbar, getFaucetHealth, NETWORK } from './src/faucet-service.mjs';
 import {
-  recordFaucetClaim,
+  trackHbeEvent,
   getFaucetUniqueUsersCount,
   HBE_EVENT_FAUCET_CLAIM,
   HBE_APP_TAG,
 } from './src/faucet-analytics.mjs';
+import { normalizeErrorCode } from './src/analyticsSchema.mjs';
 
 const PORT = parseInt(process.env.PORT || '3005', 10);
 
@@ -121,27 +122,42 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
+      const finalAmount = Number(amount) || 25;
       const result = await disburseHbar({
         evmAddress,
-        amount: Number(amount) || 25,
+        amount: finalAmount,
         skipCooldown: Boolean(skipCooldown),
       });
 
-      // Track metric in PostHog upon successful disbursement
-      if (result.success) {
-        recordFaucetClaim({
-          evmAddress,
-          accountId,
-          amount: Number(amount) || 25,
-          txHash: result.hash,
-          network: NETWORK,
-        }).catch((err) => {
-          console.warn('[ANALYTICS] Background metric dispatch error:', err.message);
-        });
-      }
-
       const statusCode = result.success ? 200 : 400;
-      return sendJson(res, statusCode, result);
+      sendJson(res, statusCode, result);
+
+      // Analytics (schema v1) after the response is written, awaited: never delays or fails the claim.
+      // No event for a cooldown (already funded or a claim in progress).
+      const analytics = {
+        service: 'faucet',
+        origin: 'server',
+        identity: { evmAddress, accountId },
+        req,
+        network: NETWORK === 'mainnet' ? 'mainnet' : 'testnet',
+        fromBrowser: true,
+      };
+      if (result.success) {
+        await trackHbeEvent('faucet_claimed', {
+          asset: 'HBAR',
+          amount: finalAmount,
+          tx_hash: result.hash || null,
+          evm_address: String(evmAddress).toLowerCase(),
+          account_id: accountId || null,
+        }, analytics);
+      } else if (!result.cooldown) {
+        await trackHbeEvent('faucet_claim_failed', {
+          asset: 'HBAR',
+          amount: finalAmount,
+          error_code: normalizeErrorCode(result.error),
+        }, analytics);
+      }
+      return;
     }
 
     // 4. Root API info

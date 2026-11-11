@@ -24,7 +24,7 @@ Checked by hand with raw JSON-RPC requests (`Content-Type: application/json`, `A
 
 ## Known gaps
 - The stdio server `mcp/index.js` was not run in this check (dependencies not installed in the sandbox).
-- PostHog events: `hbe_faucet_claimed` (faucet claim), `hbe_mcp_session_started` (each MCP `initialize`) and `hbe_mcp_tool_called` (every `tools/call`: tool, is_error, duration_ms, lab_slug for `get_lab`, query_length; the query text itself is never sent). Lab views in the browser are not tracked.
+- PostHog events (Hedera analytics schema v1, see `ANALYTICS_EVENTS.md`): `mcp_session_started` (each MCP `initialize`: client_name, client_version, protocol_version), `tool_called` / `tool_call_failed` (every `tools/call`: tool_name, client_name, client_version, duration_ms, lab_slug for `get_lab`, query_length, and `error_code` on failures; the query text itself is never sent) and `faucet_claimed` / `faucet_claim_failed`. Before v1 they were `hbe_mcp_session_started`, `hbe_mcp_tool_called` and `hbe_faucet_claimed`. Browser page views are `page_viewed`, relayed by `/api/analytics`.
 - How MCP callers are told apart (`app/src/server/mcpIdentity.ts`): `initialize` returns an `Mcp-Session-Id` (Streamable HTTP transport) that carries the client's `clientInfo` name and version; compliant clients send it back, so `distinct_id = mcp:<session>` is one MCP connection and `client_name` / `client_version` come from `clientInfo`, not the User-Agent. Clients that ignore sessions get `mcp-anon:<hash>`, a SHA-256 of IP + User-Agent + UTC date (+ optional `MCP_ANALYTICS_SALT`) that changes every day; the IP is never sent or stored. Each event says which one applied in `id_source` (`session` or `daily_hash`).
 
 ## Faucet context for the next reviewer (updated 2026-11-05)

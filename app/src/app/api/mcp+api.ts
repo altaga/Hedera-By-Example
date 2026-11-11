@@ -64,6 +64,7 @@ export async function POST(request: Request) {
       sessionId: request.headers.get('mcp-session-id'),
       ip: request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null,
       userAgent: request.headers.get('user-agent'),
+      request,
     };
     const response = await dispatchMcpRpc(payload, ctx);
     const sessionHeader: Record<string, string> = ctx.newSessionId ? { 'Mcp-Session-Id': ctx.newSessionId } : {};

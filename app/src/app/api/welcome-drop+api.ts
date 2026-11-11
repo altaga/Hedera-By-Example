@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       accountId: body.accountId,
       amount: body.amount ?? 25,
       skipCooldown: body.skipCooldown ?? false,
+      request,
     });
 
     const status = result.success ? 200 : 400;
