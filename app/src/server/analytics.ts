@@ -103,8 +103,9 @@ function clientIp (request: Request | null | undefined): string | null {
   return null
 }
 
+/** Edge country: Vercel and Cloudflare headers, and eas-ip-country, EAS Hosting's equivalent. */
 function countryCode (request: Request | null | undefined): string | null {
-  const code = (header(request, 'x-vercel-ip-country') || header(request, 'cf-ipcountry') || '').trim().toUpperCase()
+  const code = (header(request, 'x-vercel-ip-country') || header(request, 'cf-ipcountry') || header(request, 'eas-ip-country') || '').trim().toUpperCase()
   if (!/^[A-Z][A-Z0-9]$/.test(code) || code === 'XX' || code === 'T1') return null
   return code
 }
