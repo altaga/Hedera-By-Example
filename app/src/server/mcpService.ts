@@ -12,7 +12,7 @@ import indexData from '../content/index.json'
 import enData from '../content/en.json'
 import esData from '../content/es.json'
 import catalogData from './data/hedera_master_catalog.json'
-import { deferAnalytics, trackHbeEvent } from './analytics'
+import { captureRuntimeEnv, deferAnalytics, trackHbeEvent } from './analytics'
 import { normalizeErrorCode } from '../lib/analyticsSchema'
 import { createSessionId, identifyCaller, type McpCaller } from './mcpIdentity'
 import { ARCHITECTURE_DOC, HACKATHON_DOC, RESOURCES_DOC } from './mcpDocsData'
@@ -655,7 +655,7 @@ const rpcResult = (id: any, result: any) => ({ jsonrpc: '2.0', id, result })
  * Per-request context from the HTTP route. sessionId / ip / userAgent identify the caller for
  * analytics; newSessionId is set by `initialize` so the route returns it as Mcp-Session-Id.
  */
-export type McpContext = { sessionId?: string | null, ip?: string | null, userAgent?: string | null, newSessionId?: string, request?: Request | null }
+export type McpContext = { sessionId?: string | null, ip?: string | null, userAgent?: string | null, newSessionId?: string, request?: Request | null, runtimeEnv?: string | null }
 
 /** Analytics options for one MCP caller: pseudonymous id (session or daily hash), no network. */
 const mcpTrackOptions = (caller: McpCaller, ctx: McpContext) => ({
@@ -663,7 +663,9 @@ const mcpTrackOptions = (caller: McpCaller, ctx: McpContext) => ({
   origin: 'server' as const,
   identity: { pseudonymousId: caller.distinctId, pseudonymousSource: caller.idSource },
   request: ctx.request ?? null,
-  network: null
+  network: null,
+  // Read in the request path (dispatchMcpRpc): expo-server's environment() is gone in deferred tasks.
+  runtimeEnv: ctx.runtimeEnv
 })
 
 export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
@@ -755,6 +757,7 @@ export async function dispatchOneMcp (msg: any, ctx: McpContext = {}) {
 }
 
 export async function dispatchMcpRpc (payload: any, ctx: McpContext = {}) {
+  if (ctx.runtimeEnv === undefined) ctx.runtimeEnv = captureRuntimeEnv()
   if (Array.isArray(payload)) {
     if (!payload.length) return rpcError(null, -32600, 'Invalid Request: empty batch')
     const out = (await Promise.all(payload.map((p: any) => dispatchOneMcp(p, ctx)))).filter(Boolean)

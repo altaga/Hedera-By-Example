@@ -175,7 +175,7 @@ Events follow [`ANALYTICS_EVENTS.md`](ANALYTICS_EVENTS.md), shared with Hedera A
 | `HOG_API_KEY` | Sending events (PostHog project API key). Without it nothing is sent. |
 | `HOG_PERSONAL_API_KEY`, `HOG_PROJECT_ID` | The faucet's unique-user count (`/api/faucet/stats`). |
 | `TEST_API_KEY` | Test traffic: a request with header `x-test-api-key` equal to this value is never sent. Use a value of your own, not the one Atlas or HFD use, and never commit it. |
-| `ANALYTICS_ENV` (optional) | Overrides `env`. By default it comes from the host: `hbe.expo.app` is `production`, other `*.expo.app` hosts are `preview`, anything else is `development`. |
+| `ANALYTICS_ENV` (optional) | Overrides `env`. By default, on EAS Hosting (`*.expo.app`) it comes from expo-server's `environment()`: `production` on the production alias, `preview` on any other deployment; anything else is `development`. |
 | `POSTHOG_DISABLED=true` (optional) | Turns analytics off. |
 
 `app_version` is `<version>+<short commit>`: `npm run deploy:web` writes the commit with `app/scripts/write-build-info.mjs` before the export. Local runs without that file send the version alone.

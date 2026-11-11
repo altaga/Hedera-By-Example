@@ -9,7 +9,7 @@
  * caught and only logged, and the PostHog fetch gives up after 5 s.
  */
 
-import { deferTask } from 'expo-server'
+import { deferTask, environment as requestEnvironment } from 'expo-server'
 import pkg from '../../package.json'
 import {
   buildCapturePayload,
@@ -28,8 +28,6 @@ import {
 const APP: AnalyticsApp = 'hedera-by-example'
 const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/'
 const SEND_TIMEOUT_MS = 5000
-/** Hosts that serve the production deployment; other *.expo.app hosts are preview deployments. */
-const PRODUCTION_HOSTS = ['hbe.expo.app']
 /** Header that marks a request as test traffic, matched against TEST_API_KEY (same names as Atlas and HFD). */
 const TEST_KEY_HEADER = 'x-test-api-key'
 
@@ -45,22 +43,48 @@ export interface TrackOptions {
   network?: AnalyticsNetwork | null
   /** The event comes from a browser surface (web, the browser's faucet claim): bots don't count. */
   fromBrowser?: boolean
+  /**
+   * expo-server's environment() for the request, read while the request is handled (it is not
+   * available in a deferred task): null on EAS Hosting's production alias, the alias or
+   * deployment id otherwise. undefined when it could not be read.
+   */
+  runtimeEnv?: string | null
+}
+
+/**
+ * Reads expo-server's environment() for the current request. Call it in the request path.
+ * Returns undefined outside a request (scripts, tests) or where the runtime does not support it.
+ */
+export function captureRuntimeEnv (): string | null | undefined {
+  try {
+    return requestEnvironment()
+  } catch {
+    return undefined
+  }
 }
 
 const header = (request: Request | null | undefined, name: string): string | null => {
   try { return request?.headers.get(name) ?? null } catch { return null }
 }
 
-/** On EAS Hosting there is no VERCEL_ENV: ANALYTICS_ENV wins, else the request host decides. */
-function resolveHbeEnv (request: Request | null | undefined) {
+/**
+ * On EAS Hosting there is no VERCEL_ENV. ANALYTICS_ENV wins when set. Otherwise only requests
+ * served by EAS Hosting (*.expo.app) can be production or preview: expo-server's environment()
+ * is null on the production alias and names the alias or deployment otherwise. The request URL
+ * is no guide there (it is the deployment's own *.expo.app host even on the production alias).
+ * Anything else (local dev, scripts, tests) is development.
+ */
+function resolveHbeEnv (request: Request | null | undefined, runtimeEnv: string | null | undefined) {
   const override = process.env.ANALYTICS_ENV
   if (override) return resolveEnv(override)
   let host = ''
   try { host = request ? new URL(request.url).hostname : '' } catch { host = '' }
   if (!host) host = (header(request, 'host') || '').split(':')[0]
-  if (PRODUCTION_HOSTS.includes(host)) return resolveEnv('production')
-  if (host.endsWith('.expo.app')) return resolveEnv('preview')
-  return resolveEnv(undefined)
+  if (!host.endsWith('.expo.app')) return resolveEnv(undefined)
+  if (runtimeEnv === null) return resolveEnv('production')
+  if (typeof runtimeEnv === 'string') return resolveEnv('preview')
+  // Not read in the request path: only the public production host counts as production.
+  return resolveEnv(host === 'hbe.expo.app' ? 'production' : 'preview')
 }
 
 const PRIVATE_IP = /^(10\.|127\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|::1$|::$|f[cd][0-9a-f]{2}:|fe80:)/i
@@ -135,7 +159,7 @@ export async function trackHbeEvent (event: string, properties: Record<string, u
       service,
       origin,
       appVersion: formatAppVersion(pkg.version, buildCommit()),
-      env: resolveHbeEnv(request),
+      env: resolveHbeEnv(request, options.runtimeEnv),
       network,
       identity
     })
@@ -171,7 +195,8 @@ export async function trackHbeEvent (event: string, properties: Record<string, u
  * the local Node server) it is sent directly. Never throws.
  */
 export function deferHbeEvent (event: string, properties: Record<string, unknown>, options: TrackOptions): void {
-  deferAnalytics(() => trackHbeEvent(event, properties, options))
+  const withEnv = options.runtimeEnv === undefined ? { ...options, runtimeEnv: captureRuntimeEnv() } : options
+  deferAnalytics(() => trackHbeEvent(event, properties, withEnv))
 }
 
 /** Same scheduling for work that must run before the event is built (e.g. the async MCP identity). */
