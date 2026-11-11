@@ -1,3 +1,4 @@
+/* global localStorage, KeyboardEvent -- browser globals used inside page.evaluate() */
 /**
  * TEST 07: one Run = one transaction.
  * Serves the exported web build (app/dist), opens the M04-01 HBAR transfer

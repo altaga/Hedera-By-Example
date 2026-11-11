@@ -29,7 +29,7 @@ async function main() {
 
   try {
     // Stage 1
-    const t1 = await runCourseStandaloneTest()
+    await runCourseStandaloneTest()
     results.push({ name: 'Suite 01: Standalone Course Integrity & Syntax', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 01: Standalone Course Integrity & Syntax', status: 'FAIL', error: err.message })
@@ -37,7 +37,7 @@ async function main() {
 
   try {
     // Stage 2
-    const t2 = await runCourseCompilerTest()
+    await runCourseCompilerTest()
     results.push({ name: 'Suite 02: Course-to-App Compiler (133 Labs)', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 02: Course-to-App Compiler (133 Labs)', status: 'FAIL', error: err.message })
@@ -45,7 +45,7 @@ async function main() {
 
   try {
     // Stage 3
-    const t3 = await runBrowserSandboxTest()
+    await runBrowserSandboxTest()
     results.push({ name: 'Suite 03: In-Browser V8 Polyfill Sandbox', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 03: In-Browser V8 Polyfill Sandbox', status: 'FAIL', error: err.message })
@@ -54,7 +54,7 @@ async function main() {
   if (!skipE2E) {
     try {
       // Stage 4
-      const t4 = await runE2ELiveBrowserTest()
+      await runE2ELiveBrowserTest()
       results.push({ name: 'Suite 04: Live Headless Chrome E2E Test', status: 'PASS' })
     } catch (err) {
       results.push({ name: 'Suite 04: Live Headless Chrome E2E Test', status: 'FAIL', error: err.message })
@@ -65,7 +65,7 @@ async function main() {
 
   try {
     // Stage 5
-    const t5 = await runMcpServerTest()
+    await runMcpServerTest()
     results.push({ name: 'Suite 05: Universal MCP Server (stdio & HTTP)', status: 'PASS' })
   } catch (err) {
     results.push({ name: 'Suite 05: Universal MCP Server (stdio & HTTP)', status: 'FAIL', error: err.message })

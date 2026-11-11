@@ -102,7 +102,7 @@ function Detail ({ lang, r, onSelectLab, walletLabel }: { lang: Lang; r: Resourc
         <h2><code>{r.id}</code></h2>
         {r.label && <p className='muted'>{r.label}</p>}
         <div className='btn-row'>
-          <button type='button' className='btn btn-ghost btn-sm' onClick={() => { try { navigator.clipboard?.writeText(r.id) } catch (_) {} setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
+          <button type='button' className='btn btn-ghost btn-sm' onClick={() => { try { navigator.clipboard?.writeText(r.id) } catch {} setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
             <Icon name={copied ? 'check' : 'copy'} size={14} />{copied ? t.copied : t.copy}
           </button>
           <a className='btn btn-ghost btn-sm' href={hashscanUrl(r)} target='_blank' rel='noopener noreferrer'>HashScan <Icon name='external' size={12} /></a>

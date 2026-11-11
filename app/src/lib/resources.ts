@@ -49,7 +49,7 @@ export interface LabRun {
 
 export function loadRuns (): LabRun[] {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(RUNS_KEY) || '[]') } catch (_) { return [] }
+  try { return JSON.parse(localStorage.getItem(RUNS_KEY) || '[]') } catch { return [] }
 }
 
 /** Remember that a lab ran between start and end (seconds since epoch). */
@@ -59,12 +59,12 @@ export function recordRun (run: LabRun): void {
     runs.push(run)
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
     localStorage.setItem(RUNS_KEY, JSON.stringify(runs.slice(-MAX_RUNS)))
-  } catch (_) {}
+  } catch {}
 }
 
 const decode64 = (value?: string | null): string => {
   if (!value) return ''
-  try { return new TextDecoder().decode(Uint8Array.from(atob(value), (c) => c.charCodeAt(0))) } catch (_) { return '' }
+  try { return new TextDecoder().decode(Uint8Array.from(atob(value), (c) => c.charCodeAt(0))) } catch { return '' }
 }
 
 /** Readable text if the bytes look like text, otherwise hex. */
@@ -114,7 +114,7 @@ export async function fetchTokenLabels (ids: string[], onLabel: (id: string, lab
       try {
         const t = await getJson(`${MIRROR}/tokens/${id}`)
         onLabel(id, `${t.name} (${t.symbol}) · ${t.type === 'NON_FUNGIBLE_UNIQUE' ? 'NFT' : 'FT'}`)
-      } catch (_) {}
+      } catch {}
     }
   }
   await Promise.all(Array.from({ length: 2 }, worker))

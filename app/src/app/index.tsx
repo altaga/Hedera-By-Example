@@ -27,12 +27,12 @@ const PREFS_KEY = 'hbe_prefs_v1'
 
 function readPrefs (): { lang?: Lang; theme?: Theme } {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return {}
-  try { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}') } catch (_) { return {} }
+  try { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}') } catch { return {} }
 }
 
 function writePrefs (prefs: { lang: Lang; theme: Theme }) {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return
-  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)) } catch (_) {}
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)) } catch {}
 }
 
 function routeFromHash (): Route {
@@ -179,7 +179,7 @@ export default function HederaByExample () {
         const bytes = own ? await own.arrayBuffer() : await (await fetch(f.url)).arrayBuffer()
         files[f.name] = new Uint8Array(bytes)
       }))
-    } catch (_) {}
+    } catch {}
     // A visual with an id (e.g. upload progress) updates in place instead of repeating.
     const onLine = (line: TerminalLogLine) => {
       if (!live()) return

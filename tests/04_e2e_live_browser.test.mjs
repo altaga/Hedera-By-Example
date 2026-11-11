@@ -54,7 +54,6 @@ function resolveChromePath() {
 }
 
 const TARGET_URL = process.env.HBE_URL || 'https://hbe.expo.app'
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export async function runE2ELiveBrowserTest() {
   console.log('\n================================================================')

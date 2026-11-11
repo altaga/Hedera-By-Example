@@ -30,8 +30,8 @@ const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/'
 const SEND_TIMEOUT_MS = 5000
 /** Hosts that serve the production deployment; other *.expo.app hosts are preview deployments. */
 const PRODUCTION_HOSTS = ['hbe.expo.app']
-/** Header that marks a request as test traffic, matched against HBE_TEST_API_KEY. */
-const TEST_KEY_HEADER = 'x-hbe-test-key'
+/** Header that marks a request as test traffic, matched against TEST_API_KEY (same names as Atlas and HFD). */
+const TEST_KEY_HEADER = 'x-test-api-key'
 
 export type HbeService = 'web' | 'mcp' | 'faucet'
 
@@ -85,8 +85,25 @@ function countryCode (request: Request | null | undefined): string | null {
   return code
 }
 
+/**
+ * Commit of this build, from buildInfo.generated.json, which scripts/write-build-info.mjs writes
+ * right before `expo export` (EAS Hosting has no VERCEL_GIT_COMMIT_SHA). The file is not in git:
+ * typecheck, tests and local development run without it, and app_version is then the version alone.
+ * Metro treats a require inside try/catch as optional, so a missing file does not break the build.
+ */
+function buildCommit (): string | null {
+  if (process.env.VERCEL_GIT_COMMIT_SHA) return process.env.VERCEL_GIT_COMMIT_SHA
+  try {
+    const info = require('./buildInfo.generated.json')
+    const commit = typeof info?.commit === 'string' ? info.commit : ''
+    return /^[0-9a-f]{7,40}$/.test(commit) ? commit : null
+  } catch {
+    return null
+  }
+}
+
 function isTestRequest (request: Request | null | undefined): boolean {
-  const testKey = process.env.HBE_TEST_API_KEY
+  const testKey = process.env.TEST_API_KEY
   return Boolean(testKey) && header(request, TEST_KEY_HEADER) === testKey
 }
 
@@ -117,15 +134,19 @@ export async function trackHbeEvent (event: string, properties: Record<string, u
       app: APP,
       service,
       origin,
-      // EAS Hosting has no VERCEL_GIT_COMMIT_SHA: app_version is the package version alone there.
-      appVersion: formatAppVersion(pkg.version, process.env.VERCEL_GIT_COMMIT_SHA),
+      appVersion: formatAppVersion(pkg.version, buildCommit()),
       env: resolveHbeEnv(request),
       network,
       identity
     })
-    // 6. Geo, from the request.
-    const ip = clientIp(request)
-    if (ip) payload.properties.$ip = ip
+    // 6. Geo, from the request. MCP callers are programs (or AI providers): their IP never leaves
+    // the server, PostHog's own IP geolocation is off, and only the edge's country is kept.
+    if (service === 'mcp') {
+      payload.properties.$geoip_disable = true
+    } else {
+      const ip = clientIp(request)
+      if (ip) payload.properties.$ip = ip
+    }
     const country = countryCode(request)
     if (country) {
       payload.properties.country = country

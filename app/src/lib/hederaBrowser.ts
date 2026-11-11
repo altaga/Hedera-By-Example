@@ -90,7 +90,7 @@ export async function findAccountByEvmAddress (evmAddress: string): Promise<stri
     if (!res.ok) return null
     const data = await res.json()
     return typeof data?.account === 'string' ? data.account : null
-  } catch (_) {
+  } catch {
     return null
   }
 }
@@ -242,7 +242,7 @@ function tableOf (data: any, columns?: string[]) {
 }
 
 const jsonSafe = (v: any) => {
-  try { return JSON.parse(JSON.stringify(v, (_k, x) => (typeof x === 'bigint' ? x.toString() : x))) } catch (_) { return String(v) }
+  try { return JSON.parse(JSON.stringify(v, (_k, x) => (typeof x === 'bigint' ? x.toString() : x))) } catch { return String(v) }
 }
 
 /** Run a lab's code in this browser, streaming its output to onLog. */
@@ -279,7 +279,7 @@ function stopRun (run: RunHandles | null) {
   run.exited = true
   run.timers.forEach((id) => { window.clearTimeout(id); window.clearInterval(id) })
   run.timers.clear()
-  run.clients.forEach((c) => { try { c.close() } catch (_) {} })
+  run.clients.forEach((c) => { try { c.close() } catch {} })
   run.clients.clear()
   run.wake()
 }
@@ -313,7 +313,7 @@ function trackExecutions (hedera: any) {
     const isTransaction = this instanceof hedera.Transaction
     // Fix the transaction id before the first attempt, so a retry can only resend the same transaction.
     if (isTransaction && client && typeof this.isFrozen === 'function' && !this.isFrozen()) {
-      try { this.freezeWith(client) } catch (_) {}
+      try { this.freezeWith(client) } catch {}
     }
     let lastErr: any
     for (let attempt = 1; attempt <= MAX_NODE_ATTEMPTS; attempt++) {
@@ -338,7 +338,7 @@ function trackExecutions (hedera: any) {
         const stopped = !client || client.__hbeClosed || client._isShutdown || !!run?.exited
         if (!shouldRetryExecution({ isTransaction, message: msg, attempt, stopped })) throw err
         if (/not recognized|healthy working node/i.test(msg)) {
-          try { client.setNetwork('testnet') } catch (_) {}
+          try { client.setNetwork('testnet') } catch {}
         }
         run?.note?.(`Node error (${msg.slice(0, 80)}). Retrying on another node, attempt ${attempt + 1}/${MAX_NODE_ATTEMPTS}...`)
         await sleepMs(retryDelayMs(attempt))
@@ -405,7 +405,7 @@ function installRestTopicSubscriptions (hedera: any): void {
     const end = this._endTime ? tsString(this._endTime) : null
     let quiet = 0
     let remaining = this._limit && Number(this._limit.toString()) > 0 ? Number(this._limit.toString()) : Infinity
-    const done = () => { stopped = true; release(); try { this._completionHandler?.() } catch (_) {} }
+    const done = () => { stopped = true; release(); try { this._completionHandler?.() } catch {} }
     const poll = async () => {
       while (!stopped && !this._handle?._unsubscribed && !run?.exited && !client?.__hbeClosed) {
         let url = `${MIRROR}/topics/${this._topicId.toString()}/messages?order=asc&limit=100`
@@ -416,7 +416,7 @@ function installRestTopicSubscriptions (hedera: any): void {
         try {
           const res = await mirrorFetch(url, { ttlMs: 0 })
           if (res.ok) data = await res.json()
-        } catch (_) {}
+        } catch {}
         const messages: any[] = data?.messages || []
         for (const m of messages) {
           if (stopped || this._handle?._unsubscribed) return
@@ -584,14 +584,14 @@ export async function executeInBrowser (
     }
 
     const readState = () => {
-      try { return JSON.parse(localStorage.getItem(STATE_STORAGE_KEY) || '{}') } catch (_) { return {} }
+      try { return JSON.parse(localStorage.getItem(STATE_STORAGE_KEY) || '{}') } catch { return {} }
     }
     const updateState = (key: string, val: any) => {
       try {
         const obj = readState()
         obj[key] = val
         localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(obj))
-      } catch (_) {}
+      } catch {}
       return val
     }
     const getState = (key: string) => readState()[key] ?? env[key]
@@ -673,7 +673,7 @@ export async function executeInBrowser (
         if (res.ok && data?.result) return { gas: parseInt(data.result, 16) }
         const message = data?._status?.messages?.[0]?.message
         return message && /REVERT/i.test(message) ? { revert: message } : null
-      } catch (_) {
+      } catch {
         return null
       }
     }
@@ -919,14 +919,14 @@ export async function executeInBrowser (
     const fmt = (a: any) => {
       if (typeof a === 'string') return a
       if (a instanceof Error) return a.message
-      try { return JSON.stringify(a, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)) } catch (_) { return String(a) }
+      try { return JSON.stringify(a, (_k, v) => (typeof v === 'bigint' ? v.toString() : v)) } catch { return String(a) }
     }
     const classify = (msg: string): TerminalLogLine['type'] =>
       /SUCCESS|ÉXITO/.test(msg) ? 'success' : /WARN/.test(msg) ? 'warn' : /FAILED|FALL[OÓ]/.test(msg) ? 'error' : 'info'
     const asJson = (s: string) => {
       const t = s.trim()
       if (!/^[[{]/.test(t) || !t.includes('\n')) return undefined
-      try { return JSON.parse(t) } catch (_) { return undefined }
+      try { return JSON.parse(t) } catch { return undefined }
     }
     const logWith = (forced?: TerminalLogLine['type']) => (...args: any[]) => {
       // A single object, or a pretty-printed JSON string, is shown as a JSON tree.
@@ -970,7 +970,6 @@ export async function executeInBrowser (
       shards: visual('shards'),
       states: visual('states')
     }
-    const nodeOnly = (name: string) => () => { throw new NodeOnlyError(name) }
     const helpers: Record<string, unknown> = {
       getClient,
       getHashscanUrl: hashscanUrl,
@@ -1109,7 +1108,7 @@ export async function executeInBrowser (
       .replace(/\bcatch\s*\{/g, 'catch (__hbeE) { if (__hbeE && __hbeE.__hbeExit) throw __hbeE;')
     const sanitized = sanitizeSourceForExecution(exitSafe(usesSolc ? adaptSolcCalls(body) : body), entryFunctionName(sourceCode))
 
-    // eslint-disable-next-line no-new-func
+     
     const runner = new Function(...names, 'return (async () => {\n' + sanitized + '\n})()')
     const swallowExit = (e: PromiseRejectionEvent) => { if (isExit(e.reason)) e.preventDefault() }
     window.addEventListener('unhandledrejection', swallowExit)
@@ -1140,7 +1139,7 @@ export async function executeInBrowser (
     }
     if (failedWithExitCode) throw new ExitSignal(1)
 
-    try { client.close() } catch (_) {}
+    try { client.close() } catch {}
     const durationMs = Date.now() - startTime
     // Labs flag handled failures with process.exitCode = 1 instead of throwing.
     if (mockProcess.exitCode) {

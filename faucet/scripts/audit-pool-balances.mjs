@@ -2,7 +2,6 @@
  * Read-only audit: how many of the 100 pool wallets actually hold HBAR.
  * Prints summary only — never private keys.
  */
-import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'

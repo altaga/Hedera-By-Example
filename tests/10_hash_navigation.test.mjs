@@ -1,3 +1,4 @@
+/* global location -- browser global used inside page.evaluate() */
 /**
  * TEST 10: Hash navigation in fresh browser profiles.
  * Needs a running site: HBE_BASE_URL=https://... (or http://localhost:PORT from `npx expo serve`).

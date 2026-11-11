@@ -213,7 +213,7 @@ type T = typeof TEXT.en
 function CopyButton ({ value, t }: { value: string; t: T }) {
   const [copied, setCopied] = useState(false)
   return (
-    <button type='button' className='link-btn' onClick={() => { try { navigator.clipboard?.writeText(value) } catch (_) {} setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
+    <button type='button' className='link-btn' onClick={() => { try { navigator.clipboard?.writeText(value) } catch {} setCopied(true); setTimeout(() => setCopied(false), 1500) }}>
       {copied ? t.copied : t.copy}
     </button>
   )

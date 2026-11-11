@@ -50,7 +50,7 @@ export function parseSessionId (value: string | null | undefined): { session: st
     const data = JSON.parse(fromBase64Url(value.slice(PREFIX.length)))
     if (typeof data?.s !== 'string' || !/^[0-9a-f]{24}$/.test(data.s)) return null
     return { session: data.s, clientName: clip(data.n, 60), clientVersion: clip(data.v, 30) }
-  } catch (_) {
+  } catch {
     return null
   }
 }

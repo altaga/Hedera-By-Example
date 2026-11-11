@@ -25,7 +25,6 @@ export async function POST(request: Request) {
       evmAddress?: string;
       accountId?: string;
       amount?: number;
-      skipCooldown?: boolean;
     };
 
     if (!body?.evmAddress) {
@@ -39,7 +38,8 @@ export async function POST(request: Request) {
       evmAddress: body.evmAddress,
       accountId: body.accountId,
       amount: body.amount ?? 25,
-      skipCooldown: body.skipCooldown ?? false,
+      // Never from the request: a public caller could skip the cooldown and the locks.
+      skipCooldown: false,
       request,
     });
 

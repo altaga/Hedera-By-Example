@@ -158,7 +158,7 @@ function CompanionStrip ({
   )
 }
 
-function CodeLines ({ text, start, sdk, numbers }: { text: string; start: number; sdk: Set<string>; numbers?: Array<number | null> }) {
+function CodeLines ({ text, start, sdk, numbers }: { text: string; start: number; sdk: Set<string>; numbers?: (number | null)[] }) {
   const lines = useMemo(() => text.split('\n'), [text])
   const highlighted = useMemo(() => highlightLines(lines, sdk), [lines, sdk])
   return (
@@ -173,7 +173,7 @@ function CodeLines ({ text, start, sdk, numbers }: { text: string; start: number
 function useCopy () {
   const [copied, setCopied] = useState<string | null>(null)
   const copy = (text: string, id: string) => {
-    try { navigator.clipboard?.writeText(text) } catch (_) {}
+    try { navigator.clipboard?.writeText(text) } catch {}
     setCopied(id)
     setTimeout(() => setCopied((c) => (c === id ? null : c)), 1500)
   }

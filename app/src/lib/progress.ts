@@ -6,13 +6,13 @@ export function loadDone (): string[] {
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) || '[]')
     return Array.isArray(raw) ? raw.filter((s) => typeof s === 'string') : []
-  } catch (_) {
+  } catch {
     return []
   }
 }
 
 export function markDone (slug: string): string[] {
   const next = [...new Set([...loadDone(), slug])]
-  try { localStorage.setItem(KEY, JSON.stringify(next)) } catch (_) {}
+  try { localStorage.setItem(KEY, JSON.stringify(next)) } catch {}
   return next
 }

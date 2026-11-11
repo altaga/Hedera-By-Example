@@ -47,7 +47,7 @@ export function createCipher (decrypt: boolean, algorithm: string, key: any, iv:
       if (!tag) throw new Error(AUTH_FAIL)
       try {
         return out(gcm(k, nonce, aad).decrypt(Buffer.concat([input, Buffer.from(tag)])), outEnc)
-      } catch (_) {
+      } catch {
         throw new Error(AUTH_FAIL) // same message Node gives for a tampered ciphertext
       }
     },
@@ -191,7 +191,7 @@ export function verify (_algorithm: string | null, data: any, key: any, signatur
     return kind === 'ed25519'
       ? ed25519.verify(bytes(signature), bytes(data), raw)
       : p256.verify(bytes(signature), bytes(data), raw, { format: 'der' })
-  } catch (_) {
+  } catch {
     return false
   }
 }

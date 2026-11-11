@@ -21,7 +21,8 @@ function escapeSql(str: string): string {
 
 /**
  * Unique wallets that claimed the faucet, across the v1 cut-over: the v1 name plus its legacy
- * name, production only (pre-v1 events have no env), and never the per-event `anon:` ids.
+ * name. Pre-v1 events have no schema_version and no env, and all count; v1 events count only
+ * from production. Never the per-event `anon:` ids.
  */
 export async function getFaucetUniqueUsersCount(): Promise<{ ok: boolean; count: number; cached?: boolean; error?: string }> {
   const now = Date.now();
@@ -36,7 +37,7 @@ export async function getFaucetUniqueUsersCount(): Promise<{ ok: boolean; count:
   }
 
   const names = eventNamesWithLegacy(HBE_EVENT_FAUCET_CLAIM).map((n) => `'${escapeSql(n)}'`).join(', ');
-  const hogql = `SELECT count(DISTINCT distinct_id) FROM events WHERE event IN (${names}) AND properties.app = '${escapeSql(HBE_APP_TAG)}' AND (properties.env IS NULL OR properties.env = 'production') AND (properties.id_source IS NULL OR properties.id_source != 'none')`;
+  const hogql = `SELECT count(DISTINCT distinct_id) FROM events WHERE event IN (${names}) AND properties.app = '${escapeSql(HBE_APP_TAG)}' AND (properties.schema_version IS NULL OR properties.env = 'production') AND (properties.id_source IS NULL OR properties.id_source != 'none')`;
   try {
     const res = await fetch(`${POSTHOG_QUERY_HOST}/api/projects/${projectId}/query/`, {
       method: 'POST',

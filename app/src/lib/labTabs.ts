@@ -20,7 +20,7 @@ export interface ExtractedCompanionModule {
   end: number
   startLine: number
   endLine: number
-  segments: Array<{ doc: string[]; code: string; start: number; lines?: Array<number | null> }>
+  segments: { doc: string[]; code: string; start: number; lines?: (number | null)[] }[]
 }
 
 export interface LabWalkthroughSegment {
@@ -28,7 +28,7 @@ export interface LabWalkthroughSegment {
   code?: string
   start?: number
   /** Real source line number per displayed line (null = spacer between merged parts). */
-  lines?: Array<number | null>
+  lines?: (number | null)[]
   /** Single extracted module (legacy); prefer companionModules for strips. */
   companionModule?: ExtractedCompanionModule
   /** Compact strip of extracted modules shown once in the main walkthrough. */
@@ -52,7 +52,7 @@ const nonEmptyLines = (code?: string) =>
   (code || '').split('\n').filter((l) => l.trim().length > 0).length
 
 /** Real line numbers of a segment's displayed lines. */
-export const segmentLineNumbers = (seg: { code?: string; start?: number; lines?: Array<number | null> }): Array<number | null> => {
+export const segmentLineNumbers = (seg: { code?: string; start?: number; lines?: (number | null)[] }): (number | null)[] => {
   if (seg.lines) return seg.lines
   const n = (seg.code || '').split('\n').length
   return Array.from({ length: n }, (_, i) => (seg.start ?? 1) + i)

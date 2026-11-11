@@ -240,6 +240,8 @@ export async function disburseHbar({
   }
 
   let hasClaim = false;
+  // Only the request that marked the address in flight may clear the mark.
+  let ownsInFlight = false;
 
   try {
     if (!skipCooldown) {
@@ -263,6 +265,7 @@ export async function disburseHbar({
         };
       }
       faucetInFlight.add(addressKey);
+      ownsInFlight = true;
 
       // Multi-instance / persistent claim lock
       const claimStatus = await claimFaucetAddress(addressKey);
@@ -421,7 +424,7 @@ export async function disburseHbar({
       logs: traceLogs,
     };
   } finally {
-    if (addressKey) {
+    if (ownsInFlight) {
       faucetInFlight.delete(addressKey);
     }
   }
@@ -437,7 +440,7 @@ export async function getFaucetHealth() {
   const provider = createJsonRpcProvider(rpcSequence[0]);
 
   let operatorBalance = null;
-  let poolSampleBalances = [];
+  const poolSampleBalances = [];
 
   try {
     const operatorKey = process.env.OPERATOR_KEY;

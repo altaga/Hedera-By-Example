@@ -22,7 +22,7 @@ export function installHashGuard (win: HashGuardWindow | undefined = typeof wind
           return original(state, title, `${next.pathname}${next.search}${current.hash}`)
         }
       }
-    } catch (_) { /* fall through to the normal call */ }
+    } catch { /* fall through to the normal call */ }
     return original(state, title, url)
   }
 }

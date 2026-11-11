@@ -208,7 +208,7 @@ const MIRROR_ROUTES: Record<string, string[] | null> = {
   blocks: null
 }
 
-const decode64 = (s: string) => { try { return Buffer.from(s, 'base64').toString('utf8') } catch (_) { return s } }
+const decode64 = (s: string) => { try { return Buffer.from(s, 'base64').toString('utf8') } catch { return s } }
 
 export class UpstreamError extends Error {}
 
@@ -235,7 +235,7 @@ async function mirrorGet (network: string, apiPath: string) {
   }
   const text = await res.text()
   let data = null
-  try { data = JSON.parse(text) } catch (_) {}
+  try { data = JSON.parse(text) } catch {}
   return { url, ok: res.ok, status: res.status, data, text }
 }
 

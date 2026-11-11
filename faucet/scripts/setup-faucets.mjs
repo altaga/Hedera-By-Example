@@ -19,9 +19,6 @@ if (fs.existsSync(envPath)) dotenv.config({ path: envPath });
 
 const NETWORK = process.env.NEXT_PUBLIC_HEDERA_NETWORK || 'testnet';
 const RPC_URL = NETWORK === 'mainnet' ? 'https://mainnet.hashio.io/api' : 'https://testnet.hashio.io/api';
-const MIRROR_NODE_URL = NETWORK === 'mainnet'
-  ? 'https://mainnet-public.mirrornode.hedera.com/api/v1'
-  : 'https://testnet.mirrornode.hedera.com/api/v1';
 
 const FAUCET_MNEMONIC = (process.env.FAUCET_MNEMONIC || '').trim().replace(/^["']|["']$/g, '');
 const OPERATOR_KEY = process.env.OPERATOR_KEY;
@@ -39,16 +36,6 @@ const POOL_SIZE = parseInt(process.env.FAUCET_POOL_SIZE || '25', 10);
 const TARGET_HBAR = parseFloat(process.env.TARGET_HBAR_PER_WALLET || '100');
 const MAX_RETRIES = 3;
 
-async function queryAccountId(publicKeyRaw) {
-  try {
-    const res = await fetch(`${MIRROR_NODE_URL}/accounts?account.publickey=${publicKeyRaw}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.accounts?.[0]?.account || null;
-  } catch {
-    return null;
-  }
-}
 
 async function main() {
   console.log(`\n======================================================`);

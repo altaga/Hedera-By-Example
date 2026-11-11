@@ -48,7 +48,7 @@ function loadLocalFaucetEnv (): void {
         process.env[key] = val
       }
       break
-    } catch (_) {}
+    } catch {}
   }
 }
 
@@ -121,7 +121,7 @@ export function parseGasPriceFromError(err: any): bigint | null {
   if (match && match[1]) {
     try {
       return BigInt(match[1]);
-    } catch (_) {}
+    } catch {}
   }
   return null;
 }
@@ -133,7 +133,7 @@ export async function calculateHederaGasPrice(provider: ethers.JsonRpcProvider, 
     if (feeData.gasPrice && feeData.gasPrice > 0n) {
       feeDataPrice = feeData.gasPrice;
     }
-  } catch (_) {}
+  } catch {}
 
   const best = feeDataPrice > floor ? feeDataPrice : floor;
   const withHeadroom = (best * 125n) / 100n;
@@ -165,7 +165,7 @@ function getOperatorWallet(): ethers.Wallet | null {
     }
     cachedOperatorWallet = new ethers.Wallet(rawHex);
     return cachedOperatorWallet;
-  } catch (_) {
+  } catch {
     return null;
   }
 }
@@ -254,6 +254,9 @@ export async function disburseHbar({
 
   const addressKey = evmAddress.toLowerCase();
   let hasClaim = false;
+  // Only the request that marked the address in flight may clear the mark: a request turned
+  // away because another one is in flight must not release that one's lock.
+  let ownsInFlight = false;
 
   try {
     if (!skipCooldown) {
@@ -265,6 +268,7 @@ export async function disburseHbar({
         };
       }
       faucetInFlight.add(addressKey);
+      ownsInFlight = true;
 
       const claimStatus = await claimFaucetAddress(addressKey);
       if (claimStatus === 'busy') {
@@ -350,7 +354,7 @@ export async function disburseHbar({
       logs: traceLogs,
     };
   } finally {
-    faucetInFlight.delete(addressKey);
+    if (ownsInFlight) faucetInFlight.delete(addressKey);
   }
 }
 
@@ -372,7 +376,7 @@ export async function getFaucetHealth(): Promise<any> {
         });
       }
     }
-  } catch (_) {}
+  } catch {}
 
   return {
     status: 'ok',

@@ -121,7 +121,7 @@ function Cmd ({ code, label }: { code: string; label: { copy: string; copied: st
         type='button'
         className='btn btn-ghost btn-sm'
         onClick={() => {
-          try { navigator.clipboard?.writeText(code) } catch (_) {}
+          try { navigator.clipboard?.writeText(code) } catch {}
           setCopied(true)
           setTimeout(() => setCopied(false), 1500)
         }}

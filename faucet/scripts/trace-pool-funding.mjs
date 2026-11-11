@@ -2,7 +2,6 @@
  * Read-only: for a few pool wallets, ask Mirror Node who last funded them.
  * Never prints private keys / mnemonic.
  */
-import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'

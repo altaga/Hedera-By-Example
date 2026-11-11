@@ -35,7 +35,7 @@ const PKG_VERSION = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'pa
 const POSTHOG_CAPTURE_URL = 'https://us.i.posthog.com/capture/';
 const POSTHOG_QUERY_HOST = 'https://us.posthog.com';
 const SEND_TIMEOUT_MS = 5000;
-const TEST_KEY_HEADER = 'x-hbe-test-key';
+const TEST_KEY_HEADER = 'x-test-api-key';
 
 export const HBE_APP_TAG = 'hedera-by-example';
 export const HBE_EVENT_FAUCET_CLAIM = 'faucet_claimed';
@@ -88,7 +88,7 @@ export async function trackHbeEvent(event, properties, options) {
   try {
     const { service, origin, req = null, network = null } = options;
     if (process.env.POSTHOG_DISABLED === 'true') return;
-    const testKey = process.env.HBE_TEST_API_KEY;
+    const testKey = process.env.TEST_API_KEY;
     if ((testKey && header(req, TEST_KEY_HEADER) === testKey) || properties?.is_test === true) return;
     if ((service === 'web' || options.fromBrowser) && isBotUserAgent(header(req, 'user-agent'))) return;
     if (!isEventAllowedForApp(event, HBE_APP_TAG)) {
@@ -130,8 +130,8 @@ export async function trackHbeEvent(event, properties, options) {
 }
 
 /**
- * Unique wallets that claimed the faucet, across the v1 cut-over (v1 + legacy name),
- * production only and never the per-event `anon:` ids.
+ * Unique wallets that claimed the faucet, across the v1 cut-over (v1 + legacy name): every
+ * pre-v1 event (no schema_version, no env), v1 events from production only, never `anon:` ids.
  */
 export async function getFaucetUniqueUsersCount() {
   const now = Date.now();
@@ -158,7 +158,7 @@ export async function getFaucetUniqueUsersCount() {
     WHERE
       event IN (${names})
       AND properties.app = '${escapeSql(HBE_APP_TAG)}'
-      AND (properties.env IS NULL OR properties.env = 'production')
+      AND (properties.schema_version IS NULL OR properties.env = 'production')
       AND (properties.id_source IS NULL OR properties.id_source != 'none')
   `.trim();
 

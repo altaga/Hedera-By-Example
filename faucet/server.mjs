@@ -113,7 +113,7 @@ const server = http.createServer(async (req, res) => {
         url.pathname === '/api/faucet/claim')
     ) {
       const body = await parseBody(req);
-      const { evmAddress, accountId, amount = 25, skipCooldown = false } = body;
+      const { evmAddress, accountId, amount = 25 } = body;
 
       if (!evmAddress) {
         return sendJson(res, 400, {
@@ -126,7 +126,8 @@ const server = http.createServer(async (req, res) => {
       const result = await disburseHbar({
         evmAddress,
         amount: finalAmount,
-        skipCooldown: Boolean(skipCooldown),
+        // Never from the request: a public caller could skip the cooldown and the locks.
+        skipCooldown: false,
       });
 
       const statusCode = result.success ? 200 : 400;

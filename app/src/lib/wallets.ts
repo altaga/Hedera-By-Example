@@ -69,13 +69,13 @@ export function loadWallets (): WalletStore {
     }
     if (store.wallets.length) saveWallets(store)
     return store
-  } catch (_) {
+  } catch {
     return EMPTY_STORE
   }
 }
 
 export function saveWallets (store: WalletStore): void {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)) } catch (_) {}
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)) } catch {}
 }
 
 export const findWallet = (store: WalletStore, id?: string | null) => store.wallets.find((w) => w.id === id)
@@ -141,7 +141,7 @@ export async function findAccountForKey (evmAddress: string, publicKeyRaw: strin
     const res = await mirrorFetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts?account.publickey=${publicKeyRaw}&order=asc&limit=1`)
     if (!res.ok) return null
     return (await res.json()).accounts?.[0]?.account || null
-  } catch (_) {
+  } catch {
     return null
   }
 }
@@ -188,7 +188,7 @@ async function assertKeyControlsAccount (accountId: string, rawPublic: string): 
   let res: Response
   try {
     res = await mirrorFetch(`https://testnet.mirrornode.hedera.com/api/v1/accounts/${accountId.trim()}`)
-  } catch (_) {
+  } catch {
     throw new Error('ACCOUNT_LOOKUP_FAILED')
   }
   if (res.status === 404) throw new Error('ACCOUNT_NOT_FOUND')
@@ -215,7 +215,7 @@ export async function importWallet (accountId: string, privateKey: string, label
 export async function importMnemonic (phrase: string, keyType: Curve, label: string, accountId = ''): Promise<Wallet> {
   const hedera = await import('@hiero-ledger/sdk')
   let words
-  try { words = await hedera.Mnemonic.fromString(phrase.trim().toLowerCase().split(/\s+/).join(' ')) } catch (_) { throw new Error('INVALID_MNEMONIC') }
+  try { words = await hedera.Mnemonic.fromString(phrase.trim().toLowerCase().split(/\s+/).join(' ')) } catch { throw new Error('INVALID_MNEMONIC') }
   const key = keyType === 'ECDSA' ? await words.toStandardECDSAsecp256k1PrivateKey('', 0) : await words.toStandardEd25519PrivateKey('', 0)
   const rawPublic = key.publicKey.toStringRaw()
   if (accountId.trim()) {
@@ -341,7 +341,7 @@ export function welcomeDropClaim (): { walletId?: string } | null {
   try {
     const raw = localStorage.getItem(WELCOME_DROP_STORAGE_KEY)
     return raw ? JSON.parse(raw) : null
-  } catch (_) {
+  } catch {
     return null
   }
 }
@@ -350,7 +350,7 @@ export function isWelcomeDropClaimed(): boolean {
   if (typeof window === 'undefined') return false
   try {
     return !!localStorage.getItem(WELCOME_DROP_STORAGE_KEY)
-  } catch (_) {
+  } catch {
     return false
   }
 }
@@ -359,7 +359,7 @@ export function markWelcomeDropClaimed(walletId: string, txHash?: string): void 
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(WELCOME_DROP_STORAGE_KEY, JSON.stringify({ walletId, txHash, claimedAt: Date.now() }))
-  } catch (_) {}
+  } catch {}
 }
 
 export async function requestWelcomeDrop(w: Wallet): Promise<{ success: boolean; hash?: string; error?: string }> {

@@ -58,7 +58,7 @@ truth for the catalog (`ANALYTICS_EVENTS`); this file explains it.
 | `id_source` | string | `wallet` \| `device` \| `session` \| `daily_hash` \| `none` | How `distinct_id` was obtained |
 | `lang` | string \| null | `es` | UI locale when known |
 | `country`, `$geoip_country_code` | string | `MX` | From `x-vercel-ip-country` / `cf-ipcountry` (no GPS) |
-| `$ip` | string | | Client IP from forwarded headers; private IPs omitted |
+| `$ip` | string | | Client IP from forwarded headers; private IPs omitted. **Not sent on MCP/API events** (privacy: those IPs belong to programs or AI providers and never left the server before v1): they set `$geoip_disable: true` and keep only `country` from `cf-ipcountry` / `x-vercel-ip-country` |
 
 `timestamp` goes at the top level of the capture payload (ISO-8601 UTC), not inside `properties`.
 

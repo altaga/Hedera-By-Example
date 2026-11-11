@@ -66,7 +66,6 @@ if (!operatorKey) {
 }
 
 // Resolve operator EVM + Hedera account from key
-let opEvm
 let rawHex
 try {
   const decoded = PrivateKey.fromStringDer(operatorKey.trim())
@@ -75,7 +74,7 @@ try {
 } catch {
   rawHex = operatorKey.trim().startsWith('0x') ? operatorKey.trim() : `0x${operatorKey.trim()}`
 }
-opEvm = new ethers.Wallet(rawHex).address
+const opEvm = new ethers.Wallet(rawHex).address
 const opInfo = await mirrorAccount(opEvm)
 if (!opInfo?.account) {
   console.error('Could not resolve OPERATOR_KEY to a Hedera account on testnet mirror')
@@ -118,7 +117,6 @@ let nextEnv = oldEnv
 nextEnv = upsertEnv(nextEnv, 'FAUCET_MNEMONIC', `"${newMnemonic}"`)
 nextEnv = upsertEnv(nextEnv, 'OPERATOR_ID', operatorId)
 // strip PORT from being required in app copy later
-const utf8 = new TextEncoder()
 fs.writeFileSync(envPath, nextEnv.endsWith('\n') ? nextEnv : nextEnv + '\n')
 
 if (fs.existsSync(appEnvPath) || true) {

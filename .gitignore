@@ -40,3 +40,6 @@ faucet/logs/
 faucet/faucet-accounts.json
 faucet/.local-backups/
 course/tools/*/target/
+
+# Written by app/scripts/write-build-info.mjs at deploy time (analytics app_version)
+app/src/server/buildInfo.generated.json

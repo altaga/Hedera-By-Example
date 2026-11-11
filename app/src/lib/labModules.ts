@@ -291,7 +291,7 @@ export async function prefetchKeyTypes (accountIds: string[]): Promise<void> {
       if (!res.ok) return
       const t = String((await res.json())?.key?._type || '')
       if (t) map.set(id, t.includes('ED25519') ? 'ed25519' : 'ecdsa')
-    } catch (_) {}
+    } catch {}
   }))
 }
 
@@ -419,7 +419,7 @@ export async function resolveModule (specifier: string, ctx: ModuleContext): Pro
       const util = {
         TextEncoder,
         TextDecoder,
-        inspect: (v: unknown) => { try { return JSON.stringify(v, null, 2) } catch (_) { return String(v) } },
+        inspect: (v: unknown) => { try { return JSON.stringify(v, null, 2) } catch { return String(v) } },
         promisify: (fn: any) => (...args: any[]) => new Promise((resolve, reject) => fn(...args, (e: any, r: any) => (e ? reject(e) : resolve(r)))),
         inherits: (ctor: any, superCtor: any) => {
           Object.defineProperty(ctor, 'super_', { value: superCtor, writable: true, configurable: true })

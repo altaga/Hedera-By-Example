@@ -36,8 +36,8 @@ export async function runCourseStandaloneTest() {
   }
 
   let totalLabsChecked = 0
-  let syntaxFailures = []
-  let parityFailures = []
+  const syntaxFailures = []
+  const parityFailures = []
 
   for (const mod of enModules) {
     const enModDir = path.join(enDir, mod)
