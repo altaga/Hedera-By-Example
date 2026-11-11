@@ -42,7 +42,9 @@ export const HBE_EVENT_FAUCET_CLAIM = 'faucet_claimed';
 
 // In-memory cache for user counts to prevent spamming PostHog HogQL API
 let cachedUserCount = { count: 0, timestamp: 0 };
-const CACHE_TTL_MS = 60 * 1000; // 1 minute cache
+// The count changes slowly; PostHog's own query cache is used too (refresh: 'blocking').
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const QUERY_TIMEOUT_MS = 8000;
 
 function escapeSql(str) {
   return String(str || '').replace(/'/g, "''");
@@ -169,9 +171,9 @@ export async function getFaucetUniqueUsersCount() {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(QUERY_TIMEOUT_MS),
       body: JSON.stringify({
-        refresh: 'force_blocking',
+        refresh: 'blocking',
         query: { kind: 'HogQLQuery', query: hogql },
       }),
     });
