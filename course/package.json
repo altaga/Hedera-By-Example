@@ -61,6 +61,7 @@
     "glob@^13": "^14.0.4",
     "minimatch@>=7 <11.0.1": "^11.0.8",
     "file-type@^20": "^21.3.4",
-    "pdfjs-dist@^5": "^6.5.438"
+    "pdfjs-dist@^5": "^6.5.438",
+    "@walletconnect/ethereum-provider": "2.26.0"
   }
 }
